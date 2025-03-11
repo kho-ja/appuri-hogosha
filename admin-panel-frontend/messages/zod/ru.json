@@ -1,0 +1,140 @@
+{
+  "zod": {
+    "errors": {
+      "invalid_type": "Ожидалось {expected}, но получено {received}",
+      "invalid_type_received_undefined": "Обязательно",
+      "invalid_literal": "Недопустимое значение литерала. Ожидалось {expected}",
+      "unrecognized_keys": "Неопознанные ключи в объекте: {keys}",
+      "invalid_union": "Недопустимый ввод",
+      "invalid_union_discriminator": "Недопустимое значение дискриминатора. Ожидалось {options}",
+      "invalid_enum_value": "Недопустимое значение перечисления. Ожидалось {options}, но получено {received}",
+      "invalid_arguments": "Недопустимые аргументы функции",
+      "invalid_return_type": "Недопустимый тип возвращаемого значения функции",
+      "invalid_date": "Недопустимая дата",
+      "custom": "Недопустимый ввод",
+      "invalid_intersection_types": "Не удалось объединить результаты пересечения",
+      "not_multiple_of": "Число должно быть кратно {multipleOf}",
+      "not_finite": "Число должно быть конечным",
+      "invalid_string": {
+        "email": "Недопустимый {validation}",
+        "emoji": "Недопустимый {validation}",
+        "url": "Недопустимый {validation}",
+        "uuid": "Недопустимый {validation}",
+        "ulid": "Недопустимый {validation}",
+        "ip": "Недопустимый {validation}",
+        "cuid": "Недопустимый {validation}",
+        "cuid2": "Недопустимый {validation}",
+        "regex": "Недопустимый",
+        "datetime": "Недопустимый {validation}",
+        "startsWith": "Недопустимый ввод: должно начинаться с \"{startsWith}\"",
+        "endsWith": "Недопустимый ввод: должно заканчиваться на \"{endsWith}\""
+      },
+      "too_small": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}} должно содержать ровно {minimum} элементов",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}} должно содержать как минимум {minimum} элементов",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}} должно содержать больше {minimum} элементов"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}} должно содержать ровно {minimum} символов",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}} должно содержать как минимум {minimum} символов",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}} должно содержать больше {minimum} символов"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} должно быть ровно {minimum}",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть как минимум {minimum}",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть больше {minimum}"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} должно быть ровно {minimum}",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть как минимум {minimum}",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть больше {minimum}"
+        },
+        "set": {
+          "exact": "Недопустимый ввод",
+          "inclusive": "Недопустимый ввод",
+          "not_inclusive": "Недопустимый ввод"
+        },
+        "date": {
+          "exact": "Дата должна быть ровно {minimum, date, short}",
+          "inclusive": "Дата должна быть не ранее {minimum, date, short}",
+          "not_inclusive": "Дата должна быть позже {minimum, date, short}"
+        }
+      },
+      "too_big": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}} должно содержать ровно {maximum} элементов",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}} должно содержать не более {maximum} элементов",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}} должно содержать меньше {maximum} элементов"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}} должно содержать ровно {maximum} символов",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}} должно содержать не более {maximum} символов",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}} должно содержать меньше {maximum} символов"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} должно быть ровно {maximum}",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть не более {maximum}",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть меньше {maximum}"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} должно быть ровно {maximum}",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть не более {maximum}",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} должно быть меньше {maximum}"
+        },
+        "set": {
+          "exact": "Недопустимый ввод",
+          "inclusive": "Недопустимый ввод",
+          "not_inclusive": "Недопустимый ввод"
+        },
+        "date": {
+          "exact": "Дата должна быть ровно {maximum, date, short}",
+          "inclusive": "Дата должна быть не позднее {maximum, date, short}",
+          "not_inclusive": "Дата должна быть раньше {maximum, date, short}"
+        }
+      }
+    },
+    "validations": {
+      "email": "Электронная почта",
+      "emoji": "Эмодзи",
+      "url": "URL",
+      "uuid": "UUID",
+      "ulid": "ULID",
+      "ip": "IP",
+      "cuid": "CUID",
+      "cuid2": "CUID2",
+      "regex": "Регулярное выражение",
+      "datetime": "Дата и время"
+    },
+    "types": {
+      "function": "Функция",
+      "number": "Число",
+      "string": "Строка",
+      "nan": "NaN",
+      "integer": "Целое число",
+      "float": "Число с плавающей запятой",
+      "boolean": "Булево значение",
+      "date": "Дата",
+      "bigint": "Большое целое число",
+      "undefined": "Неопределено",
+      "symbol": "Символ",
+      "null": "Null",
+      "array": "Массив",
+      "object": "Объект",
+      "unknown": "Неизвестно",
+      "promise": "Обещание",
+      "void": "void",
+      "never": "never",
+      "map": "Карта",
+      "set": "Множество"
+    },
+    "title": "Заголовок",
+    "description": "Описание",
+    "given_name": "Имя",
+    "family_name": "Фамилия",
+    "phone_number": "Номер телефона",
+    "student_number": "Номер студента"
+  },
+  "form": {},
+  "customErrors": {}
+}

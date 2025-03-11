@@ -1,0 +1,27 @@
+{
+	"name": "telegram-bot-gramy",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "node ./dist/index.js",
+		"dev": "nodemon"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"@aws-sdk/client-cognito-identity-provider": "^3.699.0",
+		"dotenv": "^16.4.5",
+		"grammy": "^1.32.0",
+		"mysql2": "^3.11.4"
+	},
+	"devDependencies": {
+		"@types/node": "^22.9.3",
+		"@types/node-fetch": "^2.6.12",
+		"nodemon": "^3.1.7",
+		"typescript": "^5.7.2",
+		"ts-node": "^10.9.2"
+	}
+}

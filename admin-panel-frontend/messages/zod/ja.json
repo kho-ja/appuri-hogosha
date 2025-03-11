@@ -1,0 +1,140 @@
+{
+  "zod": {
+    "errors": {
+      "invalid_type": "{expected}が必要ですが、{received}が受け取られました",
+      "invalid_type_received_undefined": "必須",
+      "invalid_literal": "無効なリテラル値です。{expected}が必要です",
+      "unrecognized_keys": "オブジェクト内の認識されていないキー: {keys}",
+      "invalid_union": "無効な入力",
+      "invalid_union_discriminator": "無効な識別値です。{options}が必要です",
+      "invalid_enum_value": "無効な列挙型の値です。{options}が必要で、{received}が受け取られました",
+      "invalid_arguments": "無効な関数の引数",
+      "invalid_return_type": "無効な関数の戻り値の型",
+      "invalid_date": "無効な日付",
+      "custom": "無効な入力",
+      "invalid_intersection_types": "交差の結果をマージできませんでした",
+      "not_multiple_of": "数は{multipleOf}の倍数でなければなりません",
+      "not_finite": "数は有限でなければなりません",
+      "invalid_string": {
+        "email": "無効な{validation}",
+        "emoji": "無効な{validation}",
+        "url": "無効な{validation}",
+        "uuid": "無効な{validation}",
+        "ulid": "無効な{validation}",
+        "ip": "無効な{validation}",
+        "cuid": "無効な{validation}",
+        "cuid2": "無効な{validation}",
+        "regex": "無効",
+        "datetime": "無効な{validation}",
+        "startsWith": "無効な入力: \"{startsWith}\"で始まる必要があります",
+        "endsWith": "無効な入力: \"{endsWith}\"で終わる必要があります"
+      },
+      "too_small": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}}は正確に{minimum}要素を含む必要があります",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}}は少なくとも{minimum}要素を含む必要があります",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}}は{minimum}要素を超える必要があります"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}}は正確に{minimum}文字を含む必要があります",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}}は少なくとも{minimum}文字を含む必要があります",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}}は{minimum}文字を超える必要があります"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}}は正確に{minimum}である必要があります",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{minimum}以上でなければなりません",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{minimum}より大きくなければなりません"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}}は正確に{minimum}である必要があります",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{minimum}以上でなければなりません",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{minimum}より大きくなければなりません"
+        },
+        "set": {
+          "exact": "無効な入力",
+          "inclusive": "無効な入力",
+          "not_inclusive": "無効な入力"
+        },
+        "date": {
+          "exact": "日付は正確に{minimum, date, short}でなければなりません",
+          "inclusive": "日付は{minimum, date, short}以上でなければなりません",
+          "not_inclusive": "日付は{minimum, date, short}より大きくなければなりません"
+        }
+      },
+      "too_big": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}}は正確に{maximum}要素を含む必要があります",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}}は最大で{maximum}要素を含む必要があります",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}}は{maximum}要素未満である必要があります"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}}は正確に{maximum}文字を含む必要があります",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}}は最大で{maximum}文字を含む必要があります",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}}は{maximum}文字未満である必要があります"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}}は正確に{maximum}である必要があります",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{maximum}以下でなければなりません",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{maximum}未満でなければなりません"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}}は正確に{maximum}である必要があります",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{maximum}以下でなければなりません",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}}は{maximum}未満でなければなりません"
+        },
+        "set": {
+          "exact": "無効な入力",
+          "inclusive": "無効な入力",
+          "not_inclusive": "無効な入力"
+        },
+        "date": {
+          "exact": "日付は正確に{maximum, date, short}でなければなりません",
+          "inclusive": "日付は{maximum, date, short}以下でなければなりません",
+          "not_inclusive": "日付は{maximum, date, short}未満でなければなりません"
+        }
+      }
+    },
+    "validations": {
+      "email": "メール",
+      "emoji": "絵文字",
+      "url": "URL",
+      "uuid": "UUID",
+      "ulid": "ULID",
+      "ip": "IP",
+      "cuid": "CUID",
+      "cuid2": "CUID2",
+      "regex": "正規表現",
+      "datetime": "日時"
+    },
+    "types": {
+      "function": "関数",
+      "number": "数値",
+      "string": "文字列",
+      "nan": "NaN",
+      "integer": "整数",
+      "float": "浮動小数点",
+      "boolean": "ブール値",
+      "date": "日付",
+      "bigint": "ビッグイント",
+      "undefined": "未定義",
+      "symbol": "シンボル",
+      "null": "ヌル",
+      "array": "配列",
+      "object": "オブジェクト",
+      "unknown": "不明",
+      "promise": "約束",
+      "void": "void",
+      "never": "never",
+      "map": "マップ",
+      "set": "セット"
+    },
+    "title": "タイトル",
+    "description": "説明",
+    "given_name": "名前",
+    "family_name": "苗字",
+    "phone_number": "電話番号",
+    "student_number": "学生番号"
+  },
+  "form": {},
+  "customErrors": {}
+}

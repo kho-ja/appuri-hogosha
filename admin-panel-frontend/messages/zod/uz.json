@@ -1,0 +1,140 @@
+{
+  "zod": {
+    "errors": {
+      "invalid_type": "{expected} kutilgan edi, {received} olindi",
+      "invalid_type_received_undefined": "Talab qilinadi",
+      "invalid_literal": "Noto‘g‘ri harf qiymati, {expected} kutilgan",
+      "unrecognized_keys": "Obyektda tan olinmagan kalit(lar): {keys}",
+      "invalid_union": "Noto'g'ri kiritish",
+      "invalid_union_discriminator": "Noto‘g‘ri diskriminator qiymati. {options} kutilgan",
+      "invalid_enum_value": "Noto‘g‘ri enum qiymati. {options} kutilgan, {received} olindi",
+      "invalid_arguments": "Noto'g'ri funksiya argumentlari",
+      "invalid_return_type": "Noto'g'ri funksiya qaytish turi",
+      "invalid_date": "Noto‘g‘ri sana",
+      "custom": "Noto'g'ri kiritish",
+      "invalid_intersection_types": "Kesishuv natijalari birlashtirib bo‘lmadi",
+      "not_multiple_of": "Raqam {multipleOf} ga karrali bo‘lishi kerak",
+      "not_finite": "Raqam cheksiz bo‘lishi kerak",
+      "invalid_string": {
+        "email": "Noto‘g‘ri {validation}",
+        "emoji": "Noto‘g‘ri {validation}",
+        "url": "Noto‘g‘ri {validation}",
+        "uuid": "Noto‘g‘ri {validation}",
+        "ulid": "Noto‘g‘ri {validation}",
+        "ip": "Noto‘g‘ri {validation}",
+        "cuid": "Noto‘g‘ri {validation}",
+        "cuid2": "Noto‘g‘ri {validation}",
+        "regex": "Noto‘g‘ri",
+        "datetime": "Noto‘g‘ri {validation}",
+        "startsWith": "Noto'g'ri kiritish: \"{startsWith}\" bilan boshlanishi kerak",
+        "endsWith": "Noto'g'ri kiritish: \"{endsWith}\" bilan tugashi kerak"
+      },
+      "too_small": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}} aniq {minimum} element(lar)ni o‘z ichiga olishi kerak",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}} kamida {minimum} element(lar)ni o‘z ichiga olishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}} {minimum} element(lar)dan ortiq bo‘lishi kerak"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}} aniq {minimum} belgi(lar)ni o‘z ichiga olishi kerak",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}} kamida {minimum} belgi(lar)ni o‘z ichiga olishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}} {minimum} belgidan ortiq bo‘lishi kerak"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} aniq {minimum} bo‘lishi kerak",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} {minimum} dan katta yoki teng bo‘lishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} {minimum} dan katta bo‘lishi kerak"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} aniq {minimum} bo‘lishi kerak",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} {minimum} dan katta yoki teng bo‘lishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} {minimum} dan katta bo‘lishi kerak"
+        },
+        "set": {
+          "exact": "Noto'g'ri kiritish",
+          "inclusive": "Noto'g'ri kiritish",
+          "not_inclusive": "Noto'g'ri kiritish"
+        },
+        "date": {
+          "exact": "Sana aniq {minimum, date, short} bo‘lishi kerak",
+          "inclusive": "Sana {minimum, date, short} ga teng yoki katta bo‘lishi kerak",
+          "not_inclusive": "Sana {minimum, date, short} dan katta bo‘lishi kerak"
+        }
+      },
+      "too_big": {
+        "array": {
+          "exact": "{path, select, missingTranslation {Array} other {{path}}} aniq {maximum} element(lar)ni o‘z ichiga olishi kerak",
+          "inclusive": "{path, select, missingTranslation {Array} other {{path}}} eng ko‘p {maximum} element(lar)ni o‘z ichiga olishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Array} other {{path}}} {maximum} element(lar)dan kam bo‘lishi kerak"
+        },
+        "string": {
+          "exact": "{path, select, missingTranslation {String} other {{path}}} aniq {maximum} belgi(lar)ni o‘z ichiga olishi kerak",
+          "inclusive": "{path, select, missingTranslation {String} other {{path}}} eng ko‘p {maximum} belgi(lar)ni o‘z ichiga olishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {String} other {{path}}} {maximum} belgilardan kam bo‘lishi kerak"
+        },
+        "number": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} aniq {maximum} bo‘lishi kerak",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} {maximum} dan kichik yoki teng bo‘lishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} {maximum} dan kichik bo‘lishi kerak"
+        },
+        "bigint": {
+          "exact": "{path, select, missingTranslation {Number} other {{path}}} aniq {maximum} bo‘lishi kerak",
+          "inclusive": "{path, select, missingTranslation {Number} other {{path}}} {maximum} dan kichik yoki teng bo‘lishi kerak",
+          "not_inclusive": "{path, select, missingTranslation {Number} other {{path}}} {maximum} dan kichik bo‘lishi kerak"
+        },
+        "set": {
+          "exact": "Noto'g'ri kiritish",
+          "inclusive": "Noto'g'ri kiritish",
+          "not_inclusive": "Noto'g'ri kiritish"
+        },
+        "date": {
+          "exact": "Sana aniq {maximum, date, short} bo‘lishi kerak",
+          "inclusive": "Sana {maximum, date, short} dan kichik yoki teng bo‘lishi kerak",
+          "not_inclusive": "Sana {maximum, date, short} dan kichik bo‘lishi kerak"
+        }
+      }
+    },
+    "validations": {
+      "email": "email",
+      "emoji": "emoji",
+      "url": "url",
+      "uuid": "uuid",
+      "ulid": "ulid",
+      "ip": "ip",
+      "cuid": "cuid",
+      "cuid2": "cuid2",
+      "regex": "regex",
+      "datetime": "datetime"
+    },
+    "types": {
+      "function": "funksiya",
+      "number": "raqam",
+      "string": "qator",
+      "nan": "nan",
+      "integer": "butun son",
+      "float": "float",
+      "boolean": "mantiqiy",
+      "date": "sana",
+      "bigint": "katta raqam",
+      "undefined": "aniqlanmagan",
+      "symbol": "belgi",
+      "null": "bo‘sh",
+      "array": "massiv",
+      "object": "obyekt",
+      "unknown": "noma'lum",
+      "promise": "va'da",
+      "void": "bo‘shliq",
+      "never": "hech qachon",
+      "map": "xarita",
+      "set": "to‘plam"
+    },
+    "title": "Sarlavha",
+    "description": "Tavsif",
+    "given_name": "Ism",
+    "family_name": "Familiya",
+    "phone_number": "Telefon raqami",
+    "student_number": "O‘quvchi raqami"
+  },
+  "form": {},
+  "customErrors": {}
+}

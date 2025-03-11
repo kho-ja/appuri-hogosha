@@ -1,0 +1,18 @@
+# Build files and node_modules
+node_modules/
+dist/
+
+# user-specific files
+.idea
+.vscode
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# other files
+deno.lock
+bun.lockb

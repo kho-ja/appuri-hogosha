@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.jduapp.parentnotification",
+      "sha256_cert_fingerprints": [
+        "06:F6:0A:98:2F:83:5D:E0:ED:C0:49:84:6B:1D:AC:EC:B9:7D:33:28:3D:06:0C:3E:D7:AE:14:CD:91:70:76:5A"
+      ]
+    }
+  }
+]

@@ -1,0 +1,359 @@
+import {
+    AdminCreateUserCommand,
+    InitiateAuthCommandInput,
+    CognitoIdentityProviderClient,
+    InitiateAuthCommand,
+    AdminCreateUserCommandInput,
+    AdminRespondToAuthChallengeCommand,
+    AdminRespondToAuthChallengeCommandInput,
+    ChangePasswordCommand,
+    ChangePasswordCommandInput,
+    GetUserCommand,
+    GetUserCommandInput,
+    GetUserCommandOutput,
+    AuthenticationResultType
+} from "@aws-sdk/client-cognito-identity-provider";
+import process from "node:process";
+
+class CognitoClient {
+    private client: CognitoIdentityProviderClient
+    private pool_id: string;
+    private client_id: string;
+
+    constructor(pool_id: string, client_id: string) {
+        this.client = new CognitoIdentityProviderClient({
+            region: process.env.SERVICE_REGION,
+            credentials: {
+                accessKeyId: process.env.ACCESS_KEY ?? '',
+                secretAccessKey: process.env.SECRET_ACCESS_KEY ?? ''
+            }
+        })
+
+        this.pool_id = pool_id;
+        this.client_id = client_id;
+    }
+
+    async register(email: string): Promise<registerOutput> {
+        const params: AdminCreateUserCommandInput = {
+            UserPoolId: this.pool_id,
+            Username: email,
+            UserAttributes: [
+                {
+                    Name: 'email',
+                    Value: email,
+                }
+            ]
+        }
+
+        try {
+            const command = new AdminCreateUserCommand(params);
+            const data = await this.client.send(command)
+
+            return {
+                sub_id: data.User?.Username ?? ''
+            }
+        } catch (e: any) {
+            if (e.name === 'UsernameExistsException') {
+                throw {
+                    status: 401,
+                    message: 'Email already exists'
+                } as registerThrow
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error'
+                } as registerThrow
+            }
+        }
+    }
+
+    async changeTempPassword(email: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
+        const params: InitiateAuthCommandInput = {
+            AuthFlow: 'USER_PASSWORD_AUTH',
+            ClientId: this.client_id,
+            AuthParameters: {
+                USERNAME: email,
+                PASSWORD: tempPassword,
+            }
+        };
+
+        try {
+            const authCommand = new InitiateAuthCommand(params);
+            const authData = await this.client.send(authCommand);
+
+            if ('ChallengeName' in authData && authData.ChallengeName === 'NEW_PASSWORD_REQUIRED' && 'Session' in authData) {
+                const challengeParams: AdminRespondToAuthChallengeCommandInput = {
+                    UserPoolId: this.pool_id,
+                    ClientId: this.client_id,
+                    ChallengeName: "NEW_PASSWORD_REQUIRED",
+                    Session: authData.Session as string,
+                    ChallengeResponses: {
+                        USERNAME: email,
+                        NEW_PASSWORD: newPassword,
+                    }
+                };
+
+                const challengeCommand = new AdminRespondToAuthChallengeCommand(challengeParams);
+                const challengeData = await this.client.send(challengeCommand);
+
+                if (challengeData.AuthenticationResult) {
+                    return {
+                        accessToken: challengeData.AuthenticationResult.AccessToken ?? '',
+                        refreshToken: challengeData.AuthenticationResult.RefreshToken ?? ''
+                    };
+                } else {
+                    throw new Error('Authentication result not found');
+                }
+            } else {
+                throw {
+                    status: 403,
+                    message: 'Change temporary password not found',
+                } as changeTempPasswordThrow;
+            }
+        } catch (e: any) {
+            if (e.name === 'InvalidPasswordException') {
+                throw {
+                    status: 401,
+                    message: 'Password must Contains  at least 8 characters, 1 number, 1 special characters, 1 uppercase, 1 lowercase',
+                } as changeTempPasswordThrow
+            } else if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message: 'Invalid email or password',
+                } as changeTempPasswordThrow
+            } else {
+                if (e.status) {
+                    throw e as changeTempPasswordThrow
+                } else {
+                    throw {
+                        status: 500,
+                        message: 'Internal server error',
+                    } as changeTempPasswordThrow
+                }
+            }
+        }
+    }
+
+    async login(email: string, password: string): Promise<loginOutput> {
+        const params: InitiateAuthCommandInput = {
+            AuthFlow: 'USER_PASSWORD_AUTH',
+            ClientId: this.client_id,
+            AuthParameters: {
+                USERNAME: email,
+                PASSWORD: password,
+            }
+        }
+
+        try {
+            const command = new InitiateAuthCommand(params);
+            const authData = await this.client.send(command);
+
+            if ('ChallengeName' in authData && authData.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+                throw {
+                    status: 403,
+                    message: 'Please change your temporary password.'
+                } as loginThrow;
+            } else if ('AuthenticationResult' in authData && authData.AuthenticationResult) {
+                const result = authData.AuthenticationResult as AuthenticationResultType;
+                return {
+                    accessToken: result.AccessToken ?? '',
+                    refreshToken: result.RefreshToken ?? ''
+                };
+            } else {
+                throw new Error('Authentication result not found');
+            }
+        } catch (e: any) {
+            if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message: 'Invalid email or password'
+                } as loginThrow
+            } else if (e.status === 403) {
+                throw e as loginThrow;
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error'
+                } as accessTokenThrow
+            }
+        }
+    }
+
+    async changePassword(accessToken: string, previousPassword: string, newPassword: string): Promise<changePasswordOutput> {
+        const params: ChangePasswordCommandInput = {
+            AccessToken: accessToken,
+            PreviousPassword: previousPassword,
+            ProposedPassword: newPassword,
+        }
+
+        try {
+            const command = new ChangePasswordCommand(params);
+            const changeData = await this.client.send(command);
+
+            return {
+                state: true
+            }
+        } catch (e: any) {
+            if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message: 'Invalid access token or Old Password'
+                } as changePasswordThrow
+            } else if (e.name === 'InvalidPasswordException') {
+                throw {
+                    status: 401,
+                    message: 'Password must Contains  at least 8 characters, 1 number, 1 special characters, 1 uppercase, 1 lowercase',
+                } as changePasswordThrow
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error',
+                } as changePasswordThrow
+            }
+        }
+    }
+
+    async accessToken(accessToken: string): Promise<accessTokenOutput> {
+        const params: GetUserCommandInput = {
+            AccessToken: accessToken
+        };
+
+        try {
+            const command = new GetUserCommand(params);
+            const userData = await this.client.send(command) as GetUserCommandOutput & { UserAttributes?: { Name: string; Value: string }[] };
+            return {
+                email: userData.UserAttributes?.find(obj => obj.Name === 'email')?.Value ?? '',
+                sub_id: userData.UserAttributes?.find(obj => obj.Name === 'sub')?.Value ?? ''
+            };
+        } catch (e: any) {
+            if (e.name === 'NotAuthorizedException') {
+                if (e.message === 'Access Token has expired') {
+                    throw {
+                        status: 401,
+                        message: 'Access token has expired. Please use a refresh token to obtain a new access token.'
+                    } as accessTokenThrow
+                } else {
+                    throw {
+                        status: 401,
+                        message: 'Access token is invalid.',
+                    } as accessTokenThrow
+                }
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error'
+                } as accessTokenThrow
+            }
+        }
+    }
+
+    async refreshToken(refreshToken: string): Promise<refreshTokenOutput> {
+        const params: InitiateAuthCommandInput = {
+            AuthFlow: 'REFRESH_TOKEN_AUTH',
+            ClientId: this.client_id,
+            AuthParameters: {
+                REFRESH_TOKEN: refreshToken
+            }
+        }
+
+        try {
+            const command = new InitiateAuthCommand(params);
+            const authData = await this.client.send(command);
+
+            if ('AuthenticationResult' in authData && authData.AuthenticationResult) {
+                const result = authData.AuthenticationResult as AuthenticationResultType;
+                return {
+                    accessToken: result.AccessToken ?? '',
+                    refreshToken: result.RefreshToken ?? '',
+                };
+            } else {
+                throw new Error('Authentication result not found');
+            }
+        } catch (e: any) {
+            if (e.name === 'NotAuthorizedException') {
+                if (e.message === 'Refresh Token has expired') {
+                    throw {
+                        status: 401,
+                        message: 'Refresh token has expired'
+                    } as refreshTokenThrow
+
+                } else {
+                    throw {
+                        status: 403,
+                        message: 'Refresh token is invalid'
+                    } as refreshTokenThrow
+                }
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error'
+                } as refreshTokenThrow
+            }
+        }
+    }
+}
+
+interface accessTokenOutput {
+    email: string;
+    sub_id: string;
+}
+
+interface accessTokenThrow {
+    status: 401 | 500;
+    message: string;
+}
+
+interface loginOutput {
+    accessToken: string;
+    refreshToken: string;
+}
+
+interface loginThrow {
+    status: 401 | 403 | 500;
+    message: string;
+}
+
+interface refreshTokenOutput {
+    accessToken: string;
+    refreshToken: string;
+}
+
+interface refreshTokenThrow {
+    status: 401 | 403 | 500;
+    message: string;
+}
+
+interface changeTempPasswordOutput {
+    accessToken: string;
+    refreshToken: string;
+}
+
+interface changeTempPasswordThrow {
+    status: 401 | 403 | 500;
+    message: string;
+}
+
+interface registerOutput {
+    sub_id: string
+}
+
+interface registerThrow {
+    status: 401 | 403 | 500;
+    message: string;
+}
+
+interface changePasswordOutput {
+    state: boolean;
+}
+
+interface changePasswordThrow {
+    status: 401 | 403 | 500;
+    message: string;
+}
+
+const Parent = new CognitoClient(
+    process.env.PARENT_POOL_ID ?? '',
+    process.env.PARENT_CLIENT_ID ?? ''
+);
+
+export { CognitoClient, Parent };
