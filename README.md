@@ -11,12 +11,14 @@ Appuri Hogosha is a notification platform for sending alerts to students' parent
 ### Admin Panel
 
 - **Frontend ([`admin-panel-frontend`](./admin-panel-frontend/README.md)):** Built with Next.js.
-- **Backend ([`admin-panel-backend`](./admin-panel-backend/README.md)):** Built with Express.js.
 
 ### Mobile App
 
 - **Frontend (`mobile-frontend`):** Built with React Native.
-- **Backend (`mobile-backend`):** Built with Express.js.
+
+### Backend
+
+- **Backend ([`backend`](./backend/README.md)):** Built with Express.js.
 
 ### Notification Service
 
