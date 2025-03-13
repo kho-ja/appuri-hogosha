@@ -35,7 +35,7 @@ jobs:
           (cd dist && zip -r ../backend.zip .) && zip -ur backend.zip node_modules package.json
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lambda-package
           path: backend/backend.zip
@@ -45,7 +45,7 @@ jobs:
     needs: install-and-build
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: lambda-package
           path: backend/
