@@ -7,7 +7,7 @@ on:
       - 4-aws-uchun-avtomatik-cicd
 
 jobs:
-  deploy:
+  install-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,17 +22,33 @@ jobs:
       - name: Install Dependencies
         run: |
           cd backend
-          npm install
+          npm ci
 
-      - name: Zip Backend Code
+      - name: Build the Project
         run: |
           cd backend
           npm run build
 
-      - name: Zip the build and node_modules
+      - name: Zip the Files
         run: |
           cd backend
           (cd dist && zip -r ../backend.zip .) && zip -ur backend.zip node_modules package.json
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: lambda-package
+          path: backend/backend.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: install-and-build
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: lambda-package
+          path: backend/
 
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
