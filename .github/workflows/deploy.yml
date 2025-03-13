@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - main
-      - 4-aws-uchun-avtomatik-cicd
+    paths:
+      - 'backend/**'
 
 jobs:
   install-and-build:
