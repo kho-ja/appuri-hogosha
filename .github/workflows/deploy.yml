@@ -1,0 +1,43 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - 4-aws-uchun-avtomatik-cicd
+    paths:
+      - "backend/**" # Only trigger when changes happen inside backend folder
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Zip Backend Code
+        run: |
+          cd backend
+          zip -r ../backend.zip .
+
+      - name: Deploy to AWS Lambda
+        uses: docker://amazon/aws-cli
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        with:
+          entrypoint: /usr/local/bin/aws
+          args: lambda update-function-code \
+            --function-name ParentsAdminAPI \
+            --zip-file fileb://backend.zip
