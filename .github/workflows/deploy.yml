@@ -3,12 +3,12 @@ name: Deploy to AWS Lambda
 on:
   pull_request:
     branches:
+      - main
       - 4-aws-uchun-avtomatik-cicd
   push:
     branches:
       - main
-    paths:
-      - "backend/**" # Only trigger when changes happen inside backend folder
+      - 4-aws-uchun-avtomatik-cicd
 
 jobs:
   deploy:
