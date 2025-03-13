@@ -50,6 +50,9 @@ jobs:
           name: lambda-package
           path: backend
 
+      - name: Move ZIP file to root
+        run: mv backend/backend.zip backend.zip
+
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
         env:
