@@ -27,7 +27,12 @@ jobs:
       - name: Zip Backend Code
         run: |
           cd backend
-          zip -r ../backend.zip .
+          npm run build
+
+      - name: Zip the build and node_modules
+        run: |
+          cd backend
+          (cd dist && zip -r ../backend.zip .) && zip -ur backend.zip node_modules package.json
 
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
