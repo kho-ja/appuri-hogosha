@@ -20,7 +20,7 @@ class AdminPanelController implements IController {
     }
 
     initRoutes() {
-        this.router.use('/auth', new AuthController().router);
+        this.router.use(new AuthController().router);
         this.router.use('/student', new StudentController().router);
         this.router.use('/parent', new ParentController().router);
         this.router.use('/post', new PostController().router);
