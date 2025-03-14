@@ -25,7 +25,6 @@ import Group from "@/types/group";
 
 const formSchema = z.object({
   name: z.string().min(1),
-  semester: z.string().optional(),
 });
 
 export default function CreateGroup() {
@@ -38,7 +37,6 @@ export default function CreateGroup() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      semester: "",
     },
   });
 
@@ -64,7 +62,6 @@ export default function CreateGroup() {
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
     if (parsedFormData) {
       form.setValue("name", parsedFormData.name);
-      form.setValue("semester", parsedFormData.semester);
     }
 
     const subscription = form.watch((values) => {
@@ -102,36 +99,26 @@ export default function CreateGroup() {
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit((data) => mutate(data as any))}
+            onSubmit={form.handleSubmit((data) =>
+              mutate({
+                ...data,
+                students: selectedStudents.map((student) => student.id),
+              } as any)
+            )}
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field, formState }) => (
-                  <FormItem>
-                    <FormLabel>{t("GroupName")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder={t("GroupName")} />
-                    </FormControl>
-                    <FormMessage>{formState.errors.name?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="semester"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("GroupSemester")}</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder={t("GroupSemester")} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>{t("GroupName")}</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder={t("GroupName")} />
+                  </FormControl>
+                  <FormMessage>{formState.errors.name?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
 
             <FormItem>
               <FormLabel>{t("Students")}</FormLabel>
@@ -144,7 +131,7 @@ export default function CreateGroup() {
             </FormItem>
 
             <Button disabled={isPending}>
-              {isPending ? `${t("CreateGroup")}...` : t("CreateGroup")}
+              {t("CreateGroup")} {isPending && "..."}
             </Button>
           </form>
         </Form>

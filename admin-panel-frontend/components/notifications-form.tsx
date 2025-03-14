@@ -56,8 +56,8 @@ export function NotificationsForm() {
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("/school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation("/school/sms", "POST", ["SMS"], {
+  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
+  const { mutate, isPending } = useApiMutation("school/sms", "POST", ["SMS"], {
     onSuccess: (data: any) => {
       toast({
         title: t("NotificationSettingUpdated"),
@@ -80,7 +80,7 @@ export function NotificationsForm() {
         low: data.school.priority.low,
       });
     }
-  }, [isLoading]);
+  }, [isLoading, form, data]);
 
   return (
     <Form {...form}>
