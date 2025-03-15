@@ -5,8 +5,8 @@ on:
     branches:
       - main
       - 10-cannot-navigate-to-the-groupsgroupid-page
-    # paths:
-    #   - "backend/**"
+    paths:
+      - "backend/**"
 
 permissions:
   contents: write
