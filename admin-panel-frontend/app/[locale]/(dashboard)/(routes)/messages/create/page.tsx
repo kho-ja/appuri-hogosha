@@ -102,9 +102,7 @@ export default function SendMessagePage() {
     const savedFormData = localStorage.getItem("formDataMessages");
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
     if (parsedFormData) {
-      form.setValue("title", parsedFormData.title);
-      form.setValue("description", parsedFormData.description);
-      form.setValue("priority", parsedFormData.priority);
+      form.reset(parsedFormData);
     }
 
     const subscription = form.watch((values) => {
@@ -132,6 +130,7 @@ export default function SendMessagePage() {
 
     mutate(payload as any);
   };
+
   const isFormValid = form.formState.isValid;
   const hasRecipients =
     selectedStudents.length > 0 || selectedGroups.length > 0;
