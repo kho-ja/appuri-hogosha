@@ -580,14 +580,14 @@ class GroupController implements IController {
                     st.id,st.phone_number,st.email,
                     st.student_number, st.given_name, st.family_name
                 FROM GroupMember AS gm
-                INNER JOIN Parents.Student AS st on gm.student_id = st.id
+                INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause}
                 ORDER BY gm.id DESC
                 LIMIT :limit OFFSET :offset;`, params)
 
             const totalMembers = (await DB.query(`SELECT COUNT(*) as total
                 FROM GroupMember as gm
-                INNER JOIN Parents.Student AS st on gm.student_id = st.id
+                INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause};`, params))[0].total
 
             const totalPages = Math.ceil(totalMembers / limit);

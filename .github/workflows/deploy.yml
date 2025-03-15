@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
+      - 10-cannot-navigate-to-the-groupsgroupid-page
     paths:
-      - 'backend/**'
+      - "backend/**"
 
 jobs:
   install-and-build:
@@ -66,3 +67,22 @@ jobs:
             lambda update-function-code
             --function-name ParentsAdminAPI
             --zip-file fileb://backend.zip
+
+      - name: Notify GitHub of Deployment Status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'production'
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: process.env.DEPLOYMENT_ID,
+              state: 'success'
+            });
