@@ -246,8 +246,9 @@ class GroupController implements IController {
                         await DB.execute(
                             `UPDATE StudentGroup SET
                             name = :name
-                            WHERE name = :name`, {
+                            WHERE name = :name AND school_id = school_id`, {
                             name: row.name,
+                            school_id: req.user.school_id,
                         })
 
                         const attachedMembers: any[] = [];
