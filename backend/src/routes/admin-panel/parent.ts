@@ -179,7 +179,13 @@ class ParentController implements IController {
 
             for (const row of createList) {
                 const parent = await this.cognitoClient.register(row.email);
-                const parentInsert = await DB.execute('INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id) VALUES (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id)', { ...row, school_id: req.user.school_id, cognito_sub_id: parent.sub_id });
+                const parentInsert = await DB.execute(`INSERT INTO 
+                    Parent (cognito_sub_id, email, phone_number, given_name, family_name, school_id) 
+                    VALUES (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id)`, {
+                    ...row,
+                    school_id: req.user.school_id,
+                    cognito_sub_id: parent.sub_id
+                });
                 const parentId = parentInsert.insertId;
                 const studentRows = await DB.query(`SELECT id
                     FROM Student WHERE student_number IN (:student_number)

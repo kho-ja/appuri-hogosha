@@ -33,8 +33,8 @@ import Post from "@/types/post";
 import useApiMutation from "@/lib/useApiMutation";
 
 const formSchema = z.object({
-  title: z.string().min(2),
-  description: z.string().min(10),
+  title: z.string().min(1),
+  description: z.string().min(1),
   priority: z.enum(["high", "medium", "low"]),
 });
 
@@ -73,6 +73,7 @@ export default function SendMessagePage({
       },
     }
   );
+  const priority = form.watch("priority");
 
   useEffect(() => {
     if (data) {
@@ -82,7 +83,7 @@ export default function SendMessagePage({
         priority: data.post.priority as "high" | "medium" | "low",
       });
     }
-  }, [data, form]);
+  }, [data, form, priority]);
 
   if (isError) return <NotFound />;
 
@@ -141,7 +142,11 @@ export default function SendMessagePage({
               <FormItem>
                 <FormLabel>{t("choosePriority")}</FormLabel>
                 <FormControl>
-                  <Select {...field}>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder={t("choosePriority")} />
                     </SelectTrigger>

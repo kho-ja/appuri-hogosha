@@ -188,11 +188,13 @@ class AdminController implements IController {
                         phone_number = :phone_number,
                         given_name = :given_name,
                         family_name = :family_name
-                    WHERE email = :email`, {
+                        WHERE email = :email
+                        AND school_id = :school_id`, {
                             email: row.email,
                             phone_number: row.phone_number,
                             given_name: row.given_name,
                             family_name: row.family_name,
+                            school_id: req.user.school_id,
                         });
                         updated.push(row);
                     }
