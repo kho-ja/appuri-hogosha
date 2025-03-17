@@ -23,6 +23,9 @@ Notifications.setNotificationHandler({
 		shouldSetBadge: true,
 	}),
 })
+import { useEffect} from "react";
+import { useRouter, useSegments} from "expo-router";
+import * as Linking from "expo-linking";
 
 function useNotificationObserver() {
 	React.useEffect(() => {
@@ -78,6 +81,33 @@ export default function Root() {
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()
+  const router = useRouter()
+
+  useEffect(()=>{
+    // this should handle deep linking
+     const handleDeepLink = ({url}:{url: string}) => {
+          if (url) {
+            // @ts-ignore
+            const {pathname} = Linking.parse(url)
+              if (pathname) {
+                router.push(pathname)
+              }
+          }
+     }
+
+     const subscription = Linking.addEventListener('url', handleDeepLink)
+
+    Linking.getInitialURL().then(url => {
+      handleDeepLink({url: url || ''})
+    })
+
+    return () => {
+      subscription.remove()
+    }
+
+  }, [])
+
+
 	return (
 		<RootSiblingParent>
 			<GestureHandlerRootView style={{ flex: 1 }}>
