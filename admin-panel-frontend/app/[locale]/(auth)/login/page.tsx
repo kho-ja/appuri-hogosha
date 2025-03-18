@@ -65,7 +65,6 @@ export default function LoginForm() {
           toast({
             title: t("loginFailed"),
             description: t("OTPError"),
-            variant: "destructive",
           });
           setNewPassword(true);
         } else {
