@@ -93,7 +93,6 @@ export default function LoginForm() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>
-            {error && <div className="text-red-500">{t(error)}</div>}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="grid gap-4">
@@ -127,6 +126,7 @@ export default function LoginForm() {
                   <div className="flex items-center">
                     <Label htmlFor="newPassword">{t("newPasswordLabel")}</Label>
                   </div>
+                  {error && <div className="text-red-500">{t(error)}</div>}
                   <Input
                     id="newPassword"
                     type="password"
