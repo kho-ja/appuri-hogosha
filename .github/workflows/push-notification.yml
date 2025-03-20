@@ -1,12 +1,11 @@
-name: Deploy to AWS Lambda
+name: Deploy Push Notification to AWS Lambda
 
 on:
   push:
     branches:
       - main
-      - 10-cannot-navigate-to-the-groupsgroupid-page
     paths:
-      - "backend/**"
+      - "push-notification/**"
 
 permissions:
   contents: write
@@ -27,24 +26,24 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd backend
+          cd push-notification
           npm ci
 
       - name: Build the Project
         run: |
-          cd backend
+          cd push-notification
           npm run build
 
       - name: Zip the Files
         run: |
-          cd backend
-          (cd dist && zip -r ../backend.zip .) && zip -ur backend.zip node_modules package.json
+          cd push-notification
+          (cd dist && zip -r ../push-notification.zip .) && zip -ur push-notification.zip node_modules package.json
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: lambda-package
-          path: backend/backend.zip
+          path: push-notification/push-notification.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,10 +54,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: lambda-package
-          path: backend
+          path: push-notification
 
       - name: Move ZIP file to root
-        run: mv backend/backend.zip backend.zip
+        run: mv push-notification/push-notification.zip push-notification.zip
 
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
@@ -70,8 +69,8 @@ jobs:
           entrypoint: /usr/local/bin/aws
           args: >-
             lambda update-function-code
-            --function-name ParentsAdminAPI
-            --zip-file fileb://backend.zip
+            --function-name HogoshaPushNotification
+            --zip-file fileb://push-notification.zip
 
       - name: Notify GitHub of Deployment Status
         uses: actions/github-script@v6
@@ -82,7 +81,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.sha,
-              environment: 'production',
+              environment: 'push-notification',
               required_contexts: []
             });
 
