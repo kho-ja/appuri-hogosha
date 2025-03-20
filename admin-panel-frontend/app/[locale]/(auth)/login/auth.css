@@ -1,0 +1,31 @@
+.inputFocusDiv {
+  display: none;
+}
+
+.inputFocusContainer:has(input:focus) .inputFocusDiv {
+  display: inline-block;
+}
+
+.inputDivTriangleHead {
+  display: inline-block;
+  padding: 2px;
+  rotate: -45deg;
+  translate: 0 -53%;
+  background-color: white;
+  z-index: 1;
+}
+
+.inputFocusContainer > div:nth-child(1) {
+  z-index: 0;
+}
+
+.inputDivTriangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 20px 0 0 20px;
+  border-radius: 2px;
+  border-color: transparent transparent transparent #222222;
+  background-color: transparent;
+  z-index: 1;
+}
