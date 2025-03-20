@@ -5,8 +5,8 @@ on:
     branches:
       - main
       - 20-aws-push-notification
-    paths:
-      - "backend/**"
+    # paths:
+    #   - "backend/**"
 
 permissions:
   contents: write
