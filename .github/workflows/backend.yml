@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 20-aws-push-notification
     paths:
       - "backend/**"
 
@@ -22,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       - name: Install Dependencies
         run: |
