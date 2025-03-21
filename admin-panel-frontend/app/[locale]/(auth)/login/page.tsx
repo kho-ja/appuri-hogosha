@@ -162,8 +162,8 @@ export default function LoginForm() {
                     />
                     <div className="text-red-500">{t("OTPError")}</div>
                     {isFocused && (
-                      <div className="absolute left-0 bottom-[160%] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
-                        <div className="relative z-50 bg-background p-2 rounded-sm ">
+                      <div className="absolute left-0 bottom-[115px] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
+                        <div className="relative z-50 bg-muted p-2 rounded-sm ">
                           <div>{t("requirements")}</div>
                           {requirements.map((req, index) => (
                             <div key={index} className="flex items-start">
@@ -183,8 +183,8 @@ export default function LoginForm() {
                             </div>
                           ))}
                         </div>
-                        <div className="absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-border ">
-                          <div className="w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-transparent border-l-background rounded-sm"></div>
+                        <div className="absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-border">
+                          <div className="w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-transparent border-l-muted rounded-sm"></div>
                         </div>
                       </div>
                     )}
