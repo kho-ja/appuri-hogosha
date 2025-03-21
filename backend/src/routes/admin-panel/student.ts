@@ -64,7 +64,7 @@ class StudentController implements IController {
                 const data = await response.json();
                 console.error(data, response.status);
                 return res.status(500).json({
-                    error: 'Error while fetching data from kintone',
+                    error: 'error_fetching_data_kintone',
                     message: data.message
                 }).end();
             }
@@ -83,47 +83,47 @@ class StudentController implements IController {
 
                 // Validate presence of required fields
                 if (!given_name) {
-                    rowErrors.given_name = 'Given name field is missing or empty';
+                    rowErrors.given_name = 'missing_or_empty_given_name';
                 } else {
                     given_name = parseKintoneRow(given_name);
                     if (!isValidString(given_name)) {
-                        rowErrors.given_name = 'Invalid given name format';
+                        rowErrors.given_name = 'invalid_given_name_format';
                     }
                 }
 
                 if (!family_name) {
-                    rowErrors.family_name = 'Family name field is missing or empty';
+                    rowErrors.family_name = 'missing_or_empty_family_name';
                 } else {
                     family_name = parseKintoneRow(family_name);
                     if (!isValidString(family_name)) {
-                        rowErrors.family_name = 'Invalid family name format';
+                        rowErrors.family_name = 'invalid_family_name_format';
                     }
                 }
 
                 if (!email) {
-                    rowErrors.email = 'Email field is missing or empty';
+                    rowErrors.email = 'missing_or_empty_email';
                 } else {
                     email = parseKintoneRow(email);
                     if (!isValidEmail(email)) {
-                        rowErrors.email = 'Invalid email format';
+                        rowErrors.email = 'invalid_email_format';
                     }
                 }
 
                 if (!phone_number) {
-                    rowErrors.phone_number = 'Phone number field is missing or empty';
+                    rowErrors.phone_number = 'missing_or_empty_phone_number';
                 } else {
                     phone_number = parseKintoneRow(phone_number);
                     if (!isValidPhoneNumber(phone_number)) {
-                        rowErrors.phone_number = 'Invalid phone number format';
+                        rowErrors.phone_number = 'invalid_phone_number_format';
                     }
                 }
 
                 if (!student_number) {
-                    rowErrors.student_number = 'Student number field is missing or empty';
+                    rowErrors.student_number = 'missing_or_empty_student_number';
                 } else {
                     student_number = parseKintoneRow(student_number);
                     if (!isValidStudentNumber(student_number)) {
-                        rowErrors.student_number = 'Invalid student number format';
+                        rowErrors.student_number = 'invalid_student_number_format';
                     }
                 }
 
@@ -195,7 +195,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -234,7 +234,7 @@ class StudentController implements IController {
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8')).end();
         } catch (e: any) {
             return res.status(500).json({
-                error: 'Internal server error',
+                error: 'internal_server_error',
                 details: e.message
             }).end();
         }
@@ -292,16 +292,16 @@ class StudentController implements IController {
                 const normalizedFamily = String(family_name).trim();
                 const normalizedStudent = String(student_number).trim();
 
-                if (!isValidEmail(normalizedEmail)) rowErrors.email = 'Invalid email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = 'Invalid phone number';
-                if (!isValidString(normalizedGiven)) rowErrors.given_name = 'Invalid given name';
-                if (!isValidString(normalizedFamily)) rowErrors.family_name = 'Invalid family name';
-                if (!isValidStudentNumber(normalizedStudent)) rowErrors.student_number = 'Invalid student number';
+                if (!isValidEmail(normalizedEmail)) rowErrors.email = 'invalid_email';
+                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = 'invalid_phone_number';
+                if (!isValidString(normalizedGiven)) rowErrors.given_name = 'invalid_given_name';
+                if (!isValidString(normalizedFamily)) rowErrors.family_name = 'invalid_family_name';
+                if (!isValidStudentNumber(normalizedStudent)) rowErrors.student_number = 'invalid_student_number';
                 if (existingEmailsInCSV.includes(normalizedEmail)) {
-                    rowErrors.email = 'This email already exists'
+                    rowErrors.email = 'email_already_exists'
                 }
                 if (existingStudentNumbersInCSV.includes(normalizedStudent)) {
-                    rowErrors.student_number = 'This student number already exists'
+                    rowErrors.student_number = 'student_number_already_exists'
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
@@ -327,7 +327,7 @@ class StudentController implements IController {
             if (emails.length === 0) {
                 return res.status(400).json({
                     errors: errors,
-                    message: 'All data invalid'
+                    message: 'all_data_invalid'
                 }).end();
             }
             const existingStudents = emails?.length > 0 ? await DB.query('SELECT email FROM Student WHERE email IN (:emails)', {
@@ -342,9 +342,9 @@ class StudentController implements IController {
             if (action === 'create') {
                 for (const row of validResults) {
                     if (existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Student\'s email already exists' } });
+                        errors.push({ row, errors: { email: 'student_email_already_exists' } });
                     } else if (existingStudentNumbers.includes(row.student_number)) {
-                        errors.push({ row, errors: { student_number: 'Student\s student number already exists' } });
+                        errors.push({ row, errors: { student_number: 'student_number_already_exists' } });
                     } else {
                         await DB.execute(
                             `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
@@ -362,7 +362,7 @@ class StudentController implements IController {
             } else if (action === 'update') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Student does not exist' } });
+                        errors.push({ row, errors: { email: 'student_does_not_exist' } });
                     } else {
                         await DB.execute(
                             `UPDATE Student SET
@@ -385,7 +385,7 @@ class StudentController implements IController {
             } else if (action === 'delete') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Student does not exist' } });
+                        errors.push({ row, errors: { email: 'student_does_not_exist' } });
                     } else {
                         await DB.execute('DELETE FROM Student WHERE email = :email AND school_id = :school_id', {
                             email: row.email,
@@ -396,8 +396,8 @@ class StudentController implements IController {
                 }
             } else {
                 return res.status(400).json({
-                    error: 'Bad Request',
-                    details: 'Invalid action'
+                    error: 'bad_request',
+                    details: 'invalid_action'
                 }).end();
             }
 
@@ -423,7 +423,7 @@ class StudentController implements IController {
                 }
 
                 return res.status(400).json({
-                    message: 'CSV processed successfully but with errors',
+                    message: 'csv_processed_with_errors',
                     inserted: inserted,
                     updated: updated,
                     deleted: deleted,
@@ -440,7 +440,7 @@ class StudentController implements IController {
             }).end()
         } catch (e: any) {
             return res.status(500).json({
-                error: 'Internal server error',
+                error: 'internal_server_error',
                 details: e.message
             }).end();
         }
@@ -453,7 +453,7 @@ class StudentController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
 
@@ -469,7 +469,7 @@ class StudentController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found'
+                    message: 'student_not_found'
                 }
             }
 
@@ -547,7 +547,7 @@ class StudentController implements IController {
             } else {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parents'
+                    message: 'invalid_or_missing_parents'
                 }
             }
         } catch (e: any) {
@@ -557,7 +557,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -570,7 +570,7 @@ class StudentController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
 
@@ -586,7 +586,7 @@ class StudentController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found'
+                    message: 'student_not_found'
                 }
             }
 
@@ -611,7 +611,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -624,7 +624,7 @@ class StudentController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
             const studentInfo = await DB.query(`SELECT 
@@ -639,7 +639,7 @@ class StudentController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found'
+                    message: 'student_not_found'
                 }
             }
 
@@ -657,7 +657,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -675,25 +675,25 @@ class StudentController implements IController {
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
             if (!student_number || !isValidStudentNumber(student_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student number'
+                    message: 'invalid_or_missing_student_number'
                 }
             }
 
@@ -702,7 +702,7 @@ class StudentController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
             const studentInfo = await DB.query(`SELECT 
@@ -731,7 +731,7 @@ class StudentController implements IController {
                     if (phone_number == duplicate.phone_number) {
                         throw {
                             status: 401,
-                            message: 'This phone_number already exists'
+                            message: 'phone_number_already_exists'
                         }
                     }
                 }
@@ -768,7 +768,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -781,7 +781,7 @@ class StudentController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
             const studentInfo = await DB.query(`SELECT 
@@ -830,7 +830,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -853,7 +853,7 @@ class StudentController implements IController {
             } else {
                 throw {
                     status: 401,
-                    message: 'Invalid id list'
+                    message: 'invalid_id_list'
                 }
             }
         } catch (e: any) {
@@ -863,7 +863,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -925,7 +925,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -946,31 +946,31 @@ class StudentController implements IController {
             if (!email || !isValidEmail(email)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing email'
+                    message: 'invalid_or_missing_email'
                 }
             }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
-                throw {
+            throw { 
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
             if (!student_number || !isValidStudentNumber(student_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student number'
+                    message: 'invalid_or_missing_student_number'
                 }
             }
 
@@ -986,19 +986,19 @@ class StudentController implements IController {
                 if (email == duplicate.email) {
                     throw {
                         status: 401,
-                        message: 'This email already exists'
+                        message: 'email_already_exists'
                     }
                 }
                 if (phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'This phone_number already exists'
+                        message: 'phone_number_already_exists'
                     }
                 }
                 if (student_number == duplicate.student_number) {
                     throw {
                         status: 401,
-                        message: 'This student_number already exists'
+                        message: 'student_number_already_exists'
                     }
                 }
             }
@@ -1061,7 +1061,7 @@ class StudentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }

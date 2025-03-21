@@ -122,12 +122,12 @@ class AdminController implements IController {
                 const normalizedGiven = String(given_name).trim();
                 const normalizedFamily = String(family_name).trim();
 
-                if (!isValidEmail(normalizedEmail)) rowErrors.email = 'Invalid email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = 'Invalid phone number';
-                if (!isValidString(normalizedGiven)) rowErrors.given_name = 'Invalid given name';
-                if (!isValidString(normalizedFamily)) rowErrors.family_name = 'Invalid family name';
+                if (!isValidEmail(normalizedEmail)) rowErrors.email = 'invalid_email';
+                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = 'invalid_phone_number';
+                if (!isValidString(normalizedGiven)) rowErrors.given_name = 'invalid_given_name';
+                if (!isValidString(normalizedFamily)) rowErrors.family_name = 'invalid_family_name';
                 if (existingEmailsInCSV.includes(normalizedEmail)) {
-                    rowErrors.email = 'This email already exists'
+                    rowErrors.email = 'email_already_exists'
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
@@ -151,7 +151,7 @@ class AdminController implements IController {
             if (emails.length === 0) {
                 return res.status(400).json({
                     errors: errors,
-                    message: 'All data invalid'
+                    message: 'all_data_invalid'
                 }).end();
             }
             const existingAdmins = await DB.query('SELECT email FROM Admin WHERE email IN (:emails)', {
@@ -162,7 +162,7 @@ class AdminController implements IController {
             if (action === 'create') {
                 for (const row of validResults) {
                     if (existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Admin already exists' } });
+                        errors.push({ row, errors: { email: 'admin_already_exists' } });
                     } else {
                         await this.cognitoClient.register(row.email)
                         await DB.execute(
@@ -181,7 +181,7 @@ class AdminController implements IController {
             } else if (action === 'update') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Admin does not exist' } });
+                        errors.push({ row, errors: { email: 'admin_does_not_exist' } });
                     } else {
                         await DB.execute(
                             `UPDATE Admin SET
@@ -194,7 +194,6 @@ class AdminController implements IController {
                             phone_number: row.phone_number,
                             given_name: row.given_name,
                             family_name: row.family_name,
-                            school_id: req.user.school_id,
                         });
                         updated.push(row);
                     }
@@ -202,7 +201,7 @@ class AdminController implements IController {
             } else if (action === 'delete') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Admin does not exist' } });
+                        errors.push({ row, errors: { email: 'admin_does_not_exist' } });
                     } else {
                         await this.cognitoClient.delete(row.email)
                         await DB.execute('DELETE FROM Admin WHERE email = :email AND school_id = :school_id', {
@@ -214,8 +213,8 @@ class AdminController implements IController {
                 }
             } else {
                 return res.status(400).json({
-                    error: 'Bad Request',
-                    details: 'Invalid action'
+                    error: 'bad_request',
+                    details: 'invalid_action'
                 }).end();
             }
 
@@ -240,7 +239,7 @@ class AdminController implements IController {
                 }
 
                 return res.status(400).json({
-                    message: 'CSV processed successfully but with errors',
+                    message: 'csv_processed_with_errors',
                     inserted: inserted,
                     updated: updated,
                     deleted: deleted,
@@ -257,7 +256,7 @@ class AdminController implements IController {
             }).end()
         } catch (e: any) {
             return res.status(500).json({
-                error: 'Internal server error',
+                error: 'internal_server_error',
                 details: e.message
             }).end();
         }
@@ -271,7 +270,7 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing admin id'
+                    message: 'invalid_or_missing_admin_id'
                 }
             }
             const adminInfo = await DB.query(`SELECT 
@@ -287,7 +286,7 @@ class AdminController implements IController {
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Admin not found'
+                    message: 'admin_not_found'
                 }
             }
 
@@ -309,7 +308,7 @@ class AdminController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -326,19 +325,19 @@ class AdminController implements IController {
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
 
@@ -349,7 +348,7 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing admin id'
+                    message: 'invalid_or_missing_admin_id'
                 }
             }
             const adminInfo = await DB.query(`SELECT id, 
@@ -365,7 +364,7 @@ class AdminController implements IController {
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Admin not found'
+                    message: 'admin_not_found'
                 }
             }
 
@@ -381,7 +380,7 @@ class AdminController implements IController {
                     if (phone_number == duplicate.phone_number) {
                         throw {
                             status: 401,
-                            message: 'This phone_number already exists'
+                            message: 'phone_number_already_exists'
                         }
                     }
                 }
@@ -415,7 +414,7 @@ class AdminController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -429,7 +428,7 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing admin id'
+                    message: 'invalid_or_missing_admin_id'
                 }
             }
             const adminInfo = await DB.query(`SELECT id,
@@ -448,7 +447,7 @@ class AdminController implements IController {
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Admin not found'
+                    message: 'admin_not_found'
                 }
             }
 
@@ -464,7 +463,7 @@ class AdminController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -536,7 +535,7 @@ class AdminController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -554,25 +553,25 @@ class AdminController implements IController {
             if (!email || !isValidEmail(email)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing email'
+                    message: 'invalid_or_missing_email'
                 }
             }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
 
@@ -588,18 +587,18 @@ class AdminController implements IController {
                 if (email == duplicate.email && phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'This email and phone_number already exists'
+                        message: 'email_and_phone_number_already_exist'
                     }
                 }
                 if (phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'This phone_number already exists'
+                        message: 'phone_number_already_exists'
                     }
                 } else {
                     throw {
                         status: 401,
-                        message: 'This email already exists'
+                        message: 'email_already_exists'
                     }
                 }
             }
@@ -635,7 +634,7 @@ class AdminController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }

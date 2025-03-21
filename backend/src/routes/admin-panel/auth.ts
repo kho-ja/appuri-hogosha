@@ -39,7 +39,7 @@ class AuthController implements IController {
             if (admins.length <= 0) {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'invalid_email_or_password'
                 };
             }
 
@@ -64,7 +64,7 @@ class AuthController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -86,7 +86,7 @@ class AuthController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -110,7 +110,7 @@ class AuthController implements IController {
             if (admins.length <= 0) {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'invalid_email_or_password'
                 };
             }
 
@@ -135,7 +135,7 @@ class AuthController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
