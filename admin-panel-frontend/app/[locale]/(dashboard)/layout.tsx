@@ -113,7 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/settings">{t("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>{t("support")}</DropdownMenuItem>
