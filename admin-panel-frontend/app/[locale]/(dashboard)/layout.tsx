@@ -21,7 +21,7 @@ import LanguageSelect from "@/components/LanguageSelect";
 
 const handleSignOut = async () => {
   return await signOut({ callbackUrl: "/" });
-}
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession({
@@ -113,7 +113,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>{t("settings")}</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/settings">{t("settings")}</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem>{t("support")}</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={async () => await signOut()}>
