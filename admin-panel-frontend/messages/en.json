@@ -18,7 +18,13 @@
     "loginSuccess": "Wellcome back to admin panel",
     "loginSuccessDescription": "You have successfully logged in to your account.",
     "LoggingIn": "Logging in...",
-    "wait": "Please wait..."
+    "wait": "Please wait...",
+    "requirements": "Requirements",
+    "8-character minimum length": "8-character minimum length",
+    "Contains at least 1 number": "Contains at least 1 number",
+    "Contains at least 1 lowercase letter": "Contains at least 1 lowercase letter",
+    "Contains at least 1 uppercase letter": "Contains at least 1 uppercase letter",
+    "Contains at least 1 special character": "Contains at least 1 special character"
   },
   "app": {
     "title": "Acme Inc",
@@ -866,7 +872,6 @@
       "email": "email",
       "phone_number": "phone_number"
     },
-    "note": "Note:",
     "n": {
       "kintoneUrl": "The URL should be in the format: https://example.kintone.com",
       "kintoneToken": "Ensure the token has \"read\" and \"write\" permissions for smooth operation.",
