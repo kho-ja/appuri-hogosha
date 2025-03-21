@@ -162,7 +162,7 @@ export default function LoginForm() {
                     />
                     <div className="text-red-500">{t("OTPError")}</div>
                     {isFocused && (
-                      <div className="absolute left-0 bottom-[115px] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
+                      <div className="absolute left-0 bottom-[130%] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
                         <div className="relative z-50 bg-muted p-2 rounded-sm ">
                           <div>{t("requirements")}</div>
                           {requirements.map((req, index) => (
