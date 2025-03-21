@@ -169,8 +169,8 @@ export default function LoginForm() {
                       required
                     />
                     {isFocused && (
-                      <div className="absolute left-0 bottom-[160%] translate-y-0 shadow-lg rounded-md border-white border-2 w-full text-white">
-                        <div className="onTop relative z-50 bg-[#222222] p-2 rounded-md ">
+                      <div className="absolute left-0 bottom-[130%] translate-y-0 shadow-lg rounded-md border-black dark:border-white border-2 w-full dark:text-white">
+                        <div className="relative z-50 dark:bg-[#222222] bg-[#e2e2e2] p-2 rounded-sm ">
                           <div>{t("requirements")}</div>
                           {requirements.map((req, index) => (
                             <div key={index} className="flex items-start">
@@ -190,8 +190,8 @@ export default function LoginForm() {
                             </div>
                           ))}
                         </div>
-                        <div className="UnderOnTop absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-white">
-                          <div className="w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-transparent border-l-[#222222] rounded-sm"></div>
+                        <div className="absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-black dark:bg-white">
+                          <div className="w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-transparent border-l-[#e2e2e2] dark:border-l-[#222222] rounded-sm"></div>
                         </div>
                       </div>
                     )}
