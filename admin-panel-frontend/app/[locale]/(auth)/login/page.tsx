@@ -19,7 +19,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { CircleCheckBig, CircleX } from "lucide-react";
 
 export default function LoginForm() {
-  const [error, setError] = useState<string | null>(null);
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState<boolean>(false);
   const router = useRouter();
@@ -55,7 +54,6 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setError(null);
     toast({
       title: t("LoggingIn"),
       description: t("wait"),
@@ -77,7 +75,6 @@ export default function LoginForm() {
         });
       } else {
         if (response.error === "InvalidCredentialsError") {
-          setError("InvalidCredentialsError");
           toast({
             title: t("loginFailed"),
             description: t("InvalidCredentialsError"),
@@ -88,15 +85,12 @@ export default function LoginForm() {
             setNewPasswordError(response.error);
           }
         } else if (response.error === "OTPError") {
-          setError("OTPError");
           toast({
             title: t("loginFailed"),
             description: t("OTPError"),
-            variant: "destructive",
           });
           setNewPassword(true);
         } else {
-          setError("AuthError");
           toast({
             title: t("loginFailed"),
             description: t("AuthError"),
@@ -106,7 +100,6 @@ export default function LoginForm() {
       }
     } catch (error) {
       console.error("Login failed", error);
-      setError("AuthError");
     }
   };
 
@@ -121,7 +114,6 @@ export default function LoginForm() {
           <CardHeader>
             <CardTitle className="text-2xl">{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>
-            {error && <div className="text-red-500">{t(error)}</div>}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="grid gap-4">
@@ -168,6 +160,7 @@ export default function LoginForm() {
                       onChange={(e) => setFeedbackPassword(e.target.value)}
                       required
                     />
+                    <div className="text-red-500">{t("OTPError")}</div>
                     {isFocused && (
                       <div className="absolute left-0 bottom-[160%] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
                         <div className="relative z-50 bg-background p-2 rounded-sm ">
