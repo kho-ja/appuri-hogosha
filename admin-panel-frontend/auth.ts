@@ -45,14 +45,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }),
               }
             )) as Response;
-            console.log('authdata', authData)
           } else {
             authData = (await fetch(process.env.BACKEND_URL + "/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(credentials),
             })) as Response;
-            console.log('authdata', authData)
           }
 
           const status = authData.status;
