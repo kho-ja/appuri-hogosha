@@ -488,6 +488,16 @@ class PostController implements IController {
                 }
             }
 
+            const post = postInfo[0]
+
+            await DB.execute(`UPDATE Post
+                              SET edited_at = NOW()
+                              WHERE id = :id
+                                AND school_id = :school_id`, {
+                id: post.id,
+                school_id: req.user.school_id,
+            });
+
             return res.status(200).json({
                 message: 'Post sender updated successfully'
             }).end()
