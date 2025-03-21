@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           let authData;
           if (credentials?.newPassword) {
             authData = (await fetch(
-              process.env.BACKEND_URL + "/auth/change-temp-password",
+              process.env.BACKEND_URL + "/change-temp-password",
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -47,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             )) as Response;
             console.log('authdata', authData)
           } else {
-            authData = (await fetch(process.env.BACKEND_URL + "/auth/login", {
+            authData = (await fetch(process.env.BACKEND_URL + "/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(credentials),
