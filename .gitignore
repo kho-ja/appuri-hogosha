@@ -16,3 +16,4 @@ dist/
 # other files
 deno.lock
 bun.lockb
+bun.lock
