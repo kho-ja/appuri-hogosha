@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { login } from "@/login";
 import LanguageSelect from "@/components/LanguageSelect";
@@ -142,13 +142,13 @@ export default function LoginForm() {
                   <div className="text-red-500 text-sm">{newPasswordError}</div>
                 )}
               </div>
-              {/* {newPassword && ( */}
+              {newPassword && (
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="newPassword">{t("newPasswordLabel")}</Label>
                   </div>
                   <div
-                    className="relative"
+                    className="relative space-y-4"
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                   >
@@ -162,7 +162,7 @@ export default function LoginForm() {
                     />
                     <div className="text-red-500">{t("OTPError")}</div>
                     {isFocused && (
-                      <div className="absolute left-0 bottom-[130%] translate-y-0 shadow-lg rounded-md border-muted-foreground border-2 w-full text-foreground">
+                      <div className="absolute left-0 bottom-[130%] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
                         <div className="relative z-50 bg-muted p-2 rounded-sm ">
                           <div>{t("requirements")}</div>
                           {requirements.map((req, index) => (
@@ -183,29 +183,26 @@ export default function LoginForm() {
                             </div>
                           ))}
                         </div>
-                        <div className="absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-muted-foreground">
+                        <div className="absolute right-6 p-[2px] rounded-sm -bottom-[10px] -z-20 rotate-[-45deg] bg-border">
                           <div className="w-0 h-0 border-solid border-t-[20px] border-l-[20px] border-transparent border-l-muted rounded-sm"></div>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
-              {/* )} */}
-              {newPassword ? (
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={requirements
-                    .map((req) => req.test(feedbackPassword))
-                    .some((r) => !r)}
-                >
-                  {t("loginButton")}
-                </Button>
-              ) : (
-                <Button type="submit" className="w-full">
-                  {t("loginButton")}
-                </Button>
               )}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  newPassword &&
+                  requirements
+                    .map((req) => req.test(feedbackPassword))
+                    .some((r) => !r)
+                }
+              >
+                {t("loginButton")}
+              </Button>
               <Button variant="outline" className="w-full">
                 {t("loginWithGoogle")}
               </Button>
