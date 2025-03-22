@@ -1,11 +1,11 @@
-name: Deploy Push Notification to AWS Lambda
+name: Deploy Telegram-bot to AWS Lambda
 
 on:
   push:
     branches:
       - main
     paths:
-      - "push-notification/**"
+      - "telegram-bot/**"
 
 permissions:
   contents: write
@@ -26,24 +26,24 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd push-notification
+          cd telegram-bot
           npm ci
 
       - name: Build the Project
         run: |
-          cd push-notification
+          cd telegram-bot
           npm run build
 
       - name: Zip the Files
         run: |
-          cd push-notification
-          (cd dist && zip -r ../push-notification.zip .) && zip -ur push-notification.zip node_modules package.json
+          cd telegram-bot
+          (cd dist && zip -r ../telegram-bot.zip .) && zip -ur telegram-bot.zip node_modules package.json
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: lambda-package
-          path: push-notification/push-notification.zip
+          path: telegram-bot/telegram-bot.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -54,10 +54,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: lambda-package
-          path: push-notification
+          path: telegram-bot
 
       - name: Move ZIP file to root
-        run: mv push-notification/push-notification.zip push-notification.zip
+        run: mv telegram-bot/telegram-bot.zip telegram-bot.zip
 
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
@@ -69,8 +69,8 @@ jobs:
           entrypoint: /usr/local/bin/aws
           args: >-
             lambda update-function-code
-            --function-name HogoshaPushNotification
-            --zip-file fileb://push-notification.zip
+            --function-name ParentsAdminAPI
+            --zip-file fileb://telegram-bot.zip
 
       - name: Notify GitHub of Deployment Status
         uses: actions/github-script@v6
@@ -81,7 +81,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.sha,
-              environment: 'push-notification',
+              environment: 'telegram-bot',
               required_contexts: []
             });
 
