@@ -12,12 +12,7 @@
       "android",
       "web"
     ],
-    "deeplinks": [
-      {
-        "pattern": "*",
-        "fallback": "https:///appuri-hogosha.vercel.app/parentnotification"
-      }
-    ],
+
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -45,10 +40,8 @@
           "data": [
             {
               "scheme": "https",
-              "host": "/appuri-hogosha.vercel.app",
-              "pathPrefix": "/parentnotification",
-              "pathPattern": ".*"
-
+              "host": "appuri-hogosha.vercel.app",
+              "pathPrefix": "/parentnotification"
             }
           ],
           "category": [
