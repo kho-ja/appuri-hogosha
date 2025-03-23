@@ -19,7 +19,13 @@
     "loginSuccess": "Admin panelga xush kelibsiz",
     "loginSuccessDescription": "Hisobingizga muvaffaqiyatli kirdingiz.",
     "LoggingIn": "Kirityapmiz...",
-    "wait": "Iltimos, kutib turing..."
+    "wait": "Iltimos, kutib turing...",
+    "requirements": "Sizdan talab qilinadi",
+    "8-character minimum length": "kamida 8 belgidan iborat",
+    "Contains at least 1 number": "kamida 1ta raqamdan iborat",
+    "Contains at least 1 lowercase letter": "kamida 1ta kichik harfdan iborat",
+    "Contains at least 1 uppercase letter": "kamida 1ta katta harfdan iborat",
+    "Contains at least 1 special character": "kamida 1ta maxsus belgidan iborat"
   },
   "app": {
     "title": "Acme Inc",
@@ -906,7 +912,6 @@
       "email": "email",
       "phone_number": "phone_number"
     },
-    "note": "Eslatma:",
     "n": {
       "kintoneUrl": "URL manzili quyidagi formatda bo'lishi kerak: https://example.kintone.com",
       "kintoneToken": "Token \"o'qish\" va \"yozish\" ruxsatlariga ega ekanligiga ishonch hosil qiling.",

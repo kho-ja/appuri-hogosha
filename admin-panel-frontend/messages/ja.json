@@ -19,7 +19,13 @@
     "loginSuccess": "管理パネルへようこそ",
     "loginSuccessDescription": "アカウントに正常にログインしました。",
     "LoggingIn": "ログイン中...",
-    "wait": "お待ちください..."
+    "wait": "お待ちください...",
+    "requirements": "必要なもの",
+    "8-character minimum length": "8文字以上の文字数が必要です",
+    "Contains at least 1 number": "少なくとも1文字が数字である必要があります",
+    "Contains at least 1 lowercase letter": "少なくとも1つの小文字を含む",
+    "Contains at least 1 uppercase letter": "少なくとも1つの大文字を含む",
+    "Contains at least 1 special character": "少なくとも1つの特殊文字を含む"
   },
   "app": {
     "title": "アクメ株式会社",
@@ -907,7 +913,6 @@
       "email": "email",
       "phone_number": "phone_number"
     },
-    "note": "注意:",
     "n": {
       "kintoneUrl": "URLは次の形式である必要があります: https://example.kintone.com",
       "kintoneToken": "スムーズな操作のために、トークンに「読み取り」および「書き込み」権限があることを確認してください。",
