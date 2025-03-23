@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
+      - 49-bot-setup
     # paths:
     #   - "backend/**"
-  pull_request:
-    branches:
-      - 10-bot-setup
 
 permissions:
   contents: write
@@ -85,17 +83,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const deployment = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.sha,
-              environment: 'backend',
-              required_contexts: []
-            });
-
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: deployment.data.id,
-              state: 'success'
-            });
+            try {
+              const deployment = await github.rest.repos.createDeployment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.sha,
+                environment: 'backend',
+                required_contexts: [],
+                auto_merge: false
+              });
+              
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployment.data.id,
+                state: 'success'
+              });
+            } catch (error) {
+              console.log("Failed to create deployment record, but deployment was successful");
+              console.log(error);
+            }

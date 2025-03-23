@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
+      - 49-bot-setup
     # paths:
     #   - "bots/telegram-bot/**"
-  pull_request:
-    branches:
-      - 49-bot-setup
 
 permissions:
   contents: write
@@ -80,17 +78,23 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const deployment = await github.rest.repos.createDeployment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: context.sha,
-              environment: 'telegram-bot',
-              required_contexts: []
-            });
+            try {
+              const deployment = await github.rest.repos.createDeployment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.sha,
+                environment: 'telegram-bot',
+                required_contexts: [],
+                auto_merge: false
+              });
 
-            await github.rest.repos.createDeploymentStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              deployment_id: deployment.data.id,
-              state: 'success'
-            });
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployment.data.id,
+                state: 'success'
+              });
+            } catch (error) {
+              console.log("Failed to notify GitHub of deployment status");
+              console.log(error);
+            }
