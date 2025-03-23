@@ -699,7 +699,10 @@
     "bad_request": "Некорректный запрос",
     "invalid_action": "Недопустимое действие",
     "csv_processed_with_errors": "CSV обработан успешно, но с ошибками",
-    "csv_processed_successfully": "CSV успешно обработан"
+    "csv_processed_successfully": "CSV успешно обработан",
+    "student_email_already_exists": "Email студента уже существует",
+    "student_does_not_exist": "Студент не существует"
+
 
   },
   "fromKintone": {

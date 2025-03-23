@@ -700,7 +700,10 @@
     "bad_request": "Noto‘g‘ri so‘rov",
     "invalid_action": "Noto‘g‘ri harakat",
     "csv_processed_with_errors": "CSV muvaffaqiyatli qayta ishlendi, lekin xatoliklar bilan",
-    "csv_processed_successfully": "CSV muvaffaqiyatli qayta ishlendi"
+    "csv_processed_successfully": "CSV muvaffaqiyatli qayta ishlendi",
+    "student_email_already_exists": "Talabaning emaili allaqachon mavjud",
+    "student_does_not_exist": "Talaba mavjud emas"
+
 
   },
   "fromKintone": {

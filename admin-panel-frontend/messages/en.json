@@ -702,7 +702,9 @@
     "bad_request": "Bad Request",
     "invalid_action": "Invalid action",
     "csv_processed_with_errors": "CSV processed successfully but with errors",
-    "csv_processed_successfully": "CSV processed successfully"
+    "csv_processed_successfully": "CSV processed successfully",
+    "student_email_already_exists": "Student's email already exists",
+    "student_does_not_exist": "Student does not exist"
 
   },
   "fromKintone": {

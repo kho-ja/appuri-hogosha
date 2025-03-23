@@ -701,7 +701,10 @@
     "bad_request": "不正なリクエスト",
     "invalid_action": "無効な操作",
     "csv_processed_with_errors": "CSVはエラー付きで正常に処理されました",
-    "csv_processed_successfully": "CSVが正常に処理されました"
+    "csv_processed_successfully": "CSVが正常に処理されました",
+    "student_email_already_exists": "学生のメールアドレスはすでに存在します",
+    "student_does_not_exist": "学生が存在しません"
+
 
   },
   "fromKintone": {

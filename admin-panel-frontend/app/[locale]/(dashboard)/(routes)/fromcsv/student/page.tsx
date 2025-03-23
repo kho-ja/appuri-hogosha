@@ -208,20 +208,20 @@ export default function CreateFromCsv() {
               errors.errors.map((error, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <ErrorCell name={t("email") as keyof Student} error={error} />
-                  </TableCell>
-                  <TableCell>
-                    <ErrorCell name={t("given_name") as keyof Student} error={error} />
-                  </TableCell>
-                  <TableCell>
-                    <ErrorCell name={t("family_name") as keyof Student} error={error} />
-                  </TableCell>
-                  <TableCell>
-                    <ErrorCell name={t("phone_number") as keyof Student} error={error} />
-                  </TableCell>
-                  <TableCell>
-                    <ErrorCell name={t("student_number") as keyof Student} error={error} />
-                  </TableCell>
+                      <ErrorCell name="email" error={error} />
+                    </TableCell>
+                    <TableCell>
+                      <ErrorCell name="given_name" error={error} />
+                    </TableCell>
+                    <TableCell>
+                      <ErrorCell name="family_name" error={error} />
+                    </TableCell>
+                    <TableCell>
+                      <ErrorCell name="phone_number" error={error} />
+                    </TableCell>
+                    <TableCell>
+                      <ErrorCell name="student_number" error={error} />
+                    </TableCell>
                 </TableRow>
               ))}
           </TableBody>
@@ -269,6 +269,7 @@ const ErrorCell = ({
   name: keyof Upload<Student>["errors"][0]["row"];
   error: Upload<Student>["errors"][0];
 }) => {
+  const t = useTranslations("fromcsv");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
@@ -280,13 +281,15 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {error?.errors?.[name]}
+            {/* Xato xabarini tarjima qilib ko‘rsatish */}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}
     </div>
   );
 };
+
 
 const ErrorTable = ({
   title,
