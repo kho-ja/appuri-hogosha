@@ -58,7 +58,7 @@ jobs:
           path: telegram-bot
 
       - name: Move ZIP file to root
-        run: mv telegram-bot/telegram-bot.zip telegram-bot.zip
+        run: mv bots/telegram-bot/telegram-bot.zip telegram-bot.zip
 
       - name: Deploy to AWS Lambda
         uses: docker://amazon/aws-cli
