@@ -204,27 +204,28 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
-                errors.errors.map((error, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <ErrorCell name="email" error={error} />
-                    </TableCell>
-                    <TableCell>
-                      <ErrorCell name="given_name" error={error} />
-                    </TableCell>
-                    <TableCell>
-                      <ErrorCell name="family_name" error={error} />
-                    </TableCell>
-                    <TableCell>
-                      <ErrorCell name="phone_number" error={error} />
-                    </TableCell>
-                    <TableCell>
-                      <ErrorCell name="student_number" error={error} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
+            {errors.errors?.length > 0 &&
+              errors.errors.map((error, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <ErrorCell name={t("errors.email") as keyof Student} error={error} />
+                  </TableCell>
+                  <TableCell>
+                    <ErrorCell name={t("errors.given_name") as keyof Student} error={error} />
+                  </TableCell>
+                  <TableCell>
+                    <ErrorCell name={t("errors.family_name") as keyof Student} error={error} />
+                  </TableCell>
+                  <TableCell>
+                    <ErrorCell name={t("errors.phone_number") as keyof Student} error={error} />
+                  </TableCell>
+                  <TableCell>
+                    <ErrorCell name={t("errors.student_number") as keyof Student} error={error} />
+                  </TableCell>
+                </TableRow>
+              ))}
+          </TableBody>
+
           </Table>
         </CardContent>
       </Card>
