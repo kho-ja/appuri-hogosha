@@ -37,7 +37,7 @@ jobs:
 
       - name: Add service json
         run: |
-          cd backend
+          cd push-notification
           echo '${{ secrets.SERVICE_JSON }}' > dist/service.json
 
       - name: Zip the Files
