@@ -1,0 +1,29 @@
+{
+	"project_info": {
+		"project_number": "648158368972",
+		"project_id": "parent-contact-app",
+		"storage_bucket": "parent-contact-app.appspot.com"
+	},
+	"client": [
+		{
+			"client_info": {
+				"mobilesdk_app_id": "1:648158368972:android:785ab6dcb2c7f2f17fde69",
+				"android_client_info": {
+					"package_name": "com.jduapp.parentnotification"
+				}
+			},
+			"oauth_client": [],
+			"api_key": [
+				{
+					"current_key": "AIzaSyDNM8WPZbfVobJN4wQTxwn-E42KYrl-jec"
+				}
+			],
+			"services": {
+				"appinvite_service": {
+					"other_platform_oauth_client": []
+				}
+			}
+		}
+	],
+	"configuration_version": "1"
+}
