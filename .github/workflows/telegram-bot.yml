@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "bots/telegram-bot/**"
+      - 49-bot-setup
+    # paths:
+    #   - "bots/telegram-bot/**"
 
 permissions:
   contents: write
