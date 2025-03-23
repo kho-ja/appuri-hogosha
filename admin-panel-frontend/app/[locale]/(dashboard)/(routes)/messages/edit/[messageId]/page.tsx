@@ -95,7 +95,6 @@ export default function SendMessagePage({
 
   useEffect(() => {
     if (data) {
-      console.log("data", data);
       setImage(data.post.image);
       form.reset({
         title: data.post.title,
@@ -109,7 +108,6 @@ export default function SendMessagePage({
   const handleRemoveImg = (e: any) => {
     e.preventDefault();
     setImage("");
-    console.log(";;");
     if (data) {
       form.reset({
         title: data.post.title,
@@ -238,7 +236,6 @@ export default function SendMessagePage({
                             field.onChange(file.name); // Save file name
                             const reader = new FileReader();
                             reader.onloadend = () => {
-                              console.log("image", reader.result as string);
                               setSelectedImageBase64(reader.result as string);
                               form.setValue("image", reader.result as string);
                             };
