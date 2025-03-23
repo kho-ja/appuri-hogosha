@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
-      - 49-bot-setup
     # paths:
     #   - "backend/**"
+  pull_request:
+    branches:
+      - 10-bot-setup
 
 permissions:
   contents: write
