@@ -1,5 +1,5 @@
-import {Context, MiddlewareFn} from 'grammy';
-import DB from './../utils/db-client';
+import { Context, MiddlewareFn } from 'grammy';
+import DB from '../utils/db-client';
 
 export interface IBotSession {
     scene: string;
@@ -30,7 +30,7 @@ export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) =>
 
         ctx.session = result.length
             ? result[0]
-            : {scene: '', language: '', parent_id: 0};
+            : { scene: '', language: '', parent_id: 0 };
 
         // Save session after processing
         const saveSession = async (session: IBotSession) => {

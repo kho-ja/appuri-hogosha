@@ -87,6 +87,8 @@ CREATE TABLE
     `parent_id` int NOT NULL,
     `chat_id` varchar(255),
     `language` ENUM ('jp', 'ru', 'uz') DEFAULT 'uz',
+    `scene` varchar(50) null,
+    `step` int null,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

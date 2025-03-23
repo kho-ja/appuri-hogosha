@@ -36,7 +36,7 @@ class DatabaseClient {
 
     public async query(query: string, params?: any): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
         const db = await this.getConnection() as Connection;
-        // console.log(db.format(query, params))
+        console.log(db.format(query, params))
         try {
             const [results] = await db.query(query, params);
             return results;
