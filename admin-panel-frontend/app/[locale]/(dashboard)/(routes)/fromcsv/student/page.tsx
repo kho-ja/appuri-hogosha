@@ -281,7 +281,6 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {/* Xato xabarini tarjima qilib ko‘rsatish */}
             {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>

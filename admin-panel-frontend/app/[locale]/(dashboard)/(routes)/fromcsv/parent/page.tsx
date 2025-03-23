@@ -280,6 +280,7 @@ const ErrorCell = ({
   name: keyof Upload<Parent>["errors"][0]["row"];
   error: Upload<Parent>["errors"][0];
 }) => {
+  const t = useTranslations("fromcsv");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && <span>{error?.row[name]}</span>}
@@ -289,7 +290,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {error?.errors?.[name]}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}

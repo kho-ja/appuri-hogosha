@@ -693,6 +693,7 @@
     "invalid_given_name": "Неверное имя",
     "invalid_family_name": "Неверная фамилия",
     "invalid_student_number": "Неверный номер студента",
+    "invalid_student_numbers": "Неверные номера студентов",
     "email_already_exists": "Этот email уже существует",
     "student_number_already_exists": "Этот номер студента уже существует",
     "all_data_invalid": "Все данные неверны",
@@ -701,8 +702,18 @@
     "csv_processed_with_errors": "CSV обработан успешно, но с ошибками",
     "csv_processed_successfully": "CSV успешно обработан",
     "student_email_already_exists": "Email студента уже существует",
-    "student_does_not_exist": "Студент не существует"
-
+    "group_name_already_exists": "Это название группы уже существует",
+    "phone_number_already_exists": "Этот номер телефона уже существует",
+    "parent_email_already_exists": "Электронная почта родителя уже существует",
+    "parent_phone_number_already_exists": "Номер телефона родителя уже существует",
+    "group_does_not_exist": "Группа не существует",
+    "student_does_not_exist": "Студент не существует",
+    "parent_does_not_exist": "Родитель не существует",
+    "invalid_title": "Неверный заголовок",
+    "invalid_description": "Неверное описание",
+    "invalid_priority": "Неверный приоритет",
+    "invalid_group_names": "Неверное название(я) группы",
+    "group_members_not_found": "Члены группы не найдены"
 
   },
   "fromKintone": {
@@ -770,6 +781,10 @@
     "error_fetching_data_kintone": "Ошибка при получении данных из Kintone",
     "missing_or_empty_given_name": "Поле имени отсутствует или пусто",
     "invalid_given_name_format": "Неверный формат имени",
+    "student_numbers_missing_or_empty": "Поле номеров студентов отсутствует или пусто",
+    "invalid_student_numbers_format": "Неверный формат номеров студентов",
+    "no_records_found": "Записи не найдены",
+    "student_already_attached_to_parent": "Студент уже привязан к родителю",
     "missing_or_empty_family_name": "Поле фамилии отсутствует или пусто",
     "invalid_family_name_format": "Неверный формат фамилии",
     "missing_or_empty_email": "Поле email отсутствует или пусто",
@@ -804,9 +819,25 @@
     "invalid_student_numbers": "Неверные номера студентов",
     "group_name_already_exists": "Это название группы уже существует",
     "group_does_not_exist": "Группа не существует",
-
-    "student_number_already_exists": "Этот номер студента уже существует"
-
+    "student_number_already_exists": "Этот номер студента уже существует",
+    "invalid_or_missing_group_id": "Неверный или отсутствующий идентификатор группы",
+    "invalid_or_missing_group_name": "Неверное или отсутствующее название группы",
+    "group_not_found": "Группа не найдена",
+    "invalid_or_missing_parent_id": "Неверный или отсутствующий идентификатор родителя",
+    "parent_not_found": "Родитель не найден",
+    "parent_cant_attach_more_than_5_students": "Родитель не может привязать более 5 студентов",
+    "invalid_or_missing_students": "Неверные или отсутствующие студенты",
+    "invalid_or_missing_post_id": "Неверный или отсутствующий идентификатор поста",
+    "post_not_found": "Пост не найден",
+    "group_members_not_found": "Члены группы не найдены",
+    "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
+    "post_notification_replayed_successfully": "Уведомление о посте успешно отправлено повторно",
+    "invalid_or_missing_title": "Неверный или отсутствующий заголовок",
+    "invalid_or_missing_description": "Неверное или отсутствующее описание",
+    "invalid_or_missing_priority": "Неверный или отсутствующий приоритет",
+    "invalid_image_format": "Неверный формат изображения. Убедитесь, что оно закодировано в Base64.",
+    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)",
+    "function_not_implemented": "Функция не реализована."
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Подготовка документа",

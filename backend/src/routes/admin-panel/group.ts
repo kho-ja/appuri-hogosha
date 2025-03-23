@@ -201,7 +201,7 @@ class GroupController implements IController {
             if (action === 'create') {
                 for (const row of validResults) {
                     if (existingGroupNames.includes(row.name)) {
-                        errors.push({ row, errors: { name: 'Group already exists' } })
+                        errors.push({ row, errors: { name: 'group_name_already_exists' } })
                     } else {
                         const groupInsert = await DB.execute(
                             `INSERT INTO StudentGroup(name, created_at, school_id)
@@ -307,7 +307,7 @@ class GroupController implements IController {
                 }
             } else {
                 return res.status(400).json({
-                    error: 'Bad Request',
+                    error: 'bad_request',
                     details: 'invalid_action'
                 }).end()
             }
@@ -328,7 +328,7 @@ class GroupController implements IController {
                     csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8')
                 }
                 return res.status(400).json({
-                    message: 'CSV processed successfully but with errors',
+                    message: 'csv_processed_with_errors',
                     inserted: inserted,
                     updated: updated,
                     deleted: deleted,
@@ -337,7 +337,7 @@ class GroupController implements IController {
                 }).end()
             }
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -357,7 +357,7 @@ class GroupController implements IController {
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
             const groupInfo = await DB.query(`SELECT
@@ -371,7 +371,7 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found'
+                    message: 'student_not_found'
                 }
             }
 
@@ -386,7 +386,7 @@ class GroupController implements IController {
             if (!name || !isValidString(name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group name'
+                    message: 'invalid_or_missing_group_name'
                 }
             }
 
@@ -443,7 +443,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -456,7 +456,7 @@ class GroupController implements IController {
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
             const groupInfo = await DB.query(`SELECT
@@ -470,7 +470,7 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found'
+                    message: 'student_not_found'
                 }
             }
 
@@ -488,7 +488,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -511,7 +511,7 @@ class GroupController implements IController {
             } else {
                 throw {
                     status: 401,
-                    message: 'Invalid id list'
+                    message: 'invalid_id_list'
                 }
             }
         } catch (e: any) {
@@ -521,7 +521,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -534,7 +534,7 @@ class GroupController implements IController {
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
             const groupInfo = await DB.query(`SELECT id,name,created_at FROM StudentGroup 
@@ -546,7 +546,7 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Group not found'
+                    message: 'group_not_found'
                 }
             }
 
@@ -616,7 +616,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -677,7 +677,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -694,7 +694,7 @@ class GroupController implements IController {
             if (!name || !isValidString(name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group name'
+                    message: 'invalid_or_missing_group_name'
                 }
             }
 
@@ -748,7 +748,7 @@ class GroupController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
