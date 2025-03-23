@@ -34,6 +34,11 @@ jobs:
           cd backend
           npm run build
 
+      - name: Add service json
+        run: |
+          cd backend
+          echo '${{ secrets.SERVICE_JSON }}' > dist/service.json
+
       - name: Zip the Files
         run: |
           cd backend

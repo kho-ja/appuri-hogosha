@@ -218,6 +218,7 @@ const sendNotifications = async (posts: any) => {
                 if (error == 'messaging/registration-token-not-registered') {
                     console.log('invalid token');
                 } else {
+                    console.log("Message: ", message)
                     console.log('Error sending message:', error);
                 }
             }

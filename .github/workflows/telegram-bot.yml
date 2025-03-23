@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "telegram-bot/**"
+      - "bots/telegram-bot/**"
 
 permissions:
   contents: write
@@ -26,17 +26,17 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd telegram-bot
+          cd bots/telegram-bot
           npm ci
 
       - name: Build the Project
         run: |
-          cd telegram-bot
+          cd bots/telegram-bot
           npm run build
 
       - name: Zip the Files
         run: |
-          cd telegram-bot
+          cd bots/telegram-bot
           (cd dist && zip -r ../telegram-bot.zip .) && zip -ur telegram-bot.zip node_modules package.json
 
       - name: Upload Artifact
@@ -69,7 +69,7 @@ jobs:
           entrypoint: /usr/local/bin/aws
           args: >-
             lambda update-function-code
-            --function-name ParentsAdminAPI
+            --function-name HogoshaTelegramBot
             --zip-file fileb://telegram-bot.zip
 
       - name: Notify GitHub of Deployment Status
