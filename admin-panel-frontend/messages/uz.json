@@ -688,7 +688,20 @@
     "postsDeleted": "Postlar muvaffaqiyatli o'chirildi",
     "postsDeletedDescription": "Postlar muvaffaqiyatli o'chirildi",
     "postsUploaded": "Postlar muvaffaqiyatli yuklandi",
-    "csvFile": "CSV fayli"
+    "csvFile": "CSV fayli",
+    "invalid_email": "Noto‘g‘ri email",
+    "invalid_phone_number": "Noto‘g‘ri telefon raqami",
+    "invalid_given_name": "Noto‘g‘ri ism",
+    "invalid_family_name": "Noto‘g‘ri familiya",
+    "invalid_student_number": "Noto‘g‘ri talaba raqami",
+    "email_already_exists": "Bu email allaqachon mavjud",
+    "student_number_already_exists": "Bu talaba raqami allaqachon mavjud",
+    "all_data_invalid": "Barcha ma'lumotlar noto‘g‘ri",
+    "bad_request": "Noto‘g‘ri so‘rov",
+    "invalid_action": "Noto‘g‘ri harakat",
+    "csv_processed_with_errors": "CSV muvaffaqiyatli qayta ishlendi, lekin xatoliklar bilan",
+    "csv_processed_successfully": "CSV muvaffaqiyatli qayta ishlendi"
+
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -785,6 +798,10 @@
     "admin_not_found": "Admin topilmadi",
     "email_and_phone_number_already_exist": "Bu email va telefon raqami allaqachon mavjud",
     "invalid_id_list": "Noto‘g‘ri ID ro‘yxati",
+    "invalid_name": "Noto‘g‘ri ism",
+    "invalid_student_numbers": "Noto‘g‘ri talaba raqamlari",
+    "group_name_already_exists": "Bu guruh nomi allaqachon mavjud",
+    "group_does_not_exist": "Guruh mavjud emas",
 
     "student_number_already_exists": "Bu talaba raqami allaqachon mavjud."
   },

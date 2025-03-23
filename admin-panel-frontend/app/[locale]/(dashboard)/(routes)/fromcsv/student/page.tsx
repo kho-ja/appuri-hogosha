@@ -208,19 +208,19 @@ export default function CreateFromCsv() {
               errors.errors.map((error, index) => (
                 <TableRow key={index}>
                   <TableCell>
-                    <ErrorCell name={t("errors.email") as keyof Student} error={error} />
+                    <ErrorCell name={t("email") as keyof Student} error={error} />
                   </TableCell>
                   <TableCell>
-                    <ErrorCell name={t("errors.given_name") as keyof Student} error={error} />
+                    <ErrorCell name={t("given_name") as keyof Student} error={error} />
                   </TableCell>
                   <TableCell>
-                    <ErrorCell name={t("errors.family_name") as keyof Student} error={error} />
+                    <ErrorCell name={t("family_name") as keyof Student} error={error} />
                   </TableCell>
                   <TableCell>
-                    <ErrorCell name={t("errors.phone_number") as keyof Student} error={error} />
+                    <ErrorCell name={t("phone_number") as keyof Student} error={error} />
                   </TableCell>
                   <TableCell>
-                    <ErrorCell name={t("errors.student_number") as keyof Student} error={error} />
+                    <ErrorCell name={t("student_number") as keyof Student} error={error} />
                   </TableCell>
                 </TableRow>
               ))}

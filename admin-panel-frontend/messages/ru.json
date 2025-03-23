@@ -687,7 +687,20 @@
     "postsDeleted": "Сообщения успешно удалены",
     "postsDeletedDescription": "Сообщения успешно удалены",
     "postsUploaded": "Сообщения успешно загружены",
-    "csvFile": "CSV файл"
+    "csvFile": "CSV файл",
+    "invalid_email": "Неверный email",
+    "invalid_phone_number": "Неверный номер телефона",
+    "invalid_given_name": "Неверное имя",
+    "invalid_family_name": "Неверная фамилия",
+    "invalid_student_number": "Неверный номер студента",
+    "email_already_exists": "Этот email уже существует",
+    "student_number_already_exists": "Этот номер студента уже существует",
+    "all_data_invalid": "Все данные неверны",
+    "bad_request": "Некорректный запрос",
+    "invalid_action": "Недопустимое действие",
+    "csv_processed_with_errors": "CSV обработан успешно, но с ошибками",
+    "csv_processed_successfully": "CSV успешно обработан"
+
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -785,6 +798,9 @@
     "invalid_id_list": "Неверный список ID",
     "invalid_email_or_password": "Неверный email или пароль",
     "invalid_name": "Неверное имя",
+    "invalid_student_numbers": "Неверные номера студентов",
+    "group_name_already_exists": "Это название группы уже существует",
+    "group_does_not_exist": "Группа не существует",
 
     "student_number_already_exists": "Этот номер студента уже существует"
 

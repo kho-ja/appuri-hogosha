@@ -690,7 +690,20 @@
     "postsDeleted": "Posts Deleted Successfully",
     "postsDeletedDescription": "Posts Deleted Successfully",
     "postsUploaded": "Posts Uploaded Successfully",
-    "csvFile": "CSV File"
+    "csvFile": "CSV File",
+    "invalid_email": "Invalid email",
+    "invalid_phone_number": "Invalid phone number",
+    "invalid_given_name": "Invalid given name",
+    "invalid_family_name": "Invalid family name",
+    "invalid_student_number": "Invalid student number",
+    "email_already_exists": "This email already exists",
+    "student_number_already_exists": "This Student Number already exists.",
+    "all_data_invalid": "All data invalid",
+    "bad_request": "Bad Request",
+    "invalid_action": "Invalid action",
+    "csv_processed_with_errors": "CSV processed successfully but with errors",
+    "csv_processed_successfully": "CSV processed successfully"
+
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -786,6 +799,10 @@
     "admin_not_found": "Admin not found",
     "email_and_phone_number_already_exist": "This email and phone number already exist",
     "invalid_id_list": "Invalid ID list",
+    "invalid_name": "Invalid name",
+    "invalid_student_numbers": "Invalid student numbers",
+    "group_name_already_exists": "This group name already exists",
+    "group_does_not_exist": "Group does not exist",
 
     "invalid_email": "Invalid email"
 

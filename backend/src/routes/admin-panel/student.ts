@@ -433,7 +433,7 @@ class StudentController implements IController {
             }
 
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,

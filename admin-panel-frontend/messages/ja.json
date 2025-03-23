@@ -689,7 +689,20 @@
     "postsDeleted": "投稿が正常に削除されました",
     "postsDeletedDescription": "投稿が正常に削除されました",
     "postsUploaded": "投稿が正常にアップロードされました",
-    "csvFile": "CSVファイル"
+    "csvFile": "CSVファイル",
+    "invalid_email": "無効なメールアドレス",
+    "invalid_phone_number": "無効な電話番号",
+    "invalid_given_name": "無効な名前",
+    "invalid_family_name": "無効な苗字",
+    "invalid_student_number": "無効な学生番号",
+    "email_already_exists": "このメールアドレスはすでに存在します",
+    "student_number_already_exists": "この学生番号はすでに存在します",
+    "all_data_invalid": "すべてのデータが無効です",
+    "bad_request": "不正なリクエスト",
+    "invalid_action": "無効な操作",
+    "csv_processed_with_errors": "CSVはエラー付きで正常に処理されました",
+    "csv_processed_successfully": "CSVが正常に処理されました"
+
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -785,6 +798,10 @@
     "admin_not_found": "管理者が見つかりません",
     "email_and_phone_number_already_exist": "このメールアドレスと電話番号はすでに存在します",
     "invalid_id_list": "無効なIDリスト",
+    "invalid_name": "無効な名前",
+    "invalid_student_numbers": "無効な学生番号",
+    "group_name_already_exists": "このグループ名はすでに存在します",
+    "group_does_not_exist": "グループが存在しません",
 
     "student_number_already_exists": "この学生番号はすでに存在します"
 
