@@ -204,10 +204,10 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
-                errors.errors.map((error, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
+            {errors.errors?.length > 0 &&
+              errors.errors.map((error, index) => (
+                <TableRow key={index}>
+                  <TableCell>
                       <ErrorCell name="email" error={error} />
                     </TableCell>
                     <TableCell>
@@ -222,9 +222,10 @@ export default function CreateFromCsv() {
                     <TableCell>
                       <ErrorCell name="student_number" error={error} />
                     </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
+                </TableRow>
+              ))}
+          </TableBody>
+
           </Table>
         </CardContent>
       </Card>
@@ -268,6 +269,7 @@ const ErrorCell = ({
   name: keyof Upload<Student>["errors"][0]["row"];
   error: Upload<Student>["errors"][0];
 }) => {
+  const t = useTranslations("fromcsv");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
@@ -279,13 +281,14 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {error?.errors?.[name]}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}
     </div>
   );
 };
+
 
 const ErrorTable = ({
   title,
