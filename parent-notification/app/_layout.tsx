@@ -15,8 +15,6 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { NavigationContainer } from '@react-navigation/native'
-import linking from '../linking'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -82,7 +80,6 @@ export default function Root() {
 	const queryClient = new QueryClient()
 	return (
 		<RootSiblingParent>
-      <NavigationContainer linking={linking}>
       <GestureHandlerRootView style={{ flex: 1 }}>
 				<SQLiteProvider
 					databaseName='maria.db'
@@ -94,7 +91,7 @@ export default function Root() {
 								<I18nProvider>
 									<QueryClientProvider client={queryClient}>
 										<StudentProvider>
-											<Slot />
+                      <Slot />
 										</StudentProvider>
 									</QueryClientProvider>
 								</I18nProvider>
@@ -103,7 +100,6 @@ export default function Root() {
 					</SessionProvider>
 				</SQLiteProvider>
 			</GestureHandlerRootView>
-      </NavigationContainer>
 		</RootSiblingParent>
 	)
 }
