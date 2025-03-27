@@ -86,7 +86,7 @@ export default function LoginForm() {
           }
         } else if (response.error === "OTPError") {
           toast({
-            title: t("loginFailed"),
+            title: t("loginNewPassword"),
             description: t("OTPError"),
           });
           setNewPassword(true);

@@ -15,6 +15,7 @@
     "OTPError": "You are entering first time please enter new password for your account",
     "AuthError": "Something went wrong. Please try again later.",
     "loginFailed": "Login failed. Please try again later.",
+    "loginNewPassword": "Password change required",
     "loginSuccess": "Wellcome back to admin panel",
     "loginSuccessDescription": "You have successfully logged in to your account.",
     "LoggingIn": "Logging in...",
