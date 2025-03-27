@@ -1,5 +1,6 @@
 import React from 'react'
 import * as Notifications from 'expo-notifications'
+import * as Linking from 'expo-linking';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	registerForPushNotificationsAsync,
@@ -29,10 +30,15 @@ function useNotificationObserver() {
 		let isMounted = true
 
 		function redirect(notification: Notifications.Notification) {
-			const url = notification.request.content.data?.url
-			if (url) {
-				router.push(url)
-			}
+      const fullUrl = notification.request.content.data?.url;
+      if (fullUrl) {
+        const { path } = Linking.parse(fullUrl);
+        if (path) {
+          router.push(`/${path}`);
+        } else {
+          console.warn('Invalid URL path from notification:', fullUrl);
+        }
+      }
 		}
 
 		Notifications.getLastNotificationResponseAsync().then(response => {
@@ -74,7 +80,21 @@ export default function Root() {
 		)
 		return () => subscription.remove()
 	}, [])
-
+  React.useEffect(() => {
+    const handleDeepLink = ({ url }) => {
+      if (url) {
+        const { path } = Linking.parse(url);
+        if (path) {
+          router.push(`/${path}`);
+        }
+      }
+    };
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, []);
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()
