@@ -83,17 +83,16 @@ CREATE TABLE
 -- Create ParentSession table (missing in the second schema)
 CREATE TABLE
   `ParentSession` (
-    `id` int NOT NULL AUTO_INCREMENT,
-    `parent_id` int NOT NULL,
-    `chat_id` varchar(255),
-    `language` ENUM ('jp', 'ru', 'uz') DEFAULT 'uz',
-    `scene` varchar(50) null,
-    `step` int null,
-    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `parent_id` INT NULL DEFAULT NULL,
+    `chat_id` BIGINT NOT NULL,
+    `language` VARCHAR(10) NULL DEFAULT NULL,
+    `scene` VARCHAR(50) NULL DEFAULT NULL,
+    `step` INT NULL DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    KEY `idx_parentsession_parent_id` (`parent_id`),
-    CONSTRAINT `ParentSession_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `Parent` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    UNIQUE INDEX `ParentSession_pk` (`chat_id` ASC) VISIBLE
   ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create StudentParent table
