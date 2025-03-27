@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 55-sms-send-to-group
     paths:
       - "push-notification/**"
 

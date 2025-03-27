@@ -154,7 +154,7 @@ const sendNotifications = async (posts: any) => {
 
             // const url = `jduapp://(tabs)/(home)/message/${post.id}`;
             // text += `\n\n<a href="youtube.com">${buttonText}</a>`;
-            const button = Markup.inlineKeyboard([Markup.button.url(buttonText, "https://parents-monolithic.vercel.app/parentnotification")])
+            const button = Markup.inlineKeyboard([Markup.button.url(buttonText, "https://appuri-hogosha.vercel.app/parentnotification")])
             await bot.telegram.sendMessage(post.chat_id, text, button);
 
             isPush = true;
@@ -173,11 +173,11 @@ const sendNotifications = async (posts: any) => {
 
                 let text = ''
                 if (post.language === 'jp') {
-                    text = '新しい投稿: ' + post.title + ' に ' + post.family_name + ' リンク: https://parents-monolithic.vercel.app/parentnotification';
+                    text = '新しい投稿: ' + post.title + ' に ' + post.family_name + ' リンク: https://appuri-hogosha.vercel.app/parentnotification';
                 } else if (post.language === 'ru') {
-                    text = 'Новый пост: ' + post.title + ' для ' + post.family_name + ' ссылка: https://parents-monolithic.vercel.app/parentnotification';
+                    text = 'Новый пост: ' + post.title + ' для ' + post.family_name + ' ссылка: https://appuri-hogosha.vercel.app/parentnotification';
                 } else {
-                    text = 'Yangi post: ' + post.title + ' uchun ' + post.family_name + ' havola: https://parents-monolithic.vercel.app/parentnotification';
+                    text = 'Yangi post: ' + post.title + ' uchun ' + post.family_name + ' havola: https://appuri-hogosha.vercel.app/parentnotification';
                 }
 
 
@@ -233,8 +233,10 @@ const updateDatabase = async (ids: any) => {
         await DB.execute(`
             UPDATE PostParent
             SET push = true
-            WHERE id IN (${idsString});
-        `);
+            WHERE id IN (:ids);
+        `, {
+            ids: idsString,
+        });
     }
 };
 
@@ -243,6 +245,7 @@ const pushNotifications = async () => {
         console.log("scanning database...");
         const posts = await fetchPosts();
 
+        console.log(posts)
         if (posts.length > 0) {
             const successNotifications = await sendNotifications(posts);
             console.log('successNotifications:', successNotifications);
@@ -266,21 +269,18 @@ const pushNotifications = async () => {
     }
 };
 
-pushNotifications()
-
-
 export const handler = async (event: any, context: any) => {
     context.callbackWaitsForEmptyEventLoop = false;
     console.log("start handeler");
     try {
         await pushNotifications();
         return {
-            message: "success",
+            message: "success", statusCode: 200
         };
     } catch (e) {
         console.log("error:", e);
         return {
-            message: "error",
+            message: "error", statusCode: 500
         };
     }
 };
