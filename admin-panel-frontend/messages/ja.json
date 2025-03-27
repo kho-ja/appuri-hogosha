@@ -16,6 +16,7 @@
     "OTPError": "初めてログインする場合は、アカウントの新しいパスワードを入力してください。",
     "AuthError": "何かが間違っています。後でもう一度お試しください。",
     "loginFailed": "ログインに失敗しました。もう一度お試しください。",
+    "loginNewPassword": "パスワードの変更が必要です",
     "loginSuccess": "管理パネルへようこそ",
     "loginSuccessDescription": "アカウントに正常にログインしました。",
     "LoggingIn": "ログイン中...",
