@@ -50,7 +50,6 @@ const fetchPosts = async () => {
 const sendNotifications = async (posts: any[]) => {
     if (!posts.length) return [];
 
-    // Process in parallel with timeout
     const notificationPromises = posts.map(async (post) => {
         try {
             let isPush = false;
@@ -74,15 +73,11 @@ const sendNotifications = async (posts: any[]) => {
                         Markup.button.url(buttonText, "https://parents-monolithic.vercel.app/parentnotification")
                     ]);
 
-                    await Promise.race([
-                        bot.telegram.sendMessage(post.chat_id, text, button),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('Telegram timeout')), 2000))
-                    ]);
+                    await bot.telegram.sendMessage(post.chat_id, text, button),
 
-                    isPush = true;
+                        isPush = true;
                 } catch (e) {
                     console.log(`Telegram error for post ${post.id}:`, e);
-                    // Continue with other notifications even if Telegram fails
                 }
             }
 
@@ -118,22 +113,15 @@ const sendNotifications = async (posts: any[]) => {
                         }]
                     };
 
-                    // Using a timeout for fetch to avoid waiting too long
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 2000);
-
                     await fetch(url, {
                         method: 'POST',
                         headers: headers,
                         body: JSON.stringify(data),
-                        signal: controller.signal
                     });
 
-                    clearTimeout(timeoutId);
                     isPush = true;
                 } catch (e) {
                     console.log(`SMS error for post ${post.id}:`, e);
-                    // Continue even if SMS fails
                 }
             }
 
@@ -148,12 +136,7 @@ const sendNotifications = async (posts: any[]) => {
                     token: post.arn,
                 };
 
-                // Set timeout for Firebase messaging
-                const firebasePromise = messaging.send(message);
-                const response = await Promise.race([
-                    firebasePromise,
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 2000))
-                ]);
+                const response = await messaging.send(message);
 
                 console.log(`Successfully sent message for post ${post.id}`, response);
                 return post.id; // Return ID for successful notification
@@ -186,10 +169,7 @@ const sendNotifications = async (posts: any[]) => {
 const updateDatabase = async (ids: any[]) => {
     if (!ids.length) return;
 
-    // Use parameterized query with array
-    await DB.execute(`UPDATE PostParent SET push = true WHERE id IN (:ids)`, {
-        ids: ids.join(", ")
-    });
+    await DB.execute(`UPDATE PostParent SET push = true WHERE id IN (${ids.join(',')});`);
 };
 
 // Main notification function with performance optimizations
