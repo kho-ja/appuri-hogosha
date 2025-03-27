@@ -73,8 +73,7 @@ const sendNotifications = async (posts: any[]) => {
                         Markup.button.url(buttonText, "https://parents-monolithic.vercel.app/parentnotification")
                     ]);
 
-                    await bot.telegram.sendMessage(post.chat_id, text, button),
-
+                    await bot.telegram.sendMessage(post.chat_id, text, button)
                         isPush = true;
                 } catch (e) {
                     console.log(`Telegram error for post ${post.id}:`, e);
