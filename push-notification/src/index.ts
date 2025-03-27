@@ -187,10 +187,9 @@ const updateDatabase = async (ids: any[]) => {
     if (!ids.length) return;
 
     // Use parameterized query with array
-    await DB.execute(
-        `UPDATE PostParent SET push = true WHERE id IN (?)`,
-        [ids]
-    );
+    await DB.execute(`UPDATE PostParent SET push = true WHERE id IN (:ids)`, {
+        ids: ids.join(", ")
+    });
 };
 
 // Main notification function with performance optimizations
@@ -254,3 +253,5 @@ export const handler = async () => {
         };
     }
 };
+
+handler()
