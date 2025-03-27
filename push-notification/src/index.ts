@@ -228,15 +228,18 @@ const sendNotifications = async (posts: any) => {
 }
 
 const updateDatabase = async (ids: any) => {
-    if (ids.length > 0) {
-        const idsString = ids.join(", ");
-        await DB.execute(`
-            UPDATE PostParent
-            SET push = true
-            WHERE id IN (:ids);
-        `, {
-            ids: idsString,
-        });
+    try {
+        if (ids.length > 0) {
+            await DB.execute(`
+                UPDATE PostParent
+                SET push = true
+                WHERE id IN (:ids);
+                `, {
+                ids: ids.join(", ")
+            });
+        }
+    } catch (e) {
+        console.error("Error while updating push status.", ids)
     }
 };
 
@@ -269,11 +272,11 @@ const pushNotifications = async () => {
     }
 };
 
-export const handler = async (event: any, context: any) => {
-    context.callbackWaitsForEmptyEventLoop = false;
+export const handler = async () => {
     console.log("start handeler");
     try {
         await pushNotifications();
+        DB.closeConnection();
         return {
             message: "success", statusCode: 200
         };
