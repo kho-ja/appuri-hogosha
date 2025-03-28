@@ -16,7 +16,7 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { redirectSystemPath } from '@/path/to/+native-intent';
+import { redirectSystemPath } from '../+native-intent'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
