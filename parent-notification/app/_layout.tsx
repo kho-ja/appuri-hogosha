@@ -16,6 +16,7 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { redirectSystemPath } from '@/path/to/+native-intent';
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -32,12 +33,8 @@ function useNotificationObserver() {
 		function redirect(notification: Notifications.Notification) {
       const fullUrl = notification.request.content.data?.url;
       if (fullUrl) {
-        const { path } = Linking.parse(fullUrl);
-        if (path) {
-          router.push(`/${path}`);
-        } else {
-          console.warn('Invalid URL path from notification:', fullUrl);
-        }
+        const processedPath = redirectSystemPath({ path: fullUrl, initial: false });
+        router.push(processedPath);
       }
 		}
 
@@ -83,14 +80,15 @@ export default function Root() {
   React.useEffect(() => {
     const handleDeepLink = ({ url }) => {
       if (url) {
-        const { path } = Linking.parse(url);
-        if (path) {
-          router.push(`/${path}`);
-        }
+        const processedPath = redirectSystemPath({ path: url, initial: false });
+        router.push(processedPath);
       }
     };
     Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink({ url });
+      if (url) {
+        const processedPath = redirectSystemPath({ path: url, initial: true });
+        router.push(processedPath);
+      }
     });
     const subscription = Linking.addEventListener('url', handleDeepLink);
     return () => subscription.remove();
