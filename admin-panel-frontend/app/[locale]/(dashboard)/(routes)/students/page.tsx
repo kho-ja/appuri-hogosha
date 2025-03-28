@@ -36,8 +36,13 @@ export default function Students() {
   const router = useRouter();
   const pathname = usePathname();
   const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    setSearch(searchFromUrl);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -55,8 +60,8 @@ export default function Students() {
     router.push(`${pathname}?page=${newPage}`, { scroll: false });
   };
   const { data: studentData } = useApiQuery<StudentApi>(
-    `student/list?page=${pageFromUrl}&name=${search}`,
-    ["students", pageFromUrl, search]
+    `student/list?page=${page}&name=${search}`,
+    ["students", page, search]
   );
   const queryClient = useQueryClient();
   const [studentId, setStudentId] = useState<number | null>(null);
@@ -150,6 +155,7 @@ export default function Students() {
       <div className="flex justify-between w-full">
         <Input
           placeholder={t("filter")}
+          value={search}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(e.target.value);
             setPage(1);
@@ -175,7 +181,7 @@ export default function Students() {
             <span className="sr-only sm:not-sr-only">Export</span>
           </Button>
         </div>
-        <Card x-chunk="dashboard-05-chunk-3">
+        <Card>
           <TableApi
             linkPrefix={`/students`}
             data={studentData?.students ?? null}

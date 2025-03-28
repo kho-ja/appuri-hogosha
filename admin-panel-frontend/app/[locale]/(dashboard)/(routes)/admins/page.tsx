@@ -35,8 +35,13 @@ export default function Admins() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    setSearch(searchFromUrl);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -54,8 +59,8 @@ export default function Admins() {
     router.push(`${pathname}?page=${newPage}`, { scroll: false });
   };
   const { data } = useApiQuery<AdminApi>(
-    `admin/list?page=${pageFromUrl}&name=${search}`,
-    ["admins", pageFromUrl, search]
+    `admin/list?page=${[page]}&name=${search}`,
+    ["admins", page, search]
   );
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -146,6 +151,7 @@ export default function Admins() {
         <div className="flex justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);

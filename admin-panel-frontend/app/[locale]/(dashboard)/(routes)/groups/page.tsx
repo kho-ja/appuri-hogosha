@@ -33,10 +33,15 @@ export default function Groups() {
   const t = useTranslations("groups");
   const searchParams = useSearchParams();
   const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
   const [search, setSearch] = useState("");
   const router = useRouter();
   const pathName = usePathname();
+
+  useEffect(() => {
+      setSearch(searchFromUrl);
+    }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -55,8 +60,8 @@ export default function Groups() {
   };
 
   const { data } = useApiQuery<GroupApi>(
-    `group/list?page=${pageFromUrl}&name=${search}`,
-    ["groups", pageFromUrl, search]
+    `group/list?page=${page}&name=${search}`,
+    ["groups", page, search]
   );
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
@@ -143,6 +148,7 @@ export default function Groups() {
         <div className="flex justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);

@@ -32,8 +32,13 @@ export default function Info() {
   const tName = useTranslations("names");
   const searchParams = useSearchParams();
   const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+      setSearch(searchFromUrl);
+    }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -52,8 +57,8 @@ export default function Info() {
   };
 
   const { data } = useApiQuery<PostApi>(
-    `post/list?page=${pageFromUrl}&text=${search}`,
-    ["posts", pageFromUrl, search]
+    `post/list?page=${page}&text=${search}`,
+    ["posts", page, search]
   );
   const pathName = usePathname();
   const router = useRouter();
@@ -168,6 +173,7 @@ export default function Info() {
       <div className="flex justify-between">
         <Input
           placeholder={t("filter")}
+          value={search}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(e.target.value);
             setPage(1);
