@@ -12,7 +12,8 @@ import { Link, usePathname, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -30,9 +31,34 @@ import useFileMutation from "@/lib/useFileMutation";
 
 export default function Groups() {
   const t = useTranslations("groups");
-  const [page, setPage] = useState(1);
+  const searchParams = useSearchParams();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
   const [search, setSearch] = useState("");
+  const router = useRouter();
   const pathName = usePathname();
+
+  useEffect(() => {
+      setSearch(searchFromUrl);
+    }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("page", page.toString());
+
+    if (search) {
+      params.set("search", search);
+    }
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search]);
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    router.push(`${pathName}?page=${newPage}`, { scroll: false });
+  };
+
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${search}`,
     ["groups", page, search]
@@ -122,6 +148,7 @@ export default function Groups() {
         <div className="flex justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);
@@ -129,7 +156,10 @@ export default function Groups() {
             className="max-w-sm"
           />
           <div className="">
-            <PaginationApi data={data?.pagination || null} setPage={setPage} />
+            <PaginationApi
+              data={data?.pagination || null}
+              setPage={handlePageChange}
+            />
           </div>
         </div>
         <div className="space-y-2 align-left">
