@@ -83,7 +83,7 @@ export default function SendMessagePage({
         priority: data.post.priority as "high" | "medium" | "low",
       });
     }
-  }, [data, form, priority]);
+  }, [data, form]);
 
   if (isError) return <NotFound />;
 
