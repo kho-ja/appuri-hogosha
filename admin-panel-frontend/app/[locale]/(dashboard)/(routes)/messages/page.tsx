@@ -34,28 +34,7 @@ export default function Info() {
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-      setSearch(searchFromUrl);
-    }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    params.set("page", page.toString());
-
-    if (search) {
-      params.set("search", search);
-    }
-
-    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search]);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    router.push(`${pathName}?page=${newPage}`, { scroll: false });
-  };
-
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<PostApi>(
     `post/list?page=${page}&text=${search}`,
     ["posts", page, search]
@@ -78,6 +57,15 @@ export default function Info() {
       },
     }
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathName, router]);
 
   const postColumns: ColumnDef<Post>[] = [
     {

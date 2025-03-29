@@ -35,29 +35,18 @@ export default function Groups() {
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchFromUrl);
   const router = useRouter();
   const pathName = usePathname();
 
   useEffect(() => {
-      setSearch(searchFromUrl);
-    }, []);
-
-  useEffect(() => {
     const params = new URLSearchParams();
+    
     params.set("page", page.toString());
-
-    if (search) {
-      params.set("search", search);
-    }
+    params.set("search", search);
 
     router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search]);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    router.push(`${pathName}?page=${newPage}`, { scroll: false });
-  };
+  }, [page, search, pathName, router]);
 
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${search}`,
@@ -156,10 +145,7 @@ export default function Groups() {
             className="max-w-sm"
           />
           <div className="">
-            <PaginationApi
-              data={data?.pagination || null}
-              setPage={handlePageChange}
-            />
+            <PaginationApi data={data?.pagination || null} setPage={setPage} />
           </div>
         </div>
         <div className="space-y-2 align-left">

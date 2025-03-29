@@ -38,27 +38,7 @@ export default function Students() {
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    setSearch(searchFromUrl);
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    params.set("page", page.toString());
-  
-    if (search) {
-      params.set("search", search);
-    }
-  
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [page, search]);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    router.push(`${pathname}?page=${newPage}`, { scroll: false });
-  };
+  const [search, setSearch] = useState(searchFromUrl);
   const { data: studentData } = useApiQuery<StudentApi>(
     `student/list?page=${page}&name=${search}`,
     ["students", page, search]
@@ -83,6 +63,15 @@ export default function Students() {
     `student/export`,
     ["exportStudents"]
   );
+  
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [page, search, router, pathname]);
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -165,7 +154,7 @@ export default function Students() {
         <div>
           <PaginationApi
             data={studentData?.pagination ?? null}
-            setPage={handlePageChange}
+            setPage={setPage}
           />
         </div>
       </div>

@@ -1,13 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, EllipsisVertical, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -41,28 +35,7 @@ export default function Info() {
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-      setSearch(searchFromUrl);
-    }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    params.set("page", page.toString());
-
-    if (search) {
-      params.set("search", search);
-    }
-
-    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search]);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    router.push(`${pathName}?page=${newPage}`, { scroll: false });
-  };
-
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<ParentApi>(
     `parent/list?page=${page}&name=${search}`,
     ["parents", page, search]
@@ -85,6 +58,15 @@ export default function Info() {
       },
     }
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathName, router]);
 
   const { mutate: exportParents } = useFileMutation<{ message: string }>(
     `parent/export`,
@@ -167,10 +149,7 @@ export default function Info() {
             className="max-w-sm"
           />
           <div className="">
-            <PaginationApi
-              data={data?.pagination ?? null}
-              setPage={handlePageChange}
-            />
+            <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
           </div>
         </div>
         <div className="flex justify-end items-center">
