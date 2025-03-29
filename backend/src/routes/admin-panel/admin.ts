@@ -74,6 +74,7 @@ class AdminController implements IController {
     }
 
     uploadAdminsFromCSV = async (req: ExtendedRequest, res: Response) => {
+        console.log('uploadAdminsFromCSV is working')
         const { throwInError, action, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
@@ -392,7 +393,7 @@ class AdminController implements IController {
                         given_name = :given_name
                     WHERE id = :id`, {
                 phone_number: phone_number,
-                given_name: given_name,
+                given_name: 'given_name',
                 family_name: family_name,
                 id: admin.id
             });
@@ -402,7 +403,7 @@ class AdminController implements IController {
                     id: admin.id,
                     email: admin.email,
                     phone_number: phone_number,
-                    given_name: given_name,
+                    given_name: 'given_name',
                     family_name: family_name,
                 }
             }).end()
