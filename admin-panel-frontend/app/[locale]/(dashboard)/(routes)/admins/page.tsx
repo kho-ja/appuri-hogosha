@@ -37,27 +37,7 @@ export default function Admins() {
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
   const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    setSearch(searchFromUrl);
-  }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    params.set("page", page.toString());
-
-    if (search) {
-      params.set("search", search);
-    }
-
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [page, search]);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    router.push(`${pathname}?page=${newPage}`, { scroll: false });
-  };
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<AdminApi>(
     `admin/list?page=${[page]}&name=${search}`,
     ["admins", page, search]
@@ -84,6 +64,15 @@ export default function Admins() {
   const { mutate: exportAdmins } = useFileMutation(`admin/export`, [
     "exportAdmins",
   ]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathname, router]);
 
   const adminColumns: ColumnDef<Admin>[] = [
     {
@@ -159,10 +148,7 @@ export default function Admins() {
             className="max-w-sm"
           />
           <div className="">
-            <PaginationApi
-              data={data?.pagination ?? null}
-              setPage={handlePageChange}
-            />
+            <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
           </div>
         </div>
         <div className="flex justify-end items-center">

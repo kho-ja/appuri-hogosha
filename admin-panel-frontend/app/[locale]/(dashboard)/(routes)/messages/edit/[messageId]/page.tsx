@@ -69,11 +69,15 @@ export default function SendMessagePage({
           description: data?.message,
         });
         form.reset();
-        router.push("/messages");
+        router.push(`/messages/${messageId}`);
       },
     }
   );
   const priority = form.watch("priority");
+
+  useEffect(() => {
+    form.setValue("priority", priority);
+  }, [priority, form]);
 
   useEffect(() => {
     if (data) {
