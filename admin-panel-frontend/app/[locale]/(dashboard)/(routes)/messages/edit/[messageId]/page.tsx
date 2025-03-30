@@ -194,7 +194,7 @@ export default function SendMessagePage({
                             </DialogTrigger>
                             <Button
                               onClick={(e) => handleRemoveImg(e)}
-                              className="absolute top-0 right-0 translate-x-[30%] -translate-y-[30%] p-0 aspect-square rounded-full"
+                              className="absolute top-0 right-0 translate-x-[50%] -translate-y-[50%] p-0 aspect-square rounded-full bg-muted border border-foreground"
                             >
                               <Trash2 className="h-5 w-5 text-red-500 font-bold" />
                             </Button>
