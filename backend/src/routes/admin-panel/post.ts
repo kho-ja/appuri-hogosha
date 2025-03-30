@@ -818,60 +818,55 @@ class PostController implements IController {
 
             const post = postInfo[0]
 
-            if (image) {
+            if (image && image !== post.image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                
                 if (!matches || matches.length !== 3) {
                     throw {
                         status: 401,
                         message: 'Invalid image format. Make sure it is Base64 encoded.'
-                    }
+                    };
                 }
+            
                 const mimeType = matches[1];
                 const base64Data = matches[2];
                 const buffer = Buffer.from(base64Data, 'base64');
-                if (buffer.length > 1024 * 1024 * 10) {
+            
+                if (buffer.length > 10 * 1024 * 1024) {
                     throw {
                         status: 401,
                         message: 'Image size is too large (max 10MB)'
-                    }
+                    };
                 }
-
+            
                 const imageName = randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = 'images/' + imageName;
-                const uploadResult = await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
-                await DB.execute(`UPDATE Post
-                                SET title       = :title,
-                                    description = :description,
-                                    priority    = :priority,
-                                    image       = :image,
-                                    edited_at   = NOW()
-                                WHERE id = :id
-                                AND school_id = :school_id`, {
-                    id: post.id,
-                    school_id: req.user.school_id,
-                    title: title,
-                    description: description,
-                    priority: priority,
-                    image: imageName,
-                });
-            } else {
-                await DB.execute(`UPDATE Post
-                                SET title       = :title,
-                                    description = :description,
-                                    priority    = :priority,
-                                    image       = :image,
-                                    edited_at   = NOW()
-                                WHERE id = :id
-                                AND school_id = :school_id`, {
-                    id: post.id,
-                    school_id: req.user.school_id,
-                    title: title,
-                    description: description,
-                    priority: priority,
-                    image: null,
-                });
+                const imagePath = `images/${imageName}`;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            
+                post.image = imageName; // Assign new image to post object
+            } else if (!image) {
+                post.image = null; // Set image to null if none is provided
             }
+            
+            // Update post in DB
+            await DB.execute(
+                `UPDATE Post
+                 SET title       = :title,
+                     description = :description,
+                     priority    = :priority,
+                     image       = :image,
+                     edited_at   = NOW()
+                 WHERE id = :id
+                 AND school_id = :school_id`,
+                {
+                    id: post.id,
+                    school_id: req.user.school_id,
+                    title,
+                    description,
+                    priority,
+                    image: post.image,
+                }
+            );
 
             await DB.execute(`UPDATE PostParent
                                 SET push = 0

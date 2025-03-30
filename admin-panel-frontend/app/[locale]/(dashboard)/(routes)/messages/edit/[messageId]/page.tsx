@@ -87,7 +87,7 @@ export default function SendMessagePage({
           description: data?.message,
         });
         form.reset();
-        router.push("/messages");
+        router.push(`/messages/${messageId}`);
       },
     }
   );
