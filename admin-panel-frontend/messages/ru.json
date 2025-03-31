@@ -714,8 +714,8 @@
     "invalid_description": "Неверное описание",
     "invalid_priority": "Неверный приоритет",
     "invalid_group_names": "Неверное название(я) группы",
-    "group_members_not_found": "Члены группы не найдены"
-
+    "group_members_not_found": "Члены группы не найдены",
+    "back": "Назад"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -762,7 +762,8 @@
     "student_numbers": "Номер студента",
     "student_numbersDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
     "student_number": "Номер студента",
-    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента."
+    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
+    "back": "Назад"
   },
   "errors": {
     "wentWrong": "Что-то пошло не так.",

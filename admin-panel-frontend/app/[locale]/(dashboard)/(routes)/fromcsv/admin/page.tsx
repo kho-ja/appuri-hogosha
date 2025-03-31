@@ -105,6 +105,11 @@ export default function CreateFromCsv() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createAdminFromCsv")}</h1>
+        <Link href="/admins/create" passHref>
+          <Button type="button" variant={"secondary"}>
+            {t("back")}
+          </Button>
+        </Link>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>
@@ -272,7 +277,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-          {t(error.errors[name] || "")}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}

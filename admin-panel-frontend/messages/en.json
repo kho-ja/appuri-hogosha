@@ -717,9 +717,8 @@
     "invalid_description": "Invalid description",
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
-    "group_members_not_found": "Group members not found"
-
-
+    "group_members_not_found": "Group members not found",
+    "back": "Back"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -766,7 +765,8 @@
     "student_numbers": "Student Numbers",
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number."
+    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
+    "back": "Back"
   },
   "errors": {
     "wentWrong": "Something went wrong.",
