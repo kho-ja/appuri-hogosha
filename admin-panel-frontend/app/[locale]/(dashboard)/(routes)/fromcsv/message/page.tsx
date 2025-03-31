@@ -148,18 +148,18 @@ export default function MessageFromCSV() {
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>title</TableHead>
-                <TableHead>description</TableHead>
-                <TableHead>priority</TableHead>
-                <TableHead>group_names</TableHead>
-                <TableHead>student_numbers</TableHead>
+                <TableHead>{t("title")}</TableHead>
+                <TableHead>{t("description")}</TableHead>
+                <TableHead>{t("priority")}</TableHead>
+                <TableHead>{t("group_names")}</TableHead>
+                <TableHead>{t("student_number")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

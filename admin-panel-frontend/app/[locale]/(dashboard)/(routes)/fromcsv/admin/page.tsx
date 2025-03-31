@@ -187,17 +187,17 @@ export default function CreateFromCsv() {
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>email</TableHead>
-                <TableHead>given_name</TableHead>
-                <TableHead>family_name</TableHead>
-                <TableHead>phone_number</TableHead>
+                <TableHead>{t("email")}</TableHead>
+                <TableHead>{t("given_name")}</TableHead>
+                <TableHead>{t("family_name")}</TableHead>
+                <TableHead>{t("phone_number")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

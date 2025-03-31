@@ -164,7 +164,9 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers"
+    "editRecivers": "Edit Recievers",
+    "Groups": "Groups",
+    "Students": "Students"
   },
   "ThisGroup": {
     "GroupView": "Group Details",
@@ -407,7 +409,8 @@
     "DouYouDeleteStudent": "Do you want to delete this student?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "studentDeleted": "Student Deleted Successfully"
+    "studentDeleted": "Student Deleted Successfully",
+    "export": "Export"
   },
   "groups": {
     "groups": "Groups",
@@ -422,7 +425,8 @@
     "DouYouDeleteGroup": "Do You really want to delete this group?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "groupDeleted": "Group deleted Successfully"
+    "groupDeleted": "Group deleted Successfully",
+    "export": "Export"
   },
   "parents": {
     "parents": "Parents",
@@ -438,7 +442,8 @@
     "doYouDeleteParent": "Do you really want to delete this Parent?",
     "close": "Close",
     "confirm": "Confirm",
-    "parentDeleted": "Parent Deleted Successfully"
+    "parentDeleted": "Parent Deleted Successfully",
+    "export": "Export"
   },
   "posts": {
     "posts": "Posts",
@@ -513,7 +518,8 @@
     "doYouDeleteAdmin": "Do you really want to delete this Admin?",
     "close": "Close",
     "confirm": "Confirm",
-    "adminDeleted": "Admin Deleted Successfully"
+    "adminDeleted": "Admin Deleted Successfully",
+    "export": "Export"
   },
   "CreateAdmin": {
     "CreateAdmin": "Create Admin",
@@ -717,9 +723,18 @@
     "invalid_description": "Invalid description",
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
-    "group_members_not_found": "Group members not found"
-
-
+    "group_members_not_found": "Group members not found",
+    "export": "Export",
+    "email": "Email",
+    "given_name": "Given Name",
+    "family_name": "Family Name", 
+    "phone_number": "Phone Number",
+    "student_number": "Student Number",
+    "title": "Title",
+    "description": "Description",
+    "priority": "Priority",
+    "group_names": "Group Names",
+    "name": "Name"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -766,7 +781,8 @@
     "student_numbers": "Student Numbers",
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number."
+    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
+    "export": "Export"
   },
   "errors": {
     "wentWrong": "Something went wrong.",
@@ -1047,7 +1063,9 @@
     "lowCheckbox": "Low",
     "NotificationSettingUpdate": "Update Setting",
     "NotificationSettingUpdated": "Notification Setting Updated Successfully",
-    "NotificationSettingUpdateFailed": "Notification Setting Update Failed"
+    "NotificationSettingUpdateFailed": "Notification Setting Update Failed",
+    "SettingsTitle": "Notifications",
+    "SettingsDescription": "Configure how you receive notifications."
   },
   "EditStudentsDialog": {
     "saving": "Saving...",

@@ -162,7 +162,9 @@
     "not_viewed_count": "Количество непросмотренных",
     "view": "Просмотр",
     "editMessage": "Редактировать сообщение",
-    "editRecivers": "Редактировать получателей"
+    "editRecivers": "Редактировать получателей",
+    "Groups": "Группы",
+    "Students": "Студенты"
   },
   "ThisGroup": {
     "GroupView": "Детали группы",
@@ -393,7 +395,7 @@
     "students": "Студенты",
     "ID": "ID",
     "name": "Имя",
-    "email": "Email",
+    "email": "Электронная почта",
     "studentId": "ID студентв",
     "phoneNumber": "Номер телефона",
     "action": "Действие",
@@ -405,7 +407,8 @@
     "DouYouDeleteStudent": "Вы действительно хотите удалить этого сутдента?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "studentDeleted": "Студент удален"
+    "studentDeleted": "Студент удален",
+    "export": "Экспорт"
   },
   "groups": {
     "groups": "Группы",
@@ -420,12 +423,13 @@
     "DouYouDeleteGroup": "Вы действительно хотите удалить эту группу?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "groupDeleted": "Группа успешно удалена"
+    "groupDeleted": "Группа успешно удалена",
+    "export": "Экспорт"
   },
   "parents": {
     "parents": "Родители",
     "parentName": "Имя родителя",
-    "Email": "Email",
+    "Email": "Электронная почта",
     "Phone_number": "Номер телефона",
     "action": "Действие",
     "view": "Просмотр",
@@ -436,7 +440,8 @@
     "doYouDeleteParent": "Вы действительно хотите удалить этого родителя?",
     "close": "Закрыть",
     "confirm": "Подтвердить",
-    "parentDeleted": "Родитель удален"
+    "parentDeleted": "Родитель удален",
+    "export": "Экспорт"
   },
   "posts": {
     "posts": "Сообщения",
@@ -500,7 +505,7 @@
   "admins": {
     "admins": "Администраторы",
     "adminName": "Имя администратора",
-    "Email": "Email",
+    "Email": "Электронная почта",
     "Phone_number": "Номер телефона",
     "action": "Действие",
     "view": "Просмотр",
@@ -510,7 +515,8 @@
     "filter": "Фильтр по имени и email",
     "doYouDeleteAdmin": "Вы действительно хотите удалить этого администратора?",
     "close": "Закрыть",
-    "confirm": "Подтвердить"
+    "confirm": "Подтвердить",
+    "export": "Экспорт"
   },
   "CreateAdmin": {
     "CreateAdmin": "Создать администратора",
@@ -714,8 +720,18 @@
     "invalid_description": "Неверное описание",
     "invalid_priority": "Неверный приоритет",
     "invalid_group_names": "Неверное название(я) группы",
-    "group_members_not_found": "Члены группы не найдены"
-
+    "group_members_not_found": "Члены группы не найдены",
+    "export": "Экспорт",
+    "email": "Электронная почта",
+    "given_name": "Имя",
+    "family_name": "Фамилия",
+    "phone_number": "Номер телефона",
+    "student_number": "Номер студента",
+    "title": "Заголовок",
+    "description": "Описание",
+    "priority": "Приоритет",
+    "group_names": "Название группы",
+    "name": "Имя"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -762,7 +778,8 @@
     "student_numbers": "Номер студента",
     "student_numbersDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
     "student_number": "Номер студента",
-    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента."
+    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
+    "export": "Экспорт"
   },
   "errors": {
     "wentWrong": "Что-то пошло не так.",
@@ -1044,7 +1061,9 @@
     "lowCheckbox": "Низкий",
     "NotificationSettingUpdate": "Обновить настройки уведомлений",
     "NotificationSettingUpdated": "Настройки уведомлений обновлены",
-    "NotificationSettingUpdateFailed": "Не удалось обновить настройки уведомлений"
+    "NotificationSettingUpdateFailed": "Не удалось обновить настройки уведомлений",
+    "SettingsTitle": "Уведомления",
+    "SettingsDescription": "Настройте, как вы получаете уведомления."
   },
   "EditStudentsDialog": {
     "saving": "сохранение...",
