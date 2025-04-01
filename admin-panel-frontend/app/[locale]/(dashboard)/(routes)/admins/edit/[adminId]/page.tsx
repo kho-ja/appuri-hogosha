@@ -22,6 +22,7 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import Admin from "@/types/admin";
 import useApiMutation from "@/lib/useApiMutation";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const formSchema = z.object({
   given_name: z.string().min(1).max(50),
@@ -76,7 +77,7 @@ export default function EditAdmin({
     if (adminData) {
       form.setValue("given_name", adminData.admin.given_name);
       form.setValue("family_name", adminData.admin.family_name);
-      form.setValue("phone_number", adminData.admin.phone_number);
+      form.setValue("phone_number", `+${adminData.admin.phone_number}`);
     }
   }, [adminData, form]);
 
@@ -93,7 +94,7 @@ export default function EditAdmin({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) => {
-            mutate(values as any);
+            mutate({...values, phone_number: values.phone_number.slice(1)} as any);
           })}
           className="space-y-4"
         >
@@ -150,10 +151,10 @@ export default function EditAdmin({
                   <FormItem>
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("AdminPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>

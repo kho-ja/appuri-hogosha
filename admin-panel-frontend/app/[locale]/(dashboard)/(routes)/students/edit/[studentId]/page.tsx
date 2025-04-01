@@ -22,6 +22,7 @@ import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const formSchema = z.object({
   phone_number: z.string().min(10).max(20),
@@ -73,7 +74,7 @@ export default function CreateStudent({
     if (data) {
       form.setValue("given_name", data.student.given_name);
       form.setValue("family_name", data.student.family_name);
-      form.setValue("phone_number", data.student.phone_number);
+      form.setValue("phone_number", `+${data.student.phone_number}`);
       form.setValue("student_number", data.student.student_number);
     }
   }, [data, form]);
@@ -90,7 +91,7 @@ export default function CreateStudent({
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate(values as any))}
+          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
           className="space-y-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -133,7 +134,11 @@ export default function CreateStudent({
                 <FormItem>
                   <FormLabel>{t("PhoneNumber")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("PhoneNumber")} {...field} />
+                    <PhoneInput
+                      placeholder={t("PhoneNumber")}
+                      international={true}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage>
                     {formState.errors.phone_number?.message}
