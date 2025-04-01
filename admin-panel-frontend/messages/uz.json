@@ -715,8 +715,8 @@
     "invalid_description": "Noto‘g‘ri tavsif",
     "invalid_priority": "Noto‘g‘ri ustuvorlik",
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
-    "group_members_not_found": "Guruh a'zolari topilmadi"
-
+    "group_members_not_found": "Guruh a'zolari topilmadi",
+    "back": "Orqaga"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -763,7 +763,8 @@
     "student_numbers": "Talaba raqamlari",
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
-    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting."
+    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
+    "back": "Orqaga"
   },
 
   "errors": {

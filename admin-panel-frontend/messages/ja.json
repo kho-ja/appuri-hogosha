@@ -718,8 +718,8 @@
     "invalid_group_names": "無効なグループ名",
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
-    "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました"
-
+    "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
+    "back": "戻る"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -766,7 +766,8 @@
     "student_numbers": "学生番号",
     "student_numbersDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
     "student_number": "学生番号",
-    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。"
+    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
+    "back": "戻る"
   },
   "errors": {
     "wentWrong": "何かが間違っています。",
