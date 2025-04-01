@@ -103,6 +103,7 @@ export default function CreateParent() {
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
+              phone_number: values.phone_number.slice(1),
               students: selectedStudents.map((student) => student.id),
             } as any)
           )}

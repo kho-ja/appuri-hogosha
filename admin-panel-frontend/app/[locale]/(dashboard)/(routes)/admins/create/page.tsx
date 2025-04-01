@@ -105,7 +105,7 @@ export default function CreateAdmin() {
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate(values as any))}
+          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
           className="space-y-4"
         >
           <div className="flex w-full">
