@@ -136,7 +136,9 @@ export function GroupTable({
   );
 
   const table = useReactTable({
-    data: useMemo(() => data?.groups ?? [], [data]),
+    data: useMemo(() => 
+      (data?.groups ?? []).filter((group) => (group.member_count ?? 0) > 0), 
+    [data]),
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
