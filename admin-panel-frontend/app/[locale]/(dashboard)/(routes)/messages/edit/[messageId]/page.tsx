@@ -57,6 +57,7 @@ export default function SendMessagePage({
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
+  const [image, setImage] = useState<String>("");
   const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(
     null
   );
@@ -98,6 +99,7 @@ export default function SendMessagePage({
 
   useEffect(() => {
     if (data) {
+      setImage(data.post.image || "")
       form.reset({
         title: data.post.title,
         description: data.post.description,
@@ -110,6 +112,7 @@ export default function SendMessagePage({
   const handleRemoveImg = (e: any) => {
     e.preventDefault();
     if (data) {
+      setImage("");
       form.reset({
         title: data.post.title,
         description: data.post.description,
@@ -170,7 +173,7 @@ export default function SendMessagePage({
           />
 
           <div className="inline-block">
-            {data?.post?.image ? (
+            {image ? (
               <>
                 <Label
                   htmlFor="image"
