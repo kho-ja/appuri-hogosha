@@ -8,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { signIn } from "next-auth/react";
 import NotFound from "@/components/NotFound";
+import AdminView from "@/components/adminView"
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -26,6 +27,7 @@ export default async function ThisAdmin({
         "Content-Type": "application/json",
         Authorization: `Bearer ${session?.sessionToken}`,
       },
+      cache: "no-store",
     }
   );
 
@@ -51,7 +53,7 @@ export default async function ThisAdmin({
           </Link>
         </div>
       </div>
-      <Card className="space-y-4">
+      {/* <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty
             property={t("adminGivenName")}
@@ -75,7 +77,9 @@ export default async function ThisAdmin({
           />
         </CardHeader>
         <Separator />
-      </Card>
+      </Card> */}
+
+      <AdminView adminData={adminData} adminId={adminId}/>
     </div>
   );
 }
