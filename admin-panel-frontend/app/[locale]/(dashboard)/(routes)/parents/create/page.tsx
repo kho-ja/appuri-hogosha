@@ -22,6 +22,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const formSchema = z.object({
   given_name: z.string().min(1).max(50),
@@ -180,10 +181,10 @@ export default function CreateParent() {
                   <FormItem>
                     <FormLabel>{t("ParentPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("ParentPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>

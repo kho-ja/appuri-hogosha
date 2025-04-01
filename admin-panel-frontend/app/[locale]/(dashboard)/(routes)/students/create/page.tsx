@@ -22,6 +22,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Student from "@/types/student";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -157,23 +158,7 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="phone_number"
-              render={({ field, formState }) => (
-                <FormItem>
-                  <FormLabel>{t("PhoneNumber")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t("PhoneNumber")} {...field} />
-                  </FormControl>
-                  <FormMessage>
-                    {formState.errors.phone_number?.message}
-                  </FormMessage>
-                </FormItem>
-              )}
-            />
-
+            
             <FormField
               control={form.control}
               name="student_number"
@@ -189,6 +174,28 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="phone_number"
+              render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>{t("PhoneNumber")}</FormLabel>
+                  <FormControl>
+                    <PhoneInput
+                      placeholder={t("PhoneNumber")}
+                      international={true}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage>
+                    {formState.errors.phone_number?.message}
+                  </FormMessage>
+                </FormItem>
+              )}
+            />
+
+
           </div>
 
           <FormItem>

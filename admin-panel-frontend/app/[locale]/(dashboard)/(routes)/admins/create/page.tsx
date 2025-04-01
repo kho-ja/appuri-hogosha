@@ -20,6 +20,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useToast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Admin from "@/types/admin";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const formSchema = z.object({
   given_name: z.string().min(1).max(50),
@@ -178,10 +179,10 @@ export default function CreateAdmin() {
                   <FormItem>
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("AdminPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>
