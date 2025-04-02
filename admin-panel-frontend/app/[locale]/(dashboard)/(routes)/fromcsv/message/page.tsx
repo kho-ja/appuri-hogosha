@@ -159,7 +159,7 @@ export default function MessageFromCSV() {
                 <TableHead>{t("description")}</TableHead>
                 <TableHead>{t("priority")}</TableHead>
                 <TableHead>{t("group_names")}</TableHead>
-                <TableHead>{t("student_number")}</TableHead>
+                <TableHead>student_number</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

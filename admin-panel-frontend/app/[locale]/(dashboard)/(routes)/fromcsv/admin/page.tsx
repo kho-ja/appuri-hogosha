@@ -194,10 +194,10 @@ export default function CreateFromCsv() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("email")}</TableHead>
-                <TableHead>{t("given_name")}</TableHead>
-                <TableHead>{t("family_name")}</TableHead>
-                <TableHead>{t("phone_number")}</TableHead>
+                <TableHead>email</TableHead>
+                <TableHead>given_name</TableHead>
+                <TableHead>family_name</TableHead>
+                <TableHead>phone_number</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
