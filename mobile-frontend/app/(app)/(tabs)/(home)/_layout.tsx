@@ -1,5 +1,7 @@
-import { Stack } from 'expo-router'
+import { router, Stack } from 'expo-router'
 import React from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import { Pressable } from 'react-native'
 
 const Layout = () => {
 	return (
@@ -11,7 +13,20 @@ const Layout = () => {
 			/>
 			<Stack.Screen
 				name='message/[id]'
-				options={{ headerTitle: 'Detailed view', headerTitleAlign: 'center' }}
+				options={{
+					headerTitle: 'Detailed view',
+					headerTitleAlign: 'center',
+					headerLeft: () => {
+						return (
+							<Pressable
+								onPress={() => router.navigate('/')}
+								style={{ marginLeft: 10 }}
+							>
+								<Ionicons name={'chevron-back'} size={24} color='black' />
+							</Pressable>
+						)
+					},
+				}}
 			/>
 		</Stack>
 	)
