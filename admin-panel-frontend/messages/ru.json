@@ -721,12 +721,7 @@
     "invalid_priority": "Неверный приоритет",
     "invalid_group_names": "Неверное название(я) группы",
     "group_members_not_found": "Члены группы не найдены",
-    "export": "Экспорт",
-    "title": "Заголовок",
-    "description": "Описание",
-    "priority": "Приоритет",
-    "group_names": "Название группы",
-    "name": "Имя"
+    "export": "Экспорт"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",

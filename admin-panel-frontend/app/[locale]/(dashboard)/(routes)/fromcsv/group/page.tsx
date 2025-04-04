@@ -194,7 +194,7 @@ export default function CreateFromCsv() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("name")}</TableHead>
+                <TableHead>name</TableHead>
                 <TableHead>student_number</TableHead>
               </TableRow>
             </TableHeader>

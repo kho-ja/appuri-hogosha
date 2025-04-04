@@ -155,10 +155,10 @@ export default function MessageFromCSV() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("title")}</TableHead>
-                <TableHead>{t("description")}</TableHead>
-                <TableHead>{t("priority")}</TableHead>
-                <TableHead>{t("group_names")}</TableHead>
+                <TableHead>title</TableHead>
+                <TableHead>description</TableHead>
+                <TableHead>priority</TableHead>
+                <TableHead>group_names</TableHead>
                 <TableHead>student_number</TableHead>
               </TableRow>
             </TableHeader>

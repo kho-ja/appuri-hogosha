@@ -725,12 +725,7 @@
     "invalid_priority": "Noto‘g‘ri ustuvorlik",
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
-    "export": "Yuklab olish",
-    "title": "Sarlavha",
-    "description": "Tavsif",
-    "priority": "Ustuvorlik",
-    "group_names": "Guruh nomi",
-    "name": "Ism"
+    "export": "Yuklab olish"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",

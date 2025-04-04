@@ -724,12 +724,7 @@
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
     "group_members_not_found": "Group members not found",
-    "export": "Export",
-    "title": "Title",
-    "description": "Description",
-    "priority": "Priority",
-    "group_names": "Group Names",
-    "name": "Name"
+    "export": "Export"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",

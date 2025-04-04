@@ -725,12 +725,7 @@
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
-    "export": "ファイルに書き出す",
-    "title": "タイトル",
-    "description": "詳細",
-    "priority": "優先度",
-    "group_names": "グループ名",
-    "name": "名前"
+    "export": "ファイルに書き出す"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
