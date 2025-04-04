@@ -338,7 +338,8 @@
     "back": "Back",
     "ParentCreated": "Parent Created Successfully",
     "createFromCSV": "Create from CSV ",
-    "createFromKintone": "Create from Kintone "
+    "createFromKintone": "Create from Kintone ",
+    "Invalid phone number": "Invalid phone number"
   },
   "CreateStudent": {
     "CreateStudent": "Create Student",
@@ -362,7 +363,8 @@
     "StudentEdited": "Student Edited Successfully",
     "How to create from CSV": "How to create from CSV",
     "createFromCSV": "Create students from CSV",
-    "createFromKintone": "Create students from Kintone"
+    "createFromKintone": "Create students from Kintone",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
@@ -376,7 +378,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "ParentUpdated": "Parent Updated Successfully"
+    "ParentUpdated": "Parent Updated Successfully",
+    "Invalid phone number": "Invalid phone number"
   },
   "ViewStudent": {
     "ViewStudent": "View Student",
@@ -535,7 +538,8 @@
     "Students": "Students",
     "back": "Back",
     "AdminCreated": "Admin Created",
-    "createfromCSV": "Create from CSV"
+    "createfromCSV": "Create from CSV",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditAdmin": {
     "EditAdmin": "Edit Admin",
@@ -549,7 +553,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "AdminUpdated": "Admin Updated"
+    "AdminUpdated": "Admin Updated",
+    "Invalid phone number": "Invalid phone number"
   },
   "forms": {
     "parent_name": "Parent Name",
@@ -724,7 +729,8 @@
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
     "group_members_not_found": "Group members not found",
-    "export": "Export"
+    "export": "Export",
+    "back": "Back"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -772,7 +778,8 @@
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
     "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
-    "export": "Export"
+    "export": "Export",
+    "back": "Back"
   },
   "errors": {
     "wentWrong": "Something went wrong.",

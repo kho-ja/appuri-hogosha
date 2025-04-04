@@ -1,13 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, EllipsisVertical, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -15,6 +9,7 @@ import { Link, usePathname, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import ParentApi from "@/types/parentApi";
 import Parent from "@/types/parent";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -27,7 +22,7 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -36,8 +31,11 @@ import useFileMutation from "@/lib/useFileMutation";
 export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<ParentApi>(
     `parent/list?page=${page}&name=${search}`,
     ["parents", page, search]
@@ -60,6 +58,15 @@ export default function Info() {
       },
     }
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathName, router]);
 
   const { mutate: exportParents } = useFileMutation<{ message: string }>(
     `parent/export`,
@@ -134,6 +141,7 @@ export default function Info() {
         <div className="flex justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);

@@ -337,7 +337,8 @@
     "back": "戻る",
     "ParentCreated": "保護者が作成されました",
     "createFromCSV": "CSVから作成する",
-    "createFromKintone": "Kintoneから作成する"
+    "createFromKintone": "Kintoneから作成する",
+    "Invalid phone number": "無効な電話番号"
   },
   "CreateStudent": {
     "CreateStudent": "学生を作成",
@@ -360,7 +361,8 @@
     "StudentCreated": "学生が正常に作成されました",
     "StudentEdited": "学生が正常に編集されました",
     "createFromCSV": "CSVから作成する ",
-    "createFromKintone": "Kintoneから作成する "
+    "createFromKintone": "Kintoneから作成する ",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditParent": {
     "EditParent": "保護者を編集",
@@ -374,7 +376,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "ParentUpdated": "保護者が正常に更新されました"
+    "ParentUpdated": "保護者が正常に更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "ViewStudent": {
     "ViewStudent": "学生を表示",
@@ -534,7 +537,8 @@
     "Students": "学生",
     "back": "戻る",
     "AdminCreated": "管理者が作成されました",
-    "createfromCSV": "CSVから作成"
+    "createfromCSV": "CSVから作成",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditAdmin": {
     "EditAdmin": "管理者を編集",
@@ -548,7 +552,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "AdminUpdated": "管理者が更新されました"
+    "AdminUpdated": "管理者が更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "forms": {
     "parent_name": "保護者の名前",
@@ -725,7 +730,8 @@
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
-    "export": "ファイルに書き出す"
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -773,7 +779,8 @@
     "student_numbersDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
     "student_number": "学生番号",
     "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
-    "export": "ファイルに書き出す"
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "errors": {
     "wentWrong": "何かが間違っています。",

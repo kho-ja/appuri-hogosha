@@ -336,7 +336,8 @@
     "back": "Назад",
     "ParentCreated": "Родитель создан",
     "createFromCSV": "Создать с помощью CSV",
-    "createFromKintone": "Создать с помощью Kintone"
+    "createFromKintone": "Создать с помощью Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "CreateStudent": {
     "CreateStudent": "Создать студента",
@@ -360,7 +361,8 @@
     "StudentEdited": "Студент отредактирован",
     "adminDeleted": "Администратор удален",
     "createFromCSV": "Создать из CSV",
-    "createFromKintone": "Создать из Kintone"
+    "createFromKintone": "Создать из Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",
@@ -374,7 +376,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "ParentUpdated": "Родитель успешно обновлен"
+    "ParentUpdated": "Родитель успешно обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "ViewStudent": {
     "ViewStudent": "Просмотр студента",
@@ -532,7 +535,8 @@
     "Students": "Студенты",
     "back": "Назад",
     "AdminCreated": "Админ создан",
-    "createfromCSV": "Создать из CSV"
+    "createfromCSV": "Создать из CSV",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditAdmin": {
     "EditAdmin": "Редактировать администратора",
@@ -546,7 +550,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "AdminUpdated": "Админ обновлен"
+    "AdminUpdated": "Админ обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "forms": {
     "parent_name": "Имя родителя",
@@ -721,7 +726,8 @@
     "invalid_priority": "Неверный приоритет",
     "invalid_group_names": "Неверное название(я) группы",
     "group_members_not_found": "Члены группы не найдены",
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "back": "Назад"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -769,7 +775,8 @@
     "student_numbersDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
     "student_number": "Номер студента",
     "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "back": "Назад"
   },
   "errors": {
     "wentWrong": "Что-то пошло не так.",

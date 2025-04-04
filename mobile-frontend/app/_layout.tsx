@@ -1,5 +1,6 @@
 import React from 'react'
 import * as Notifications from 'expo-notifications'
+import * as Linking from 'expo-linking';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	registerForPushNotificationsAsync,
@@ -15,6 +16,7 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { redirectSystemPath } from '../+native-intent'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -29,10 +31,11 @@ function useNotificationObserver() {
 		let isMounted = true
 
 		function redirect(notification: Notifications.Notification) {
-			const url = notification.request.content.data?.url
-			if (url) {
-				router.push(url)
-			}
+      const fullUrl = notification.request.content.data?.url;
+      if (fullUrl) {
+        const processedPath = redirectSystemPath({ path: fullUrl, initial: false });
+        router.push(processedPath);
+      }
 		}
 
 		Notifications.getLastNotificationResponseAsync().then(response => {
@@ -74,13 +77,28 @@ export default function Root() {
 		)
 		return () => subscription.remove()
 	}, [])
-
+  React.useEffect(() => {
+    const handleDeepLink = ({ url }) => {
+      if (url) {
+        const processedPath = redirectSystemPath({ path: url, initial: false });
+        router.push(processedPath);
+      }
+    };
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        const processedPath = redirectSystemPath({ path: url, initial: true });
+        router.push(processedPath);
+      }
+    });
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, []);
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()
 	return (
 		<RootSiblingParent>
-			<GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
 				<SQLiteProvider
 					databaseName='maria.db'
 					assetSource={{ assetId: require('../assets/database/maria.db') }}
@@ -91,7 +109,7 @@ export default function Root() {
 								<I18nProvider>
 									<QueryClientProvider client={queryClient}>
 										<StudentProvider>
-											<Slot />
+                      <Slot />
 										</StudentProvider>
 									</QueryClientProvider>
 								</I18nProvider>

@@ -340,7 +340,8 @@
     "back": "Orqaga",
     "ParentCreated": "Vasiy muvaffaqiyatli yaratildi",
     "createFromCSV": "CSV dan yaratish ",
-    "createFromKintone": "Kintone dan yaratish"
+    "createFromKintone": "Kintone dan yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "CreateStudent": {
     "CreateStudent": "Talaba yaratish",
@@ -363,7 +364,8 @@
     "StudentCreated": "Talaba muvaffaqiyatli yaratildi",
     "StudentEdited": "Talaba muvaffaqiyatli tahrirlandi",
     "createFromCSV": "CSV dan yaratish",
-    "createFromKintone": "Kintone orqali yaratish"
+    "createFromKintone": "Kintone orqali yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditParent": {
     "EditParent": "Vasiy tahrirlash",
@@ -377,7 +379,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi"
+    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "ViewStudent": {
     "ViewStudent": "Talabalarni ko'rish",
@@ -536,7 +539,8 @@
     "Students": "Talabalar",
     "back": "Orqaga",
     "AdminCreated": "Admin yaratildi",
-    "createfromCSV": "CSVdan yaratish "
+    "createfromCSV": "CSVdan yaratish ",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditAdmin": {
     "EditAdmin": "Admin tahrirlash",
@@ -550,7 +554,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "AdminUpdated": "Admin tahrirlandi"
+    "AdminUpdated": "Admin tahrirlandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "forms": {
     "parent_name": "Ota-ona ismi",
@@ -725,7 +730,8 @@
     "invalid_priority": "Noto‘g‘ri ustuvorlik",
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
-    "export": "Yuklab olish"
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -773,7 +779,8 @@
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
     "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
-    "export": "Yuklab olish"
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
 
   "errors": {

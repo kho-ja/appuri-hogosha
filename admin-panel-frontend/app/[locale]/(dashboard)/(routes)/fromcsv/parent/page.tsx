@@ -105,6 +105,11 @@ export default function CreateFromCsv() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createParentFromCsv")}</h1>
+        <Link href="/parents/create" passHref>
+          <Button type="button" variant={"secondary"}>
+            {t("back")}
+          </Button>
+        </Link>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>

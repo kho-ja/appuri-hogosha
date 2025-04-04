@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, ActivityIndicator } from 'react-native'
 import { useStudents } from '@/contexts/student-context' // Your student context
 import { ThemedText } from '@/components/ThemedText'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -13,7 +13,8 @@ const HomeScreen = () => {
 	if (!students || students.length === 0) {
 		return (
 			<View style={styles.loadingContainer}>
-				<ThemedText>Loading...</ThemedText>
+        <ActivityIndicator size="large" color="#0000ff" />
+				<ThemedText>Loading students...</ThemedText>
 			</View>
 		)
 	}

@@ -9,6 +9,7 @@ import { Link, usePathname, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import PostApi from "@/types/postApi";
 import Post from "@/types/post";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogDescription,
@@ -21,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -29,13 +30,17 @@ import useApiMutation from "@/lib/useApiMutation";
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<PostApi>(
     `post/list?page=${page}&text=${search}`,
     ["posts", page, search]
   );
   const pathName = usePathname();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
@@ -52,6 +57,15 @@ export default function Info() {
       },
     }
   );
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathName, router]);
 
   const postColumns: ColumnDef<Post>[] = [
     {
@@ -147,6 +161,7 @@ export default function Info() {
       <div className="flex justify-between">
         <Input
           placeholder={t("filter")}
+          value={search}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(e.target.value);
             setPage(1);
