@@ -23,13 +23,16 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
-const formSchema = z.object({
-  phone_number: z.string().min(10).max(20),
-  given_name: z.string().min(2).max(50),
-  family_name: z.string().min(2).max(50),
-  student_number: z.string().min(1).max(10),
-});
+const GetFormSchema = (t: (key: string) => string) => {
+  return z.object({
+    phone_number: z.string().min(10).max(20).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    given_name: z.string().min(2).max(50),
+    family_name: z.string().min(2).max(50),
+    student_number: z.string().min(1).max(10),
+  });
+};
 
 export default function CreateStudent({
   params: { studentId },
@@ -40,6 +43,7 @@ export default function CreateStudent({
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
+  const formSchema = GetFormSchema(t);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {

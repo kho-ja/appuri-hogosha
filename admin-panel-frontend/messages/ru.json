@@ -334,7 +334,8 @@
     "back": "Назад",
     "ParentCreated": "Родитель создан",
     "createFromCSV": "Создать с помощью CSV",
-    "createFromKintone": "Создать с помощью Kintone"
+    "createFromKintone": "Создать с помощью Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "CreateStudent": {
     "CreateStudent": "Создать студента",
@@ -358,7 +359,8 @@
     "StudentEdited": "Студент отредактирован",
     "adminDeleted": "Администратор удален",
     "createFromCSV": "Создать из CSV",
-    "createFromKintone": "Создать из Kintone"
+    "createFromKintone": "Создать из Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",
@@ -372,7 +374,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "ParentUpdated": "Родитель успешно обновлен"
+    "ParentUpdated": "Родитель успешно обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "ViewStudent": {
     "ViewStudent": "Просмотр студента",
@@ -526,7 +529,8 @@
     "Students": "Студенты",
     "back": "Назад",
     "AdminCreated": "Админ создан",
-    "createfromCSV": "Создать из CSV"
+    "createfromCSV": "Создать из CSV",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditAdmin": {
     "EditAdmin": "Редактировать администратора",
@@ -540,7 +544,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "AdminUpdated": "Админ обновлен"
+    "AdminUpdated": "Админ обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "forms": {
     "parent_name": "Имя родителя",
