@@ -20,18 +20,23 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useToast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Admin from "@/types/admin";
+import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
-const formSchema = z.object({
-  given_name: z.string().min(1).max(50),
-  family_name: z.string().min(1).max(50),
-  phone_number: z.string().min(10).max(500),
-  email: z.string().email(),
-});
+const GetFormSchema = (t: (key: string) => string) => {
+  return z.object({
+    given_name: z.string().min(1).max(50),
+    family_name: z.string().min(1).max(50),
+    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    email: z.string().email(),
+  });
+};
 
 export default function CreateAdmin() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateAdmin");
+  const formSchema = GetFormSchema(t);
   const tName = useTranslations("names");
   const router = useRouter();
   const { toast } = useToast();
@@ -104,7 +109,7 @@ export default function CreateAdmin() {
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate(values as any))}
+          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
           className="space-y-4"
         >
           <div className="flex w-full">
@@ -178,10 +183,10 @@ export default function CreateAdmin() {
                   <FormItem>
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("AdminPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>

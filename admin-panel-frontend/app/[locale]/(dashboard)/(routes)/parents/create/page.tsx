@@ -22,18 +22,23 @@ import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
+import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
-const formSchema = z.object({
-  given_name: z.string().min(1).max(50),
-  family_name: z.string().min(1).max(50),
-  phone_number: z.string().min(10).max(500),
-  email: z.string().email(),
-});
+const GetFormSchema = (t: (key: string) => string) => {
+  return z.object({
+    given_name: z.string().min(1).max(50),
+    family_name: z.string().min(1).max(50),
+    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    email: z.string().email(),
+  });
+};
 
 export default function CreateParent() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateParent");
+  const formSchema = GetFormSchema(t);
   const tName = useTranslations("names");
   const router = useRouter();
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
@@ -102,6 +107,7 @@ export default function CreateParent() {
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
+              phone_number: values.phone_number.slice(1),
               students: selectedStudents.map((student) => student.id),
             } as any)
           )}
@@ -180,10 +186,10 @@ export default function CreateParent() {
                   <FormItem>
                     <FormLabel>{t("ParentPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("ParentPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>
