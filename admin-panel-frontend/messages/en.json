@@ -164,7 +164,9 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers"
+    "editRecivers": "Edit Recievers",
+    "Groups": "Groups",
+    "Students": "Students"
   },
   "ThisGroup": {
     "GroupView": "Group Details",
@@ -410,7 +412,8 @@
     "DouYouDeleteStudent": "Do you want to delete this student?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "studentDeleted": "Student Deleted Successfully"
+    "studentDeleted": "Student Deleted Successfully",
+    "export": "Export"
   },
   "groups": {
     "groups": "Groups",
@@ -425,7 +428,8 @@
     "DouYouDeleteGroup": "Do You really want to delete this group?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "groupDeleted": "Group deleted Successfully"
+    "groupDeleted": "Group deleted Successfully",
+    "export": "Export"
   },
   "parents": {
     "parents": "Parents",
@@ -441,7 +445,8 @@
     "doYouDeleteParent": "Do you really want to delete this Parent?",
     "close": "Close",
     "confirm": "Confirm",
-    "parentDeleted": "Parent Deleted Successfully"
+    "parentDeleted": "Parent Deleted Successfully",
+    "export": "Export"
   },
   "posts": {
     "posts": "Posts",
@@ -516,7 +521,8 @@
     "doYouDeleteAdmin": "Do you really want to delete this Admin?",
     "close": "Close",
     "confirm": "Confirm",
-    "adminDeleted": "Admin Deleted Successfully"
+    "adminDeleted": "Admin Deleted Successfully",
+    "export": "Export"
   },
   "CreateAdmin": {
     "CreateAdmin": "Create Admin",
@@ -723,6 +729,7 @@
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
     "group_members_not_found": "Group members not found",
+    "export": "Export",
     "back": "Back"
   },
   "fromKintone": {
@@ -771,6 +778,7 @@
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
     "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
+    "export": "Export",
     "back": "Back"
   },
   "errors": {
@@ -1052,7 +1060,9 @@
     "lowCheckbox": "Low",
     "NotificationSettingUpdate": "Update Setting",
     "NotificationSettingUpdated": "Notification Setting Updated Successfully",
-    "NotificationSettingUpdateFailed": "Notification Setting Update Failed"
+    "NotificationSettingUpdateFailed": "Notification Setting Update Failed",
+    "SettingsTitle": "Notifications",
+    "SettingsDescription": "Configure how you receive notifications."
   },
   "EditStudentsDialog": {
     "saving": "Saving...",

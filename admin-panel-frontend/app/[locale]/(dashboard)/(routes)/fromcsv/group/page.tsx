@@ -192,7 +192,7 @@ export default function CreateFromCsv() {
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </CardHeader>
         <CardContent>
@@ -200,7 +200,7 @@ export default function CreateFromCsv() {
             <TableHeader>
               <TableRow>
                 <TableHead>name</TableHead>
-                <TableHead>student_numbers</TableHead>
+                <TableHead>student_number</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

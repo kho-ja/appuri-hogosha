@@ -163,7 +163,9 @@
     "not_viewed_count": "未閲覧数",
     "view": "表示",
     "editMessage": "メッセージを編集",
-    "editRecivers": "受信者を編集"
+    "editRecivers": "受信者を編集",
+    "Groups": "グループ",
+    "Students": "学生"
   },
   "ThisGroup": {
     "GroupView": "グループの詳細",
@@ -409,7 +411,8 @@
     "DouYouDeleteStudent": "この学生を削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "studentDeleted": "学生が削除されました"
+    "studentDeleted": "学生が削除されました",
+    "export": "ファイルに書き出す"
   },
   "groups": {
     "groups": "グループ",
@@ -424,7 +427,8 @@
     "DouYouDeleteGroup": "このグループを本当に削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "groupDeleted": "グループが正常に削除されました"
+    "groupDeleted": "グループが正常に削除されました",
+    "export": "ファイルに書き出す"
   },
   "parents": {
     "parents": "保護者",
@@ -440,7 +444,8 @@
     "doYouDeleteParent": "この保護者を本当に消しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "parentDeleted": "保護者が削除されました"
+    "parentDeleted": "保護者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "posts": {
     "posts": "投稿",
@@ -515,7 +520,8 @@
     "doYouDeleteAdmin": "この管理者を削除しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "adminDeleted": "管理者が削除されました"
+    "adminDeleted": "管理者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "CreateAdmin": {
     "CreateAdmin": "管理者を作成",
@@ -724,6 +730,7 @@
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
+    "export": "ファイルに書き出す",
     "back": "戻る"
   },
   "fromKintone": {
@@ -772,6 +779,7 @@
     "student_numbersDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
     "student_number": "学生番号",
     "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
+    "export": "ファイルに書き出す",
     "back": "戻る"
   },
   "errors": {
@@ -1051,7 +1059,9 @@
     "lowCheckbox": "低",
     "NotificationSettingUpdate": "通知設定が更新する",
     "NotificationSettingUpdated": "通知設定が更新されました",
-    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました"
+    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました",
+    "SettingsTitle": "通知",
+    "SettingsDescription": "通知の受信方法を設定します。"
   },
   "EditStudentsDialog": {
     "saving": "保存中...",

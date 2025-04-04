@@ -124,7 +124,10 @@
     "preview": "Oldingi ko'rish",
     "messageSent": "Xabar muvaffaqiyatli yuborildi",
     "messageEdited": "Xabar muvaffaqiyatli tahrirlandi",
-    "createFromCSV": "CSV dan xabar yuborish"
+    "createFromCSV": "CSV dan xabar yuborish",
+    "choose_file": "Faylni tanlang",
+    "no_file_chosen": "Faylni tanlangmadi",
+    "selected_image": "Tanlangan rasm"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "Nashriyot",
@@ -163,7 +166,9 @@
     "not_viewed_count": "Ko‘rilmaganlar soni",
     "view": "Ko'rish",
     "editMessage": "Xabarni tahrirlash",
-    "editRecivers": "Qabul qiluvchilarni tahrirlash"
+    "editRecivers": "Qabul qiluvchilarni tahrirlash",
+    "Groups": "Guruhlar",
+    "Students": "Talabalar"
   },
   "ThisGroup": {
     "GroupView": "Guruh Tafsilotlari",
@@ -408,7 +413,8 @@
     "DouYouDeleteStudent": "Talabani o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi"
+    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "groups": {
     "groups": "Guruhlar",
@@ -423,7 +429,8 @@
     "DouYouDeleteGroup": "Ushbu guruhni haqiqatdan ham oʻchirmoqchimisiz?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi"
+    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi",
+    "export": "Yuklab olish"
   },
   "parents": {
     "parents": "Ota-onalar",
@@ -439,7 +446,8 @@
     "doYouDeleteParent": "Rostdan ham bu Ota-Onani o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi"
+    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "posts": {
     "posts": "Xabarlar",
@@ -482,7 +490,7 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editParent": "Edit Parent"
+    "editParent": "Vasiy tahrirlash"
   },
   "ThisAdmin": {
     "AdminView": "Admin ko'rinishi",
@@ -514,7 +522,8 @@
     "doYouDeleteAdmin": "Rostdan ham bu Adminni o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "adminDeleted": "Admin muvaffaqiyatli o'chirildi"
+    "adminDeleted": "Admin muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "CreateAdmin": {
     "CreateAdmin": "Admin yaratish",
@@ -721,6 +730,7 @@
     "invalid_priority": "Noto‘g‘ri ustuvorlik",
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
+    "export": "Yuklab olish",
     "back": "Orqaga"
   },
   "fromKintone": {
@@ -769,6 +779,7 @@
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
     "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
+    "export": "Yuklab olish",
     "back": "Orqaga"
   },
 
@@ -1050,7 +1061,9 @@
     "lowCheckbox": "Past",
     "NotificationSettingUpdate": "Bildirishnoma sozlamalari yangilash",
     "NotificationSettingUpdated": "Bildirishnoma sozlamalari muvaffaqiyatli yangilandi",
-    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi"
+    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi",
+    "SettingsTitle": "Bildirishnomalar",
+    "SettingsDescription": "Sizga ularni kirish uchun sizga ularni kirish."
   },
   "EditStudentsDialog": {
     "saving": "Saplanmoqda...",
@@ -1068,7 +1081,7 @@
   },
   "recievers": {
     "ChangeRecievers": "Qabul qiluvchilarni o'zgartirish",
-    "students": "Talabalar",
+    "Students": "Talabalar",
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
     "back": "Orqaga",
