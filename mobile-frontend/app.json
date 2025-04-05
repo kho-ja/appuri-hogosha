@@ -35,7 +35,7 @@
 					"data": [
 						{
 							"scheme": "https",
-							"host": "parents-monolithic.vercel.app",
+							"host": "appuri-hogosha.vercel.app",
 							"pathPrefix": "/parentnotification"
 						}
 					],
