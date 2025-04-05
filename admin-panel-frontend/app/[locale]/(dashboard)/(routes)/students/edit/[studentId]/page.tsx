@@ -169,7 +169,7 @@ export default function CreateStudent({
           </div>
 
           <Button disabled={isLoading || isPending}>
-            {isPending ? `${t("Submit")}...` : t("Submit")}
+            {t("EditStudent") + (isPending ? "..." : "")}
           </Button>
         </form>
       </Form>
