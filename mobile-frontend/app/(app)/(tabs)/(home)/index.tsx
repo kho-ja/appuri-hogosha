@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/ThemedText'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StudentSelector } from '@/components/StudentSelector' // Your selector component
 import MessageList from '@/components/MessageList'
+import { ActivityIndicator } from 'react-native'
 
 const HomeScreen = () => {
 	const { students } = useStudents() // Fetch students from context
@@ -13,6 +14,7 @@ const HomeScreen = () => {
 	if (!students || students.length === 0) {
 		return (
 			<View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
 				<ThemedText>Loading...</ThemedText>
 			</View>
 		)

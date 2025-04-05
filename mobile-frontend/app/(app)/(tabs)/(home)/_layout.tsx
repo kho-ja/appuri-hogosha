@@ -1,9 +1,13 @@
 import { router, Stack } from 'expo-router'
 import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
+import { useColorScheme } from '@/hooks/useColorScheme'
 import { Pressable } from 'react-native'
+import { Colors } from '@/constants/Colors'
 
 const Layout = () => {
+	const colorScheme = useColorScheme()
+	const iconColor = Colors[colorScheme]?.tint
 	return (
 		<Stack>
 			<Stack.Screen name='index' options={{ headerShown: false }} />
@@ -22,7 +26,7 @@ const Layout = () => {
 								onPress={() => router.navigate('/')}
 								style={{ marginLeft: 10 }}
 							>
-								<Ionicons name={'chevron-back'} size={24} color='black' />
+								<Ionicons name={'arrow-back-outline'} size={24} color={iconColor}/>
 							</Pressable>
 						)
 					},
