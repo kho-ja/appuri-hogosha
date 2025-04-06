@@ -35,8 +35,14 @@ function useNotificationObserver() {
       const fullUrl = notification.request.content.data?.url;
       if (fullUrl) {
         const processedPath = redirectSystemPath({ path: fullUrl, initial: false });
-        hasRedirected.current = true;
-        router.push(processedPath);
+        console.log('Notification redirect to:', processedPath);
+        try{
+          router.push(processedPath);
+          hasRedirected.current = true;
+        }catch(error){
+          console.error('Navigation error from notification:', error);
+          router.push("/")//redirects to home
+        }
       }
 		}
 
@@ -83,13 +89,26 @@ export default function Root() {
     const handleDeepLink = ({ url }) => {
       if (url) {
         const processedPath = redirectSystemPath({ path: url, initial: false });
-        router.push(processedPath);
+        console.log('Deep link redirect to:', processedPath);
+        try {
+          router.push(processedPath);
+        }catch (error) {
+          console.error('Navigation error from deep link:', error);
+          router.push("/") //redirects to home
+        }
+
       }
     };
     Linking.getInitialURL().then((url) => {
       if (url) {
         const processedPath = redirectSystemPath({ path: url, initial: true });
-        router.push(processedPath);
+        console.log('Initial URL redirect to:', processedPath);
+        try {
+          router.push(processedPath);
+        } catch (error) {
+          console.error('Navigation error from initial URL:', error);
+          router.push("/") //redirects to home
+        }
       }
     });
     const subscription = Linking.addEventListener('url', handleDeepLink);

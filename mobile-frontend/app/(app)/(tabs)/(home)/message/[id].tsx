@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
 import {
-	ScrollView,
-	StyleSheet,
-	View,
-	Modal,
-	TouchableOpacity,
-	Text,
-	Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  Modal,
+  TouchableOpacity,
+  Text,
+  Pressable, ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { ThemedText } from '@/components/ThemedText'
@@ -218,7 +218,12 @@ export default function DetailsScreen() {
 		fetchMessage()
 	}, [id, apiUrl, db, isOnline, session])
 
-	if (loading) return <ThemedText>Loading...</ThemedText>
+	if (loading) return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color="#adb5bd"  />
+      <ThemedText>Loading...</ThemedText>
+    </View>
+  )
 	if (error) return <ThemedText>{error}</ThemedText>
 	if (!message) return <ThemedText>{i18n[language].messageNotFound}</ThemedText>
 
