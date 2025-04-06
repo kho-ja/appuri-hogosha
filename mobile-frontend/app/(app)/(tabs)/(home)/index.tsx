@@ -13,7 +13,7 @@ const HomeScreen = () => {
 	if (!students || students.length === 0) {
 		return (
 			<View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#adb5bd" />
 				<ThemedText>Loading students...</ThemedText>
 			</View>
 		)

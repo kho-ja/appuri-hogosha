@@ -9,8 +9,10 @@ export function redirectSystemPath({ path, initial }: { path: string; initial: b
         }
         return pathname || '/';
       }
+    }else if (path.startsWith('jduapp://')) {
+      // Extract the path after the scheme, ensuring it starts with /
+      return '/' + path.replace('jduapp://', '');
     }
-    // For custom schemes like "jduapp://", return path as is
     return path;
   } catch {
     return '/unexpected-error';

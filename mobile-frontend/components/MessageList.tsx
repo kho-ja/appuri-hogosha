@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
 	},
 	loadMoreButton: {
 		marginTop: 10,
+    marginHorizontal: 10,
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
