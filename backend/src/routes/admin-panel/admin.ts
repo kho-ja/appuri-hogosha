@@ -118,7 +118,7 @@ class AdminController implements IController {
                 const { email, phone_number, given_name, family_name } = row;
                 const rowErrors: any = {};
                 const normalizedEmail = String(email).trim();
-                const normalizedPhoneNumber = Number(phone_number).toString();
+                const normalizedPhoneNumber = String(phone_number).trim();
                 const normalizedGiven = String(given_name).trim();
                 const normalizedFamily = String(family_name).trim();
 
