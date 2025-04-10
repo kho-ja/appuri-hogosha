@@ -40,27 +40,25 @@ const styles = StyleSheet.create({
     //backgroundColor: '#005678',
 	},
 })
-// Deduplication function using a composite key based on title, content, and sent_time
-const deduplicateMessages = (messages: Message[]): Message[] => {
-  const messageMap = new Map<string, Message>()
+
+// Group messages by title, content, and sent_time
+const groupMessages = (messages: Message[]): { key: string; messages: Message[] }[] => {
+  const messageMap = new Map<string, Message[]>();
 
   messages.forEach((message) => {
-    // Normalize sent_time to ISO string for consistency
     const sentTimestamp = message.sent_time
       ? new Date(message.sent_time).toISOString()
-      : ''
-
-    // Create a composite key with a unique delimiter to avoid collisions
-    const compositeKey = `${message.title || ''}|-|${message.content || ''}|-|${sentTimestamp}`
-
-    // Keep the first occurrence of each unique composite key
+      : '';
+    const compositeKey = `${message.title || ''}|-|${message.content || ''}|-|${sentTimestamp}`;
     if (!messageMap.has(compositeKey)) {
-      messageMap.set(compositeKey, message)
+      messageMap.set(compositeKey, []);
     }
-  })
+    messageMap.get(compositeKey)!.push(message);
+  });
 
-  return Array.from(messageMap.values())
-}
+  return Array.from(messageMap, ([key, messages]) => ({ key, messages }));
+};
+
 const MessageList = ({ studentId }: { studentId: number }) => {
 	// Contexts and hooks
 	const db = useSQLiteContext()
@@ -164,7 +162,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 			if (!isOnline) {
 				try {
 					const messages = await fetchMessagesFromDB(db, student.student_number)
-					setLocalMessages(deduplicateMessages(messages))
+					setLocalMessages(messages)
 				} catch (error) {
 					console.error('Error loading offline messages:', error)
 				} finally {
@@ -197,7 +195,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 					await refetch()
 				} else {
 					const messages = await fetchMessagesFromDB(db, student.student_number)
-					setLocalMessages(deduplicateMessages(messages))
+					setLocalMessages(messages)
 				}
 			}
 			refreshData()
@@ -216,7 +214,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				await refetch()
 			} else if (student) {
 				const messages = await fetchMessagesFromDB(db, student.student_number)
-				setLocalMessages(deduplicateMessages(messages))
+				setLocalMessages(messages)
 			}
 		} catch (error) {
 			console.error('Refresh failed:', error)
@@ -247,10 +245,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 			}
 		}
 	}
-  const uniqueMessages = useMemo(() => {
-    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages
-    return deduplicateMessages(allMessages)
-  }, [isOnline, data, localMessages])
+
+  const messageGroups = useMemo(() => {
+    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
+    return groupMessages(allMessages);
+  }, [isOnline, data, localMessages]);
 
 	// Loading state while fetching student data
 	if (!student) {
@@ -270,9 +269,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				}
 				contentContainerStyle={{ paddingBottom: 80 }}
 			>
-				{uniqueMessages.map(message => (
-					<React.Fragment key={message.id}>
-						<Card message={message} />
+				{messageGroups.map(group => (
+					<React.Fragment key={group.key}>
+						<Card messageGroup={group.messages} />
 						<Separator orientation='horizontal' />
 					</React.Fragment>
 				))}
