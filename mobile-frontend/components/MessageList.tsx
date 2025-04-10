@@ -3,8 +3,9 @@ import React, {
 	useEffect,
 	useRef,
 	useState,
-	useCallback,
+	useCallback
 } from 'react'
+
 import { ScrollView, RefreshControl, StyleSheet, View } from 'react-native'
 import { useSQLiteContext } from 'expo-sqlite'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -23,6 +24,7 @@ import {
 } from '@/utils/queries'
 import { Separator } from '@/components/atomic/separator'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import {useMemo} from "react";
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -31,13 +33,34 @@ const styles = StyleSheet.create({
 	},
 	loadMoreButton: {
 		marginTop: 10,
-    marginHorizontal: 10,
+    marginHorizontal: 15,
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
+    //backgroundColor: '#005678',
 	},
 })
+// Deduplication function using a composite key based on title, content, and sent_time
+const deduplicateMessages = (messages: Message[]): Message[] => {
+  const messageMap = new Map<string, Message>()
 
+  messages.forEach((message) => {
+    // Normalize sent_time to ISO string for consistency
+    const sentTimestamp = message.sent_time
+      ? new Date(message.sent_time).toISOString()
+      : ''
+
+    // Create a composite key with a unique delimiter to avoid collisions
+    const compositeKey = `${message.title || ''}|-|${message.content || ''}|-|${sentTimestamp}`
+
+    // Keep the first occurrence of each unique composite key
+    if (!messageMap.has(compositeKey)) {
+      messageMap.set(compositeKey, message)
+    }
+  })
+
+  return Array.from(messageMap.values())
+}
 const MessageList = ({ studentId }: { studentId: number }) => {
 	// Contexts and hooks
 	const db = useSQLiteContext()
@@ -141,7 +164,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 			if (!isOnline) {
 				try {
 					const messages = await fetchMessagesFromDB(db, student.student_number)
-					setLocalMessages(messages)
+					setLocalMessages(deduplicateMessages(messages))
 				} catch (error) {
 					console.error('Error loading offline messages:', error)
 				} finally {
@@ -174,7 +197,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 					await refetch()
 				} else {
 					const messages = await fetchMessagesFromDB(db, student.student_number)
-					setLocalMessages(messages)
+					setLocalMessages(deduplicateMessages(messages))
 				}
 			}
 			refreshData()
@@ -193,7 +216,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				await refetch()
 			} else if (student) {
 				const messages = await fetchMessagesFromDB(db, student.student_number)
-				setLocalMessages(messages)
+				setLocalMessages(deduplicateMessages(messages))
 			}
 		} catch (error) {
 			console.error('Refresh failed:', error)
@@ -224,6 +247,10 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 			}
 		}
 	}
+  const uniqueMessages = useMemo(() => {
+    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages
+    return deduplicateMessages(allMessages)
+  }, [isOnline, data, localMessages])
 
 	// Loading state while fetching student data
 	if (!student) {
@@ -234,8 +261,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 		)
 	}
 
-	// Determine which messages to display based on online/offline state
-	const messages = isOnline ? data?.pages.flat() || [] : localMessages
 
 	return (
 		<SafeAreaView>
@@ -245,7 +270,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				}
 				contentContainerStyle={{ paddingBottom: 80 }}
 			>
-				{messages.map(message => (
+				{uniqueMessages.map(message => (
 					<React.Fragment key={message.id}>
 						<Card message={message} />
 						<Separator orientation='horizontal' />
