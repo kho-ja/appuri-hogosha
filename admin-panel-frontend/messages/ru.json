@@ -503,7 +503,10 @@
     "Phone_number": "Номер телефона",
     "Ststudent_number": "Номер студента",
     "editStudents": "Редактировать студентов",
-    "editAdmin": "Редактировать администратора"
+    "editAdmin": "Редактировать администратора",
+    "SMS_Settings": "Настройки SMS",
+    "SchoolName": "Название школы",
+    "Notifications": "Уведомления"
   },
   "admins": {
     "admins": "Администраторы",
@@ -1061,6 +1064,13 @@
     "NotificationSettingUpdateFailed": "Не удалось обновить настройки уведомлений",
     "SettingsTitle": "Уведомления",
     "SettingsDescription": "Настройте, как вы получаете уведомления."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "Название школы",
+    "SchoolNameDescription": "Обновите название вашей школы.",
+    "SchoolNameUpdateFailed": "Не удалось обновить название школы",
+    "SchoolNameUpdated": "Название школы обновлено",
+    "SchoolNameEditBtn": "Обновить"
   },
   "EditStudentsDialog": {
     "saving": "сохранение...",

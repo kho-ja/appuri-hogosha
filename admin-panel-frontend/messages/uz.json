@@ -506,7 +506,10 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editAdmin": "Admin tahrirlash"
+    "editAdmin": "Admin tahrirlash",
+    "SMS_Settings": "SMS Sozlamalari",
+    "SchoolName": "Maktab nomi",
+    "Notifications": "Bildirishlar"
   },
   "admins": {
     "admins": "Adminlar",
@@ -1064,6 +1067,13 @@
     "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi",
     "SettingsTitle": "Bildirishnomalar",
     "SettingsDescription": "Sizga ularni kirish uchun sizga ularni kirish."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "Maktab nomi",
+    "SchoolNameDescription": "Maktab nomini yangilash.",
+    "SchoolNameUpdateFailed": "Maktab nomini yangilashda xatolik yuz berdi",
+    "SchoolNameUpdated": "Maktab nomi muvaffaqiyatli yangilandi",
+    "SchoolNameEditBtn": "Tahrirlash"
   },
   "EditStudentsDialog": {
     "saving": "Saplanmoqda...",
