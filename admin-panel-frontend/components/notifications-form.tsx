@@ -16,16 +16,19 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
-import { Input } from "postcss";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
 import { useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const notificationsFormSchema = z.object({
   high: z.boolean(),
   medium: z.boolean(),
   low: z.boolean(),
+  title: z.string().min(1).optional(), 
 });
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
@@ -34,6 +37,7 @@ const defaultValues: Partial<NotificationsFormValues> = {
   high: false,
   medium: false,
   low: false,
+  title: "",
 };
 
 type School = {
@@ -78,6 +82,7 @@ export function NotificationsForm() {
         high: data.school.priority.high,
         medium: data.school.priority.medium,
         low: data.school.priority.low,
+        title: data.school.name,
       });
     }
   }, [isLoading, form, data]);
@@ -89,11 +94,11 @@ export function NotificationsForm() {
         className="space-y-4"
       >
         <div>
-          <FormLabel>{t("SMSHeader")}</FormLabel>
+          <FormLabel className="text-lg font-medium">{t("SMSHeader")}</FormLabel>
           <FormDescription>{t("SMSDescription")}</FormDescription>
         </div>
 
-        <div className="grid gap-2">
+        <div className="grid gap-2 pb-4">
           <FormField
             control={form.control}
             name={"high"}

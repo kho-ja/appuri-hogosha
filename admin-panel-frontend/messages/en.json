@@ -505,7 +505,10 @@
     "Phone_number": "Phone Number",
     "Ststudent_number": "Student Number",
     "editStudents": "Edit Students",
-    "editAdmin": "Edit Admin"
+    "editAdmin": "Edit Admin",
+    "SMS_Settings": "SMS Settings",
+    "SchoolName": "School Name",
+    "Notifications": "Notifications"
   },
   "admins": {
     "admins": "Admins",
@@ -1063,6 +1066,13 @@
     "NotificationSettingUpdateFailed": "Notification Setting Update Failed",
     "SettingsTitle": "Notifications",
     "SettingsDescription": "Configure how you receive notifications."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "School Name",
+    "SchoolNameDescription": "Update your school name.",
+    "SchoolNameUpdated": "School Name Updated Successfully",
+    "SchoolNameUpdateFailed": "School Name Update Failed",
+    "SchoolNameEditBtn": "Update"
   },
   "EditStudentsDialog": {
     "saving": "Saving...",
