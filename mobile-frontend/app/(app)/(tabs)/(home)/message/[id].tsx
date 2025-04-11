@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Text,
   Pressable, ActivityIndicator,
+  ToastAndroid
 } from 'react-native'
 import { useLocalSearchParams } from 'expo-router'
 import { ThemedText } from '@/components/ThemedText'
@@ -21,36 +22,41 @@ import { Autolink } from 'react-native-autolink'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import { Image } from 'expo-image'
 import ImageViewer from 'react-native-image-zoom-viewer'
+import {Separator} from "@/components/atomic/separator";
+import {Ionicons} from "@expo/vector-icons";
+import * as Clipboard from 'expo-clipboard';
+
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 10,
+		padding: 25,
 	},
 	titleRow: {
 		flexDirection: 'row',
 		marginTop: 5,
+    justifyContent: 'space-between',
 	},
 	title: {
-		fontSize: 18,
+		fontSize: 26,
 		fontWeight: '600',
 		textAlign: 'center',
 	},
 	dateRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginTop: 5,
+		marginTop: 15,
 		gap: 10,
 	},
 	dateText: {
-		fontSize: 12,
+		fontSize: 16,
 		fontWeight: '300',
 	},
 	descriptionRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		marginTop: 5,
-		paddingBottom: 50,
+		paddingBottom: 20,
 	},
 	importanceBadge: {
 		padding: 5,
@@ -58,6 +64,7 @@ const styles = StyleSheet.create({
 		backgroundColor: 'red',
 		color: 'white',
 		fontSize: 12,
+    paddingTop: 8,
 	},
 	groupStyle: {
 		backgroundColor: '#059669',
@@ -69,7 +76,7 @@ const styles = StyleSheet.create({
 	image: {
 		flex: 1,
 		width: '100%',
-		height: 200,
+		height: 260,
 	},
 	closeButton: {
 		position: 'absolute',
@@ -85,6 +92,17 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: 'bold',
 	},
+  copyButton: {
+    marginTop: -15,
+    marginHorizontal: 10,
+    marginBottom: 20,
+    backgroundColor: '#005678',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    display: 'flex',
+    alignSelf: 'flex-end',
+  }
 })
 
 export default function DetailsScreen() {
@@ -227,7 +245,29 @@ export default function DetailsScreen() {
 	if (error) return <ThemedText>{error}</ThemedText>
 	if (!message) return <ThemedText>{i18n[language].messageNotFound}</ThemedText>
 
-	const imageArray = Array.isArray(message.images)
+  const getImportanceLabel = (priority: string) => {
+    const mapping: { [key: string]: string } = {
+      high: i18n[language].critical,
+      medium: i18n[language].important,
+      low: i18n[language].ordinary,
+    }
+    return mapping[priority] || 'unknown'
+  }
+
+  const getImportanceBadgeStyle = (priority: string) => {
+    switch (priority) {
+      case 'high':
+        return { ...styles.importanceBadge, backgroundColor: 'red' }
+      case 'medium':
+        return { ...styles.importanceBadge, backgroundColor: 'orange' }
+      case 'low':
+        return { ...styles.importanceBadge, backgroundColor: 'green' }
+      default:
+        return styles.importanceBadge
+    }
+  }
+
+  const imageArray = Array.isArray(message.images)
 		? message.images
 		: message.images
 			? [message.images]
@@ -236,15 +276,22 @@ export default function DetailsScreen() {
 		url: `${imageUrl}/${filename}`,
 	}))
 
+  const copyToClipboard = async () => {
+    if (message?.content) {
+      await Clipboard.setStringAsync(message.content);
+
+      ToastAndroid.show('Text copied to clipboard!', ToastAndroid.SHORT);
+
+    }
+  };
+
 	return (
 		<ScrollView style={styles.container}>
 			<View style={styles.titleRow}>
 				<ThemedText style={styles.title}>{message.title}</ThemedText>
-			</View>
-			<View style={styles.dateRow}>
-				<ThemedText style={styles.dateText}>
-					{formatMessageDate(new Date(message.sent_time), language)}
-				</ThemedText>
+        <ThemedText style={getImportanceBadgeStyle(message.priority)}>
+          {getImportanceLabel(message.priority)}
+        </ThemedText>
 			</View>
 			<View style={styles.descriptionRow}>
 				<Autolink
@@ -252,9 +299,18 @@ export default function DetailsScreen() {
 					hashtag='instagram'
 					mention='instagram'
 					text={message.content}
-					style={{ color: textColor, fontSize: 16 }}
+					style={{ color: textColor, fontSize: 20 }}
 				/>
 			</View>
+      <Pressable style={styles.copyButton} onPress={copyToClipboard}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Ionicons name="copy-outline" size={20} color="white" />
+          <Text style={{ color: 'white', marginLeft: 5 }}>Copy</Text>
+        </View>
+      </Pressable>
+      <View style={{ marginBottom: 25 }}>
+        <Separator orientation='horizontal' />
+      </View>
 			{imageArray.length > 0 && (
 				<View>
 					{imageArray.map((filename, idx) => (
@@ -275,6 +331,13 @@ export default function DetailsScreen() {
 					))}
 				</View>
 			)}
+
+      <View style={styles.dateRow}>
+        <Ionicons name={'calendar-outline'} size={24} color="#adb5bd"/>
+        <ThemedText style={styles.dateText}>
+          {formatMessageDate(new Date(message.sent_time), language)}
+        </ThemedText>
+      </View>
 			<Modal
 				visible={zoomVisible}
 				transparent={true}
