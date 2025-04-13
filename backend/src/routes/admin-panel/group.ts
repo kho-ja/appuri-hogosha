@@ -138,48 +138,52 @@ class GroupController implements IController {
             }
 
             for (const row of results) {
-                const { name, student_numbers } = row
-                const rowErrors: any = {}
-                const normalizedName = String(name).trim()
-                const normalizedStudentNumbers = String(student_numbers).trim();
+                const { name, student_numbers } = row;
+                const rowErrors: any = {};
+                const normalizedName = String(name).trim();
+                const normalizedStudentNumbers = String(student_numbers).trim()
+                    .split(',')
+                    .map((num: string) => num.trim())
+                    .filter((num: string) => num !== '');
 
-                if (!isValidString(normalizedName)) rowErrors.name = 'invalid_name'
-                if (!isValidStudentNumber(normalizedStudentNumbers)) rowErrors.student_numbers = 'invalid_student_numbers';
+                if (!isValidString(normalizedName)) rowErrors.name = 'invalid_name';
+                if (!normalizedStudentNumbers.every(isValidStudentNumber)) rowErrors.student_numbers = 'invalid_student_numbers';
                 if (existingGroupIdsInCSV.includes(normalizedName)) {
-                    rowErrors.name = 'group_name_already_exists'
+                    rowErrors.name = 'group_name_already_exists';
                 }
-                if (existingStudentNumbersInCSV[normalizedName]?.includes(normalizedStudentNumbers)) {
-                    rowErrors.student_numbers = 'student_number_already_exists'
+                if (existingStudentNumbersInCSV[normalizedName]?.some((num: string) => normalizedStudentNumbers.includes(num))) {
+                    rowErrors.student_numbers = 'student_number_already_exists';
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
                     if (rowErrors.name && !rowErrors.student_numbers && validResults.length > 0) {
-                        validResults.at(-1).student_numbers.push(normalizedStudentNumbers)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
-                    } else if (!rowErrors.name && normalizedStudentNumbers) {
+                        validResults.at(-1).student_numbers.push(...normalizedStudentNumbers);
+                        normalizedStudentNumbers.forEach((num: string) => addToExistingStudentNumbers(num, normalizedName));
+                    } else if (!rowErrors.name && normalizedStudentNumbers.length > 0) {
                         validResults.push({
                             name: normalizedName,
-                            student_numbers: [],
+                            student_numbers: normalizedStudentNumbers,
                         });
+                        normalizedStudentNumbers.forEach((num: string) => addToExistingStudentNumbers(num, normalizedName));
                     } else {
                         let error = errors.find(error => error.row.name === normalizedName);
                         if (error && error.errors.student_numbers === rowErrors.student_numbers) {
-                            error.row.student_numbers.push(normalizedStudentNumbers)
+                            error.row.student_numbers.push(...normalizedStudentNumbers);
                         } else {
-                            errors.push({ row: { ...row, student_numbers: [row.student_numbers] }, errors: { student_numbers: rowErrors.student_numbers } })
+                            errors.push({ row: { ...row, student_numbers: normalizedStudentNumbers }, errors: { student_numbers: rowErrors.student_numbers } });
                         }
                     }
                 } else {
                     let group = validResults.find(group => group.name === normalizedName);
                     if (group) {
-                        group.student_numbers.push(normalizedStudentNumbers)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
+                        group.student_numbers.push(...normalizedStudentNumbers);
+                        normalizedStudentNumbers.forEach((num: string) => addToExistingStudentNumbers(num, normalizedName));
                     } else {
-                        row.name = normalizedName
-                        row.student_numbers = [normalizedStudentNumbers]
-                        existingGroupIdsInCSV.push(row.name)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
-                        validResults.push(row)
+                        row.name = normalizedName;
+                        row.student_numbers = normalizedStudentNumbers;
+                        existingGroupIdsInCSV.push(row.name);
+                        normalizedStudentNumbers.forEach((num: string) => addToExistingStudentNumbers(num, normalizedName));
+                        validResults.push(row);
                     }
                 }
             }
