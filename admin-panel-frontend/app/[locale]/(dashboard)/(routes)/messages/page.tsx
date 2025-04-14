@@ -158,16 +158,18 @@ export default function Info() {
           <Button>{t("createpost")}</Button>
         </Link>
       </div>
-      <div className="flex justify-between">
-        <Input
-          placeholder={t("filter")}
-          value={search}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="max-w-sm"
-        />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
+        <div className="w-full sm:max-w-sm">
+          <Input
+            placeholder={t("filter")}
+            value={search}
+            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full"
+          />
+        </div>
         <div className="">
           <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
         </div>
