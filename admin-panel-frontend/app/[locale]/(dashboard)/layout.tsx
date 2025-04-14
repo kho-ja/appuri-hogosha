@@ -35,9 +35,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   if (session?.error === "RefreshAccessTokenError") handleSignOut();
 
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="fixed top-0 bottom-0 left-0 z-20 hidden md:block w-[220px] lg:w-[280px] border-r bg-muted/40 overflow-y-auto">
-        <div className="flex h-full flex-col">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] relative">
+      <div className="hidden border-r bg-muted/40 md:block ">
+        <div className="flex h-full max-h-screen flex-col gap-2 sticky top-0 z-50">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link
               href="/"
@@ -58,8 +58,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </div>
-      <div className="flex flex-col flex-1 md:ml-[220px] lg:ml-[280px] min-w-0">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50">
           <Sheet>
             <SheetTrigger asChild>
               <Button
