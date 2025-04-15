@@ -504,7 +504,10 @@
     "Phone_number": "電話番号",
     "Ststudent_number": "学籍番号",
     "editStudents": "学生を編集",
-    "editAdmin": "管理者を編集"
+    "editAdmin": "管理者を編集",
+    "SMS_Settings": "SMS設定",
+    "SchoolName": "学校名",
+    "Notifications": "通知"
   },
   "admins": {
     "admins": "管理者",
@@ -1062,6 +1065,13 @@
     "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました",
     "SettingsTitle": "通知",
     "SettingsDescription": "通知の受信方法を設定します。"
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "学校名",
+    "SchoolNameDescription": "学校名を更新します。",
+    "SchoolNameUpdateFailed": "学校名の更新に失敗しました",
+    "SchoolNameUpdated": "学校名が更新されました",
+    "SchoolNameEditBtn": "更新する"
   },
   "EditStudentsDialog": {
     "saving": "保存中...",
