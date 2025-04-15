@@ -1,7 +1,11 @@
 import { NotificationsForm } from "@/components/notifications-form";
+import { SchoolNameUpdate } from "@/components/SchoolNameUpdate-form";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getTranslations } from "next-intl/server";
 
-export default function SettingsNotificationsPage() {
+export default async function SettingsNotificationsPage() {
+  const t = await getTranslations("ThisAdmin");
   return (
     <div className="space-y-6">
       <div>
@@ -12,6 +16,8 @@ export default function SettingsNotificationsPage() {
       </div>
       <Separator />
       <NotificationsForm />
+      <Separator />
+      <SchoolNameUpdate />
     </div>
   );
 }

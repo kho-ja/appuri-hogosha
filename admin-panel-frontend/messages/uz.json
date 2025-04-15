@@ -16,6 +16,7 @@
     "OTPError": "Siz birinchi marta kirayotganingiz uchun, iltimos, hisobingiz uchun yangi parolni kiriting.",
     "AuthError": "Nimadir noto'g'ri ketdi. Iltimos, keyinroq qayta urinib ko'ring.",
     "loginFailed": "Kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring.",
+    "loginNewPassword": "Parolni o'zgartirish kerak",
     "loginSuccess": "Admin panelga xush kelibsiz",
     "loginSuccessDescription": "Hisobingizga muvaffaqiyatli kirdingiz.",
     "LoggingIn": "Kirityapmiz...",
@@ -123,7 +124,10 @@
     "preview": "Oldingi ko'rish",
     "messageSent": "Xabar muvaffaqiyatli yuborildi",
     "messageEdited": "Xabar muvaffaqiyatli tahrirlandi",
-    "createFromCSV": "CSV dan xabar yuborish"
+    "createFromCSV": "CSV dan xabar yuborish",
+    "choose_file": "Faylni tanlang",
+    "no_file_chosen": "Faylni tanlangmadi",
+    "selected_image": "Tanlangan rasm"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "Nashriyot",
@@ -162,7 +166,9 @@
     "not_viewed_count": "Ko‘rilmaganlar soni",
     "view": "Ko'rish",
     "editMessage": "Xabarni tahrirlash",
-    "editRecivers": "Qabul qiluvchilarni tahrirlash"
+    "editRecivers": "Qabul qiluvchilarni tahrirlash",
+    "Groups": "Guruhlar",
+    "Students": "Talabalar"
   },
   "ThisGroup": {
     "GroupView": "Guruh Tafsilotlari",
@@ -334,7 +340,8 @@
     "back": "Orqaga",
     "ParentCreated": "Vasiy muvaffaqiyatli yaratildi",
     "createFromCSV": "CSV dan yaratish ",
-    "createFromKintone": "Kintone dan yaratish"
+    "createFromKintone": "Kintone dan yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "CreateStudent": {
     "CreateStudent": "Talaba yaratish",
@@ -357,7 +364,8 @@
     "StudentCreated": "Talaba muvaffaqiyatli yaratildi",
     "StudentEdited": "Talaba muvaffaqiyatli tahrirlandi",
     "createFromCSV": "CSV dan yaratish",
-    "createFromKintone": "Kintone orqali yaratish"
+    "createFromKintone": "Kintone orqali yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditParent": {
     "EditParent": "Vasiy tahrirlash",
@@ -371,7 +379,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi"
+    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "ViewStudent": {
     "ViewStudent": "Talabalarni ko'rish",
@@ -404,7 +413,8 @@
     "DouYouDeleteStudent": "Talabani o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi"
+    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "groups": {
     "groups": "Guruhlar",
@@ -419,7 +429,8 @@
     "DouYouDeleteGroup": "Ushbu guruhni haqiqatdan ham oʻchirmoqchimisiz?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi"
+    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi",
+    "export": "Yuklab olish"
   },
   "parents": {
     "parents": "Ota-onalar",
@@ -435,7 +446,8 @@
     "doYouDeleteParent": "Rostdan ham bu Ota-Onani o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi"
+    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "posts": {
     "posts": "Xabarlar",
@@ -478,7 +490,7 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editParent": "Edit Parent"
+    "editParent": "Vasiy tahrirlash"
   },
   "ThisAdmin": {
     "AdminView": "Admin ko'rinishi",
@@ -494,7 +506,10 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editAdmin": "Admin tahrirlash"
+    "editAdmin": "Admin tahrirlash",
+    "SMS_Settings": "SMS Sozlamalari",
+    "SchoolName": "Maktab nomi",
+    "Notifications": "Bildirishlar"
   },
   "admins": {
     "admins": "Adminlar",
@@ -510,7 +525,8 @@
     "doYouDeleteAdmin": "Rostdan ham bu Adminni o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "adminDeleted": "Admin muvaffaqiyatli o'chirildi"
+    "adminDeleted": "Admin muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "CreateAdmin": {
     "CreateAdmin": "Admin yaratish",
@@ -526,7 +542,8 @@
     "Students": "Talabalar",
     "back": "Orqaga",
     "AdminCreated": "Admin yaratildi",
-    "createfromCSV": "CSVdan yaratish "
+    "createfromCSV": "CSVdan yaratish ",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditAdmin": {
     "EditAdmin": "Admin tahrirlash",
@@ -540,7 +557,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "AdminUpdated": "Admin tahrirlandi"
+    "AdminUpdated": "Admin tahrirlandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "forms": {
     "parent_name": "Ota-ona ismi",
@@ -688,7 +706,35 @@
     "postsDeleted": "Postlar muvaffaqiyatli o'chirildi",
     "postsDeletedDescription": "Postlar muvaffaqiyatli o'chirildi",
     "postsUploaded": "Postlar muvaffaqiyatli yuklandi",
-    "csvFile": "CSV fayli"
+    "csvFile": "CSV fayli",
+    "invalid_email": "Noto‘g‘ri email",
+    "invalid_phone_number": "Noto‘g‘ri telefon raqami",
+    "invalid_given_name": "Noto‘g‘ri ism",
+    "invalid_family_name": "Noto‘g‘ri familiya",
+    "invalid_student_number": "Noto‘g‘ri talaba raqami",
+    "invalid_student_numbers": "Noto‘g‘ri talaba raqamlari",
+    "email_already_exists": "Bu email allaqachon mavjud",
+    "student_number_already_exists": "Bu talaba raqami allaqachon mavjud",
+    "all_data_invalid": "Barcha ma'lumotlar noto‘g‘ri",
+    "bad_request": "Noto‘g‘ri so‘rov",
+    "invalid_action": "Noto‘g‘ri harakat",
+    "parent_email_already_exists": "Ota-onaning emaili allaqachon mavjud",
+    "parent_phone_number_already_exists": "Ota-onaning telefon raqami allaqachon mavjud",
+    "csv_processed_with_errors": "CSV muvaffaqiyatli qayta ishlendi, lekin xatoliklar bilan",
+    "csv_processed_successfully": "CSV muvaffaqiyatli qayta ishlendi",
+    "student_email_already_exists": "Talabaning emaili allaqachon mavjud",
+    "phone_number_already_exists": "Bu telefon raqami allaqachon mavjud",
+    "student_does_not_exist": "Talaba mavjud emas",
+    "group_name_already_exists": "Bu guruh nomi allaqachon mavjud",
+    "group_does_not_exist": "Guruh mavjud emas",
+    "parent_does_not_exist": "Ota-ona mavjud emas",
+    "invalid_title": "Noto‘g‘ri sarlavha",
+    "invalid_description": "Noto‘g‘ri tavsif",
+    "invalid_priority": "Noto‘g‘ri ustuvorlik",
+    "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
+    "group_members_not_found": "Guruh a'zolari topilmadi",
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -735,8 +781,11 @@
     "student_numbers": "Talaba raqamlari",
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
-    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting."
+    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
+
   "errors": {
     "wentWrong": "Nimadir noto'g'ri ketdi.",
     "pageNotFound": "Sahifa topilmadi",
@@ -744,7 +793,72 @@
     "loading": "Yuklanmoqda...",
     "loadingDescription": "Iltimos, yuklanayotgan vaqtda kutib turing.",
     "fileDownloaded": "Fayl muvaffaqiyatli yuklandi",
-    "fileDownloadedDescription": "Fayl muvaffaqiyatli yuklandi. Faylni ko'rish uchun fayl manzilini bosing."
+    "fileDownloadedDescription": "Fayl muvaffaqiyatli yuklandi. Faylni ko'rish uchun fayl manzilini bosing.",
+    "invalid_or_missing_email": "Noto‘g‘ri yoki kiritilmagan email",
+    "invalid_or_missing_phone": "Noto‘g‘ri yoki kiritilmagan telefon raqami",
+    "invalid_or_missing_given_name": "Noto‘g‘ri yoki kiritilmagan ism",
+    "invalid_or_missing_family_name": "Noto‘g‘ri yoki kiritilmagan familiya",
+    "invalid_or_missing_student_number": "Noto‘g‘ri yoki kiritilmagan talaba raqami",
+    "email_already_exists": "Bu email allaqachon mavjud",
+    "student_numbers_missing_or_empty": "Talaba raqamlari maydoni yo‘q yoki bo‘sh",
+    "invalid_student_numbers_format": "Noto‘g‘ri talaba raqamlari formati",
+    "no_records_found": "Hech qanday yozuv topilmadi",
+    "student_already_attached_to_parent": "Talaba allaqachon ota-onaga biriktirilgan",
+    "phone_number_already_exists": "Bu telefon raqami allaqachon mavjud",
+    "error_fetching_data_kintone": "Kintone'dan ma'lumot olishda xatolik yuz berdi",
+    "missing_or_empty_given_name": "Ism maydoni kiritilmagan yoki bo‘sh",
+    "invalid_given_name_format": "Ism formati noto‘g‘ri",
+    "missing_or_empty_family_name": "Familiya maydoni kiritilmagan yoki bo‘sh",
+    "invalid_family_name_format": "Familiya formati noto‘g‘ri",
+    "missing_or_empty_email": "Email maydoni kiritilmagan yoki bo‘sh",  
+    "invalid_email_format": "Email formati noto‘g‘ri",
+    "missing_or_empty_phone_number": "Telefon raqami maydoni kiritilmagan yoki bo‘sh",
+    "invalid_phone_number_format": "Telefon raqami formati noto‘g‘ri",
+    "missing_or_empty_student_number": "Talaba raqami maydoni kiritilmagan yoki bo‘sh",
+    "invalid_student_number_format": "Talaba raqami formati noto‘g‘ri",
+    "student_email_already_exists": "Talabaning emaili allaqachon mavjud",
+    "student_does_not_exist": "Talaba mavjud emas",
+    "bad_request": "Noto‘g‘ri so‘rov",
+    "invalid_action": "Noto‘g‘ri amal",
+    "csv_processed_with_errors": "CSV muvaffaqiyatli qayta ishlandi, lekin xatolar bilan",
+    "invalid_or_missing_student_id": "Talaba IDsi noto‘g‘ri yoki kiritilmagan",
+    "student_not_found": "Talaba topilmadi",
+    "invalid_or_missing_parents": "Ota-ona ma'lumotlari noto‘g‘ri yoki kiritilmagan",
+    "internal_server_error": "Ichki server xatosi",
+    "invalid_email": "Noto‘g‘ri email",
+    "invalid_phone_number": "Noto‘g‘ri telefon raqami",
+    "invalid_given_name": "Noto‘g‘ri ism",
+    "invalid_family_name": "Noto‘g‘ri familiya",
+    "invalid_student_number": "Noto‘g‘ri talaba raqami",
+    "all_data_invalid": "Barcha ma'lumotlar noto‘g‘ri",
+    "admin_already_exists": "Admin allaqachon mavjud",
+    "admin_does_not_exist": "Admin mavjud emas",
+    "invalid_or_missing_admin_id": "Admin IDsi noto‘g‘ri yoki kiritilmagan",
+    "admin_not_found": "Admin topilmadi",
+    "email_and_phone_number_already_exist": "Bu email va telefon raqami allaqachon mavjud",
+    "invalid_id_list": "Noto‘g‘ri ID ro‘yxati",
+    "invalid_name": "Noto‘g‘ri ism",
+    "invalid_student_numbers": "Noto‘g‘ri talaba raqamlari",
+    "group_name_already_exists": "Bu guruh nomi allaqachon mavjud",
+    "group_does_not_exist": "Guruh mavjud emas",
+    "student_number_already_exists": "Bu talaba raqami allaqachon mavjud.",
+    "invalid_or_missing_group_id": "Noto‘g‘ri yoki yetishmayotgan guruh identifikatori",
+    "invalid_or_missing_group_name": "Noto‘g‘ri yoki yetishmayotgan guruh nomi",
+    "group_not_found": "Guruh topilmadi",
+    "invalid_or_missing_parent_id": "Noto‘g‘ri yoki mavjud bo‘lmagan ota-ona IDsi",
+    "parent_cant_attach_more_than_5_students": "Ota-ona 5 tadan ortiq talabani biriktira olmaydi",
+    "invalid_or_missing_students": "Noto‘g‘ri yoki mavjud bo‘lmagan talabalar",
+    "invalid_or_missing_post_id": "Noto‘g‘ri yoki mavjud bo‘lmagan post ID",
+    "post_not_found": "Post topilmadi",
+    "post_sender_updated_successfully": "Post yuboruvchisi muvaffaqiyatli yangilandi",
+    "group_members_not_found": "Guruh a'zolari topilmadi",
+    "post_notification_replayed_successfully": "Post bildirishnomasi muvaffaqiyatli qayta yuborildi",
+    "invalid_or_missing_title": "Noto‘g‘ri yoki mavjud bo‘lmagan sarlavha",
+    "invalid_or_missing_description": "Noto‘g‘ri yoki mavjud bo‘lmagan tavsif",
+    "invalid_or_missing_priority": "Noto‘g‘ri yoki mavjud bo‘lmagan ustuvorlik",
+    "invalid_image_format": "Noto‘g‘ri rasm formati. Base64 kodlanganligiga ishonch hosil qiling.",
+    "image_size_too_large": "Rasm hajmi juda katta (maksimal 10MB)",
+    "function_not_implemented": "Funksiya joriy etilmagan."
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Hujjatni tayyorlash",
@@ -950,7 +1064,16 @@
     "lowCheckbox": "Past",
     "NotificationSettingUpdate": "Bildirishnoma sozlamalari yangilash",
     "NotificationSettingUpdated": "Bildirishnoma sozlamalari muvaffaqiyatli yangilandi",
-    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi"
+    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi",
+    "SettingsTitle": "Bildirishnomalar",
+    "SettingsDescription": "Sizga ularni kirish uchun sizga ularni kirish."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "Maktab nomi",
+    "SchoolNameDescription": "Maktab nomini yangilash.",
+    "SchoolNameUpdateFailed": "Maktab nomini yangilashda xatolik yuz berdi",
+    "SchoolNameUpdated": "Maktab nomi muvaffaqiyatli yangilandi",
+    "SchoolNameEditBtn": "Tahrirlash"
   },
   "EditStudentsDialog": {
     "saving": "Saplanmoqda...",
@@ -968,7 +1091,7 @@
   },
   "recievers": {
     "ChangeRecievers": "Qabul qiluvchilarni o'zgartirish",
-    "students": "Talabalar",
+    "Students": "Talabalar",
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
     "back": "Orqaga",

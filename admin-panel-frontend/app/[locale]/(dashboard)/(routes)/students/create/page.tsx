@@ -22,20 +22,29 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Student from "@/types/student";
+import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
-const formSchema = z.object({
-  email: z.string().email(),
-  phone_number: z.string().min(10).max(20),
-  given_name: z.string().min(2).max(50),
-  family_name: z.string().min(2).max(50),
-  student_number: z.string().min(1).max(10),
-});
+const GetFormSchema = (t: (key: string) => string) => {
+  return z.object({
+    email: z.string().email(),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(20)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    given_name: z.string().min(2).max(50),
+    family_name: z.string().min(2).max(50),
+    student_number: z.string().min(1).max(10),
+  });
+};
 
 export default function CreateStudent() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
+  const formSchema = GetFormSchema(t);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -106,6 +115,7 @@ export default function CreateStudent() {
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
+              phone_number: values.phone_number.slice(1),
               parents: selectedParents.map((parent) => parent.id),
             } as any)
           )}
@@ -157,23 +167,7 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="phone_number"
-              render={({ field, formState }) => (
-                <FormItem>
-                  <FormLabel>{t("PhoneNumber")}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t("PhoneNumber")} {...field} />
-                  </FormControl>
-                  <FormMessage>
-                    {formState.errors.phone_number?.message}
-                  </FormMessage>
-                </FormItem>
-              )}
-            />
-
+            
             <FormField
               control={form.control}
               name="student_number"
@@ -189,6 +183,28 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="phone_number"
+              render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>{t("PhoneNumber")}</FormLabel>
+                  <FormControl>
+                    <PhoneInput
+                      placeholder={t("PhoneNumber")}
+                      international={true}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage>
+                    {formState.errors.phone_number?.message}
+                  </FormMessage>
+                </FormItem>
+              )}
+            />
+
+
           </div>
 
           <FormItem>

@@ -107,18 +107,18 @@ class PostController implements IController {
                 const studentNumbersArray = normalizedStudentNumbers.split(',').map(s => s.trim()).filter(Boolean);
 
                 // Validate fields (assuming these helper functions exist)
-                if (!isValidString(normalizedTitle)) rowErrors.title = "Invalid title";
-                if (!isValidString(normalizedDescription)) rowErrors.description = "Invalid description";
-                if (!isValidPriority(normalizedPriority)) rowErrors.priority = "Invalid priority";
+                if (!isValidString(normalizedTitle)) rowErrors.title = "invalid_title";
+                if (!isValidString(normalizedDescription)) rowErrors.description = "invalid_description";
+                if (!isValidPriority(normalizedPriority)) rowErrors.priority = "invalid_priority";
 
                 // Validate each group name
                 for (const gn of groupNamesArray) {
-                    if (!isValidString(gn)) rowErrors.group_names = "Invalid group name(s)";
+                    if (!isValidString(gn)) rowErrors.group_names = "invalid_group_names";
                 }
 
                 // Validate each student number
                 for (const sn of studentNumbersArray) {
-                    if (!isValidStudentNumber(sn)) rowErrors.student_numbers = "Invalid student number(s)";
+                    if (!isValidStudentNumber(sn)) rowErrors.student_numbers = "invalid_student_numbers";
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
@@ -307,7 +307,7 @@ class PostController implements IController {
                         if (groupMembers.length <= 0) {
                             throw {
                                 status: 404,
-                                message: "Group members not found",
+                                message: "group_members_not_found",
                             };
                         }
 
@@ -368,7 +368,7 @@ class PostController implements IController {
 
 
                 return res.status(400).json({
-                    message: 'CSV processed successfully but with errors',
+                    message: 'csv_processed_with_errors',
                     inserted: inserted,
                     errors: errors,
                     results: validResults,
@@ -377,13 +377,13 @@ class PostController implements IController {
             }
 
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 results: validResults,
             }).end()
         } catch (e: any) {
             return res.status(500).json({
-                error: 'Internal server error',
+                error: 'internal_server_error',
                 details: e.message
             }).end();
         }
@@ -396,7 +396,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -411,7 +411,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -468,7 +468,7 @@ class PostController implements IController {
                 if (groupMembers.length <= 0) {
                     throw {
                         status: 404,
-                        message: 'Group members not found'
+                        message: 'group_members_not_found'
                     }
                 }
 
@@ -488,8 +488,18 @@ class PostController implements IController {
                 }
             }
 
+            const post = postInfo[0]
+
+            await DB.execute(`UPDATE Post
+                              SET edited_at = NOW()
+                              WHERE id = :id
+                                AND school_id = :school_id`, {
+                id: post.id,
+                school_id: req.user.school_id,
+            });
+
             return res.status(200).json({
-                message: 'Post sender updated successfully'
+                message: 'post_sender_updated_successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -498,7 +508,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -512,13 +522,13 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
 
@@ -538,7 +548,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -556,7 +566,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post Notification replayed successfully'
+                message: 'post_notification_replayed_successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -565,7 +575,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -579,13 +589,13 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
             if (!student_id || !isValidId(student_id)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
 
@@ -605,7 +615,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -632,7 +642,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -646,13 +656,13 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
             if (!parent_id || !isValidId(parent_id)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
 
@@ -675,7 +685,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -693,7 +703,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post Notification replayed successfully'
+                message: 'post_notification_replayed_successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -702,7 +712,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -715,7 +725,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
             const postInfo = await DB.query(`SELECT id,
@@ -754,7 +764,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -767,7 +777,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -775,31 +785,33 @@ class PostController implements IController {
                 title,
                 description,
                 priority,
+                image,
             } = req.body
 
             if (!title || !isValidString(title)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing title'
+                    message: 'invalid_or_missing_title'
                 }
             }
             if (!description || !isValidString(description)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing description'
+                    message: 'invalid_or_missing_description'
                 }
             }
             if (!priority || !isValidPriority(priority)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing priority'
+                    message: 'invalid_or_missing_priority'
                 }
             }
 
             const postInfo = await DB.query(`SELECT id,
                                                     title,
                                                     description,
-                                                    priority
+                                                    priority,
+                                                    image
                                              FROM Post
                                              WHERE school_id = :school_id
                                                AND id = :id`, {
@@ -810,31 +822,67 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
             const post = postInfo[0]
 
-            await DB.execute(`UPDATE Post
-                              SET title       = :title,
-                                  description = :description,
-                                  priority    = :priority,
-                                  edited_at   = NOW()
-                              WHERE id = :id
-                                AND school_id = :school_id`, {
-                id: post.id,
-                school_id: req.user.school_id,
-                title: title,
-                description: description,
-                priority: priority,
-            });
+            if (image && image !== post.image) {
+                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                
+                if (!matches || matches.length !== 3) {
+                    throw {
+                        status: 401,
+                        message: 'Invalid image format. Make sure it is Base64 encoded.'
+                    };
+                }
+            
+                const mimeType = matches[1];
+                const base64Data = matches[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+            
+                if (buffer.length > 10 * 1024 * 1024) {
+                    throw {
+                        status: 401,
+                        message: 'Image size is too large (max 10MB)'
+                    };
+                }
+            
+                const imageName = randomImageName() + mimeType.replace('image/', '.');
+                const imagePath = `images/${imageName}`;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            
+                post.image = imageName; // Assign new image to post object
+            } else if (!image) {
+                post.image = null; // Set image to null if none is provided
+            }
+            
+            // Update post in DB
+            await DB.execute(
+                `UPDATE Post
+                 SET title       = :title,
+                     description = :description,
+                     priority    = :priority,
+                     image       = :image,
+                     edited_at   = NOW()
+                 WHERE id = :id
+                 AND school_id = :school_id`,
+                {
+                    id: post.id,
+                    school_id: req.user.school_id,
+                    title,
+                    description,
+                    priority,
+                    image: post.image,
+                }
+            );
 
             await DB.execute(`UPDATE PostParent
-                              SET push = 0
-                              WHERE post_student_id IN (SELECT id
-                                                        FROM PostStudent
-                                                        WHERE post_id = :post_id)`, {
+                                SET push = 0
+                                WHERE post_student_id IN (SELECT id
+                                    FROM PostStudent
+                                    WHERE post_id = :post_id)`, {
                 post_id: post.id
             })
 
@@ -848,7 +896,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -860,7 +908,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -868,7 +916,7 @@ class PostController implements IController {
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
 
@@ -876,7 +924,7 @@ class PostController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
 
             }
@@ -906,7 +954,7 @@ class PostController implements IController {
             if (studentAndGroupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -951,7 +999,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -963,7 +1011,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -971,7 +1019,7 @@ class PostController implements IController {
             if (!groupId || !isValidId(groupId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing group id'
+                    message: 'invalid_or_missing_group_id'
                 }
             }
 
@@ -993,7 +1041,7 @@ class PostController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -1111,7 +1159,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1123,7 +1171,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -1131,7 +1179,7 @@ class PostController implements IController {
             if (!studentId || !isValidId(studentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing student id'
+                    message: 'invalid_or_missing_student_id'
                 }
             }
 
@@ -1155,7 +1203,7 @@ class PostController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -1194,7 +1242,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1206,7 +1254,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -1221,7 +1269,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -1299,7 +1347,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1311,7 +1359,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
 
@@ -1326,7 +1374,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -1437,7 +1485,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1450,7 +1498,7 @@ class PostController implements IController {
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing post id'
+                    message: 'invalid_or_missing_post_id'
                 }
             }
             const postInfo = await DB.query(`SELECT po.id,
@@ -1479,7 +1527,7 @@ class PostController implements IController {
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Post not found'
+                    message: 'post_not_found'
                 }
             }
 
@@ -1510,7 +1558,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1611,7 +1659,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1628,23 +1676,22 @@ class PostController implements IController {
                 image
             } = req.body
 
-
             if (!title || !isValidString(title)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing title'
+                    message: 'invalid_or_missing_title'
                 }
             }
             if (!description || !isValidString(description)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing description'
+                    message: 'invalid_or_missing_description'
                 }
             }
             if (!priority || !isValidPriority(priority)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing priority'
+                    message: 'invalid_or_missing_priority'
                 }
             }
 
@@ -1654,7 +1701,7 @@ class PostController implements IController {
                 if (!matches || matches.length !== 3) {
                     throw {
                         status: 401,
-                        message: 'Invalid image format. Make sure it is Base64 encoded.'
+                        message: 'invalid_image_format'
                     }
                 }
                 const mimeType = matches[1];
@@ -1663,7 +1710,7 @@ class PostController implements IController {
                 if (buffer.length > 1024 * 1024 * 10) {
                     throw {
                         status: 401,
-                        message: 'Image size is too large (max 10MB)'
+                        message: 'image_size_too_large'
                     }
                 }
 
@@ -1780,7 +1827,7 @@ class PostController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1790,5 +1837,5 @@ class PostController implements IController {
 export default PostController
 
 function addToExistingGroupNamesForPost(arg0: string, groupNamesArray: string[]) {
-    throw new Error('Function not implemented.');
+    throw new Error('function_not_implemented');
 }

@@ -23,12 +23,16 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
+import { PhoneInput } from "@/components/PhoneInput";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
-const formSchema = z.object({
-  given_name: z.string().min(1).max(50),
-  family_name: z.string().min(1).max(50),
-  phone_number: z.string().min(10).max(500),
-});
+const GetFormSchema = (t: (key: string) => string) => {
+  return z.object({
+    given_name: z.string().min(1).max(50),
+    family_name: z.string().min(1).max(50),
+    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+  });
+};
 
 export default function EditParent({
   params: { parentId },
@@ -39,6 +43,7 @@ export default function EditParent({
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditParent");
   const tName = useTranslations("names");
+  const formSchema = GetFormSchema(t);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,7 +76,7 @@ export default function EditParent({
     if (data) {
       form.setValue("given_name", data.parent.given_name);
       form.setValue("family_name", data.parent.family_name);
-      form.setValue("phone_number", data.parent.phone_number);
+      form.setValue("phone_number", `+${data.parent.phone_number}`);
     }
   }, [data, form]);
 
@@ -87,7 +92,7 @@ export default function EditParent({
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate(values as any))}
+          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
           className="space-y-4"
         >
           <div className="flex w-full">
@@ -143,10 +148,10 @@ export default function EditParent({
                   <FormItem>
                     <FormLabel>{t("ParentPhone")}</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
+                      <PhoneInput
                         placeholder={t("ParentPhone")}
-                        type="tel"
+                        international={true}
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage>

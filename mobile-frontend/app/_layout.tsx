@@ -16,7 +16,6 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { redirectSystemPath } from '@/+native-intent'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -32,18 +31,10 @@ function useNotificationObserver() {
 		let isMounted = true
 
 		function redirect(notification: Notifications.Notification) {
-      const fullUrl = notification.request.content.data?.url;
-      if (fullUrl) {
-        const processedPath = redirectSystemPath({ path: fullUrl, initial: false });
-        console.log('Notification redirect to:', processedPath);
-        try{
-          router.push(processedPath);
-          hasRedirected.current = true;
-        }catch(error){
-          console.error('Navigation error from notification:', error);
-          router.push("/")//redirects to home
-        }
-      }
+			const url = notification.request.content.data?.url
+			if (url) {
+				router.push(url)
+			}
 		}
 
 		Notifications.getLastNotificationResponseAsync().then(response => {
@@ -84,36 +75,8 @@ export default function Root() {
 			sendPushTokenToBackend
 		)
 		return () => subscription.remove()
-	}, []);
-  React.useEffect(() => {
-    const handleDeepLink = ({ url }) => {
-      if (url) {
-        const processedPath = redirectSystemPath({ path: url, initial: false });
-        console.log('Deep link redirect to:', processedPath);
-        try {
-          router.push(processedPath);
-        }catch (error) {
-          console.error('Navigation error from deep link:', error);
-          router.push("/") //redirects to home
-        }
+	}, [])
 
-      }
-    };
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        const processedPath = redirectSystemPath({ path: url, initial: true });
-        console.log('Initial URL redirect to:', processedPath);
-        try {
-          router.push(processedPath);
-        } catch (error) {
-          console.error('Navigation error from initial URL:', error);
-          router.push("/") //redirects to home
-        }
-      }
-    });
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-    return () => subscription.remove();
-  }, []);
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()

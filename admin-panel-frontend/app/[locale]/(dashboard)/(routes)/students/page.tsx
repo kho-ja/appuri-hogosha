@@ -10,6 +10,7 @@ import StudentApi from "@/types/studentApi";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import { Link, usePathname, useRouter } from "@/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -31,10 +32,13 @@ import useFileMutation from "@/lib/useFileMutation";
 export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const { data: studentData } = useApiQuery<StudentApi>(
     `student/list?page=${page}&name=${search}`,
     ["students", page, search]
@@ -59,6 +63,15 @@ export default function Students() {
     `student/export`,
     ["exportStudents"]
   );
+  
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [page, search, router, pathname]);
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -78,7 +91,6 @@ export default function Students() {
       accessorKey: "phone_number",
       header: t("phoneNumber"),
     },
-
     {
       header: t("action"),
       meta: {
@@ -129,14 +141,15 @@ export default function Students() {
           <Button>{t("createstudent")}</Button>
         </Link>
       </div>
-      <div className="flex justify-between w-full">
+      <div className="flex flex-wrap justify-between w-full">
         <Input
           placeholder={t("filter")}
+          value={search}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="max-w-xs"
+          className="max-w-xs mb-4"
         />
         <div>
           <PaginationApi
@@ -154,10 +167,10 @@ export default function Students() {
             className="h-7 gap-1 text-sm"
           >
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </div>
-        <Card x-chunk="dashboard-05-chunk-3">
+        <Card>
           <TableApi
             linkPrefix={`/students`}
             data={studentData?.students ?? null}

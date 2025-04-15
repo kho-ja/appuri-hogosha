@@ -93,6 +93,11 @@ export default function MessageFromCSV() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>
+        <Link href="/messages/create" passHref>
+          <Button type="button" variant={"secondary"}>
+            {t("back")}
+          </Button>
+        </Link>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>
@@ -148,7 +153,7 @@ export default function MessageFromCSV() {
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </CardHeader>
         <CardContent>
@@ -159,7 +164,7 @@ export default function MessageFromCSV() {
                 <TableHead>description</TableHead>
                 <TableHead>priority</TableHead>
                 <TableHead>group_names</TableHead>
-                <TableHead>student_numbers</TableHead>
+                <TableHead>student_number</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,6 +232,7 @@ const ErrorCell = ({
   name: keyof Upload<Post>["errors"][0]["row"];
   error: Upload<Post>["errors"][0];
 }) => {
+  const t = useTranslations("fromcsv");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
@@ -242,7 +248,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {error?.errors?.[name]}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}

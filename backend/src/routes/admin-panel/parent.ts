@@ -68,7 +68,7 @@ class ParentController implements IController {
                 const data = await response.json();
                 console.error(data, response.status);
                 return res.status(500).json({
-                    error: 'Error while fetching data from kintone',
+                    error: 'error_fetching_data_kintone',
                     message: data.message
                 }).end();
             }
@@ -85,50 +85,50 @@ class ParentController implements IController {
 
                 const rowErrors: any = {};
                 if (!given_name) {
-                    rowErrors.given_name = 'Given name field is missing or empty';
+                    rowErrors.given_name = 'missing_or_empty_given_name';
                 } else {
                     given_name = parseKintoneRow(given_name);
                     if (!isValidString(given_name)) {
-                        rowErrors.given_name = 'Invalid given name format';
+                        rowErrors.given_name = 'invalid_given_name_format';
                     }
                 }
 
                 if (!family_name) {
-                    rowErrors.family_name = 'Family name field is missing or empty';
+                    rowErrors.family_name = 'missing_or_empty_family_name';
                 } else {
                     family_name = parseKintoneRow(family_name);
                     if (!isValidString(family_name)) {
-                        rowErrors.family_name = 'Invalid family name format';
+                        rowErrors.family_name = 'invalid_family_name_format';
                     }
                 }
 
                 if (!email) {
-                    rowErrors.email = 'Email field is missing or empty';
+                    rowErrors.email = 'missing_or_empty_email';
                 } else {
                     email = parseKintoneRow(email);
                     if (!isValidEmail(email)) {
-                        rowErrors.email = 'Invalid email format';
+                        rowErrors.email = 'invalid_email_format';
                     }
                 }
 
                 if (!phone_number) {
-                    rowErrors.phone_number = 'Phone number field is missing or empty';
+                    rowErrors.phone_number = 'missing_or_empty_phone_number';
                 } else {
                     phone_number = parseKintoneRow(phone_number);
                     if (phone_number.startsWith('+')) {
                         phone_number = phone_number.substring(1);
                     }
                     if (!isValidPhoneNumber(phone_number)) {
-                        rowErrors.phone_number = 'Invalid phone number format';
+                        rowErrors.phone_number = 'invalid_phone_number_format';
                     }
                 }
 
                 if (!student_number) {
-                    rowErrors.student_number = 'Student numbers field is missing or empty';
+                    rowErrors.student_number = 'student_numbers_missing_or_empty';
                 } else {
                     student_number = parseKintoneRow(student_number);
                     if (!isValidStudentNumber(student_number)) {
-                        rowErrors.student_number = 'Invalid student numbers format';
+                        rowErrors.student_number = 'invalid_student_numbers_format';
                     }
                 }
 
@@ -148,7 +148,7 @@ class ParentController implements IController {
             }
 
             if (!kintoneRecords) {
-                errors.push({ row: { email: 'No records found' } });
+                errors.push({ row: { email: 'no_records_found' } });
             }
 
             const existingEmails = kintoneRecords?.length > 0 ? await DB.query('SELECT email FROM Parent WHERE email IN (:emails)', {
@@ -208,7 +208,7 @@ class ParentController implements IController {
                 })
                 const existingStudent = student[0];
                 if (!existingStudent) {
-                    errors.push({ row, errors: { student_number: 'Student not found' } });
+                    errors.push({ row, errors: { student_number: 'student_not_found' } });
                 }
                 const existingStudentId = existingStudent.id;
                 const studentParent = await DB.query(`SELECT id
@@ -217,7 +217,7 @@ class ParentController implements IController {
                     student_id: existingStudentId
                 })
                 if (studentParent.length > 0) {
-                    errors.push({ row, errors: { student_number: 'Student already attached to parent' } });
+                    errors.push({ row, errors: { student_number: 'student_already_attached_to_parent' } });
                 }
                 await DB.execute(`DELETE FROM StudentParent WHERE parent_id = :parent_id`, {
                     parent_id: parentId,
@@ -371,17 +371,17 @@ class ParentController implements IController {
                 const normalizedStudentNumbers = String(student_numbers).trim();
 
                 // Validate fields
-                if (!isValidEmail(normalizedEmail)) rowErrors.email = "Invalid email";
-                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = "Invalid phone number";
-                if (!isValidString(normalizedGivenName)) rowErrors.given_name = "Invalid given name";
-                if (!isValidString(normalizedFamilyName)) rowErrors.family_name = "Invalid family name";
-                if (!isValidStudentNumber(normalizedStudentNumbers)) rowErrors.student_numbers = "Invalid student numbers";
+                if (!isValidEmail(normalizedEmail)) rowErrors.email = "invalid_email";
+                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = "invalid_phone_number";
+                if (!isValidString(normalizedGivenName)) rowErrors.given_name = "invalid_given_name";
+                if (!isValidString(normalizedFamilyName)) rowErrors.family_name = "invalid_family_name";
+                if (!isValidStudentNumber(normalizedStudentNumbers)) rowErrors.student_numbers = "invalid_student_number";
 
                 // Check for duplicates
-                if (existingEmailsInCSV.includes(normalizedEmail)) rowErrors.email = "This email already exists";
-                if (existingPhoneNumbersInCSV.includes(normalizedPhoneNumber)) rowErrors.phone_number = "This phone number already exists";
+                if (existingEmailsInCSV.includes(normalizedEmail)) rowErrors.email = "email_already_exists";
+                if (existingPhoneNumbersInCSV.includes(normalizedPhoneNumber)) rowErrors.phone_number = "phone_number_already_exists";
                 if (existingStudentNumbersInCSV[normalizedEmail]?.includes(normalizedStudentNumbers)) {
-                    rowErrors.student_numbers = "This student number already exists";
+                    rowErrors.student_numbers = "student_number_already_exists";
                 }
 
                 // Handle validation errors
@@ -473,14 +473,14 @@ class ParentController implements IController {
             if (emails.length === 0) {
                 return res.status(400).json({
                     errors: errors,
-                    message: 'All data invalid'
+                    message: 'all_data_invalid'
                 }).end();
             }
             const phoneNumbers = validResults.map(row => row.phone_number);
             if (phoneNumbers.length === 0) {
                 return res.status(400).json({
                     errors: errors,
-                    message: 'All data invalid'
+                    message: 'all_data_invalid'
                 }).end();
             }
             const existingParents = await DB.query('SELECT email,phone_number FROM Parent WHERE email IN (:emails) OR phone_number IN (:phoneNumbers)', {
@@ -493,9 +493,9 @@ class ParentController implements IController {
             if (action === 'create') {
                 for (const row of validResults) {
                     if (existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Parent\s email already exists' } });
+                        errors.push({ row, errors: { email: 'parent_email_already_exists ' } });
                     } else if (existingPhoneNumbers.includes(row.phone_number)) {
-                        errors.push({ row, errors: { phone_number: 'Parent\'s phone number already exists' } });
+                        errors.push({ row, errors: { phone_number: 'parent_phone_number_already_exists' } });
                     } else {
                         const parent = await this.cognitoClient.register(row.email);
                         const parentInsert = await DB.execute(
@@ -531,7 +531,7 @@ class ParentController implements IController {
 
                                 attachedStudents.push(...studentList);
                             } else {
-                                errors.push({ row, errors: { student_numbers: 'Invalid student numbers' } });
+                                errors.push({ row, errors: { student_numbers: 'invalid_student_numbers' } });
                             }
                         }
 
@@ -545,7 +545,7 @@ class ParentController implements IController {
             } else if (action === 'update') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Parent does not exist' } });
+                        errors.push({ row, errors: { email: 'parent_does_not_exist' } });
                     } else {
                         await DB.execute(`UPDATE Parent SET
                             phone_number = :phone_number,
@@ -594,7 +594,7 @@ class ParentController implements IController {
                             }
 
                             if (deletedStudents.length <= 0 && newStudents.length <= 0 && futureStudents.length <= 0) {
-                                errors.push({ row, errors: { student_numbers: 'Invalid student numbers' } });
+                                errors.push({ row, errors: { student_numbers: 'invalid_student_numbers' } });
                             }
 
                             for (const student of attachedStudents) {
@@ -608,7 +608,7 @@ class ParentController implements IController {
             } else if (action === 'delete') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'Parent does not exist' } });
+                        errors.push({ row, errors: { email: 'parent_does_not_exist' } });
                     } else {
                         await this.cognitoClient.delete(row.email)
                         await DB.execute('DELETE FROM Parent WHERE email = :email AND school_id = :school_id', {
@@ -647,7 +647,7 @@ class ParentController implements IController {
                 }
 
                 return res.status(400).json({
-                    message: 'CSV processed successfully but with errors',
+                    message: 'csv_processed_with_errors',
                     inserted: inserted,
                     updated: updated,
                     deleted: deleted,
@@ -657,7 +657,7 @@ class ParentController implements IController {
             }
 
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -677,7 +677,7 @@ class ParentController implements IController {
             if (!parentId || !isValidId(parentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
 
@@ -693,7 +693,7 @@ class ParentController implements IController {
             if (parentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Parent not found'
+                    message: 'parent_not_found'
                 }
             }
 
@@ -703,7 +703,7 @@ class ParentController implements IController {
             if (students.length >= 6) {
                 throw {
                     status: 404,
-                    message: 'Parent can\'t attach more than 5 students'
+                    message: 'parent_cant_attach_more_than_5_students'
                 }
             }
             if (students && Array.isArray(students) && isValidArrayId(students)) {
@@ -761,7 +761,7 @@ class ParentController implements IController {
             } else {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing students'
+                    message: 'invalid_or_missing_students'
                 }
             }
         } catch (e: any) {
@@ -772,7 +772,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -785,7 +785,7 @@ class ParentController implements IController {
             if (!parentId || !isValidId(parentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
 
@@ -801,7 +801,7 @@ class ParentController implements IController {
             if (parentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Parent not found'
+                    message: 'parent_not_found'
                 }
             }
 
@@ -826,7 +826,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -849,7 +849,7 @@ class ParentController implements IController {
             } else {
                 throw {
                     status: 401,
-                    message: 'Invalid id list'
+                    message: 'invalid_id_list'
                 }
             }
         } catch (e: any) {
@@ -859,7 +859,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -872,7 +872,7 @@ class ParentController implements IController {
             if (!parentId || !isValidId(parentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
             const parentInfo = await DB.query(`SELECT 
@@ -888,7 +888,7 @@ class ParentController implements IController {
             if (parentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Parent not found'
+                    message: 'parent_not_found'
                 }
             }
 
@@ -910,7 +910,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -927,19 +927,19 @@ class ParentController implements IController {
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
 
@@ -948,7 +948,7 @@ class ParentController implements IController {
             if (!parentId || !isValidId(parentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
             const parentInfo = await DB.query(`SELECT id, 
@@ -964,7 +964,7 @@ class ParentController implements IController {
             if (parentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Parent not found'
+                    message: 'parent_not_found'
                 }
             }
 
@@ -980,7 +980,7 @@ class ParentController implements IController {
                     if (phone_number == duplicate.phone_number) {
                         throw {
                             status: 401,
-                            message: 'This phone_number already exists'
+                            message: 'phone_number_already_exists'
                         }
                     }
                 }
@@ -1014,7 +1014,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1027,7 +1027,7 @@ class ParentController implements IController {
             if (!parentId || !isValidId(parentId)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing parent id'
+                    message: 'invalid_or_missing_parent_id'
                 }
             }
             const parentInfo = await DB.query(`SELECT id,
@@ -1046,7 +1046,7 @@ class ParentController implements IController {
             if (parentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Parent not found'
+                    message: 'parent_not_found'
                 }
             }
 
@@ -1074,7 +1074,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1179,7 +1179,7 @@ class ParentController implements IController {
             } else {
                 console.log(e)
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1250,7 +1250,7 @@ class ParentController implements IController {
                 }).end();
             } else {
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }
@@ -1270,25 +1270,25 @@ class ParentController implements IController {
             if (!email || !isValidEmail(email)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing email'
+                    message: 'invalid_or_missing_email'
                 }
             }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing phone number'
+                    message: 'invalid_or_missing_phone'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing given name'
+                    message: 'invalid_or_missing_given_name'
                 }
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'Invalid or missing family name'
+                    message: 'invalid_or_missing_family_name'
                 }
             }
 
@@ -1304,18 +1304,18 @@ class ParentController implements IController {
                 if (email === duplicate.email && phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'This email and phone_number already exists'
+                        message: 'email_and_phone_number_already_exist'
                     }
                 }
                 if (phone_number === duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'This phone_number already exists'
+                        message: 'phone_number_already_exists'
                     }
                 } else {
                     throw {
                         status: 401,
-                        message: 'This email already exists'
+                        message: 'email_already_exists'
                     }
                 }
             }
@@ -1380,7 +1380,7 @@ class ParentController implements IController {
             } else {
                 console.log(e)
                 return res.status(500).json({
-                    error: 'Internal server error'
+                    error: 'internal_server_error'
                 }).end();
             }
         }

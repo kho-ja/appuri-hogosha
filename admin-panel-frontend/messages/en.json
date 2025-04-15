@@ -15,6 +15,7 @@
     "OTPError": "You are entering first time please enter new password for your account",
     "AuthError": "Something went wrong. Please try again later.",
     "loginFailed": "Login failed. Please try again later.",
+    "loginNewPassword": "Password change required",
     "loginSuccess": "Wellcome back to admin panel",
     "loginSuccessDescription": "You have successfully logged in to your account.",
     "LoggingIn": "Logging in...",
@@ -163,7 +164,9 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers"
+    "editRecivers": "Edit Recievers",
+    "Groups": "Groups",
+    "Students": "Students"
   },
   "ThisGroup": {
     "GroupView": "Group Details",
@@ -335,7 +338,8 @@
     "back": "Back",
     "ParentCreated": "Parent Created Successfully",
     "createFromCSV": "Create from CSV ",
-    "createFromKintone": "Create from Kintone "
+    "createFromKintone": "Create from Kintone ",
+    "Invalid phone number": "Invalid phone number"
   },
   "CreateStudent": {
     "CreateStudent": "Create Student",
@@ -359,7 +363,8 @@
     "StudentEdited": "Student Edited Successfully",
     "How to create from CSV": "How to create from CSV",
     "createFromCSV": "Create students from CSV",
-    "createFromKintone": "Create students from Kintone"
+    "createFromKintone": "Create students from Kintone",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
@@ -373,7 +378,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "ParentUpdated": "Parent Updated Successfully"
+    "ParentUpdated": "Parent Updated Successfully",
+    "Invalid phone number": "Invalid phone number"
   },
   "ViewStudent": {
     "ViewStudent": "View Student",
@@ -406,7 +412,8 @@
     "DouYouDeleteStudent": "Do you want to delete this student?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "studentDeleted": "Student Deleted Successfully"
+    "studentDeleted": "Student Deleted Successfully",
+    "export": "Export"
   },
   "groups": {
     "groups": "Groups",
@@ -421,7 +428,8 @@
     "DouYouDeleteGroup": "Do You really want to delete this group?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "groupDeleted": "Group deleted Successfully"
+    "groupDeleted": "Group deleted Successfully",
+    "export": "Export"
   },
   "parents": {
     "parents": "Parents",
@@ -437,7 +445,8 @@
     "doYouDeleteParent": "Do you really want to delete this Parent?",
     "close": "Close",
     "confirm": "Confirm",
-    "parentDeleted": "Parent Deleted Successfully"
+    "parentDeleted": "Parent Deleted Successfully",
+    "export": "Export"
   },
   "posts": {
     "posts": "Posts",
@@ -496,7 +505,10 @@
     "Phone_number": "Phone Number",
     "Ststudent_number": "Student Number",
     "editStudents": "Edit Students",
-    "editAdmin": "Edit Admin"
+    "editAdmin": "Edit Admin",
+    "SMS_Settings": "SMS Settings",
+    "SchoolName": "School Name",
+    "Notifications": "Notifications"
   },
   "admins": {
     "admins": "Admins",
@@ -512,7 +524,8 @@
     "doYouDeleteAdmin": "Do you really want to delete this Admin?",
     "close": "Close",
     "confirm": "Confirm",
-    "adminDeleted": "Admin Deleted Successfully"
+    "adminDeleted": "Admin Deleted Successfully",
+    "export": "Export"
   },
   "CreateAdmin": {
     "CreateAdmin": "Create Admin",
@@ -528,7 +541,8 @@
     "Students": "Students",
     "back": "Back",
     "AdminCreated": "Admin Created",
-    "createfromCSV": "Create from CSV"
+    "createfromCSV": "Create from CSV",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditAdmin": {
     "EditAdmin": "Edit Admin",
@@ -542,7 +556,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "AdminUpdated": "Admin Updated"
+    "AdminUpdated": "Admin Updated",
+    "Invalid phone number": "Invalid phone number"
   },
   "forms": {
     "parent_name": "Parent Name",
@@ -690,7 +705,35 @@
     "postsDeleted": "Posts Deleted Successfully",
     "postsDeletedDescription": "Posts Deleted Successfully",
     "postsUploaded": "Posts Uploaded Successfully",
-    "csvFile": "CSV File"
+    "csvFile": "CSV File",
+    "invalid_email": "Invalid email",
+    "invalid_phone_number": "Invalid phone number",
+    "invalid_given_name": "Invalid given name",
+    "invalid_family_name": "Invalid family name",
+    "invalid_student_number": "Invalid student number",
+    "invalid_student_numbers": "Invalid student numbers",
+    "email_already_exists": "This email already exists",
+    "student_number_already_exists": "This Student Number already exists.",
+    "all_data_invalid": "All data invalid",
+    "bad_request": "Bad Request",
+    "parent_email_already_exists": "Parent's email already exists",
+    "parent_phone_number_already_exists": "Parent's phone number already exists",
+    "invalid_action": "Invalid action",
+    "phone_number_already_exists": "This phone number already exists",
+    "csv_processed_with_errors": "CSV processed successfully but with errors",
+    "csv_processed_successfully": "CSV processed successfully",
+    "student_email_already_exists": "Student's email already exists",
+    "student_does_not_exist": "Student does not exist",
+    "group_name_already_exists": "This group name already exists",
+    "group_does_not_exist": "Group does not exist",
+    "parent_does_not_exist": "Parent does not exist",
+    "invalid_title": "Invalid title",
+    "invalid_description": "Invalid description",
+    "invalid_priority": "Invalid priority",
+    "invalid_group_names": "Invalid group name(s)",
+    "group_members_not_found": "Group members not found",
+    "export": "Export",
+    "back": "Back"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -737,7 +780,9 @@
     "student_numbers": "Student Numbers",
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number."
+    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
+    "export": "Export",
+    "back": "Back"
   },
   "errors": {
     "wentWrong": "Something went wrong.",
@@ -746,7 +791,73 @@
     "loading": "Loading...",
     "loadingDescription": "Please wait while we loading.",
     "fileDownloaded": "File downloaded successfully",
-    "fileDownloadedDescription": "Your file has been downloaded successfully."
+    "fileDownloadedDescription": "Your file has been downloaded successfully.",
+    "invalid_or_missing_email": "Invalid or missing email",
+    "invalid_or_missing_phone": "Invalid or missing phone number",
+    "invalid_or_missing_given_name": "Invalid or missing given name",
+    "invalid_or_missing_family_name": "Invalid or missing family name",
+    "invalid_or_missing_student_number": "Invalid or missing student number",
+    "email_already_exists": "This email already exists",
+    "phone_number_already_exists": "This phone number already exists",
+    "error_fetching_data_kintone": "Error while fetching data from Kintone",
+    "missing_or_empty_given_name": "Given name field is missing or empty",
+    "invalid_given_name_format": "Invalid given name format",
+    "missing_or_empty_family_name": "Family name field is missing or empty",
+    "invalid_family_name_format": "Invalid family name format",
+    "missing_or_empty_email": "Email field is missing or empty",
+    "invalid_email_format": "Invalid email format",
+    "missing_or_empty_phone_number": "Phone number field is missing or empty",
+    "invalid_phone_number_format": "Invalid phone number format",
+    "student_numbers_missing_or_empty": "Student numbers field is missing or empty",
+    "invalid_student_numbers_format": "Invalid student numbers format",
+    "no_records_found": "No records found",
+    "missing_or_empty_student_number": "Student number field is missing or empty",
+    "invalid_student_number_format": "Invalid student number format",
+    "student_email_already_exists": "Student's email already exists",
+    "student_does_not_exist": "Student does not exist",
+    "bad_request": "Bad Request",
+    "invalid_action": "Invalid action",
+    "csv_processed_with_errors": "CSV processed successfully but with errors",
+    "invalid_or_missing_student_id": "Invalid or missing student ID",
+    "student_not_found": "Student not found",
+    "student_already_attached_to_parent": "Student already attached to parent",
+    "invalid_or_missing_parents": "Invalid or missing parents",
+    "internal_server_error": "Internal server error",
+    "student_number_already_exists": "This Student Number already exists.",
+    "all_data_invalid": "All data invalid",
+    "invalid_phone_number": "Invalid phone number",
+    "invalid_given_name": "Invalid given name",
+    "invalid_family_name": "Invalid family name",
+    "invalid_student_number": "Invalid student number",
+    "admin_already_exists": "Admin already exists",
+    "admin_does_not_exist": "Admin does not exist",
+    "invalid_or_missing_admin_id": "Invalid or missing admin ID",
+    "admin_not_found": "Admin not found",
+    "email_and_phone_number_already_exist": "This email and phone number already exist",
+    "invalid_id_list": "Invalid ID list",
+    "invalid_name": "Invalid name",
+    "invalid_student_numbers": "Invalid student numbers",
+    "group_name_already_exists": "This group name already exists",
+    "group_does_not_exist": "Group does not exist",
+    "invalid_or_missing_group_id": "Invalid or missing group id",
+    "invalid_email": "Invalid email",
+    "invalid_or_missing_group_name": "Invalid or missing group name",
+    "group_not_found": "Group not found",
+    "invalid_or_missing_parent_id": "Invalid or missing parent ID",
+    "parent_not_found": "Parent not found",
+    "parent_cant_attach_more_than_5_students": "Parent can't attach more than 5 students",
+    "invalid_or_missing_students": "Invalid or missing students",
+    "invalid_or_missing_post_id": "Invalid or missing post id",
+    "post_not_found": "Post not found",
+    "group_members_not_found": "Group members not found",
+    "post_sender_updated_successfully": "Post sender updated successfully",
+    "post_notification_replayed_successfully": "Post notification replayed successfully",
+    "invalid_or_missing_title": "Invalid or missing title",
+    "invalid_or_missing_description": "Invalid or missing description",
+    "invalid_or_missing_priority": "Invalid or missing priority",
+    "invalid_image_format": "Invalid image format. Make sure it is Base64 encoded.",
+    "image_size_too_large": "Image size is too large (max 10MB)",
+    "function_not_implemented": "Function not implemented."    
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Preparing the document",
@@ -952,7 +1063,16 @@
     "lowCheckbox": "Low",
     "NotificationSettingUpdate": "Update Setting",
     "NotificationSettingUpdated": "Notification Setting Updated Successfully",
-    "NotificationSettingUpdateFailed": "Notification Setting Update Failed"
+    "NotificationSettingUpdateFailed": "Notification Setting Update Failed",
+    "SettingsTitle": "Notifications",
+    "SettingsDescription": "Configure how you receive notifications."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "School Name",
+    "SchoolNameDescription": "Update your school name.",
+    "SchoolNameUpdated": "School Name Updated Successfully",
+    "SchoolNameUpdateFailed": "School Name Update Failed",
+    "SchoolNameEditBtn": "Update"
   },
   "EditStudentsDialog": {
     "saving": "Saving...",

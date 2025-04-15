@@ -16,6 +16,7 @@
     "OTPError": "初めてログインする場合は、アカウントの新しいパスワードを入力してください。",
     "AuthError": "何かが間違っています。後でもう一度お試しください。",
     "loginFailed": "ログインに失敗しました。もう一度お試しください。",
+    "loginNewPassword": "パスワードの変更が必要です",
     "loginSuccess": "管理パネルへようこそ",
     "loginSuccessDescription": "アカウントに正常にログインしました。",
     "LoggingIn": "ログイン中...",
@@ -162,7 +163,9 @@
     "not_viewed_count": "未閲覧数",
     "view": "表示",
     "editMessage": "メッセージを編集",
-    "editRecivers": "受信者を編集"
+    "editRecivers": "受信者を編集",
+    "Groups": "グループ",
+    "Students": "学生"
   },
   "ThisGroup": {
     "GroupView": "グループの詳細",
@@ -334,7 +337,8 @@
     "back": "戻る",
     "ParentCreated": "保護者が作成されました",
     "createFromCSV": "CSVから作成する",
-    "createFromKintone": "Kintoneから作成する"
+    "createFromKintone": "Kintoneから作成する",
+    "Invalid phone number": "無効な電話番号"
   },
   "CreateStudent": {
     "CreateStudent": "学生を作成",
@@ -357,7 +361,8 @@
     "StudentCreated": "学生が正常に作成されました",
     "StudentEdited": "学生が正常に編集されました",
     "createFromCSV": "CSVから作成する ",
-    "createFromKintone": "Kintoneから作成する "
+    "createFromKintone": "Kintoneから作成する ",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditParent": {
     "EditParent": "保護者を編集",
@@ -371,7 +376,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "ParentUpdated": "保護者が正常に更新されました"
+    "ParentUpdated": "保護者が正常に更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "ViewStudent": {
     "ViewStudent": "学生を表示",
@@ -405,7 +411,8 @@
     "DouYouDeleteStudent": "この学生を削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "studentDeleted": "学生が削除されました"
+    "studentDeleted": "学生が削除されました",
+    "export": "ファイルに書き出す"
   },
   "groups": {
     "groups": "グループ",
@@ -420,7 +427,8 @@
     "DouYouDeleteGroup": "このグループを本当に削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "groupDeleted": "グループが正常に削除されました"
+    "groupDeleted": "グループが正常に削除されました",
+    "export": "ファイルに書き出す"
   },
   "parents": {
     "parents": "保護者",
@@ -436,7 +444,8 @@
     "doYouDeleteParent": "この保護者を本当に消しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "parentDeleted": "保護者が削除されました"
+    "parentDeleted": "保護者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "posts": {
     "posts": "投稿",
@@ -495,7 +504,10 @@
     "Phone_number": "電話番号",
     "Ststudent_number": "学籍番号",
     "editStudents": "学生を編集",
-    "editAdmin": "管理者を編集"
+    "editAdmin": "管理者を編集",
+    "SMS_Settings": "SMS設定",
+    "SchoolName": "学校名",
+    "Notifications": "通知"
   },
   "admins": {
     "admins": "管理者",
@@ -511,7 +523,8 @@
     "doYouDeleteAdmin": "この管理者を削除しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "adminDeleted": "管理者が削除されました"
+    "adminDeleted": "管理者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "CreateAdmin": {
     "CreateAdmin": "管理者を作成",
@@ -527,7 +540,8 @@
     "Students": "学生",
     "back": "戻る",
     "AdminCreated": "管理者が作成されました",
-    "createfromCSV": "CSVから作成"
+    "createfromCSV": "CSVから作成",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditAdmin": {
     "EditAdmin": "管理者を編集",
@@ -541,7 +555,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "AdminUpdated": "管理者が更新されました"
+    "AdminUpdated": "管理者が更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "forms": {
     "parent_name": "保護者の名前",
@@ -689,7 +704,37 @@
     "postsDeleted": "投稿が正常に削除されました",
     "postsDeletedDescription": "投稿が正常に削除されました",
     "postsUploaded": "投稿が正常にアップロードされました",
-    "csvFile": "CSVファイル"
+    "csvFile": "CSVファイル",
+    "invalid_email": "無効なメールアドレス",
+    "invalid_phone_number": "無効な電話番号",
+    "invalid_given_name": "無効な名前",
+    "invalid_family_name": "無効な苗字",
+    "invalid_student_number": "無効な学生番号",
+    "invalid_student_numbers": "無効な学生番号",
+    "email_already_exists": "このメールアドレスはすでに存在します",
+    "student_number_already_exists": "この学生番号はすでに存在します",
+    "all_data_invalid": "すべてのデータが無効です",
+    "bad_request": "不正なリクエスト",
+    "invalid_action": "無効な操作",
+    "csv_processed_with_errors": "CSVはエラー付きで正常に処理されました",
+    "csv_processed_successfully": "CSVが正常に処理されました",
+    "student_email_already_exists": "学生のメールアドレスはすでに存在します",
+    "group_name_already_exists": "このグループ名はすでに存在します",
+    "group_does_not_exist": "グループが存在しません",
+    "phone_number_already_exists": "この電話番号はすでに存在します",
+    "parent_email_already_exists": "保護者のメールアドレスはすでに存在します",
+    "parent_phone_number_already_exists": "保護者の電話番号はすでに存在します",
+    "student_does_not_exist": "学生が存在しません",
+    "parent_does_not_exist": "保護者が存在しません",
+    "invalid_title": "無効なタイトル",
+    "invalid_description": "無効な説明",
+    "invalid_priority": "無効な優先度",
+    "invalid_group_names": "無効なグループ名",
+    "group_members_not_found": "グループメンバーが見つかりません",
+    "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
+    "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -736,7 +781,9 @@
     "student_numbers": "学生番号",
     "student_numbersDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
     "student_number": "学生番号",
-    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。"
+    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "errors": {
     "wentWrong": "何かが間違っています。",
@@ -745,7 +792,71 @@
     "loading": "読み込み中...",
     "loadingDescription": "読み込み中です。お待ちください。",
     "fileDownloaded": "ファイルがダウンロードされました",
-    "fileDownloadedDescription": "ファイルが正常にダウンロードされました。"
+    "fileDownloadedDescription": "ファイルが正常にダウンロードされました。",
+    "invalid_or_missing_email": "無効または未入力のメールアドレス",
+    "invalid_or_missing_phone": "無効または未入力の電話番号",
+    "invalid_or_missing_given_name": "無効または未入力の名",
+    "invalid_or_missing_family_name": "無効または未入力の姓",
+    "invalid_or_missing_student_number": "無効または未入力の学生番号",
+    "email_already_exists": "このメールアドレスはすでに存在します",
+    "phone_number_already_exists": "この電話番号はすでに存在します",
+    "error_fetching_data_kintone": "Kintone からデータを取得中にエラーが発生しました",
+    "missing_or_empty_given_name": "名のフィールドが存在しないか空です",
+    "invalid_given_name_format": "名の形式が無効です",
+    "missing_or_empty_family_name": "姓のフィールドが存在しないか空です",
+    "invalid_family_name_format": "姓の形式が無効です",
+    "student_numbers_missing_or_empty": "学生番号のフィールドが見つからないか、空です",
+    "invalid_student_numbers_format": "無効な学生番号の形式",
+    "no_records_found": "記録が見つかりません",
+    "student_already_attached_to_parent": "学生はすでに保護者に紐付けられています",
+    "missing_or_empty_email": "メールアドレスのフィールドが存在しないか空です",
+    "invalid_email_format": "メールアドレスの形式が無効です",
+    "missing_or_empty_phone_number": "電話番号のフィールドが存在しないか空です",
+    "invalid_phone_number_format": "電話番号の形式が無効です",
+    "missing_or_empty_student_number": "学生番号のフィールドが存在しないか空です",
+    "invalid_student_number_format": "学生番号の形式が無効です",
+    "student_email_already_exists": "学生のメールアドレスはすでに存在します",
+    "student_does_not_exist": "学生が存在しません",
+    "bad_request": "不正なリクエスト",
+    "invalid_action": "無効なアクション",
+    "csv_processed_with_errors": "CSVは正常に処理されましたが、エラーがあります",
+    "invalid_or_missing_student_id": "学生IDが無効または存在しません",
+    "student_not_found": "学生が見つかりません",
+    "invalid_or_missing_parents": "保護者情報が無効または存在しません",
+    "internal_server_error": "サーバー内部エラー",
+    "invalid_email": "Неверный email",
+    "invalid_phone_number": "無効な電話番号",
+    "invalid_given_name": "無効な名",
+    "invalid_family_name": "無効な姓",
+    "invalid_student_number": "無効な学生番号",
+    "all_data_invalid": "すべてのデータが無効です",
+    "admin_already_exists": "管理者は既に存在します",
+    "admin_does_not_exist": "管理者が存在しません",
+    "invalid_or_missing_admin_id": "管理者IDが無効または存在しません",
+    "admin_not_found": "管理者が見つかりません",
+    "email_and_phone_number_already_exist": "このメールアドレスと電話番号はすでに存在します",
+    "invalid_id_list": "無効なIDリスト",
+    "invalid_name": "無効な名前",
+    "invalid_student_numbers": "無効な学生番号",
+    "group_name_already_exists": "このグループ名はすでに存在します",
+    "group_does_not_exist": "グループが存在しません",
+    "student_number_already_exists": "この学生番号はすでに存在します",
+    "invalid_or_missing_group_id": "無効または不足しているグループID",
+    "invalid_or_missing_group_name": "無効または不足しているグループ名",
+    "group_not_found": "グループが見つかりません",
+    "invalid_or_missing_parent_id": "無効または存在しない保護者ID",
+    "parent_not_found": "保護者が見つかりません",
+    "parent_cant_attach_more_than_5_students": "保護者は5人以上の学生を紐付けることはできません",
+    "invalid_or_missing_students": "無効または存在しない学生",
+    "invalid_or_missing_post_id": "無効または存在しない投稿ID",
+    "post_not_found": "投稿が見つかりません",
+    "group_members_not_found": "グループメンバーが見つかりません",
+    "invalid_or_missing_title": "無効または存在しないタイトル",
+    "invalid_or_missing_description": "無効または存在しない説明",
+    "invalid_or_missing_priority": "無効または存在しない優先度",
+    "invalid_image_format": "無効な画像フォーマットです。Base64エンコードされていることを確認してください。",
+    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）",
+    "function_not_implemented": "機能が実装されていません。"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "ドキュメントの準備",
@@ -951,7 +1062,16 @@
     "lowCheckbox": "低",
     "NotificationSettingUpdate": "通知設定が更新する",
     "NotificationSettingUpdated": "通知設定が更新されました",
-    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました"
+    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました",
+    "SettingsTitle": "通知",
+    "SettingsDescription": "通知の受信方法を設定します。"
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "学校名",
+    "SchoolNameDescription": "学校名を更新します。",
+    "SchoolNameUpdateFailed": "学校名の更新に失敗しました",
+    "SchoolNameUpdated": "学校名が更新されました",
+    "SchoolNameEditBtn": "更新する"
   },
   "EditStudentsDialog": {
     "saving": "保存中...",

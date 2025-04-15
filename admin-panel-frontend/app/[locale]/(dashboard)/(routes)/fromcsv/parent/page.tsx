@@ -105,6 +105,11 @@ export default function CreateFromCsv() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createParentFromCsv")}</h1>
+        <Link href="/parents/create" passHref>
+          <Button type="button" variant={"secondary"}>
+            {t("back")}
+          </Button>
+        </Link>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>
@@ -187,7 +192,7 @@ export default function CreateFromCsv() {
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </CardHeader>
         <CardContent>
@@ -280,6 +285,7 @@ const ErrorCell = ({
   name: keyof Upload<Parent>["errors"][0]["row"];
   error: Upload<Parent>["errors"][0];
 }) => {
+  const t = useTranslations("fromcsv");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && <span>{error?.row[name]}</span>}
@@ -289,7 +295,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {error?.errors?.[name]}
+            {t(error.errors[name] || "")}
           </HoverCardContent>
         </HoverCard>
       )}

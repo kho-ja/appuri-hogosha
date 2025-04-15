@@ -11,4 +11,5 @@ export default interface Post {
   read_percent: string;
   group_names?: string;
   student_numbers?: string;
+  image: string;
 }

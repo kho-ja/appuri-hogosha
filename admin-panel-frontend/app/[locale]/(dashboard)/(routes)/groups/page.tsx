@@ -12,7 +12,8 @@ import { Link, usePathname, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -30,9 +31,23 @@ import useFileMutation from "@/lib/useFileMutation";
 
 export default function Groups() {
   const t = useTranslations("groups");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
+  const router = useRouter();
   const pathName = usePathname();
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathName, router]);
+
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${search}`,
     ["groups", page, search]
@@ -119,14 +134,15 @@ export default function Groups() {
             <Button>{t("creategroup")}</Button>
           </Link>
         </div>
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm"
+            className="max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination || null} setPage={setPage} />
@@ -141,7 +157,7 @@ export default function Groups() {
               className="h-7 gap-1 text-sm"
             >
               <FileIcon className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only">Export</span>
+              <span className="sr-only sm:not-sr-only">{t("export")}</span>
             </Button>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">

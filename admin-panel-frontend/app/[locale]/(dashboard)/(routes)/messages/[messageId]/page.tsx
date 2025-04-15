@@ -240,8 +240,8 @@ export default function ThisMessage({
       <Tabs defaultValue="groups" className="w-full">
         <div className="flex gap-2 justify-between">
           <TabsList>
-            <TabsTrigger value="groups">Groups</TabsTrigger>
-            <TabsTrigger value="students">Students</TabsTrigger>
+            <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
+            <TabsTrigger value="students">{t("Students")}</TabsTrigger>
           </TabsList>
           <Link href={`/messages/${messageId}/recievers`} passHref>
             <Button>{t("editRecivers")}</Button>
