@@ -137,7 +137,7 @@ export default function Admins() {
             <Button>{t("createadmin")}</Button>
           </Link>
         </div>
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -145,7 +145,7 @@ export default function Admins() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm"
+            className="max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />

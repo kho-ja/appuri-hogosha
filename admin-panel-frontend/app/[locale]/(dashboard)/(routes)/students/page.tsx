@@ -141,7 +141,7 @@ export default function Students() {
           <Button>{t("createstudent")}</Button>
         </Link>
       </div>
-      <div className="flex justify-between w-full">
+      <div className="flex flex-wrap justify-between w-full">
         <Input
           placeholder={t("filter")}
           value={search}
@@ -149,7 +149,7 @@ export default function Students() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="max-w-xs"
+          className="max-w-xs mb-4"
         />
         <div>
           <PaginationApi
