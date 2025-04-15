@@ -37,7 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen w-full">
       <div className="fixed top-0 bottom-0 left-0 z-20 hidden md:block w-[220px] lg:w-[280px] border-r bg-muted/40 overflow-y-auto">
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link
               href="/"
