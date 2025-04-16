@@ -3,8 +3,9 @@ import React, {
 	useEffect,
 	useRef,
 	useState,
-	useCallback,
+	useCallback
 } from 'react'
+
 import { ScrollView, RefreshControl, StyleSheet, View } from 'react-native'
 import { useSQLiteContext } from 'expo-sqlite'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -23,6 +24,7 @@ import {
 } from '@/utils/queries'
 import { Separator } from '@/components/atomic/separator'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import {useMemo} from "react";
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -31,11 +33,31 @@ const styles = StyleSheet.create({
 	},
 	loadMoreButton: {
 		marginTop: 10,
+    marginHorizontal: 15,
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
+    //backgroundColor: '#005678',
 	},
 })
+
+// Group messages by title, content, and sent_time
+const groupMessages = (messages: Message[]): { key: string; messages: Message[] }[] => {
+  const messageMap = new Map<string, Message[]>();
+
+  messages.forEach((message) => {
+    const sentTimestamp = message.sent_time
+      ? new Date(message.sent_time).toISOString()
+      : '';
+    const compositeKey = `${message.title || ''}|-|${message.content || ''}|-|${sentTimestamp}`;
+    if (!messageMap.has(compositeKey)) {
+      messageMap.set(compositeKey, []);
+    }
+    messageMap.get(compositeKey)!.push(message);
+  });
+
+  return Array.from(messageMap, ([key, messages]) => ({ key, messages }));
+};
 
 const MessageList = ({ studentId }: { studentId: number }) => {
 	// Contexts and hooks
@@ -224,6 +246,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 		}
 	}
 
+  const messageGroups = useMemo(() => {
+    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
+    return groupMessages(allMessages);
+  }, [isOnline, data, localMessages]);
+
 	// Loading state while fetching student data
 	if (!student) {
 		return (
@@ -233,8 +260,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 		)
 	}
 
-	// Determine which messages to display based on online/offline state
-	const messages = isOnline ? data?.pages.flat() || [] : localMessages
 
 	return (
 		<SafeAreaView>
@@ -244,9 +269,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				}
 				contentContainerStyle={{ paddingBottom: 80 }}
 			>
-				{messages.map(message => (
-					<React.Fragment key={message.id}>
-						<Card message={message} />
+				{messageGroups.map(group => (
+					<React.Fragment key={group.key}>
+						<Card messageGroup={group.messages} />
 						<Separator orientation='horizontal' />
 					</React.Fragment>
 				))}

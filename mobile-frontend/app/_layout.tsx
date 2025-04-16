@@ -16,7 +16,6 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { redirectSystemPath } from '../+native-intent'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -27,20 +26,20 @@ Notifications.setNotificationHandler({
 })
 
 function useNotificationObserver() {
+  const hasRedirected = React.useRef(false);
 	React.useEffect(() => {
 		let isMounted = true
 
 		function redirect(notification: Notifications.Notification) {
-      const fullUrl = notification.request.content.data?.url;
-      if (fullUrl) {
-        const processedPath = redirectSystemPath({ path: fullUrl, initial: false });
-        router.push(processedPath);
-      }
+			const url = notification.request.content.data?.url
+			if (url) {
+				router.push(url)
+			}
 		}
 
 		Notifications.getLastNotificationResponseAsync().then(response => {
 			if (!isMounted || !response?.notification) {
-				return
+				return;
 			}
 			redirect(response?.notification)
 		})
@@ -77,22 +76,7 @@ export default function Root() {
 		)
 		return () => subscription.remove()
 	}, [])
-  React.useEffect(() => {
-    const handleDeepLink = ({ url }) => {
-      if (url) {
-        const processedPath = redirectSystemPath({ path: url, initial: false });
-        router.push(processedPath);
-      }
-    };
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        const processedPath = redirectSystemPath({ path: url, initial: true });
-        router.push(processedPath);
-      }
-    });
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-    return () => subscription.remove();
-  }, []);
+
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()

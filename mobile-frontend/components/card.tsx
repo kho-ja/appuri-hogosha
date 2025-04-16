@@ -18,23 +18,29 @@ import { useSQLiteContext } from 'expo-sqlite'
 import { useThemeColor } from '@/hooks/useThemeColor'
 import Autolink from 'react-native-autolink'
 
-const Card = ({ message }: { message: Message }) => {
+const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
 	const router = useRouter()
 	const { language, i18n } = useContext(I18nContext)
 	const db = useSQLiteContext()
-	const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
+	// const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
 	const textColor = useThemeColor({}, 'text')
+
+  const firstMessage = messageGroup[0];
+  const groupNames = [...new Set(messageGroup.map(m => m.group_name).filter(Boolean))];
+  const isRead = messageGroup.every(m => m.read_status === 1 || !!m.viewed_at);
 
 	const handlePress = async () => {
 		// Mark message as read in the database
+    for (const message of messageGroup) {
 		if (!isRead) {
 			await db.runAsync(
 				'UPDATE message SET read_status = 1, read_time = ? WHERE id = ?',
 				[new Date().toISOString(), message.id]
 			)
 		}
-		router.push(`message/${message.id}` as Href)
+		router.push(`message/${firstMessage.id}` as Href)
 	}
+  }
 
 	const getImportanceLabel = (priority: string) => {
 		const mapping: { [key: string]: string } = {
@@ -77,28 +83,28 @@ const Card = ({ message }: { message: Message }) => {
 						numberOfLines={1}
 						style={cn(isRead ? null : { marginRight: 20 })}
 					>
-						{message.title}
+						{firstMessage.title}
 					</ThemedText>
 				</View>
 				<View style={styles.dateRow}>
 					<ThemedText style={styles.dateText}>
-						{formatMessageDate(new Date(message.sent_time), language)}
+						{formatMessageDate(new Date(firstMessage.sent_time), language)}
 					</ThemedText>
-					<ThemedText style={getImportanceBadgeStyle(message.priority)}>
-						{getImportanceLabel(message.priority)}
+					<ThemedText style={getImportanceBadgeStyle(firstMessage.priority)}>
+						{getImportanceLabel(firstMessage.priority)}
 					</ThemedText>
-					{message.group_name && (
-						<ThemedText style={styles.groupStyle}>
-							{message.group_name}
-						</ThemedText>
-					)}
+          {groupNames.map((groupName, index) => (
+            <ThemedText key={index} style={styles.groupStyle}>
+              {groupName}
+            </ThemedText>
+          ))}
 				</View>
 				<View style={styles.descriptionRow}>
 					<Autolink
 						email
 						hashtag='instagram'
 						mention='instagram'
-						text={message.content}
+						text={firstMessage.content}
 						numberOfLines={5}
 						style={autolinkStyles}
 						textProps={{ style: autolinkStyles }}
