@@ -323,7 +323,7 @@
     "createGroupfromCSV": "CSVからグループを作成"
   },
   "CreateParent": {
-    "CreateParent": "保護者を作成",
+    "CreateParent": "保護者を保存",
     "ParentName": "保護者の名前",
     "ParentFamilyName": "保護者の姓",
     "ParentPhone": "保護者の電話番号",
@@ -341,7 +341,7 @@
     "Invalid phone number": "無効な電話番号"
   },
   "CreateStudent": {
-    "CreateStudent": "学生を作成",
+    "CreateStudent": "学生を保存",
     "back": "戻る",
     "Email": "メールアドレス",
     "PhoneNumber": "電話番号",
@@ -406,7 +406,7 @@
     "view": "表示",
     "edit": "編集",
     "delete": "削除",
-    "createstudent": "学生を作成",
+    "createstudent": "学生を保存",
     "filter": "フィルター",
     "DouYouDeleteStudent": "この学生を削除しますか？",
     "cancel": "キャンセル",
@@ -518,7 +518,7 @@
     "view": "表示",
     "edit": "編集",
     "delete": "削除",
-    "createadmin": "管理者を作成",
+    "createadmin": "管理者を保存",
     "filter": "名前でフィルタリング",
     "doYouDeleteAdmin": "この管理者を削除しますか？",
     "close": "閉じる",
@@ -527,7 +527,7 @@
     "export": "ファイルに書き出す"
   },
   "CreateAdmin": {
-    "CreateAdmin": "管理者を作成",
+    "CreateAdmin": "管理者を保存",
     "AdminName": "管理者の名前",
     "AdminFamilyName": "管理者の姓",
     "AdminPhone": "管理者の電話番号",
@@ -643,7 +643,7 @@
     "studentsUploaded": "学生が正常にアップロードされました",
     "howToCreateFromCSV": "CSVから作成する方法",
     "createFromCsv": "CSVから学生を作成と削除",
-    "createStudent": "学生を作成",
+    "createStudent": "学生を保存",
     "newHere?": "こちらに初めて来られた方で、生徒または保護者を作成しようとしているが、うまくいかない場合は、以下のリンクにある説明をお読みください:",
     "mode": "モード",
     "create": "作成",
@@ -743,7 +743,7 @@
     "parentUploaded": "保護者が正常にアップロードされました",
     "howToCreateFromKintone": "Kintoneから作成方法",
     "createFromKintone": "Kintoneから学生を作成し、削除する",
-    "createStudent": "学生を作成",
+    "createStudent": "学生を保存",
     "newHere?": "こちらに初めて来られた方で、生徒または保護者を作成しようとしているが、うまくいかない場合は、以下のリンクにある説明をお読みください:",
     "updateStudents": "学生を更新",
     "errorsInStudents": "学生のエラー",
@@ -755,7 +755,7 @@
     "studentsDeleted": "学生が削除されました",
     "studentsDeletedDescription": "学生が削除されました",
     "createParentFromKintone": "Kintoneから保護者を作成し、更新する",
-    "createParent": "保護者を作成",
+    "createParent": "保護者を保存",
     "parentsschema": "保護者スキーマ",
     "errorsInParents": "保護者のエラー",
     "parentsCreated": "保護者が作成されました",
