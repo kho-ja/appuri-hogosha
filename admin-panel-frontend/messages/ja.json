@@ -519,7 +519,7 @@
     "edit": "編集",
     "delete": "削除",
     "createadmin": "管理者を作成",
-    "filter": "名前とメールでフィルタリング",
+    "filter": "名前でフィルタリング",
     "doYouDeleteAdmin": "この管理者を削除しますか？",
     "close": "閉じる",
     "confirm": "確認する",

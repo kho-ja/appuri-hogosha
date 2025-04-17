@@ -521,7 +521,7 @@
     "edit": "Tahrirlash",
     "delete": "O'chirish",
     "createadmin": "Admin yaratish",
-    "filter": "Ism va email bo'yicha filtrlash",
+    "filter": "Ism bo'yicha filtrlash",
     "doYouDeleteAdmin": "Rostdan ham bu Adminni o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
