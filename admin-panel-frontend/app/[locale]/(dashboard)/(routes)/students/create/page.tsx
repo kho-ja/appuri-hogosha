@@ -33,8 +33,8 @@ const GetFormSchema = (t: (key: string) => string) => {
       .min(10)
       .max(20)
       .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    given_name: z.string().min(2).max(50),
-    family_name: z.string().min(2).max(50),
+    given_name: z.string().min(1).max(50),
+    family_name: z.string().min(1).max(50),
     student_number: z.string().min(1).max(10),
   });
 };
