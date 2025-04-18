@@ -337,7 +337,7 @@ class GroupController implements IController {
                 }).end()
             }
             return res.status(200).json({
-                message: 'csv_processed_successfully',
+                message: 'Csv processed successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,

@@ -377,7 +377,7 @@ class PostController implements IController {
             }
 
             return res.status(200).json({
-                message: 'csv_processed_successfully',
+                message: 'Csv processed successfully',
                 inserted: inserted,
                 results: validResults,
             }).end()
@@ -499,7 +499,7 @@ class PostController implements IController {
             });
 
             return res.status(200).json({
-                message: 'post_sender_updated_successfully'
+                message: 'Post sender updated successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -566,7 +566,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'Post notification replayed successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -703,7 +703,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'Post notification replayed successfully'
             }).end()
         } catch (e: any) {
             if (e.status) {
