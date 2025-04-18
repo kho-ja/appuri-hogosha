@@ -324,14 +324,14 @@
     "createGroupfromCSV": "Create Group from CSV"
   },
   "CreateParent": {
-    "CreateParent": "Create Parent",
+    "CreateParent": "Save Parent",
     "ParentName": "Parent Name",
     "ParentFamilyName": "Parent Family Name",
     "ParentPhone": "Parent Phone",
     "ParentEmail": "Parent Email",
     "ParentTelegram": "Parent Telegram",
     "ParentStatus": "Parent Status",
-    "Create": "Create",
+    "Create": "Save",
     "Picture": "Picture",
     "Cancel": "Cancel",
     "Students": "Students",
@@ -342,7 +342,7 @@
     "Invalid phone number": "Invalid phone number"
   },
   "CreateStudent": {
-    "CreateStudent": "Create Student",
+    "CreateStudent": "Save Student",
     "back": "Back",
     "Email": "Email",
     "PhoneNumber": "Phone Number",
@@ -350,7 +350,7 @@
     "FamilyName": "Family Name",
     "StudentNumber": "Student Number",
     "Parents": "Parents",
-    "Submit": "Submit",
+    "Submit": "Save",
     "EditStudent": "Edit Student",
     "Remove": "Remove",
     "Add Parent": "Add Parent",
@@ -528,14 +528,14 @@
     "export": "Export"
   },
   "CreateAdmin": {
-    "CreateAdmin": "Create Admin",
+    "CreateAdmin": "Save Admin",
     "AdminName": "Admin Name",
     "AdminFamilyName": "Admin Family Name",
     "AdminPhone": "Admin Phone",
     "AdminEmail": "Admin Email",
     "AdminTelegram": "Admin Telegram",
     "AdminStatus": "Admin Status",
-    "Create": "Create",
+    "Create": "Save",
     "Picture": "Picture",
     "Cancel": "Cancel",
     "Students": "Students",
