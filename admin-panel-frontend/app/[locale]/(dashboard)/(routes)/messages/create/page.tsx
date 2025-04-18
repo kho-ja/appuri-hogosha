@@ -47,6 +47,8 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -60,11 +62,10 @@ export default function SendMessagePage() {
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
   const tName = useTranslations("names");
-  const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(
-    null
-  );
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
+  const [draftsData, setDraftsData] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -90,13 +91,17 @@ export default function SendMessagePage() {
         });
         setSelectedStudents([]);
         setSelectedGroups([]);
-        setSelectedImageBase64(null);
         form.reset();
         localStorage.removeItem("formDataMessages");
         router.push("/messages");
       },
     }
   );
+  const priority = form.watch("priority");
+
+  useEffect(() => {
+    form.setValue("priority", priority);
+  }, [priority, form]);
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataMessages");
@@ -110,6 +115,12 @@ export default function SendMessagePage() {
     });
     return () => subscription.unsubscribe();
   }, [form]);
+
+  useEffect(() => {
+    let draftsLocal = localStorage.getItem("DraftsData");
+    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    setDraftsData(parsedDrafts);
+  }, []);
 
   const handleFormSubmit = (data: z.infer<typeof formSchema>) => {
     if (selectedStudents.length === 0 && selectedGroups.length === 0) {
@@ -135,6 +146,64 @@ export default function SendMessagePage() {
   const hasRecipients =
     selectedStudents.length > 0 || selectedGroups.length > 0;
 
+  const handleSaveDraft = (e: any) => {
+    e.preventDefault();
+    const data = form.getValues();
+    const parsedData = {
+      ...data,
+      groups: selectedGroups,
+      students: selectedStudents,
+    };
+
+    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
+
+    if (parsedData) {
+      draftsLocal.push(parsedData);
+    }
+
+    localStorage.setItem("DraftsData", JSON.stringify(draftsLocal));
+    setDraftsData(draftsLocal);
+
+    setSelectedStudents([]);
+    setSelectedGroups([]);
+    form.reset({
+      title: "",
+      description: "",
+      priority: "low",
+      image: "",
+    });
+    toast({
+      title: t("draftSaved"),
+      description: parsedData?.title,
+    });
+    localStorage.removeItem("formDataMessages");
+  };
+
+  const handleDeleteDraft = (draft: any) => {
+    if (draft) {
+      let drafts = draftsData.filter((d) => {
+        if (
+          !(
+            d.title === draft.title &&
+            d.description === draft.description &&
+            d.priority === draft.priority &&
+            d.image === draft.image &&
+            d.students === draft.students &&
+            d.groups === draft.groups
+          )
+        ) {
+          return d;
+        }
+      });
+      setDraftsData(drafts);
+      localStorage.setItem("DraftsData", JSON.stringify(drafts));
+      toast({
+        title: t("draftDeleted"),
+        description: draft?.title,
+      });
+    }
+  };
+
   return (
     <div className="w-full">
       <Form {...form}>
@@ -146,6 +215,148 @@ export default function SendMessagePage() {
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-3xl font-bold">{t("sendMessage")}</h1>
             <div className="space-x-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant={"secondary"} onClick={() => {}}>
+                    {t("drafts")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[80%] max-h-max">
+                  <DialogTitle className="text-2xl">{t("drafts")}</DialogTitle>
+                  <div className="grid grid-cols-3 gap-2 w-full">
+                    {draftsData.length > 0 ? (
+                      draftsData.map((draft, index) => (
+                        <Dialog
+                          open={isDialogOpen}
+                          onOpenChange={setIsDialogOpen}
+                          key={index}
+                        >
+                          <DialogTrigger asChild>
+                            <Card className="p-2 cursor-pointer hover:bg-muted/40 flex flex-col gap-1">
+                              <CardTitle className="text-md w-full font-bold overflow-hidden text-ellipsis line-clamp-1">
+                                {draft.title}
+                              </CardTitle>
+                              <CardDescription className="text-sm font-light whitespace-pre-wrap overflow-hidden text-ellipsis line-clamp-1">
+                                {draft.description}
+                              </CardDescription>
+                              <div className="flex justify-start">
+                                <div className="text-sm whitespace-pre-wrap px-3 py-1 rounded-full border">
+                                  {t(`${draft.priority}`)}
+                                </div>
+                              </div>
+                            </Card>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[60%] max-h-max">
+                            <div className="flex justify-between pr-4 gap-6">
+                              <DialogTitle className="text-xl">
+                                {draft.title}
+                              </DialogTitle>
+                              <div className="px-3 py-1 rounded-full border">
+                                {t(`${draft.priority}`)}
+                              </div>
+                            </div>
+                            <DialogDescription className="text-md">
+                              {draft.description}
+                            </DialogDescription>
+                            {draft.image ? (
+                              <div className="rounded object-cover flex justify-start">
+                                <div className="w-auto border p-2">
+                                  <Image
+                                    src={`${draft.image}`}
+                                    width={200}
+                                    height={100}
+                                    alt={draft.title}
+                                    className="rounded object-cover"
+                                  />
+                                </div>
+                              </div>
+                            ) : null}
+                            <Separator className="" />
+                            <div className="w-full flex flex-row gap-4 items-start content-start">
+                              <div className="flex flex-col gap-1 w-1/2">
+                                <b>{t("students")}</b>
+                                <div className="flex flex-wrap gap-2 items-start content-start ">
+                                  {draft.students.map((e: any) => (
+                                    <Badge key={e.id}>
+                                      {tName("name", { ...e, parents: "" })}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="dark:border-l-foreground/10 border-l-foreground/20 border-r-transparent border h-full" />
+                              <div className="flex flex-col gap-1 w-1/2">
+                                <b>{t("groups")}</b>
+                                <div className="flex flex-wrap gap-2 items-start content-start ">
+                                  {draft.groups.map((group: any) => (
+                                    <Badge key={group.id}>{group?.name}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <Separator />
+                            <div className="flex gap-2 justify-between">
+                              <div className="flex gap-2">
+                                <DialogClose asChild>
+                                  <Button
+                                    onClick={() => {
+                                      form.reset({
+                                        title: draft.title,
+                                        description: draft.description,
+                                        priority: draft.priority,
+                                        image: draft.image,
+                                      });
+
+                                      setSelectedGroups(draft.groups || []);
+                                      setSelectedStudents(draft.students || []);
+                                      setIsDialogOpen(false);
+                                    }}
+                                  >
+                                    {t("select")}
+                                  </Button>
+                                </DialogClose>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button className="bg-red-600 hover:bg-red-700 text-white">
+                                      {t("delete")}
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="sm:max-w-[40%] max-h-max">
+                                    <DialogTitle>
+                                      {t("AreYouSureDelete")}
+                                    </DialogTitle>
+                                    <div className="flex flex-row justify-between items-center">
+                                      <DialogClose asChild>
+                                        <Button
+                                          className="bg-red-600 hover:bg-red-700 text-white"
+                                          onClick={() =>
+                                            handleDeleteDraft(draft as any)
+                                          }
+                                        >
+                                          {t("delete")}
+                                        </Button>
+                                      </DialogClose>
+                                      <DialogClose asChild>
+                                        <Button>{t("cancel")}</Button>
+                                      </DialogClose>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                              </div>
+                              <DialogClose asChild>
+                                <Button>{t("close")}</Button>
+                              </DialogClose>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      ))
+                    ) : (
+                      <div className="w-full col-start-2 text-center">
+                        {t("noDrafts")}
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Link href="/fromcsv/message">
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
@@ -200,8 +411,9 @@ export default function SendMessagePage() {
                 <FormLabel>{t("choosePriority")}</FormLabel>
                 <FormControl>
                   <Select
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onValueChange={field.onChange}
+                    value={field.value}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder={t("choosePriority")} />
@@ -239,7 +451,6 @@ export default function SendMessagePage() {
                         field.onChange(file.name); // Save file name
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setSelectedImageBase64(reader.result as string);
                           form.setValue("image", reader.result as string);
                         };
                         reader.readAsDataURL(file);
@@ -248,10 +459,10 @@ export default function SendMessagePage() {
                   />
                 </FormControl>
                 <FormMessage />
-                {selectedImageBase64 && (
+                {form.getValues("image") && (
                   <div className="mt-2">
                     <Image
-                      src={selectedImageBase64}
+                      src={form.getValues("image") ?? ""}
                       alt="Selected image"
                       width={200}
                       height={200}
@@ -281,6 +492,7 @@ export default function SendMessagePage() {
               />
             </TabsContent>
           </Tabs>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button
@@ -305,10 +517,10 @@ export default function SendMessagePage() {
                       {formValues.priority && t(formValues.priority)}
                     </div>
                   </div>
-                  {selectedImageBase64 && (
+                  {form.getValues("image") && (
                     <div className="mt-4">
                       <Image
-                        src={selectedImageBase64}
+                        src={form.getValues("image") ?? ""}
                         alt="Selected image"
                         width={300}
                         height={200}
@@ -368,6 +580,15 @@ export default function SendMessagePage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Button
+            className="ml-2"
+            variant={"default"}
+            disabled={isPending || !isFormValid || !hasRecipients}
+            onClick={(e) => handleSaveDraft(e)}
+          >
+            {t("sendToDraft")}
+          </Button>
         </form>
       </Form>
     </div>

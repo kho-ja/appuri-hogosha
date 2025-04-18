@@ -58,9 +58,6 @@ export default function SendMessagePage({
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
   const [image, setImage] = useState<String>("");
-  const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(
-    null
-  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,7 +72,7 @@ export default function SendMessagePage({
   const { data, isLoading, isError } = useApiQuery<{
     post: Post;
   }>(`post/${messageId}`, ["message", messageId]);
-
+  
   const { mutate, isPending } = useApiMutation<{ message: string }>(
     `post/${messageId}`,
     "PUT",
@@ -240,7 +237,6 @@ export default function SendMessagePage({
                             field.onChange(file.name); // Save file name
                             const reader = new FileReader();
                             reader.onloadend = () => {
-                              setSelectedImageBase64(reader.result as string);
                               form.setValue("image", reader.result as string);
                             };
                             reader.readAsDataURL(file);
@@ -249,10 +245,10 @@ export default function SendMessagePage({
                       />
                     </FormControl>
                     <FormMessage />
-                    {selectedImageBase64 && (
+                    {form.getValues("image") && (
                       <div className="mt-2">
                         <Image
-                          src={selectedImageBase64}
+                          src={field.value ?? ""}
                           alt="Selected image"
                           width={200}
                           height={200}
