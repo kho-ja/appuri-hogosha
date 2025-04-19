@@ -96,11 +96,14 @@ export default function DraftsDialog({
     <div className="inline-block">
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant={"secondary"} onClick={() => {}}>
+          <Button onClick={() => {}}>
             {t("drafts")}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[80%] max-h-max" aria-describedby={undefined}>
+        <DialogContent
+          className="sm:max-w-[60%] max-h-max"
+          aria-describedby={undefined}
+        >
           <DialogTitle className="text-2xl">{t("drafts")}</DialogTitle>
           <div className="w-full">
             {draftsData.length > 0 ? (
@@ -138,94 +141,103 @@ export default function DraftsDialog({
         </DialogContent>
       </Dialog>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[60%] max-h-max" aria-describedby={undefined}>
-          <div className="flex justify-between pr-4 gap-6">
-            <DialogTitle className="text-xl">
-              {selectedDraft?.title}
-            </DialogTitle>
-            <div className="px-3 py-1 rounded-full border">
-              {selectedDraft?.priority ? t(`${selectedDraft?.priority}`) : t("low")}
-            </div>
-          </div>
-          <DialogDescription className="text-md">
-            {selectedDraft?.description}
-          </DialogDescription>
-          {selectedDraft?.image ? (
-            <div className="rounded object-cover flex justify-start">
-              <div className="w-auto border p-2">
-                <Image
-                  src={`${selectedDraft?.image}`}
-                  width={200}
-                  height={100}
-                  alt={selectedDraft?.title}
-                  className="rounded object-cover"
-                />
+        <DialogContent
+          className="sm:max-w-[80%] max-h-max"
+          aria-describedby={undefined}
+        >
+          {/* title description image priority */}
+          <DialogHeader className="flex flex-row ">
+            <div className="w-[60%] flex flex-col gap-2">
+              <DialogTitle className="text-xl text-center">
+                {selectedDraft?.title}
+              </DialogTitle>
+              <DialogDescription className="text-md">
+                {selectedDraft?.description}
+              </DialogDescription>
+              <div className="flex justify-start">
+                <div className="rounded-md bg-slate-500 p-2 flex justify-center">
+                  {t("priority")}:{" "}
+                  {selectedDraft?.priority
+                    ? t(`${selectedDraft?.priority}`)
+                    : t("low")}
+                </div>
               </div>
-            </div>
-          ) : null}
-          <Separator />
-          <div className="w-full flex flex-row gap-4 items-start content-start">
-            <div className="flex flex-col gap-1 w-1/2">
-              <b>{t("students")}</b>
-              <div className="flex flex-wrap gap-2 items-start content-start ">
-                {selectedDraft?.students.map((e: any) => (
-                  <Badge key={e.id}>
-                    {tName("name", { ...e, parents: "" })}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className="dark:border-l-foreground/10 border-l-foreground/20 border-r-transparent border h-full" />
-            <div className="flex flex-col gap-1 w-1/2">
-              <b>{t("groups")}</b>
-              <div className="flex flex-wrap gap-2 items-start content-start ">
-                {selectedDraft?.groups.map((group: any) => (
-                  <Badge key={group.id}>{group?.name}</Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-          <Separator />
-          <div className="flex gap-2 justify-between">
-            <div className="flex gap-2">
-              <DialogClose asChild>
-                <Button
-                  onClick={() => handleSelectedDraftFunction(selectedDraft)}
-                >
-                  {t("select")}
-                </Button>
-              </DialogClose>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="bg-red-600 hover:bg-red-700 text-white">
-                    {t("delete")}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[40%] max-h-max" aria-describedby={undefined}>
-                  <DialogTitle>{t("AreYouSureDelete")}</DialogTitle>
-                  <div className="flex flex-row justify-between items-center">
-                    <DialogClose asChild>
-                      <Button
-                        className="bg-red-600 hover:bg-red-700 text-white"
-                        onClick={() => {
-                          handleDeleteDraft(selectedDraft);
-                          setIsDialogOpen(false);
-                        }}
-                      >
-                        {t("delete")}
-                      </Button>
-                    </DialogClose>
-                    <DialogClose asChild>
-                      <Button>{t("cancel")}</Button>
-                    </DialogClose>
+              {selectedDraft?.image ? (
+                <div className="rounded object-cover flex justify-start">
+                  <div className="border">
+                    <Image
+                      src={`${selectedDraft?.image}`}
+                      width={300}
+                      height={200}
+                      alt={selectedDraft?.title}
+                      className="rounded object-cover"
+                    />
                   </div>
-                </DialogContent>
-              </Dialog>
+                </div>
+              ) : null}
             </div>
+            <div className="sm:w-1 sm:h-full bg-slate-600 mx-3"></div>
+            <div className="w-[40%] sm:max-w-[40%] flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
+                <b>{t("groups")}</b>
+                <div className="flex flex-wrap gap-2 items-start content-start ">
+                  {selectedGroups.map((group) => (
+                    <Badge key={group.id}>{group?.name}</Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <b>{t("students")}</b>
+                <div className="flex flex-wrap gap-2 items-start content-start ">
+                  {selectedStudents.map((e) => (
+                    <Badge key={e.id}>
+                      {tName("name", { ...e, parents: "" })}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogHeader>
+          {/* buttons */}
+          <DialogFooter className="flex gap-1 justify-end">
+            <DialogClose asChild>
+              <Button
+                onClick={() => handleSelectedDraftFunction(selectedDraft)}
+              >
+                {t("place")}
+              </Button>
+            </DialogClose>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant={"secondary"}>{t("delete")}</Button>
+              </DialogTrigger>
+              <DialogContent
+                className="sm:max-w-[40%] max-h-max"
+                aria-describedby={undefined}
+              >
+                <DialogTitle>{t("AreYouSureDelete")}</DialogTitle>
+                <div className="flex flex-row justify-start gap-2 items-center">
+                  <DialogClose asChild>
+                    <Button
+                      variant={"secondary"}
+                      onClick={() => {
+                        handleDeleteDraft(selectedDraft);
+                        setIsDialogOpen(false);
+                      }}
+                    >
+                      {t("delete")}
+                    </Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button>{t("cancel")}</Button>
+                  </DialogClose>
+                </div>
+              </DialogContent>
+            </Dialog>
             <DialogClose asChild>
               <Button>{t("close")}</Button>
             </DialogClose>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

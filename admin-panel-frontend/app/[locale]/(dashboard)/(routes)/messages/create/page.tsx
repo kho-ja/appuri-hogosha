@@ -446,11 +446,11 @@ export default function SendMessagePage() {
 
           <Button
             className="ml-2"
-            variant={"default"}
+            variant={"secondary"}
             disabled={isPending || !isFormValid || !hasRecipients}
             onClick={(e) => handleSaveDraft(e)}
           >
-            {t("sendToDraft")}
+            {t("saveToDraft")}
           </Button>
         </form>
       </Form>

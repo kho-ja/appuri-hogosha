@@ -131,11 +131,11 @@
     "drafts": "Qoralamalar",
     "draftSaved": "Xabar qoralamalarga muvaffaqiyatli saqlandi",
     "noDrafts": "Hech qanday qoralama topilmadi",
-    "select": "Tanlash",
+    "place": "Joylash",
     "delete": "O'chirish",
     "cancel": "Bekor qilish",
     "AreYouSureDelete": "Ushbu qoralamani o'chirib tashlamoqchimisiz?",
-    "sendToDraft": "Qoralamaga yuborish",
+    "saveToDraft": "Qoralamalarga saqlash",
     "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
   },
   "ThisMessage": {

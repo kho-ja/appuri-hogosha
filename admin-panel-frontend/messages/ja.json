@@ -128,11 +128,11 @@
     "drafts": "下書き",
     "draftSaved": "メッセージが下書きに保存されました",
     "noDrafts": "下書きが見つかりませんでした",
-    "select": "選択",
+    "place": "配置",
     "delete": "削除",
     "cancel": "キャンセル",
     "AreYouSureDelete": "この下書きを削除しますか？",
-    "sendToDraft": "下書きに送信",
+    "saveToDraft": "下書きに保存",
     "draftDeleted": "下書きが削除されました"
   },
   "ThisMessage": {

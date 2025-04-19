@@ -127,11 +127,11 @@
     "drafts": "Drafts",
     "draftSaved": "Message Saved to Drafts Successfully",
     "noDrafts": "No drafts found",
-    "select": "Select",
+    "place": "Place",
     "delete": "Delete",
     "cancel": "Cancel",
     "AreYouSureDelete": "Are you sure you want to delete this draft?",
-    "sendToDraft": "Send to Draft",
+    "saveToDraft": "Save to Draft",
     "draftDeleted": "Draft Deleted Successfully"
   },
   "ThisMessage": {
