@@ -304,7 +304,7 @@
     "declined": "отклонено ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Создать группу",
+    "CreateGroup": "Сохранить группу",
     "GroupName": "Название группы",
     "GroupSemester": "Семестр группы",
     "GroupID": "ID группы",
@@ -313,7 +313,7 @@
     "TypeSemester": "Введите семестр здесь",
     "Students": "Студенты",
     "TypeStudents": "Введите студентов здесь",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Cancel": "Отмена",
     "back": "Назад",
     "GroupCreated": "Группа создана",
@@ -322,14 +322,14 @@
     "createGroupfromCSV": "Создать группу из CSV"
   },
   "CreateParent": {
-    "CreateParent": "Создать родителя",
+    "CreateParent": "Сохранить родителя",
     "ParentName": "Имя родителя",
     "ParentFamilyName": "Фамилия родителя",
     "ParentPhone": "Телефон родителя",
     "ParentEmail": "Email родителя",
     "ParentTelegram": "Телеграм родителя",
     "ParentStatus": "Статус родителя",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "Students": "Студенты",
@@ -340,7 +340,7 @@
     "Invalid phone number": "Неверный номер телефона"
   },
   "CreateStudent": {
-    "CreateStudent": "Создать студента",
+    "CreateStudent": "Сохранить студента",
     "back": "Назад",
     "Email": "Email",
     "PhoneNumber": "Номер телефона",
@@ -348,7 +348,7 @@
     "FamilyName": "Фамилия",
     "StudentNumber": "Номер студента",
     "Parents": "Родители",
-    "Submit": "Отправить",
+    "Submit": "Сохранить",
     "EditStudent": "Редактировать студента",
     "Remove": "Удалить",
     "Add Parent": "Добавить родителя",
@@ -525,14 +525,14 @@
     "export": "Экспорт"
   },
   "CreateAdmin": {
-    "CreateAdmin": "Создать администратора",
+    "CreateAdmin": "Сохранить администратора",
     "AdminName": "Имя администратора",
     "AdminFamilyName": "Фамилия администратора",
     "AdminPhone": "Телефон администратора",
     "AdminEmail": "Email администратора",
     "AdminTelegram": "Телеграм администратора",
     "AdminStatus": "Статус администратора",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "Students": "Студенты",

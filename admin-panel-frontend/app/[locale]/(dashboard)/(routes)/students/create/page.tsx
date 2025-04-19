@@ -218,7 +218,7 @@ export default function CreateStudent() {
           </FormItem>
 
           <Button disabled={isPending}>
-            {t("Submit") + (isPending ? "..." : "")}
+            {t("CreateStudent") + (isPending ? "..." : "")}
           </Button>
         </form>
       </Form>
