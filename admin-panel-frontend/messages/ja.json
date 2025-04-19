@@ -124,7 +124,16 @@
     "preview": "プレビュー",
     "messageSent": "メッセージが送信されました",
     "messageEdited": "メッセージが正常に編集されました",
-    "createFromCSV": "CSVから作成する"
+    "createFromCSV": "CSVから作成する",
+    "drafts": "下書き",
+    "draftSaved": "メッセージが下書きに保存されました",
+    "noDrafts": "下書きが見つかりませんでした",
+    "select": "選択",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "AreYouSureDelete": "この下書きを削除しますか？",
+    "sendToDraft": "下書きに送信",
+    "draftDeleted": "下書きが削除されました"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "出版社",
