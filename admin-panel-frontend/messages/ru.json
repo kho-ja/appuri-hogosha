@@ -304,7 +304,7 @@
     "declined": "отклонено ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Создать группу",
+    "CreateGroup": "Сохранить группу",
     "GroupName": "Название группы",
     "GroupSemester": "Семестр группы",
     "GroupID": "ID группы",
@@ -313,7 +313,7 @@
     "TypeSemester": "Введите семестр здесь",
     "Students": "Студенты",
     "TypeStudents": "Введите студентов здесь",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Cancel": "Отмена",
     "back": "Назад",
     "GroupCreated": "Группа создана",

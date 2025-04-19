@@ -305,7 +305,7 @@
     "declined": "拒否 ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "グループを作成",
+    "CreateGroup": "グループを保存",
     "GroupName": "グループ名",
     "GroupSemester": "学期",
     "GroupID": "グループ ID",
@@ -314,7 +314,7 @@
     "TypeSemester": "ここに学期を入力してください",
     "Students": "学生",
     "TypeStudents": "ここに学生を入力してください",
-    "Create": "作成",
+    "Create": "保存",
     "Cancel": "キャンセル",
     "back": "戻る",
     "GroupCreated": "グループが作成されました",

@@ -306,7 +306,7 @@
     "declined": "declined ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Create Group",
+    "CreateGroup": "Save Group",
     "GroupName": "Group Name",
     "GroupSemester": "Group Semester",
     "GroupID": "Group ID",
@@ -315,7 +315,7 @@
     "TypeSemester": "Type semester here",
     "Students": "Students",
     "TypeStudents": "Type students here",
-    "Create": "Create",
+    "Create": "Save",
     "Cancel": "Cancel",
     "back": "Back",
     "GroupCreated": "Group Created Successfully",

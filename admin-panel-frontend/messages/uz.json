@@ -308,14 +308,14 @@
     "declined": "Rad etildi ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Guruh yaratish",
+    "CreateGroup": "Guruhni saqlash",
     "GroupName": "Guruh nomi",
     "TypeGroupName": "Guruh nomini shu yerga kiriting",
     "Semester": "Semestr",
     "TypeSemester": "Semestrni shu yerga kiriting",
     "Students": "Talabalar",
     "TypeStudents": "Talabalarni shu yerga kiriting",
-    "Create": "Yaratish",
+    "Create": "Saqlash",
     "Cancel": "Bekor qilish",
     "GroupSemester": "Guruh Semestri",
     "GroupID": "Guruh ID",
