@@ -28,6 +28,7 @@ import { useSQLiteContext } from 'expo-sqlite'
 import { ThemedView } from '@/components/ThemedView'
 import { Href, router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { FontSizeSlider} from "@/components/FontSizeSlider";
 
 interface LanguageSelectionProps {
 	language: string
@@ -202,6 +203,14 @@ export default function SettingsScreen() {
 
 						<Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
 					</Pressable>
+          <View style={styles.row}>
+            <View style={[styles.rowIcon, { backgroundColor: '#059669' }]}>
+              <Ionicons color="#fff" name="text" size={20} />
+            </View>
+            <ThemedText style={styles.rowLabel}>Text Size</ThemedText>
+            <View style={styles.rowSpacer} />
+            <FontSizeSlider />
+          </View>
 					<BottomSheetModal
 						ref={bottomSheetModalRef}
 						index={1}

@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
 	},
 	title: {
-		fontSize: 26,
+
 		fontWeight: '600',
 		textAlign: 'center',
 	},
@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
 	},
   copyButton: {
     marginTop: -15,
-    marginHorizontal: 10,
     marginBottom: 20,
     backgroundColor: '#005678',
     padding: 10,
@@ -294,13 +293,15 @@ export default function DetailsScreen() {
         </ThemedText>
 			</View>
 			<View style={styles.descriptionRow}>
+        <ThemedText>
 				<Autolink
 					email
 					hashtag='instagram'
 					mention='instagram'
 					text={message.content}
-					style={{ color: textColor, fontSize: 20 }}
+					style={{ color: textColor }}
 				/>
+        </ThemedText>
 			</View>
       <Pressable style={styles.copyButton} onPress={copyToClipboard}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
