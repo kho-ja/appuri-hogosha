@@ -130,6 +130,7 @@
     },
     "title": "タイトル",
     "description": "説明",
+    "priority": "優先度",
     "given_name": "名前",
     "family_name": "苗字",
     "phone_number": "電話番号",

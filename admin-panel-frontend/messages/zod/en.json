@@ -130,6 +130,7 @@
     },
     "title": "Title",
     "description": "Description",
+    "priority": "Priority",
     "given_name": "Given Name",
     "family_name": "Family Name",
     "phone_number": "Phone Number",

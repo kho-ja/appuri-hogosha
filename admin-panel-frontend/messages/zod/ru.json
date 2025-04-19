@@ -130,6 +130,7 @@
     },
     "title": "Заголовок",
     "description": "Описание",
+    "priority": "Приоритет",
     "given_name": "Имя",
     "family_name": "Фамилия",
     "phone_number": "Номер телефона",

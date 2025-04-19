@@ -127,7 +127,16 @@
     "createFromCSV": "CSV dan xabar yuborish",
     "choose_file": "Faylni tanlang",
     "no_file_chosen": "Faylni tanlangmadi",
-    "selected_image": "Tanlangan rasm"
+    "selected_image": "Tanlangan rasm",
+    "drafts": "Qoralamalar",
+    "draftSaved": "Xabar qoralamalarga muvaffaqiyatli saqlandi",
+    "noDrafts": "Hech qanday qoralama topilmadi",
+    "place": "Joylash",
+    "delete": "O'chirish",
+    "cancel": "Bekor qilish",
+    "AreYouSureDelete": "Ushbu qoralamani o'chirib tashlamoqchimisiz?",
+    "saveToDraft": "Qoralamalarga saqlash",
+    "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "Nashriyot",
