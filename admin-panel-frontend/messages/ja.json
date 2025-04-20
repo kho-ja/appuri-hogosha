@@ -283,7 +283,7 @@
     "phoneNumber": "電話番号",
     "email": "メール",
     "group": "グループ",
-    "filter": "名前でフィルタリング",
+    "filter": "フィルター",
     "columns": "列",
     "noResults": "結果がありません。",
     "rowsSelected": "{count} 件の {total} 件が選択されました。",

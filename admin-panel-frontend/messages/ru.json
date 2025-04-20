@@ -282,7 +282,7 @@
     "phoneNumber": "Номер телефона",
     "email": "Email",
     "group": "Группа",
-    "filter": "Фильтр по имени",
+    "filter": "Фильтр",
     "columns": "Колонки",
     "noResults": "Результатов не найдено.",
     "rowsSelected": "{count} из {total} строк выбрано.",
