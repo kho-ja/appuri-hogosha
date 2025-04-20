@@ -25,11 +25,13 @@ import {
 import { Separator } from '@/components/atomic/separator'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {useMemo} from "react";
+import { ThemedView } from '@/components/ThemedView'
 
 // Styles for the component
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+    position: 'relative',
 	},
 	loadMoreButton: {
 		marginTop: 10,
@@ -267,12 +269,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 				refreshControl={
 					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
 				}
-				contentContainerStyle={{ paddingBottom: 80 }}
+				contentContainerStyle={{ paddingBottom: 80, position: 'relative' }}
 			>
 				{messageGroups.map(group => (
 					<React.Fragment key={group.key}>
-						<Card messageGroup={group.messages} />
-						<Separator orientation='horizontal' />
+						<Card messageGroup={group.messages}/>
 					</React.Fragment>
 				))}
 				<Button

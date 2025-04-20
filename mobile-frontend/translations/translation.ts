@@ -62,8 +62,8 @@ export default {
 		/*settings page*/
 
 		/*message*/
-		critical: 'critical',
-		important: 'important',
+		critical: 'important',
+		important: 'medium',
 		ordinary: 'ordinary',
 		group: 'Group',
 		continueReading: 'Continue reading',

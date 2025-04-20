@@ -11,7 +11,7 @@ const Separator = React.forwardRef<View, SeparatorProps>(
 	({ style, orientation = 'horizontal', ...props }, _) => {
 		const theme = useColorScheme() ?? 'light'
 		const separatorStyle: ViewStyle = {
-			backgroundColor: theme === 'light' ? '#eee' : '#434343',
+			backgroundColor: theme === 'light' ? '#c2c2c2' : '#434343',
 			flexShrink: 0,
 			...(orientation === 'horizontal'
 				? { height: 1, width: '100%' }
