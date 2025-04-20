@@ -105,7 +105,7 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
 						hashtag='instagram'
 						mention='instagram'
 						text={firstMessage.content}
-						numberOfLines={5}
+						numberOfLines={1}
 						style={autolinkStyles}
 						textProps={{ style: autolinkStyles }}
 					/>

@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
 	},
 	title: {
-
+    width: '80%',
 		fontWeight: '600',
-		textAlign: 'center',
+		textAlign: 'center'
 	},
 	dateRow: {
 		flexDirection: 'row',
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
 		color: 'white',
 		fontSize: 12,
     paddingTop: 8,
+    height: 35,
 	},
 	groupStyle: {
 		backgroundColor: '#059669',
