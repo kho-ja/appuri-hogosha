@@ -1,7 +1,6 @@
 "use client";
 
 import { useToast } from "@/components/ui/use-toast";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,15 +13,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
 import { useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "next-auth/react";
 
 const formSchema = z.object({
@@ -49,7 +45,7 @@ type School = {
 };
 
 export function SchoolNameUpdate() {
-  const { update, data: session } = useSession()
+  const { update } = useSession();
   const { toast } = useToast();
   const t = useTranslations("SchoolNameUpdate");
   const form = useForm<SchoolNameValues>({
@@ -67,17 +63,15 @@ export function SchoolNameUpdate() {
           title: t("SchoolNameUpdated"),
           description: data?.message ?? "",
         });
-        console.log('school', data.school.name)
-        const updatedSession = { schoolName: data.school.name };
-        const response = await update(updatedSession);
-        console.log('response', response);
+        await update({
+          schoolName: data.school.name,
+        });
       },
       onError: (error) => {
         toast({
           title: t("SchoolNameUpdateFailed"),
           description: error?.message ?? "",
         });
-        console.log(error);
       },
     }
   );
