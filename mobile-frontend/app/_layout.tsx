@@ -16,6 +16,7 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { FontSizeProvider } from "@/contexts/FontSizeContext";
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -93,7 +94,9 @@ export default function Root() {
 								<I18nProvider>
 									<QueryClientProvider client={queryClient}>
 										<StudentProvider>
-                      <Slot />
+                      <FontSizeProvider>
+                       <Slot />
+                      </FontSizeProvider>
 										</StudentProvider>
 									</QueryClientProvider>
 								</I18nProvider>

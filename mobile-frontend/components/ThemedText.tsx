@@ -1,5 +1,5 @@
 import { Text, type TextProps, StyleSheet } from 'react-native'
-
+import { useFontSize } from '@/contexts/FontSizeContext'
 import { useThemeColor } from '@/hooks/useThemeColor'
 
 export type ThemedTextProps = TextProps & {
@@ -14,6 +14,15 @@ export type ThemedTextProps = TextProps & {
 		| 'smaller'
 }
 
+const baseFontSizes: Record<NonNullable<ThemedTextProps['type']>, number> = {
+  default: 16,
+  defaultSemiBold: 16,
+  title: 32,
+  subtitle: 20,
+  link: 16,
+  smaller: 15,
+}
+
 export function ThemedText({
 	style,
 	lightColor,
@@ -22,11 +31,12 @@ export function ThemedText({
 	...rest
 }: ThemedTextProps) {
 	const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text')
-
+  const { multiplier } = useFontSize()
+  const fontSize = (baseFontSizes[type] || 16) * multiplier
 	return (
 		<Text
 			style={[
-				{ color },
+				{ color, fontSize },
 				type === 'default' ? styles.default : undefined,
 				type === 'title' ? styles.title : undefined,
 				type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
@@ -41,23 +51,19 @@ export function ThemedText({
 }
 
 const styles = StyleSheet.create({
-	default: {
-		fontSize: 16,
-	},
+	default: {},
 	defaultSemiBold: {
-		fontSize: 16,
+		fontWeight: '600',
 	},
 	title: {
-		fontSize: 32,
+		fontWeight: 'bold',
 	},
 	subtitle: {
-		fontSize: 20,
+		fontWeight: '400',
 	},
 	link: {
 		lineHeight: 30,
 		color: '#059669',
 	},
-	smaller: {
-		fontSize: 15,
-	},
+	smaller: {},
 })

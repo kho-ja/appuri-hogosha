@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           let authData;
           if (credentials?.newPassword) {
             authData = (await fetch(
-              process.env.BACKEND_URL + "/change-temp-password",
+              `${process.env.BACKEND_URL}/change-temp-password`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -46,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               }
             )) as Response;
           } else {
-            authData = (await fetch(process.env.BACKEND_URL + "/login", {
+            authData = (await fetch(`${process.env.BACKEND_URL}/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(credentials),
@@ -94,12 +94,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }: { token: any; user: any }) {
+    jwt({ token, user, session, trigger }) {
       if (user && user?.accessToken) {
         return {
-          accessToken: user?.accessToken,
-          accessTokenExpires: Date.now() + user?.accessTokenExpires * 1000,
           ...user,
+        };
+      }
+
+      if (trigger === "update" && session) {
+        if (session.schoolName) token.schoolName = session.schoolName;
+
+        return {
+          ...token,
         };
       }
 
@@ -130,7 +136,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 async function refreshAccessToken(token: any) {
   try {
-    const response = await fetch(process.env.BACKEND_URL + "/refresh-token", {
+    const response = await fetch(`${process.env.BACKEND_URL}/refresh-token`, {
       headers: {
         "Content-Type": "application/json",
       },
