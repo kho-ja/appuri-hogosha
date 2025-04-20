@@ -284,7 +284,7 @@
     "phoneNumber": "Phone Number",
     "email": "Email",
     "group": "Group",
-    "filter": "Filter by Name",
+    "filter": "Filter",
     "columns": "Columns",
     "noResults": "No results.",
     "rowsSelected": "{count} of {total} rows selected.",

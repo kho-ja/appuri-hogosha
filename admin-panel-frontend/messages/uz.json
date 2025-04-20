@@ -286,7 +286,7 @@
     "phoneNumber": "Telefon raqami",
     "email": "Email",
     "group": "Guruh",
-    "filter": "Ism bo'yicha filtrlash",
+    "filter": "Filtr",
     "columns": "Ustunlar",
     "noResults": "Natijalar yo'q.",
     "rowsSelected": "{total} qatordan {count} tasi tanlandi.",
