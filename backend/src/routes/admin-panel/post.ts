@@ -377,7 +377,7 @@ class PostController implements IController {
             }
 
             return res.status(200).json({
-                message: 'Csv processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 results: validResults,
             }).end()
@@ -755,7 +755,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post deleted successfully'
+                message: 'postDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

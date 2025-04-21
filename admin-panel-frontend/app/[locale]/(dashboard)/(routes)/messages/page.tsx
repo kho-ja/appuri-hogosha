@@ -52,7 +52,7 @@ export default function Info() {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         toast({
           title: t("postDeleted"),
-          description: data?.message,
+          description: t(data?.message),
         });
       },
     }

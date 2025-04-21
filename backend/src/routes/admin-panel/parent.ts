@@ -657,7 +657,7 @@ class ParentController implements IController {
             }
 
             return res.status(200).json({
-                message: 'Csv processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -901,7 +901,7 @@ class ParentController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Parent deleted successfully'
+                message: 'parentDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

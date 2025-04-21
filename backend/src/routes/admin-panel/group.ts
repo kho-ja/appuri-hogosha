@@ -337,7 +337,7 @@ class GroupController implements IController {
                 }).end()
             }
             return res.status(200).json({
-                message: 'Csv processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -479,7 +479,7 @@ class GroupController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Group deleted successfully'
+                message: 'groupDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

@@ -81,7 +81,7 @@ export default function CreateFromKintone() {
         });
         toast({
           title: t("studentsUploaded"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push("/students");
       },
