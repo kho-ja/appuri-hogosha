@@ -479,7 +479,7 @@ class GroupController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Group deleted successfully'
+                message: 'groupDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

@@ -901,7 +901,7 @@ class ParentController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Parent deleted successfully'
+                message: 'parentDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

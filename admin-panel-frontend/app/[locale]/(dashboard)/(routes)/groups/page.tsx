@@ -63,7 +63,7 @@ export default function Groups() {
         queryClient.invalidateQueries({ queryKey: ["groups"] });
         toast({
           title: t("groupDeleted"),
-          description: data.message,
+          description: t(data?.message),
         });
       },
     }

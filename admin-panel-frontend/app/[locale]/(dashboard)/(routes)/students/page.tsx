@@ -54,7 +54,7 @@ export default function Students() {
         queryClient.invalidateQueries({ queryKey: ["students"] });
         toast({
           title: t("studentDeleted"),
-          description: data.message,
+          description: t(data.message),
         });
       },
     }

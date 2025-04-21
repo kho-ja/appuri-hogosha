@@ -1103,6 +1103,7 @@
     "Groups": "Groups",
     "confirm": "Confirm",
     "back": "Back",
-    "recieversChanged": "Recievers Changed Successfully"
+    "recieversChanged": "Recievers Changed Successfully",
+    "post_sender_updated_successfully": "Post sender updated successfully"
   }
 }

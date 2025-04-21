@@ -648,7 +648,7 @@ class StudentController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Student deleted successfully'
+                message: 'studentDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

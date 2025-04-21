@@ -67,7 +67,7 @@ export default function MessageFromCSV() {
         form.reset();
         toast({
           title: t("postsUploaded"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push("/messages");
       },

@@ -566,7 +566,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -633,7 +633,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post Notification replayed successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -703,7 +703,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -755,7 +755,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post deleted successfully'
+                message: 'postDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {
