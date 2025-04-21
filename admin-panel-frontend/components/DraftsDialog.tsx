@@ -181,7 +181,7 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
                 <div className="flex flex-wrap gap-2 items-start content-start ">
-                  {selectedGroups.map((group) => (
+                  {selectedDraft?.groups.map((group: any) => (
                     <Badge key={group.id}>{group?.name}</Badge>
                   ))}
                 </div>
@@ -189,7 +189,7 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
                 <div className="flex flex-wrap gap-2 items-start content-start ">
-                  {selectedStudents.map((e) => (
+                  {selectedDraft?.students.map((e: any) => (
                     <Badge key={e.id}>
                       {tName("name", { ...e, parents: "" })}
                     </Badge>
@@ -209,17 +209,17 @@ export default function DraftsDialog({
             </DialogClose>
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant={"secondary"}>{t("delete")}</Button>
+                <Button className="bg-red-500 hover:bg-red-600">{t("delete")}</Button>
               </DialogTrigger>
               <DialogContent
                 className="sm:max-w-[40%] max-h-max"
                 aria-describedby={undefined}
               >
                 <DialogTitle>{t("AreYouSureDelete")}</DialogTitle>
-                <div className="flex flex-row justify-start gap-2 items-center">
+                <div className="flex flex-row justify-end gap-2 items-center">
                   <DialogClose asChild>
                     <Button
-                      variant={"secondary"}
+                      variant={"default"}
                       onClick={() => {
                         handleDeleteDraft(selectedDraft);
                         setIsDialogOpen(false);
