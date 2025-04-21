@@ -6,10 +6,11 @@ import { I18nContext } from '@/contexts/i18n-context'
 import { useColorScheme } from '@/hooks/useColorScheme'
 import { Redirect, Tabs } from 'expo-router'
 import React, { useContext } from 'react'
+import { useThemeMode } from '@rneui/themed';
 
 export default function TabLayout() {
 	const { language, i18n } = useContext(I18nContext)
-	const colorScheme = useColorScheme()
+  const { mode } = useThemeMode();
 	const { session, isLoading } = useSession()
 	if (isLoading) {
 		return (
@@ -24,7 +25,7 @@ export default function TabLayout() {
 	return (
 		<Tabs
 			screenOptions={{
-				tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+				tabBarActiveTintColor: Colors[mode].tint,
 				headerShown: false,
 			}}
 		>

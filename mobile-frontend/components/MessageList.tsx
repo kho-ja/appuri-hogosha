@@ -25,6 +25,7 @@ import {
 import { Separator } from '@/components/atomic/separator'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {useMemo} from "react";
+import { useTheme } from '@rneui/themed'
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
-    //backgroundColor: '#005678',
+    backgroundColor: '#005678',
 	},
 })
 
@@ -74,6 +75,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 	const [isLoadingMoreOffline, setIsLoadingMoreOffline] = useState(false)
 	const readButNotSentMessageIDs = useRef<number[]>([])
 
+  const { theme } = useTheme();
+  const backgroundColor = theme.colors.background;
 	// Fetch student details based on studentId
 	useEffect(() => {
 		const loadStudent = async () => {
@@ -262,7 +265,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 
 
 	return (
-		<SafeAreaView>
+		<SafeAreaView style={{backgroundColor}}>
 			<ScrollView
 				refreshControl={
 					<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

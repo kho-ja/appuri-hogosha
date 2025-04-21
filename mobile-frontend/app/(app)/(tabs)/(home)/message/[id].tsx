@@ -25,6 +25,7 @@ import ImageViewer from 'react-native-image-zoom-viewer'
 import {Separator} from "@/components/atomic/separator";
 import {Ionicons} from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
+import { useTheme } from '@rneui/themed'
 
 
 const styles = StyleSheet.create({
@@ -38,9 +39,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
 	},
 	title: {
-
+    width: '80%',
 		fontWeight: '600',
-		textAlign: 'center',
+		textAlign: 'center'
 	},
 	dateRow: {
 		flexDirection: 'row',
@@ -65,6 +66,7 @@ const styles = StyleSheet.create({
 		color: 'white',
 		fontSize: 12,
     paddingTop: 8,
+    height: 35,
 	},
 	groupStyle: {
 		backgroundColor: '#059669',
@@ -117,6 +119,8 @@ export default function DetailsScreen() {
 	const { isOnline } = useNetwork()
 	const db = useSQLiteContext()
 	const textColor = useThemeColor({}, 'text')
+  const { theme } = useTheme();
+  const backgroundColor = theme.colors.background;
 
 	const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'
 	const imageUrl = process.env.EXPO_PUBLIC_S3_BASE_URL
@@ -285,7 +289,7 @@ export default function DetailsScreen() {
   };
 
 	return (
-		<ScrollView style={styles.container}>
+		<ScrollView style={[styles.container, { backgroundColor }]}>
 			<View style={styles.titleRow}>
 				<ThemedText style={styles.title}>{message.title}</ThemedText>
         <ThemedText style={getImportanceBadgeStyle(message.priority)}>

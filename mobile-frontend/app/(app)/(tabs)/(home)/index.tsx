@@ -5,10 +5,12 @@ import { ThemedText } from '@/components/ThemedText'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StudentSelector } from '@/components/StudentSelector' // Your selector component
 import MessageList from '@/components/MessageList'
+import { useTheme } from '@rneui/themed';
 
 const HomeScreen = () => {
 	const { students } = useStudents() // Fetch students from context
-
+  const { theme } = useTheme();
+  const backgroundColor = theme.colors.background;
 	// Loading state while students are being fetched
 	if (!students || students.length === 0) {
 		return (
@@ -26,7 +28,7 @@ const HomeScreen = () => {
 
 	// If there are multiple students, show the selection list
 	return (
-		<SafeAreaView style={styles.safeArea}>
+		<SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
 			<StudentSelector students={students} />
 		</SafeAreaView>
 	)

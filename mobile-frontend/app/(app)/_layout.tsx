@@ -10,11 +10,14 @@ import React from 'react'
 import 'react-native-reanimated'
 
 import { useColorScheme } from '@/hooks/useColorScheme'
+import { useThemeMode } from '@rneui/themed';
+import { Colors } from '@/constants/Colors';
 
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme()
+  const { mode } = useThemeMode(); // Use @rneui/themed mode
 	const [loaded] = useFonts({
 		SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
 	})
@@ -30,7 +33,7 @@ export default function RootLayout() {
 	}
 
 	return (
-		<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+		<ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
 			<Stack initialRouteName='(tabs)'>
 				<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
 			</Stack>
