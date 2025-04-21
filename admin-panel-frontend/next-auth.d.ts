@@ -14,11 +14,17 @@ declare module "next-auth" {
     role: string;
     given_name: string;
     family_name: string;
+    accessToken: string;
+    accessTokenExpires: number;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     role: string;
+    given_name: string;
+    family_name: string;
+    accessToken: string;
+    accessTokenExpires: number;
   }
 }

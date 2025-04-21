@@ -9,21 +9,35 @@ import {
   PaginationPrevious,
 } from "./ui/pagination";
 import pagination from "@/types/pagination";
+import { useRouter, usePathname } from "@/navigation";
 
 const PaginationApi = ({
   data,
   setPage,
 }: {
   data: pagination | null;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
+  setPage: (newPage: number) => void;
 }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    router.push(`${pathname}?page=${newPage}`, { scroll: false });
+  };
+
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
             className="cursor-pointer"
-            onClick={() => setPage(Number(data?.prev_page))}
+            onClick={() => {
+              if (data?.prev_page) {
+                handlePageChange(Number(data.prev_page));
+              } else {
+                handlePageChange(1);
+              }
+            }}
           />
         </PaginationItem>
         {data &&
@@ -35,8 +49,7 @@ const PaginationApi = ({
             ) : (
               <PaginationItem key={page}>
                 <PaginationLink
-                  href="#"
-                  onClick={() => setPage(+page)}
+                  onClick={() => handlePageChange(Number(page))}
                   isActive={page === data?.current_page}
                 >
                   {page}
@@ -48,7 +61,9 @@ const PaginationApi = ({
           <PaginationNext
             className="cursor-pointer"
             onClick={() => {
-              setPage(Number(data?.next_page));
+              if (data?.next_page) {
+                handlePageChange(Number(data.next_page));
+              }
             }}
           />
         </PaginationItem>

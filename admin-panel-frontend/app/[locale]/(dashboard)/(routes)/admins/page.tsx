@@ -6,9 +6,10 @@ import { Edit3Icon, EllipsisVertical, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
-import { Link, useRouter } from "@/navigation";
+import { Link, usePathname, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import Admin from "@/types/admin";
+import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -21,7 +22,7 @@ import {
 import TableApi from "@/components/TableApi";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import AdminApi from "@/types/adminApi";
@@ -31,10 +32,14 @@ import useFileMutation from "@/lib/useFileMutation";
 export default function Admins() {
   const t = useTranslations("admins");
   const tName = useTranslations("names");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+  const searchFromUrl = searchParams.get("search") || "";
+  const [page, setPage] = useState(pageFromUrl);
+  const [search, setSearch] = useState(searchFromUrl);
   const { data } = useApiQuery<AdminApi>(
-    `admin/list?page=${page}&name=${search}`,
+    `admin/list?page=${[page]}&name=${search}`,
     ["admins", page, search]
   );
   const router = useRouter();
@@ -51,7 +56,7 @@ export default function Admins() {
         });
         toast({
           title: t("adminDeleted"),
-          description: data?.message,
+          description: t(data?.message),
         });
       },
     }
@@ -59,6 +64,15 @@ export default function Admins() {
   const { mutate: exportAdmins } = useFileMutation(`admin/export`, [
     "exportAdmins",
   ]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    params.set("page", page.toString());
+    params.set("search", search);
+
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [page, search, pathname, router]);
 
   const adminColumns: ColumnDef<Admin>[] = [
     {
@@ -123,14 +137,15 @@ export default function Admins() {
             <Button>{t("createadmin")}</Button>
           </Link>
         </div>
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm"
+            className="max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
@@ -144,7 +159,7 @@ export default function Admins() {
             className="h-7 gap-1 text-sm"
           >
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">Export</span>
+            <span className="sr-only sm:not-sr-only">{t("export")}</span>
           </Button>
         </div>
         <Card x-chunk="dashboard-05-chunk-3">

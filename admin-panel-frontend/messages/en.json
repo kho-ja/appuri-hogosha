@@ -123,7 +123,16 @@
     "preview": "Preview",
     "messageSent": "Message Sent Successfully",
     "messageEdited": "Message Edited Successfully",
-    "createFromCSV": "Create from CSV"
+    "createFromCSV": "Create from CSV",
+    "drafts": "Drafts",
+    "draftSaved": "Message Saved to Drafts Successfully",
+    "noDrafts": "No drafts found",
+    "place": "Place",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "AreYouSureDelete": "Are you sure you want to delete this draft?",
+    "saveToDraft": "Save to Draft",
+    "draftDeleted": "Draft Deleted Successfully"
   },
   "ThisMessage": {
     "editStudents": "Edit Students",
@@ -164,7 +173,9 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers"
+    "editRecivers": "Edit Recievers",
+    "Groups": "Groups",
+    "Students": "Students"
   },
   "ThisGroup": {
     "GroupView": "Group Details",
@@ -282,7 +293,7 @@
     "phoneNumber": "Phone Number",
     "email": "Email",
     "group": "Group",
-    "filter": "Filter by Name",
+    "filter": "Filter",
     "columns": "Columns",
     "noResults": "No results.",
     "rowsSelected": "{count} of {total} rows selected.",
@@ -304,7 +315,7 @@
     "declined": "declined ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Create Group",
+    "CreateGroup": "Save Group",
     "GroupName": "Group Name",
     "GroupSemester": "Group Semester",
     "GroupID": "Group ID",
@@ -313,7 +324,7 @@
     "TypeSemester": "Type semester here",
     "Students": "Students",
     "TypeStudents": "Type students here",
-    "Create": "Create",
+    "Create": "Save",
     "Cancel": "Cancel",
     "back": "Back",
     "GroupCreated": "Group Created Successfully",
@@ -322,24 +333,25 @@
     "createGroupfromCSV": "Create Group from CSV"
   },
   "CreateParent": {
-    "CreateParent": "Create Parent",
+    "CreateParent": "Save Parent",
     "ParentName": "Parent Name",
     "ParentFamilyName": "Parent Family Name",
     "ParentPhone": "Parent Phone",
     "ParentEmail": "Parent Email",
     "ParentTelegram": "Parent Telegram",
     "ParentStatus": "Parent Status",
-    "Create": "Create",
+    "Create": "Save",
     "Picture": "Picture",
     "Cancel": "Cancel",
     "Students": "Students",
     "back": "Back",
     "ParentCreated": "Parent Created Successfully",
     "createFromCSV": "Create from CSV ",
-    "createFromKintone": "Create from Kintone "
+    "createFromKintone": "Create from Kintone ",
+    "Invalid phone number": "Invalid phone number"
   },
   "CreateStudent": {
-    "CreateStudent": "Create Student",
+    "CreateStudent": "Save Student",
     "back": "Back",
     "Email": "Email",
     "PhoneNumber": "Phone Number",
@@ -347,7 +359,7 @@
     "FamilyName": "Family Name",
     "StudentNumber": "Student Number",
     "Parents": "Parents",
-    "Submit": "Submit",
+    "Submit": "Save",
     "EditStudent": "Edit Student",
     "Remove": "Remove",
     "Add Parent": "Add Parent",
@@ -360,7 +372,8 @@
     "StudentEdited": "Student Edited Successfully",
     "How to create from CSV": "How to create from CSV",
     "createFromCSV": "Create students from CSV",
-    "createFromKintone": "Create students from Kintone"
+    "createFromKintone": "Create students from Kintone",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
@@ -374,7 +387,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "ParentUpdated": "Parent Updated Successfully"
+    "ParentUpdated": "Parent Updated Successfully",
+    "Invalid phone number": "Invalid phone number"
   },
   "ViewStudent": {
     "ViewStudent": "View Student",
@@ -403,11 +417,12 @@
     "edit": "Edit",
     "delete": "Delete",
     "createstudent": "Create Student",
-    "filter": "Filter by Name",
+    "filter": "Filter",
     "DouYouDeleteStudent": "Do you want to delete this student?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "studentDeleted": "Student Deleted Successfully"
+    "studentDeleted": "Student Deleted Successfully",
+    "export": "Export"
   },
   "groups": {
     "groups": "Groups",
@@ -422,7 +437,8 @@
     "DouYouDeleteGroup": "Do You really want to delete this group?",
     "cancel": "Cancel",
     "confirm": "Confirm",
-    "groupDeleted": "Group deleted Successfully"
+    "groupDeleted": "Group deleted Successfully",
+    "export": "Export"
   },
   "parents": {
     "parents": "Parents",
@@ -438,7 +454,8 @@
     "doYouDeleteParent": "Do you really want to delete this Parent?",
     "close": "Close",
     "confirm": "Confirm",
-    "parentDeleted": "Parent Deleted Successfully"
+    "parentDeleted": "Parent Deleted Successfully",
+    "export": "Export"
   },
   "posts": {
     "posts": "Posts",
@@ -497,7 +514,10 @@
     "Phone_number": "Phone Number",
     "Ststudent_number": "Student Number",
     "editStudents": "Edit Students",
-    "editAdmin": "Edit Admin"
+    "editAdmin": "Edit Admin",
+    "SMS_Settings": "SMS Settings",
+    "SchoolName": "School Name",
+    "Notifications": "Notifications"
   },
   "admins": {
     "admins": "Admins",
@@ -509,27 +529,29 @@
     "edit": "Edit",
     "delete": "Delete",
     "createadmin": "Create Admin",
-    "filter": "Filter by name and email",
+    "filter": "Filter by name",
     "doYouDeleteAdmin": "Do you really want to delete this Admin?",
     "close": "Close",
     "confirm": "Confirm",
-    "adminDeleted": "Admin Deleted Successfully"
+    "adminDeleted": "Admin Deleted Successfully",
+    "export": "Export"
   },
   "CreateAdmin": {
-    "CreateAdmin": "Create Admin",
+    "CreateAdmin": "Save Admin",
     "AdminName": "Admin Name",
     "AdminFamilyName": "Admin Family Name",
     "AdminPhone": "Admin Phone",
     "AdminEmail": "Admin Email",
     "AdminTelegram": "Admin Telegram",
     "AdminStatus": "Admin Status",
-    "Create": "Create",
+    "Create": "Save",
     "Picture": "Picture",
     "Cancel": "Cancel",
     "Students": "Students",
     "back": "Back",
     "AdminCreated": "Admin Created",
-    "createfromCSV": "Create from CSV"
+    "createfromCSV": "Create from CSV",
+    "Invalid phone number": "Invalid phone number"
   },
   "EditAdmin": {
     "EditAdmin": "Edit Admin",
@@ -543,7 +565,8 @@
     "Picture": "Picture",
     "Cancel": "Cancel",
     "back": "Back",
-    "AdminUpdated": "Admin Updated"
+    "AdminUpdated": "Admin Updated",
+    "Invalid phone number": "Invalid phone number"
   },
   "forms": {
     "parent_name": "Parent Name",
@@ -717,9 +740,9 @@
     "invalid_description": "Invalid description",
     "invalid_priority": "Invalid priority",
     "invalid_group_names": "Invalid group name(s)",
-    "group_members_not_found": "Group members not found"
-
-
+    "group_members_not_found": "Group members not found",
+    "export": "Export",
+    "back": "Back"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -766,7 +789,9 @@
     "student_numbers": "Student Numbers",
     "student_numbersDescription": "Enter the matching field in your Kintone instance for the student numbers.",
     "student_number": "Student Number",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number."
+    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
+    "export": "Export",
+    "back": "Back"
   },
   "errors": {
     "wentWrong": "Something went wrong.",
@@ -1047,7 +1072,16 @@
     "lowCheckbox": "Low",
     "NotificationSettingUpdate": "Update Setting",
     "NotificationSettingUpdated": "Notification Setting Updated Successfully",
-    "NotificationSettingUpdateFailed": "Notification Setting Update Failed"
+    "NotificationSettingUpdateFailed": "Notification Setting Update Failed",
+    "SettingsTitle": "Notifications",
+    "SettingsDescription": "Configure how you receive notifications."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "School Name",
+    "SchoolNameDescription": "Update your school name.",
+    "SchoolNameUpdated": "School Name Updated Successfully",
+    "SchoolNameUpdateFailed": "School Name Update Failed",
+    "SchoolNameEditBtn": "Update"
   },
   "EditStudentsDialog": {
     "saving": "Saving...",
@@ -1069,6 +1103,7 @@
     "Groups": "Groups",
     "confirm": "Confirm",
     "back": "Back",
-    "recieversChanged": "Recievers Changed Successfully"
+    "recieversChanged": "Recievers Changed Successfully",
+    "post_sender_updated_successfully": "Post sender updated successfully"
   }
 }

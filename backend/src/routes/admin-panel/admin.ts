@@ -118,7 +118,7 @@ class AdminController implements IController {
                 const { email, phone_number, given_name, family_name } = row;
                 const rowErrors: any = {};
                 const normalizedEmail = String(email).trim();
-                const normalizedPhoneNumber = Number(phone_number).toString();
+                const normalizedPhoneNumber = String(phone_number).trim();
                 const normalizedGiven = String(given_name).trim();
                 const normalizedFamily = String(family_name).trim();
 
@@ -164,11 +164,11 @@ class AdminController implements IController {
                     if (existingEmails.includes(row.email)) {
                         errors.push({ row, errors: { email: 'admin_already_exists' } });
                     } else {
-                        await this.cognitoClient.register(row.email)
+                        const admin = await this.cognitoClient.register(row.email)
                         await DB.execute(
                             `INSERT INTO Admin(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
                             VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`, {
-                            cognito_sub_id: row.email,
+                            cognito_sub_id: admin.sub_id,
                             email: row.email,
                             phone_number: row.phone_number,
                             given_name: row.given_name,
@@ -249,7 +249,7 @@ class AdminController implements IController {
             }
 
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -265,7 +265,6 @@ class AdminController implements IController {
     adminDelete = async (req: ExtendedRequest, res: Response) => {
         try {
             const adminId = req.params.id;
-
 
             if (!adminId || !isValidId(adminId)) {
                 throw {
@@ -299,7 +298,7 @@ class AdminController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Admin deleted successfully'
+                message: 'adminDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

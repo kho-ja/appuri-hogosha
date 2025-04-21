@@ -566,7 +566,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -633,7 +633,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post Notification replayed successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -703,7 +703,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'post_notification_replayed_successfully'
+                message: 'notificationReSent'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -755,7 +755,7 @@ class PostController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Post deleted successfully'
+                message: 'postDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -785,6 +785,7 @@ class PostController implements IController {
                 title,
                 description,
                 priority,
+                image,
             } = req.body
 
             if (!title || !isValidString(title)) {
@@ -809,7 +810,8 @@ class PostController implements IController {
             const postInfo = await DB.query(`SELECT id,
                                                     title,
                                                     description,
-                                                    priority
+                                                    priority,
+                                                    image
                                              FROM Post
                                              WHERE school_id = :school_id
                                                AND id = :id`, {
@@ -826,25 +828,61 @@ class PostController implements IController {
 
             const post = postInfo[0]
 
-            await DB.execute(`UPDATE Post
-                              SET title       = :title,
-                                  description = :description,
-                                  priority    = :priority,
-                                  edited_at   = NOW()
-                              WHERE id = :id
-                                AND school_id = :school_id`, {
-                id: post.id,
-                school_id: req.user.school_id,
-                title: title,
-                description: description,
-                priority: priority,
-            });
+            if (image && image !== post.image) {
+                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                
+                if (!matches || matches.length !== 3) {
+                    throw {
+                        status: 401,
+                        message: 'Invalid image format. Make sure it is Base64 encoded.'
+                    };
+                }
+            
+                const mimeType = matches[1];
+                const base64Data = matches[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+            
+                if (buffer.length > 10 * 1024 * 1024) {
+                    throw {
+                        status: 401,
+                        message: 'Image size is too large (max 10MB)'
+                    };
+                }
+            
+                const imageName = randomImageName() + mimeType.replace('image/', '.');
+                const imagePath = `images/${imageName}`;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            
+                post.image = imageName; // Assign new image to post object
+            } else if (!image) {
+                post.image = null; // Set image to null if none is provided
+            }
+            
+            // Update post in DB
+            await DB.execute(
+                `UPDATE Post
+                 SET title       = :title,
+                     description = :description,
+                     priority    = :priority,
+                     image       = :image,
+                     edited_at   = NOW()
+                 WHERE id = :id
+                 AND school_id = :school_id`,
+                {
+                    id: post.id,
+                    school_id: req.user.school_id,
+                    title,
+                    description,
+                    priority,
+                    image: post.image,
+                }
+            );
 
             await DB.execute(`UPDATE PostParent
-                              SET push = 0
-                              WHERE post_student_id IN (SELECT id
-                                                        FROM PostStudent
-                                                        WHERE post_id = :post_id)`, {
+                                SET push = 0
+                                WHERE post_student_id IN (SELECT id
+                                    FROM PostStudent
+                                    WHERE post_id = :post_id)`, {
                 post_id: post.id
             })
 
@@ -1637,7 +1675,6 @@ class PostController implements IController {
                 groups,
                 image
             } = req.body
-
 
             if (!title || !isValidString(title)) {
                 throw {

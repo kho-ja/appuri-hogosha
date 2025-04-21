@@ -529,7 +529,7 @@ class GroupController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Group deleted successfully'
+                message: 'groupDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {
@@ -738,20 +738,32 @@ class GroupController implements IController {
             const {
                 name,
                 students
-            } = req.body
-
+            } = req.body;
 
             if (!name || !isValidString(name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_group_name'
-                }
+                };
             }
 
+            // Check if the group name already exists
+            const existingGroup = await DB.query(
+                `SELECT id FROM StudentGroup WHERE name = :name AND school_id = :school_id`, {
+                name: name,
+                school_id: req.user.school_id,
+            });
+
+            if (existingGroup.length > 0) {
+                throw {
+                    status: 400,
+                    message: 'group_name_already_exists'
+                };
+            }
 
             const groupInsert = await DB.execute(
                 `INSERT INTO StudentGroup(name, created_at, school_id) 
-                        VALUE (:name, NOW(), :school_id);`, {
+                VALUE (:name, NOW(), :school_id);`, {
                 name: name,
                 school_id: req.user.school_id,
             });
@@ -764,21 +776,20 @@ class GroupController implements IController {
                 const studentRows = await DB.query('SELECT id FROM Student WHERE id IN (:students) AND school_id = :school_id;', {
                     students: students,
                     school_id: req.user.school_id,
-                })
-
+                });
 
                 if (studentRows.length > 0) {
                     const values = studentRows.map((student: any) => `(${student.id}, ${groupId})`).join(', ');
                     await DB.execute(`INSERT INTO GroupMember(student_id, group_id) VALUES ${values}`);
 
                     const studentList = await DB.query(`SELECT 
-                                st.id,st.phone_number,st.email,
-                                st.student_number,st.given_name,st.family_name 
-                            FROM GroupMember AS gm
-                            INNER JOIN Student as st ON gm.student_id = st.id
-                            WHERE group_id = :group_id;`, {
+                        st.id,st.phone_number,st.email,
+                        st.student_number,st.given_name,st.family_name 
+                    FROM GroupMember AS gm
+                    INNER JOIN Student as st ON gm.student_id = st.id
+                    WHERE group_id = :group_id;`, {
                         group_id: groupId,
-                    })
+                    });
 
                     attachedMembers.push(...studentList);
                 }
@@ -790,7 +801,7 @@ class GroupController implements IController {
                     name: name,
                     members: attachedMembers
                 }
-            }).end()
+            }).end();
         } catch (e: any) {
             if (e.status) {
                 return res.status(e.status).json({

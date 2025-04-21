@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Image, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Separator } from './atomic/separator'
 import {I18nContext} from "@/contexts/i18n-context";
+import { useTheme } from '@rneui/themed'
 
 interface StudentSelectorProps {
 	students: Student[] | null
@@ -17,9 +18,11 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
 		const handleStudentSelect = (student: Student) => {
 			router.push(`/(tabs)/(home)/student/${student.id}`)
 		}
+    const { theme } = useTheme();
+    const backgroundColor = theme.colors.background;
 
 		return (
-			<View style={styles.card}>
+			<View style={[styles.card, { backgroundColor }]}>
 				<ThemedText>{i18n[language].SelectStudent}</ThemedText>
 				<View style={styles.studentList}>
 					{students?.map(student => (

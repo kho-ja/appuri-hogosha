@@ -123,7 +123,16 @@
     "preview": "Предпросмотр",
     "messageSent": "Сообщение успешно отправлено",
     "messageEdited": "Сообщение успешно отредактировано",
-    "createFromCSV": "Создать сообщение из CSV"
+    "createFromCSV": "Создать сообщение из CSV",
+    "drafts": "Черновики",
+    "draftSaved": "Сообщение успешно сохранено в черновиках",
+    "noDrafts": "Черновики не найдены",
+    "place": "Разместить",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "AreYouSureDelete": "Вы уверены, что хотите удалить этот черновик?",
+    "saveToDraft": "Сохранить в черновиках",
+    "draftDeleted": "Черновик успешно удален"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "Издатель",
@@ -162,7 +171,9 @@
     "not_viewed_count": "Количество непросмотренных",
     "view": "Просмотр",
     "editMessage": "Редактировать сообщение",
-    "editRecivers": "Редактировать получателей"
+    "editRecivers": "Редактировать получателей",
+    "Groups": "Группы",
+    "Students": "Студенты"
   },
   "ThisGroup": {
     "GroupView": "Детали группы",
@@ -280,7 +291,7 @@
     "phoneNumber": "Номер телефона",
     "email": "Email",
     "group": "Группа",
-    "filter": "Фильтр по имени",
+    "filter": "Фильтр",
     "columns": "Колонки",
     "noResults": "Результатов не найдено.",
     "rowsSelected": "{count} из {total} строк выбрано.",
@@ -302,7 +313,7 @@
     "declined": "отклонено ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Создать группу",
+    "CreateGroup": "Сохранить группу",
     "GroupName": "Название группы",
     "GroupSemester": "Семестр группы",
     "GroupID": "ID группы",
@@ -311,7 +322,7 @@
     "TypeSemester": "Введите семестр здесь",
     "Students": "Студенты",
     "TypeStudents": "Введите студентов здесь",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Cancel": "Отмена",
     "back": "Назад",
     "GroupCreated": "Группа создана",
@@ -320,24 +331,25 @@
     "createGroupfromCSV": "Создать группу из CSV"
   },
   "CreateParent": {
-    "CreateParent": "Создать родителя",
+    "CreateParent": "Сохранить родителя",
     "ParentName": "Имя родителя",
     "ParentFamilyName": "Фамилия родителя",
     "ParentPhone": "Телефон родителя",
     "ParentEmail": "Email родителя",
     "ParentTelegram": "Телеграм родителя",
     "ParentStatus": "Статус родителя",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "Students": "Студенты",
     "back": "Назад",
     "ParentCreated": "Родитель создан",
     "createFromCSV": "Создать с помощью CSV",
-    "createFromKintone": "Создать с помощью Kintone"
+    "createFromKintone": "Создать с помощью Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "CreateStudent": {
-    "CreateStudent": "Создать студента",
+    "CreateStudent": "Сохранить студента",
     "back": "Назад",
     "Email": "Email",
     "PhoneNumber": "Номер телефона",
@@ -345,7 +357,7 @@
     "FamilyName": "Фамилия",
     "StudentNumber": "Номер студента",
     "Parents": "Родители",
-    "Submit": "Отправить",
+    "Submit": "Сохранить",
     "EditStudent": "Редактировать студента",
     "Remove": "Удалить",
     "Add Parent": "Добавить родителя",
@@ -358,7 +370,8 @@
     "StudentEdited": "Студент отредактирован",
     "adminDeleted": "Администратор удален",
     "createFromCSV": "Создать из CSV",
-    "createFromKintone": "Создать из Kintone"
+    "createFromKintone": "Создать из Kintone",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",
@@ -372,7 +385,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "ParentUpdated": "Родитель успешно обновлен"
+    "ParentUpdated": "Родитель успешно обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "ViewStudent": {
     "ViewStudent": "Просмотр студента",
@@ -393,7 +407,7 @@
     "students": "Студенты",
     "ID": "ID",
     "name": "Имя",
-    "email": "Email",
+    "email": "Электронная почта",
     "studentId": "ID студентв",
     "phoneNumber": "Номер телефона",
     "action": "Действие",
@@ -401,11 +415,12 @@
     "edit": "Редактировать",
     "delete": "Удалить",
     "createstudent": "Создать Студента",
-    "filter": "Фильтр по имени",
+    "filter": "Фильтр",
     "DouYouDeleteStudent": "Вы действительно хотите удалить этого сутдента?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "studentDeleted": "Студент удален"
+    "studentDeleted": "Студент удален",
+    "export": "Экспорт"
   },
   "groups": {
     "groups": "Группы",
@@ -420,12 +435,13 @@
     "DouYouDeleteGroup": "Вы действительно хотите удалить эту группу?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "groupDeleted": "Группа успешно удалена"
+    "groupDeleted": "Группа успешно удалена",
+    "export": "Экспорт"
   },
   "parents": {
     "parents": "Родители",
     "parentName": "Имя родителя",
-    "Email": "Email",
+    "Email": "Электронная почта",
     "Phone_number": "Номер телефона",
     "action": "Действие",
     "view": "Просмотр",
@@ -436,7 +452,8 @@
     "doYouDeleteParent": "Вы действительно хотите удалить этого родителя?",
     "close": "Закрыть",
     "confirm": "Подтвердить",
-    "parentDeleted": "Родитель удален"
+    "parentDeleted": "Родитель удален",
+    "export": "Экспорт"
   },
   "posts": {
     "posts": "Сообщения",
@@ -495,38 +512,43 @@
     "Phone_number": "Номер телефона",
     "Ststudent_number": "Номер студента",
     "editStudents": "Редактировать студентов",
-    "editAdmin": "Редактировать администратора"
+    "editAdmin": "Редактировать администратора",
+    "SMS_Settings": "Настройки SMS",
+    "SchoolName": "Название школы",
+    "Notifications": "Уведомления"
   },
   "admins": {
     "admins": "Администраторы",
     "adminName": "Имя администратора",
-    "Email": "Email",
+    "Email": "Электронная почта",
     "Phone_number": "Номер телефона",
     "action": "Действие",
     "view": "Просмотр",
     "edit": "Редактировать",
     "delete": "Удалить",
     "createadmin": "Создать администратора",
-    "filter": "Фильтр по имени и email",
+    "filter": "Фильтр по имени",
     "doYouDeleteAdmin": "Вы действительно хотите удалить этого администратора?",
     "close": "Закрыть",
-    "confirm": "Подтвердить"
+    "confirm": "Подтвердить",
+    "export": "Экспорт"
   },
   "CreateAdmin": {
-    "CreateAdmin": "Создать администратора",
+    "CreateAdmin": "Сохранить администратора",
     "AdminName": "Имя администратора",
     "AdminFamilyName": "Фамилия администратора",
     "AdminPhone": "Телефон администратора",
     "AdminEmail": "Email администратора",
     "AdminTelegram": "Телеграм администратора",
     "AdminStatus": "Статус администратора",
-    "Create": "Создать",
+    "Create": "Сохранить",
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "Students": "Студенты",
     "back": "Назад",
     "AdminCreated": "Админ создан",
-    "createfromCSV": "Создать из CSV"
+    "createfromCSV": "Создать из CSV",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "EditAdmin": {
     "EditAdmin": "Редактировать администратора",
@@ -540,7 +562,8 @@
     "Picture": "Картинка",
     "Cancel": "Отмена",
     "back": "Назад",
-    "AdminUpdated": "Админ обновлен"
+    "AdminUpdated": "Админ обновлен",
+    "Invalid phone number": "Неверный номер телефона"
   },
   "forms": {
     "parent_name": "Имя родителя",
@@ -714,8 +737,9 @@
     "invalid_description": "Неверное описание",
     "invalid_priority": "Неверный приоритет",
     "invalid_group_names": "Неверное название(я) группы",
-    "group_members_not_found": "Члены группы не найдены"
-
+    "group_members_not_found": "Члены группы не найдены",
+    "export": "Экспорт",
+    "back": "Назад"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -762,7 +786,9 @@
     "student_numbers": "Номер студента",
     "student_numbersDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
     "student_number": "Номер студента",
-    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента."
+    "student_numberDescription": "Введите соответствующее поле в вашей инстанции Kintone для номера студента.",
+    "export": "Экспорт",
+    "back": "Назад"
   },
   "errors": {
     "wentWrong": "Что-то пошло не так.",
@@ -1044,7 +1070,16 @@
     "lowCheckbox": "Низкий",
     "NotificationSettingUpdate": "Обновить настройки уведомлений",
     "NotificationSettingUpdated": "Настройки уведомлений обновлены",
-    "NotificationSettingUpdateFailed": "Не удалось обновить настройки уведомлений"
+    "NotificationSettingUpdateFailed": "Не удалось обновить настройки уведомлений",
+    "SettingsTitle": "Уведомления",
+    "SettingsDescription": "Настройте, как вы получаете уведомления."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "Название школы",
+    "SchoolNameDescription": "Обновите название вашей школы.",
+    "SchoolNameUpdateFailed": "Не удалось обновить название школы",
+    "SchoolNameUpdated": "Название школы обновлено",
+    "SchoolNameEditBtn": "Обновить"
   },
   "EditStudentsDialog": {
     "saving": "сохранение...",
@@ -1066,6 +1101,7 @@
     "Groups": "Группы",
     "confirm": "Подтвердить",
     "back": "Назад",
-    "recieversChanged": "Получатели изменены"
+    "recieversChanged": "Получатели изменены",
+    "post_sender_updated_successfully": "Отправитель поста успешно обновлён"
   }
 }

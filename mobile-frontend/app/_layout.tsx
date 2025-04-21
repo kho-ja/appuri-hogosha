@@ -1,5 +1,6 @@
 import React from 'react'
 import * as Notifications from 'expo-notifications'
+import * as Linking from 'expo-linking';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	registerForPushNotificationsAsync,
@@ -15,6 +16,9 @@ import { ThemeProvider } from '@rneui/themed'
 import { NetworkProvider } from '@/contexts/network-context'
 import { I18nProvider } from '@/contexts/i18n-context'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { FontSizeProvider } from "@/contexts/FontSizeContext";
+import { theme } from '@/constants/theme';
+import { useTheme } from '@rneui/themed'
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -25,6 +29,7 @@ Notifications.setNotificationHandler({
 })
 
 function useNotificationObserver() {
+  const hasRedirected = React.useRef(false);
 	React.useEffect(() => {
 		let isMounted = true
 
@@ -37,7 +42,7 @@ function useNotificationObserver() {
 
 		Notifications.getLastNotificationResponseAsync().then(response => {
 			if (!isMounted || !response?.notification) {
-				return
+				return;
 			}
 			redirect(response?.notification)
 		})
@@ -65,7 +70,25 @@ function useNotificationObserver() {
 	}, [])
 }
 export default function Root() {
-	React.useEffect(() => {
+
+  const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
+  React.useEffect(() => {
+    // Load saved theme
+    AsyncStorage.getItem('themeMode').then((savedMode) => {
+      if (savedMode === 'light' || savedMode === 'dark') {
+        setThemeMode(savedMode);
+      }
+    });
+  }, []);
+
+  React.useEffect(() => {
+    // Save theme when it changes
+    AsyncStorage.setItem('themeMode', themeMode);
+  }, [themeMode]);
+
+  const memoizedTheme = React.useMemo(() => ({ ...theme, mode: themeMode }), [themeMode]);
+
+  React.useEffect(() => {
 		registerForPushNotificationsAsync()
 			.then(token => AsyncStorage.setItem('expoPushToken', token ?? ''))
 			.catch((error: any) => console.error(`${error}`))
@@ -78,20 +101,24 @@ export default function Root() {
 	useNotificationObserver()
 
 	const queryClient = new QueryClient()
+
+
 	return (
 		<RootSiblingParent>
-			<GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1  }}>
 				<SQLiteProvider
 					databaseName='maria.db'
 					assetSource={{ assetId: require('../assets/database/maria.db') }}
 				>
 					<SessionProvider>
-						<ThemeProvider>
+						<ThemeProvider theme={memoizedTheme} >
 							<NetworkProvider>
 								<I18nProvider>
 									<QueryClientProvider client={queryClient}>
 										<StudentProvider>
-											<Slot />
+                      <FontSizeProvider>
+                       <Slot  />
+                      </FontSizeProvider>
 										</StudentProvider>
 									</QueryClientProvider>
 								</I18nProvider>

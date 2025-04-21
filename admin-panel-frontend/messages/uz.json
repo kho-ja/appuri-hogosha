@@ -124,7 +124,19 @@
     "preview": "Oldingi ko'rish",
     "messageSent": "Xabar muvaffaqiyatli yuborildi",
     "messageEdited": "Xabar muvaffaqiyatli tahrirlandi",
-    "createFromCSV": "CSV dan xabar yuborish"
+    "createFromCSV": "CSV dan xabar yuborish",
+    "choose_file": "Faylni tanlang",
+    "no_file_chosen": "Faylni tanlangmadi",
+    "selected_image": "Tanlangan rasm",
+    "drafts": "Qoralamalar",
+    "draftSaved": "Xabar qoralamalarga muvaffaqiyatli saqlandi",
+    "noDrafts": "Hech qanday qoralama topilmadi",
+    "place": "Joylash",
+    "delete": "O'chirish",
+    "cancel": "Bekor qilish",
+    "AreYouSureDelete": "Ushbu qoralamani o'chirib tashlamoqchimisiz?",
+    "saveToDraft": "Qoralamalarga saqlash",
+    "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "Nashriyot",
@@ -163,7 +175,9 @@
     "not_viewed_count": "Ko‘rilmaganlar soni",
     "view": "Ko'rish",
     "editMessage": "Xabarni tahrirlash",
-    "editRecivers": "Qabul qiluvchilarni tahrirlash"
+    "editRecivers": "Qabul qiluvchilarni tahrirlash",
+    "Groups": "Guruhlar",
+    "Students": "Talabalar"
   },
   "ThisGroup": {
     "GroupView": "Guruh Tafsilotlari",
@@ -281,7 +295,7 @@
     "phoneNumber": "Telefon raqami",
     "email": "Email",
     "group": "Guruh",
-    "filter": "Ism bo'yicha filtrlash",
+    "filter": "Filtr",
     "columns": "Ustunlar",
     "noResults": "Natijalar yo'q.",
     "rowsSelected": "{total} qatordan {count} tasi tanlandi.",
@@ -303,14 +317,14 @@
     "declined": "Rad etildi ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "Guruh yaratish",
+    "CreateGroup": "Guruhni saqlash",
     "GroupName": "Guruh nomi",
     "TypeGroupName": "Guruh nomini shu yerga kiriting",
     "Semester": "Semestr",
     "TypeSemester": "Semestrni shu yerga kiriting",
     "Students": "Talabalar",
     "TypeStudents": "Talabalarni shu yerga kiriting",
-    "Create": "Yaratish",
+    "Create": "Saqlash",
     "Cancel": "Bekor qilish",
     "GroupSemester": "Guruh Semestri",
     "GroupID": "Guruh ID",
@@ -321,24 +335,25 @@
     "createGroupfromCSV": "CSVdan Guruh yaratish"
   },
   "CreateParent": {
-    "CreateParent": "Vasiy yaratish",
+    "CreateParent": "Vasiyni saqlash",
     "ParentName": "Vasiyning ismi",
     "ParentFamilyName": "Vasiyning familiyasi",
     "ParentPhone": "Vasiyning telefon raqami",
     "ParentEmail": "Vasiyning elektron pochtasi",
     "ParentTelegram": "Vasiyning Telegrami",
     "ParentStatus": "Vasiyning holati",
-    "Create": "Yaratish",
+    "Create": "Saqlash",
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "Students": "Talabalar",
     "back": "Orqaga",
     "ParentCreated": "Vasiy muvaffaqiyatli yaratildi",
     "createFromCSV": "CSV dan yaratish ",
-    "createFromKintone": "Kintone dan yaratish"
+    "createFromKintone": "Kintone dan yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "CreateStudent": {
-    "CreateStudent": "Talaba yaratish",
+    "CreateStudent": "Talabani saqlash",
     "back": "Orqaga",
     "Email": "Elektron pochta",
     "PhoneNumber": "Telefon raqami",
@@ -346,7 +361,7 @@
     "FamilyName": "Familiya",
     "StudentNumber": "Talaba raqami",
     "Parents": "Ota-Onalar",
-    "Submit": "Yuborish",
+    "Submit": "Saqlash",
     "EditStudent": "Talabani tahrirlash",
     "Remove": "Olib tashlash",
     "Add Parent": "Ota-Onani qo'shish",
@@ -358,7 +373,8 @@
     "StudentCreated": "Talaba muvaffaqiyatli yaratildi",
     "StudentEdited": "Talaba muvaffaqiyatli tahrirlandi",
     "createFromCSV": "CSV dan yaratish",
-    "createFromKintone": "Kintone orqali yaratish"
+    "createFromKintone": "Kintone orqali yaratish",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditParent": {
     "EditParent": "Vasiy tahrirlash",
@@ -372,7 +388,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi"
+    "ParentUpdated": "Vasiy muvaffaqiyatli yangilandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "ViewStudent": {
     "ViewStudent": "Talabalarni ko'rish",
@@ -401,11 +418,12 @@
     "edit": "Tahrirlash",
     "delete": "O'chirish",
     "createstudent": "Talaba yaratish",
-    "filter": "Ism bo'yicha filtrlash",
+    "filter": "Filtr",
     "DouYouDeleteStudent": "Talabani o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi"
+    "studentDeleted": "Talaba muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "groups": {
     "groups": "Guruhlar",
@@ -420,7 +438,8 @@
     "DouYouDeleteGroup": "Ushbu guruhni haqiqatdan ham oʻchirmoqchimisiz?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi"
+    "groupDeleted": "Guruh muvaffaqiyatli oʻchirildi",
+    "export": "Yuklab olish"
   },
   "parents": {
     "parents": "Ota-onalar",
@@ -436,7 +455,8 @@
     "doYouDeleteParent": "Rostdan ham bu Ota-Onani o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi"
+    "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "posts": {
     "posts": "Xabarlar",
@@ -479,7 +499,7 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editParent": "Edit Parent"
+    "editParent": "Vasiy tahrirlash"
   },
   "ThisAdmin": {
     "AdminView": "Admin ko'rinishi",
@@ -495,7 +515,10 @@
     "Phone_number": "Telefon raqami",
     "Ststudent_number": "Talaba raqami",
     "editStudents": "Talabalar tahrirlash",
-    "editAdmin": "Admin tahrirlash"
+    "editAdmin": "Admin tahrirlash",
+    "SMS_Settings": "SMS Sozlamalari",
+    "SchoolName": "Maktab nomi",
+    "Notifications": "Bildirishlar"
   },
   "admins": {
     "admins": "Adminlar",
@@ -507,27 +530,29 @@
     "edit": "Tahrirlash",
     "delete": "O'chirish",
     "createadmin": "Admin yaratish",
-    "filter": "Ism va email bo'yicha filtrlash",
+    "filter": "Ism bo'yicha filtrlash",
     "doYouDeleteAdmin": "Rostdan ham bu Adminni o'chirmoqchimisiz?",
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "adminDeleted": "Admin muvaffaqiyatli o'chirildi"
+    "adminDeleted": "Admin muvaffaqiyatli o'chirildi",
+    "export": "Yuklab olish"
   },
   "CreateAdmin": {
-    "CreateAdmin": "Admin yaratish",
+    "CreateAdmin": "Adminni saqlash",
     "AdminName": "Adminning ismi",
     "AdminFamilyName": "Adminning familiyasi",
     "AdminPhone": "Adminning telefon raqami",
     "AdminEmail": "Adminning elektron pochtasi",
     "AdminTelegram": "Adminning Telegrami",
     "AdminStatus": "Adminning holati",
-    "Create": "Yaratish",
+    "Create": "Saqlash",
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "Students": "Talabalar",
     "back": "Orqaga",
     "AdminCreated": "Admin yaratildi",
-    "createfromCSV": "CSVdan yaratish "
+    "createfromCSV": "CSVdan yaratish ",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "EditAdmin": {
     "EditAdmin": "Admin tahrirlash",
@@ -541,7 +566,8 @@
     "Cancel": "Bekor qilish",
     "Picture": "Rasm",
     "back": "Orqaga",
-    "AdminUpdated": "Admin tahrirlandi"
+    "AdminUpdated": "Admin tahrirlandi",
+    "Invalid phone number": "Noto'g'ri telefon raqami"
   },
   "forms": {
     "parent_name": "Ota-ona ismi",
@@ -715,8 +741,9 @@
     "invalid_description": "Noto‘g‘ri tavsif",
     "invalid_priority": "Noto‘g‘ri ustuvorlik",
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
-    "group_members_not_found": "Guruh a'zolari topilmadi"
-
+    "group_members_not_found": "Guruh a'zolari topilmadi",
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -763,7 +790,9 @@
     "student_numbers": "Talaba raqamlari",
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
-    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting."
+    "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
+    "export": "Yuklab olish",
+    "back": "Orqaga"
   },
 
   "errors": {
@@ -1044,7 +1073,16 @@
     "lowCheckbox": "Past",
     "NotificationSettingUpdate": "Bildirishnoma sozlamalari yangilash",
     "NotificationSettingUpdated": "Bildirishnoma sozlamalari muvaffaqiyatli yangilandi",
-    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi"
+    "NotificationSettingUpdateFailed": "Bildirishnoma sozlamalari yangilashda xatolik yuz berdi",
+    "SettingsTitle": "Bildirishnomalar",
+    "SettingsDescription": "Sizga ularni kirish uchun sizga ularni kirish."
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "Maktab nomi",
+    "SchoolNameDescription": "Maktab nomini yangilash.",
+    "SchoolNameUpdateFailed": "Maktab nomini yangilashda xatolik yuz berdi",
+    "SchoolNameUpdated": "Maktab nomi muvaffaqiyatli yangilandi",
+    "SchoolNameEditBtn": "Tahrirlash"
   },
   "EditStudentsDialog": {
     "saving": "Saplanmoqda...",
@@ -1062,10 +1100,11 @@
   },
   "recievers": {
     "ChangeRecievers": "Qabul qiluvchilarni o'zgartirish",
-    "students": "Talabalar",
+    "Students": "Talabalar",
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
     "back": "Orqaga",
-    "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi"
+    "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi",
+    "post_sender_updated_successfully": "Post yuboruvchisi muvaffaqiyatli yangilandi"
   }
 }

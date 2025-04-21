@@ -28,6 +28,10 @@ import { useSQLiteContext } from 'expo-sqlite'
 import { ThemedView } from '@/components/ThemedView'
 import { Href, router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { FontSizeSlider} from "@/components/FontSizeSlider";
+import {Separator} from "@/components/atomic/separator";
+import  ThemeSwitcher  from "@/components/ThemeSwitcher";
+import { useTheme } from '@rneui/themed';
 
 interface LanguageSelectionProps {
 	language: string
@@ -69,9 +73,9 @@ export default function SettingsScreen() {
 	const { signOut } = useSession()
 	const db = useSQLiteContext()
 	const [user, setUser] = useState<User | null>(null)
-	const theme = useColorScheme() ?? 'light'
+  const { theme } = useTheme();
 	const [, setIsOpen] = useState(false)
-	const [selectedLanguage, setSelectedLanguage] = useState(
+  const [selectedLanguage, setSelectedLanguage] = useState(
 		language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
 	)
 	const bottomSheetModalRef = useRef(null)
@@ -104,8 +108,9 @@ export default function SettingsScreen() {
 	const handlePress = useCallback(() => {
 		signOut()
 	}, [signOut])
+  const backgroundColor = theme.colors.background;
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<BottomSheetModalProvider>
 				<ScrollView showsVerticalScrollIndicator={false}>
 					<View style={styles.profile}>
@@ -115,93 +120,87 @@ export default function SettingsScreen() {
 							</ThemedText>
 						</View>
 					</View>
-					<ThemedText style={styles.sectionTitle}>
-						{i18n[language].information}
-					</ThemedText>
 
-					<View
-						style={[
-							styles.infoContainer,
-							{ backgroundColor: theme === 'light' ? '#eee' : '#2c2c2e' },
-						]}
-					>
-						<ThemedText style={styles.label}>
-							{i18n[language].firstName}
-						</ThemedText>
-						<ThemedText style={styles.value}>
-							{user && user.given_name}
-						</ThemedText>
+					<View	style={styles.topContainer}>
+            <View style={styles.nameProfile}>
+              <ThemedText style={styles.profileInitial}>
+                {user && user.given_name ? user.given_name.charAt(0).toUpperCase() : ''}
+              </ThemedText>
+            </View>
+            <View>
+              <View style={styles.namesContainer}>
+						    <ThemedText style={styles.profileText}>
+							    {user && user.given_name}
+						    </ThemedText>
+                <ThemedText style={styles.profileText}>
+                  {user && user.family_name}
+                 </ThemedText>
+              </View>
+              <View>
+                <ThemedText style={styles.email}>{user && user.email}</ThemedText>
+              </View>
+            </View>
 					</View>
-					<View
-						style={[
-							styles.infoContainer,
-							{ backgroundColor: theme === 'light' ? '#eee' : '#2c2c2e' },
-						]}
-					>
-						<ThemedText style={styles.label}>
-							{i18n[language].lastName}
-						</ThemedText>
-						<ThemedText style={styles.value}>
-							{user && user.family_name}
-						</ThemedText>
-					</View>
-					<View
-						style={[
-							styles.infoContainer,
-							{ backgroundColor: theme === 'light' ? '#eee' : '#2c2c2e' },
-						]}
-					>
-						<ThemedText style={styles.label}>
+
+					<View style={ styles.infoContainer }>
+						<ThemedText style={styles.sectionTitle}>
 							{i18n[language].phoneNumber}
 						</ThemedText>
-						<ThemedText style={styles.value}>
-							{user && user.phone_number}
-						</ThemedText>
+            <View style={styles.infoCard}>
+						  <ThemedText style={styles.value}>
+							  +{user && user.phone_number}
+						  </ThemedText>
+            </View>
 					</View>
-					<View
-						style={[
-							styles.infoContainer,
-							{ backgroundColor: theme === 'light' ? '#eee' : '#2c2c2e' },
-						]}
-					>
-						<ThemedText style={styles.label}>
-							{i18n[language].emailaddress}
-						</ThemedText>
-						<ThemedText style={styles.value}>{user && user.email}</ThemedText>
-					</View>
+          <View style={ styles.infoContainer }>
+            <ThemedText style={styles.sectionTitle}>
+              {i18n[language].preferences}
+            </ThemedText>
+            <View style={styles.infoCard}>
+              <Pressable onPress={handlePresentModal} style={styles.row}>
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='language-outline' size={20} />
+                </View>
 
-					<ThemedText style={styles.sectionTitle}>
-						{i18n[language].preferences}
-					</ThemedText>
-					<Pressable onPress={handlePresentModal} style={styles.row}>
-						<View style={[styles.rowIcon, { backgroundColor: '#fe9400' }]}>
-							<Ionicons color='#fff' name='globe' size={20} />
-						</View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].language}
+                </ThemedText>
 
-						<ThemedText style={styles.rowLabel}>
-							{i18n[language].language}
-						</ThemedText>
+                <View style={styles.rowSpacer} />
 
-						<View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <Separator orientation='horizontal' />
+              <Pressable
+                onPress={() => router.navigate('change-psswd' as Href)}
+                style={styles.row}
+              >
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+                </View>
 
-						<Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-					</Pressable>
-					<Pressable
-						onPress={() => router.navigate('change-psswd' as Href)}
-						style={styles.row}
-					>
-						<View style={[styles.rowIcon, { backgroundColor: '#d0b783' }]}>
-							<Ionicons color='#fff' name='key' size={20} />
-						</View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].changePassword}
+                </ThemedText>
 
-						<ThemedText style={styles.rowLabel}>
-							{i18n[language].changePassword}
-						</ThemedText>
+                <View style={styles.rowSpacer} />
 
-						<View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <Separator orientation='horizontal' />
+              <View style={styles.row}>
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color="#fff" name="text" size={20} />
+                </View>
+                <ThemedText style={styles.rowLabel}>Text Size</ThemedText>
+                <View style={styles.rowSpacer} />
+                <FontSizeSlider />
+              </View>
+              <Separator orientation='horizontal' />
+              <ThemeSwitcher />
 
-						<Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-					</Pressable>
+            </View>
+          </View>
 					<BottomSheetModal
 						ref={bottomSheetModalRef}
 						index={1}
@@ -250,6 +249,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
+    marginHorizontal: 10,
 	},
 	profile: {
 		padding: 24,
@@ -264,18 +264,64 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	sectionTitle: {
-		paddingVertical: 12,
+		paddingBottom: 12,
 		fontSize: 12,
 		fontWeight: '600',
 		textTransform: 'uppercase',
 		letterSpacing: 1.1,
 	},
-	infoContainer: {
+  topContainer:{
+    padding: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    marginBottom: 30,
+    gap: 30,
+    alignItems: 'center'
+  },
+  namesContainer:{
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: -5
+  },
+  nameProfile:{
+    height: 65,
+    width: 65,
+    borderColor: '#005678',
+    borderWidth: 1,
+    borderRadius: 100,
+    backgroundColor: '#005678',
+    justifyContent: 'center', // Center vertically
+    alignItems: 'center',
+  },
+  profileText:{
+    fontSize: 20,
+    fontWeight: 600,
+  },
+  email:{
+    fontWeight: 400,
+    color: 'grey',
+    fontSize: 16
+  },
+  profileInitial: {
+    fontSize: 35,
+    fontWeight: 'bold',
+    color: 'white',
+    marginTop: -5
+  },
+  infoCard:{
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    alignItems: 'flex-start',
+    position: 'relative',
+  },
+  infoContainer: {
 		position: 'relative',
-		borderRadius: 10,
 		alignItems: 'flex-start',
 		padding: 10,
-		paddingTop: 30,
 		marginBottom: 10,
 	},
 	label: {
@@ -287,6 +333,7 @@ const styles = StyleSheet.create({
 	},
 	value: {
 		fontWeight: 'bold',
+    margin: 5
 	},
 	row: {
 		flexDirection: 'row',
@@ -294,13 +341,12 @@ const styles = StyleSheet.create({
 		justifyContent: 'flex-start',
 		height: 50,
 		borderRadius: 8,
-		paddingLeft: 12,
-		paddingRight: 12,
+    marginHorizontal: 5,
 	},
 	rowIcon: {
 		width: 32,
 		height: 32,
-		borderRadius: 9999,
+		borderRadius: 3,
 		marginRight: 12,
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -347,6 +393,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		backgroundColor: '#059669',
+
 	},
 	text: {
 		fontWeight: 'bold',

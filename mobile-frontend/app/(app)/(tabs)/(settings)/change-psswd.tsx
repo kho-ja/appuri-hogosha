@@ -16,6 +16,7 @@ import Toast from 'react-native-root-toast'
 import { ThemedText } from '@/components/ThemedText'
 import { Button } from '@rneui/themed'
 import { useMutation } from '@tanstack/react-query'
+import { useTheme } from '@rneui/themed';
 
 const styles = StyleSheet.create({
 	container: {
@@ -27,6 +28,7 @@ const styles = StyleSheet.create({
 		padding: 16,
 		borderRadius: 4,
 		alignItems: 'center',
+    backgroundColor: '#005678',
 	},
 	title: {
 		fontWeight: 'bold',
@@ -60,7 +62,8 @@ const styles = StyleSheet.create({
 export default function Index() {
 	const { session } = useSession()
 	const { language, i18n } = useContext(I18nContext)
-	const theme = useColorScheme() ?? 'light'
+  const { theme } = useTheme();
+  const backgroundColor = theme.colors.background;
 	const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000'
 	const [password, setPassword] = useState('')
 	const [errorMessage, setErrorMessage] = useState('')
@@ -114,7 +117,7 @@ export default function Index() {
 	}
 	return (
 		<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-			<SafeAreaView style={styles.container}>
+			<SafeAreaView style={[styles.container, { backgroundColor }]}>
 				<View style={styles.container}>
 					<View style={styles.header}>
 						<View>
@@ -126,7 +129,7 @@ export default function Index() {
 					<TextInput
 						style={[
 							styles.textInput,
-							{ color: theme === 'light' ? 'black' : 'white' },
+							{ color: theme.mode === 'light' ? 'black' : 'white' },
 						]}
 						placeholder={i18n[language].enterPassword}
 						placeholderTextColor='grey'

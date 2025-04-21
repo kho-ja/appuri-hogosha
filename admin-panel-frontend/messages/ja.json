@@ -124,7 +124,16 @@
     "preview": "プレビュー",
     "messageSent": "メッセージが送信されました",
     "messageEdited": "メッセージが正常に編集されました",
-    "createFromCSV": "CSVから作成する"
+    "createFromCSV": "CSVから作成する",
+    "drafts": "下書き",
+    "draftSaved": "メッセージが下書きに保存されました",
+    "noDrafts": "下書きが見つかりませんでした",
+    "place": "配置",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "AreYouSureDelete": "この下書きを削除しますか？",
+    "saveToDraft": "下書きに保存",
+    "draftDeleted": "下書きが削除されました"
   },
   "ThisMessage": {
     "AS_PUBLISHER": "出版社",
@@ -163,7 +172,9 @@
     "not_viewed_count": "未閲覧数",
     "view": "表示",
     "editMessage": "メッセージを編集",
-    "editRecivers": "受信者を編集"
+    "editRecivers": "受信者を編集",
+    "Groups": "グループ",
+    "Students": "学生"
   },
   "ThisGroup": {
     "GroupView": "グループの詳細",
@@ -281,7 +292,7 @@
     "phoneNumber": "電話番号",
     "email": "メール",
     "group": "グループ",
-    "filter": "名前でフィルタリング",
+    "filter": "フィルター",
     "columns": "列",
     "noResults": "結果がありません。",
     "rowsSelected": "{count} 件の {total} 件が選択されました。",
@@ -303,7 +314,7 @@
     "declined": "拒否 ✖\uFE0F"
   },
   "CreateGroup": {
-    "CreateGroup": "グループを作成",
+    "CreateGroup": "グループを保存",
     "GroupName": "グループ名",
     "GroupSemester": "学期",
     "GroupID": "グループ ID",
@@ -312,7 +323,7 @@
     "TypeSemester": "ここに学期を入力してください",
     "Students": "学生",
     "TypeStudents": "ここに学生を入力してください",
-    "Create": "作成",
+    "Create": "保存",
     "Cancel": "キャンセル",
     "back": "戻る",
     "GroupCreated": "グループが作成されました",
@@ -321,24 +332,25 @@
     "createGroupfromCSV": "CSVからグループを作成"
   },
   "CreateParent": {
-    "CreateParent": "保護者を作成",
+    "CreateParent": "保護者を保存",
     "ParentName": "保護者の名前",
     "ParentFamilyName": "保護者の姓",
     "ParentPhone": "保護者の電話番号",
     "ParentEmail": "保護者のメール",
     "ParentTelegram": "保護者のTelegram",
     "ParentStatus": "保護者のステータス",
-    "Create": "作成",
+    "Create": "保存",
     "Picture": "画像",
     "Cancel": "キャンセル",
     "Students": "学生",
     "back": "戻る",
     "ParentCreated": "保護者が作成されました",
     "createFromCSV": "CSVから作成する",
-    "createFromKintone": "Kintoneから作成する"
+    "createFromKintone": "Kintoneから作成する",
+    "Invalid phone number": "無効な電話番号"
   },
   "CreateStudent": {
-    "CreateStudent": "学生を作成",
+    "CreateStudent": "学生を保存",
     "back": "戻る",
     "Email": "メールアドレス",
     "PhoneNumber": "電話番号",
@@ -346,7 +358,7 @@
     "FamilyName": "姓",
     "StudentNumber": "学籍番号",
     "Parents": "保護者",
-    "Submit": "送信",
+    "Submit": "保存",
     "EditStudent": "学生を編集",
     "Remove": "削除",
     "Add Parent": "保護者を追加",
@@ -358,7 +370,8 @@
     "StudentCreated": "学生が正常に作成されました",
     "StudentEdited": "学生が正常に編集されました",
     "createFromCSV": "CSVから作成する ",
-    "createFromKintone": "Kintoneから作成する "
+    "createFromKintone": "Kintoneから作成する ",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditParent": {
     "EditParent": "保護者を編集",
@@ -372,7 +385,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "ParentUpdated": "保護者が正常に更新されました"
+    "ParentUpdated": "保護者が正常に更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "ViewStudent": {
     "ViewStudent": "学生を表示",
@@ -402,11 +416,12 @@
     "edit": "編集",
     "delete": "削除",
     "createstudent": "学生を作成",
-    "filter": "名前でフィルタリング",
+    "filter": "フィルター",
     "DouYouDeleteStudent": "この学生を削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "studentDeleted": "学生が削除されました"
+    "studentDeleted": "学生が削除されました",
+    "export": "ファイルに書き出す"
   },
   "groups": {
     "groups": "グループ",
@@ -421,7 +436,8 @@
     "DouYouDeleteGroup": "このグループを本当に削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "groupDeleted": "グループが正常に削除されました"
+    "groupDeleted": "グループが正常に削除されました",
+    "export": "ファイルに書き出す"
   },
   "parents": {
     "parents": "保護者",
@@ -437,7 +453,8 @@
     "doYouDeleteParent": "この保護者を本当に消しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "parentDeleted": "保護者が削除されました"
+    "parentDeleted": "保護者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "posts": {
     "posts": "投稿",
@@ -496,7 +513,10 @@
     "Phone_number": "電話番号",
     "Ststudent_number": "学籍番号",
     "editStudents": "学生を編集",
-    "editAdmin": "管理者を編集"
+    "editAdmin": "管理者を編集",
+    "SMS_Settings": "SMS設定",
+    "SchoolName": "学校名",
+    "Notifications": "通知"
   },
   "admins": {
     "admins": "管理者",
@@ -508,27 +528,29 @@
     "edit": "編集",
     "delete": "削除",
     "createadmin": "管理者を作成",
-    "filter": "名前とメールでフィルタリング",
+    "filter": "名前でフィルタリング",
     "doYouDeleteAdmin": "この管理者を削除しますか？",
     "close": "閉じる",
     "confirm": "確認する",
-    "adminDeleted": "管理者が削除されました"
+    "adminDeleted": "管理者が削除されました",
+    "export": "ファイルに書き出す"
   },
   "CreateAdmin": {
-    "CreateAdmin": "管理者を作成",
+    "CreateAdmin": "管理者を保存",
     "AdminName": "管理者の名前",
     "AdminFamilyName": "管理者の姓",
     "AdminPhone": "管理者の電話番号",
     "AdminEmail": "管理者のメール",
     "AdminTelegram": "管理者のTelegram",
     "AdminStatus": "管理者のステータス",
-    "Create": "作成",
+    "Create": "保存",
     "Picture": "画像",
     "Cancel": "キャンセル",
     "Students": "学生",
     "back": "戻る",
     "AdminCreated": "管理者が作成されました",
-    "createfromCSV": "CSVから作成"
+    "createfromCSV": "CSVから作成",
+    "Invalid phone number": "無効な電話番号"
   },
   "EditAdmin": {
     "EditAdmin": "管理者を編集",
@@ -542,7 +564,8 @@
     "Picture": "画像",
     "Cancel": "キャンセル",
     "back": "戻る",
-    "AdminUpdated": "管理者が更新されました"
+    "AdminUpdated": "管理者が更新されました",
+    "Invalid phone number": "無効な電話番号"
   },
   "forms": {
     "parent_name": "保護者の名前",
@@ -718,8 +741,9 @@
     "invalid_group_names": "無効なグループ名",
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
-    "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました"
-
+    "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -766,7 +790,9 @@
     "student_numbers": "学生番号",
     "student_numbersDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
     "student_number": "学生番号",
-    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。"
+    "student_numberDescription": "Kintoneのインスタンスの学生番号に対応するフィールドを入力してください。",
+    "export": "ファイルに書き出す",
+    "back": "戻る"
   },
   "errors": {
     "wentWrong": "何かが間違っています。",
@@ -1045,7 +1071,16 @@
     "lowCheckbox": "低",
     "NotificationSettingUpdate": "通知設定が更新する",
     "NotificationSettingUpdated": "通知設定が更新されました",
-    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました"
+    "NotificationSettingUpdateFailed": "通知設定の更新に失敗しました",
+    "SettingsTitle": "通知",
+    "SettingsDescription": "通知の受信方法を設定します。"
+  },
+  "SchoolNameUpdate": {
+    "SchoolName": "学校名",
+    "SchoolNameDescription": "学校名を更新します。",
+    "SchoolNameUpdateFailed": "学校名の更新に失敗しました",
+    "SchoolNameUpdated": "学校名が更新されました",
+    "SchoolNameEditBtn": "更新する"
   },
   "EditStudentsDialog": {
     "saving": "保存中...",
@@ -1067,6 +1102,7 @@
     "Groups": "グループ",
     "confirm": "確認",
     "back": "戻る",
-    "recieversChanged": "受信者が変更されました"
+    "recieversChanged": "受信者が変更されました",
+    "post_sender_updated_successfully": "投稿送信者が正常に更新されました"
   }
 }

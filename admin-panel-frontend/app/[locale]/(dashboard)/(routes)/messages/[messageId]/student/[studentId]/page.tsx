@@ -58,7 +58,7 @@ export default function ThisStudent({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: data.message,
+          description: t(data.message),
         });
       },
     }
@@ -73,7 +73,7 @@ export default function ThisStudent({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: data.message,
+          description: t(data.message),
         });
       },
     }

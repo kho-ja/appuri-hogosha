@@ -117,7 +117,10 @@ CREATE TABLE
     `school_id` int NOT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_studentgroup_school_id` (`school_id`),
-    CONSTRAINT `StudentGroup_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `School` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT `StudentGroup_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `School` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+
+    --- Unique constraint on name and school_id
+    UNIQUE INDEX `StudentGroup_pk` (`name`, `school_id`) VISIBLE
   ) ENGINE = InnoDB AUTO_INCREMENT = 22 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 -- Create GroupMember table
