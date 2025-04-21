@@ -139,8 +139,6 @@ class GroupController implements IController {
 
                 if (!isValidString(normalizedName)) rowErrors.name = "invalid_name";
 
-
-                // Validate each student number
                 for (const sn of studentNumbersArray) {
                     if (!isValidStudentNumber(sn)) rowErrors.student_numbers = "invalid_student_numbers";
                 }
@@ -204,7 +202,6 @@ class GroupController implements IController {
                 }
             }
 
-            // Checks if only the array fields (group_names and student_numbers) are valid
             function isCompletelyInvalidExceptArrays(errors: any) {
                 return (
                     errors.name  || !errors.student_numbers
@@ -230,7 +227,6 @@ class GroupController implements IController {
                 }
             }
 
-            // delete duplicate group_names and student_numbers
             for (const group of validResults) {
                 group.student_numbers = Array.from(new Set(group.student_numbers));
             }
