@@ -1095,6 +1095,7 @@
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
     "back": "Orqaga",
-    "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi"
+    "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi",
+    "post_sender_updated_successfully": "Post yuboruvchisi muvaffaqiyatli yangilandi"
   }
 }

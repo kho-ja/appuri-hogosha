@@ -1092,6 +1092,7 @@
     "Groups": "Группы",
     "confirm": "Подтвердить",
     "back": "Назад",
-    "recieversChanged": "Получатели изменены"
+    "recieversChanged": "Получатели изменены",
+    "post_sender_updated_successfully": "Отправитель поста успешно обновлён"
   }
 }
