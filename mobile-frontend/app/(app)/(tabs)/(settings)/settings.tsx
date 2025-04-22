@@ -123,18 +123,16 @@ export default function SettingsScreen() {
 
 					<View	style={styles.topContainer}>
             <View style={styles.nameProfile}>
-              <ThemedText style={styles.profileInitial}>
+              <ThemedText style={[styles.profileInitial, { textAlign: 'center' }]}>
                 {user && user.given_name ? user.given_name.charAt(0).toUpperCase() : ''}
               </ThemedText>
             </View>
             <View>
               <View style={styles.namesContainer}>
 						    <ThemedText style={styles.profileText}>
-							    {user && user.given_name}
+                  {user && `${user.given_name} ${user.family_name}`}
 						    </ThemedText>
-                <ThemedText style={styles.profileText}>
-                  {user && user.family_name}
-                 </ThemedText>
+
               </View>
               <View>
                 <ThemedText style={styles.email}>{user && user.email}</ThemedText>
@@ -297,6 +295,9 @@ const styles = StyleSheet.create({
   profileText:{
     fontSize: 20,
     fontWeight: 600,
+    width: '80%',
+    flexWrap: "wrap",
+    height: 'auto'
   },
   email:{
     fontWeight: 400,
@@ -304,10 +305,12 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   profileInitial: {
+    width: '80%',
     fontSize: 35,
     fontWeight: 'bold',
     color: 'white',
-    marginTop: -5
+    marginTop: -5,
+    flexWrap: 'wrap'
   },
   infoCard:{
     width: '100%',
