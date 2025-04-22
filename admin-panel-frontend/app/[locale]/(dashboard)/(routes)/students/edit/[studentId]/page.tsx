@@ -15,7 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import Student from "@/types/student";
 import { toast } from "@/components/ui/use-toast";
@@ -44,6 +44,7 @@ export default function CreateStudent({
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
+  const [isEditStudent, setIsEditStudent] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -168,7 +169,10 @@ export default function CreateStudent({
             />
           </div>
 
-          <Button disabled={isLoading || isPending}>
+          <Button
+          isLoading={isEditStudent}
+          onClick={() => setIsEditStudent(true)}
+          disabled={isLoading || isPending}>
             {t("EditStudent") + (isPending ? "..." : "")}
           </Button>
         </form>

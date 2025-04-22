@@ -42,6 +42,7 @@ export default function CreateParent() {
   const tName = useTranslations("names");
   const router = useRouter();
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+  const [isCreateParent, setIsCreateParent] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -211,7 +212,10 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button disabled={isPending}>
+                <Button
+                isLoading={isCreateParent}
+                onClick={() => setIsCreateParent(true)}
+                disabled={isPending}>
                   {t("CreateParent") + `${isPending ? "..." : ""}`}
                 </Button>
               </div>

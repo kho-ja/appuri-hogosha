@@ -19,7 +19,7 @@ import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -56,6 +56,7 @@ type School = {
 export function NotificationsForm() {
   const { toast } = useToast();
   const t = useTranslations("NotificationsForm");
+  const [isNotificationSettingUpdateBtn, setIsNotificationSettingUpdateBtn] = useState(false);
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
@@ -169,7 +170,10 @@ export function NotificationsForm() {
           />
         </div>
 
-        <Button disabled={!data || isLoading || isPending} type="submit">
+        <Button
+        isLoading={isNotificationSettingUpdateBtn}
+        onClick={() => setIsNotificationSettingUpdateBtn(true)}
+        disabled={!data || isLoading || isPending} type="submit">
           {t("NotificationSettingUpdate") + (isPending ? "..." : "")}
         </Button>
       </form>

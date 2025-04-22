@@ -19,6 +19,7 @@ export default function EditParents({
   const t = useTranslations("CreateStudent");
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
   const router = useRouter();
+  const [isSubmit, setIsSubmit] = useState(false);
   const { data, isLoading, isError } = useApiQuery<{
     parents: Parent[];
   }>(`student/${studentId}/parents`, ["student", studentId]);
@@ -68,7 +69,10 @@ export default function EditParents({
           selectedParents={selectedParents}
           setSelectedParents={setSelectedParents}
         />
-        <Button disabled={isPending || isLoading}>
+        <Button
+        isLoading={isSubmit}
+        onClick={() => setIsSubmit(true)}
+        disabled={isPending || isLoading}>
           {isPending ? `${t("Submit")}...` : t("Submit")}
         </Button>
       </form>

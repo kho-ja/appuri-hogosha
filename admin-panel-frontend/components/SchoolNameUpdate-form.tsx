@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 
@@ -48,6 +48,7 @@ export function SchoolNameUpdate() {
   const { update } = useSession();
   const { toast } = useToast();
   const t = useTranslations("SchoolNameUpdate");
+  const [isSchoolNameEditBtn, setIsSchoolNameEditBtn] = useState(false);
   const form = useForm<SchoolNameValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -117,7 +118,12 @@ export function SchoolNameUpdate() {
                 </FormItem>
               )}
             />
-            <Button disabled={!data || isLoading || isPending} type="submit">
+            <Button
+              isLoading={isSchoolNameEditBtn}
+              onClick={() => setIsSchoolNameEditBtn(true)}
+              disabled={!data || isLoading || isPending}
+              type="submit"
+            >
               {t("SchoolNameEditBtn") + (isPending ? "..." : "")}
             </Button>
           </div>

@@ -17,7 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { Link, useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
@@ -45,6 +45,7 @@ export default function EditParent({
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
   const router = useRouter();
+  const [isEditParent, setIsEditParent] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -163,7 +164,11 @@ export default function EditParent({
               />
 
               <div className="flex justify-between">
-                <Button disabled={isPending || isLoading}>
+                <Button
+                  isLoading={isEditParent}
+                  onClick={() => setIsEditParent(true)}
+                  disabled={isPending || isLoading}
+                >
                   {t("EditParent") + (isPending ? "..." : "")}
                 </Button>
               </div>

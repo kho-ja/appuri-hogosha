@@ -38,6 +38,7 @@ export default function EditGroup({
   const t = useTranslations("CreateGroup");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();
+  const [isEditGroup, setIsEditGroup] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -120,7 +121,10 @@ export default function EditGroup({
               </FormControl>
             </FormItem>
 
-            <Button disabled={isPending || isLoading}>
+            <Button
+            isLoading={isEditGroup}
+            onClick={() => setIsEditGroup(true)}
+            disabled={isPending || isLoading}>
               {t("EditGroup") + (isPending ? "..." : "")}
             </Button>
           </form>

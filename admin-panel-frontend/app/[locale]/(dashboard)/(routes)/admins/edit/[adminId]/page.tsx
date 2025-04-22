@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import {
@@ -45,6 +45,7 @@ export default function EditAdmin({
   const formSchema = GetFormSchema(t);
   const { toast } = useToast();
   const router = useRouter();
+  const [isEditAdmin, setIsEditAdmin] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -174,6 +175,8 @@ export default function EditAdmin({
                   className="self-start"
                   type="submit"
                   disabled={isPending || isLoading}
+                  isLoading={isEditAdmin}
+                  onClick={() => setIsEditAdmin(true)}
                 >
                   {t("EditAdmin") + (isPending ? "..." : "")}
                 </Button>

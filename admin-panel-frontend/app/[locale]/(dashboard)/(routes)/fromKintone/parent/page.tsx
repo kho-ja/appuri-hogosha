@@ -41,7 +41,7 @@ import {
 import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Parent from "@/types/parent";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useApiMutation from "@/lib/useApiMutation";
 
 const formSchema = z.object({
@@ -58,6 +58,7 @@ export default function CreateFromKintone() {
   const t = useTranslations("fromKintone");
   const queryClient = useQueryClient();
   const router = useRouter();
+  const [isUploadFromKintone, setIsUploadFromKintone] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -237,7 +238,11 @@ export default function CreateFromKintone() {
               )}
             />
 
-            <Button type="submit" disabled={isPending}>
+            <Button 
+            isLoading={isUploadFromKintone}
+            onClick={() => setIsUploadFromKintone(true)}
+            type="submit" 
+            disabled={isPending}>
               {t("uploadFromKintone") + (isPending ? "..." : "")}
             </Button>
           </form>

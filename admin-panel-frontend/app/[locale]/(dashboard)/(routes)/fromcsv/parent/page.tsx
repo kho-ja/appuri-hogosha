@@ -50,6 +50,7 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Parent from "@/types/parent";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
+import { useState } from "react";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -60,6 +61,7 @@ export default function CreateFromCsv() {
   const t = useTranslations("fromcsv");
   const queryClient = useQueryClient();
   const router = useRouter();
+  const [isUploadFromCsv, setIsUploadFromCsv] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -166,7 +168,11 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button type="submit" disabled={isPending}>
+            <Button
+            isLoading={isUploadFromCsv}
+            onClick={() => setIsUploadFromCsv(true)}
+            type="submit"
+            disabled={isPending}>
               {t("Upload csv file") + (isPending ? "..." : "")}
             </Button>
           </form>

@@ -47,6 +47,7 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
+import { Send } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -97,6 +98,9 @@ export default function SendMessagePage() {
       },
     }
   );
+
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataMessages");
@@ -285,9 +289,11 @@ export default function SendMessagePage() {
             <DialogTrigger asChild>
               <Button
                 type="button"
+                isLoading={isSendingMessage}
+                onClick={() => setIsSendingMessage(true)}
                 disabled={isPending || !isFormValid || !hasRecipients}
               >
-                {isPending ? `${t("sendMessage")}...` : t("sendMessage")}
+                {isPending ? `${t("sendMessage")}...` : <><Send className="mr-2 h-4 w-4" /> {t("sendMessage")}</>}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[80%] max-h-max">
@@ -354,7 +360,9 @@ export default function SendMessagePage() {
                   <Button
                     type="submit"
                     disabled={isPending || !isFormValid || !hasRecipients}
+                    isLoading={isConfirming}
                     onClick={() => {
+                      setIsConfirming(true);
                       if (formRef.current) {
                         formRef.current.dispatchEvent(
                           new Event("submit", { bubbles: true })
