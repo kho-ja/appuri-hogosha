@@ -112,11 +112,12 @@ bot.hears(emailPasswordRegex, async (ctx) => {
     }
 });
 
-bot.start().then(() => {
-    console.log('Bot is running!');
-}).catch((error) => {
-    console.error('Error while starting the bot:', error);
-});
+// bot.start().then(() => {
+//     console.log('Bot is running!');
+// }).catch((error) => {
+//     console.error('Error while starting the bot:', error);
+// });
+
 // exports.handler = async (event: any) => {
 //     try {
 //         await bot.handleUpdate(JSON.parse(event.body));
@@ -138,4 +139,4 @@ bot.start().then(() => {
 //     }
 // };
 
-// export const handler = webhookCallback(bot, 'aws-lambda-async')
+export const handler = webhookCallback(bot, 'aws-lambda-async')
