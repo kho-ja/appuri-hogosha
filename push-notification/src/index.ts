@@ -233,4 +233,3 @@ export const handler = async () => {
     }
 };
 
-handler()
