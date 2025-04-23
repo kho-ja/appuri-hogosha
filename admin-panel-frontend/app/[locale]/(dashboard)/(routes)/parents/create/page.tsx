@@ -29,7 +29,11 @@ const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(500)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
     email: z.string().email(),
   });
 };
@@ -211,9 +215,7 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button isLoading={isPending}>
-                  {t("CreateParent")}
-                </Button>
+                <Button isLoading={isPending}>{t("CreateParent")}</Button>
               </div>
             </div>
           </div>

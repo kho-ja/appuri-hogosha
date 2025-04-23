@@ -42,7 +42,6 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Post from "@/types/post";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
-import { useState } from "react";
 
 export default function MessageFromCSV() {
   const t = useTranslations("fromcsv");
@@ -128,9 +127,7 @@ export default function MessageFromCSV() {
               )}
             />
 
-            <Button
-            type="submit"
-            isLoading={isPending}>
+            <Button type="submit" isLoading={isPending}>
               {t("Upload csv file")}
             </Button>
           </form>

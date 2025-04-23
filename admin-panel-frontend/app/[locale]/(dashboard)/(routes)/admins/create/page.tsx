@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import {
@@ -27,7 +27,11 @@ const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(500)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
     email: z.string().email(),
   });
 };
@@ -109,7 +113,12 @@ export default function CreateAdmin() {
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
+          onSubmit={form.handleSubmit((values) =>
+            mutate({
+              ...values,
+              phone_number: values.phone_number.slice(1),
+            } as any)
+          )}
           className="space-y-4"
         >
           <div className="flex w-full">

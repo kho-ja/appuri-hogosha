@@ -50,7 +50,6 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Student from "@/types/student";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
-import { useState } from "react";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -169,9 +168,7 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button
-            type="submit"
-            isLoading={isPending}>
+            <Button type="submit" isLoading={isPending}>
               {t("Upload csv file")}
             </Button>
           </form>
@@ -212,10 +209,10 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-            {errors.errors?.length > 0 &&
-              errors.errors.map((error, index) => (
-                <TableRow key={index}>
-                  <TableCell>
+              {errors.errors?.length > 0 &&
+                errors.errors.map((error, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
                       <ErrorCell name="email" error={error} />
                     </TableCell>
                     <TableCell>
@@ -230,10 +227,9 @@ export default function CreateFromCsv() {
                     <TableCell>
                       <ErrorCell name="student_number" error={error} />
                     </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-
+                  </TableRow>
+                ))}
+            </TableBody>
           </Table>
         </CardContent>
       </Card>
@@ -296,7 +292,6 @@ const ErrorCell = ({
     </div>
   );
 };
-
 
 const ErrorTable = ({
   title,

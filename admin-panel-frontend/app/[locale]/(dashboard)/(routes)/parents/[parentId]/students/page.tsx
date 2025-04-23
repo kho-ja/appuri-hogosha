@@ -66,10 +66,7 @@ export default function EditStudents({
           selectedStudents={selectedStudents}
           setSelectedStudents={setSelectedStudents}
         />
-        <Button
-        isLoading={isPending}>
-          {t("Submit") + `${isPending ? "..." : ""}`}
-        </Button>
+        <Button isLoading={isPending || isLoading}>{t("editParentStudents")}</Button>
       </form>
     </div>
   );

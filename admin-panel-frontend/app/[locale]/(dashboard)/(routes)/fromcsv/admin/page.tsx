@@ -50,7 +50,6 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Admin from "@/types/admin";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
-import { useState } from "react";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -167,9 +166,7 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button
-            type="submit"
-            isLoading={isPending}>
+            <Button type="submit" isLoading={isPending}>
               {t("Upload csv file")}
             </Button>
           </form>

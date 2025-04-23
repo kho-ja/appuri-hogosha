@@ -120,10 +120,7 @@ export default function EditGroup({
               </FormControl>
             </FormItem>
 
-            <Button
-            isLoading={isPending}>
-              {t("EditGroup")}
-            </Button>
+            <Button isLoading={isPending || isLoading}>{t("EditGroup")}</Button>
           </form>
         </Form>
       </div>

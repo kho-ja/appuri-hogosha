@@ -167,7 +167,7 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="student_number"
@@ -203,8 +203,6 @@ export default function CreateStudent() {
                 </FormItem>
               )}
             />
-
-
           </div>
 
           <FormItem>
@@ -217,9 +215,7 @@ export default function CreateStudent() {
             </FormControl>
           </FormItem>
 
-          <Button isLoading={isPending}>
-            {t("CreateStudent")}
-          </Button>
+          <Button isLoading={isPending}>{t("CreateStudent")}</Button>
         </form>
       </Form>
     </div>

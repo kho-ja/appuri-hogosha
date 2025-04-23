@@ -30,7 +30,11 @@ const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(500)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
   });
 };
 
@@ -92,7 +96,12 @@ export default function EditParent({
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
+          onSubmit={form.handleSubmit((values) =>
+            mutate({
+              ...values,
+              phone_number: values.phone_number.slice(1),
+            } as any)
+          )}
           className="space-y-4"
         >
           <div className="flex w-full">
@@ -163,9 +172,7 @@ export default function EditParent({
               />
 
               <div className="flex justify-between">
-                <Button isLoading={isPending}>
-                  {t("EditParent")}
-                </Button>
+                <Button isLoading={isPending || isLoading}>{t("EditParent")}</Button>
               </div>
             </div>
           </div>

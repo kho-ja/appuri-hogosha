@@ -19,7 +19,7 @@ import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +28,7 @@ const notificationsFormSchema = z.object({
   high: z.boolean(),
   medium: z.boolean(),
   low: z.boolean(),
-  title: z.string().min(1).optional(), 
+  title: z.string().min(1).optional(),
 });
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
@@ -94,7 +94,9 @@ export function NotificationsForm() {
         className="space-y-4"
       >
         <div>
-          <FormLabel className="text-lg font-medium">{t("SMSHeader")}</FormLabel>
+          <FormLabel className="text-lg font-medium">
+            {t("SMSHeader")}
+          </FormLabel>
           <FormDescription>{t("SMSDescription")}</FormDescription>
         </div>
 
@@ -170,8 +172,10 @@ export function NotificationsForm() {
         </div>
 
         <Button
-        isLoading={isPending}
-        disabled={!data} type="submit">
+          isLoading={isPending}
+          disabled={!data || isLoading}
+          type="submit"
+        >
           {t("NotificationSettingUpdate")}
         </Button>
       </form>

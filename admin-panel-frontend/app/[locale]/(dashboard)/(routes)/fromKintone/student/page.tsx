@@ -51,7 +51,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Student from "@/types/student";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import useApiMutation from "@/lib/useApiMutation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   kintoneUrl: z.string().min(1).url(),
@@ -246,9 +246,7 @@ export default function CreateFromKintone() {
               )}
             />
 
-            <Button
-            type="submit"
-            isLoading={isPending}>
+            <Button type="submit" isLoading={isPending}>
               {t("uploadFromKintone")}
             </Button>
           </form>

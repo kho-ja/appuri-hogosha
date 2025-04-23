@@ -41,7 +41,7 @@ import {
 import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Parent from "@/types/parent";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useApiMutation from "@/lib/useApiMutation";
 
 const formSchema = z.object({
@@ -237,9 +237,7 @@ export default function CreateFromKintone() {
               )}
             />
 
-            <Button 
-            type="submit" 
-            isLoading={isPending}>
+            <Button type="submit" isLoading={isPending}>
               {t("uploadFromKintone")}
             </Button>
           </form>

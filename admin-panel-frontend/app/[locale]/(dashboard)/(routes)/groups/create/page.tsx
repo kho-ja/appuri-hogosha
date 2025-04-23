@@ -130,10 +130,7 @@ export default function CreateGroup() {
               </FormControl>
             </FormItem>
 
-            <Button
-            isLoading={isPending}>
-              {t("CreateGroup")}
-            </Button>
+            <Button isLoading={isPending}>{t("CreateGroup")}</Button>
           </form>
         </Form>
       </div>

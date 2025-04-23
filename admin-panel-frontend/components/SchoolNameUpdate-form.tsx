@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 
@@ -119,7 +119,7 @@ export function SchoolNameUpdate() {
             />
             <Button
               isLoading={isPending}
-              disabled={!data}
+              disabled={!data || isLoading}
               type="submit"
             >
               {t("SchoolNameEditBtn")}
