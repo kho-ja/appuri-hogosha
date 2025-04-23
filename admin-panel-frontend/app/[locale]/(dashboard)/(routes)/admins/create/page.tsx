@@ -40,7 +40,6 @@ export default function CreateAdmin() {
   const tName = useTranslations("names");
   const router = useRouter();
   const { toast } = useToast();
-  const [isCreateAdmin, setIsCreateAdmin] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -199,13 +198,11 @@ export default function CreateAdmin() {
               />
 
               <Button
-              className="self-start" 
-              type="submit" 
-              disabled={isPending}
-              isLoading={isCreateAdmin}
-              onClick={() => setIsCreateAdmin(true)}
+                className="self-start"
+                type="submit"
+                isLoading={isPending}
               >
-                {t("CreateAdmin") + (isPending ? "..." : "")}
+                {t("CreateAdmin")}
               </Button>
             </div>
           </div>

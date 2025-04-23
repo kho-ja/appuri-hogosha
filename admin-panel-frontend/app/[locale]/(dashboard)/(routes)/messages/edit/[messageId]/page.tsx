@@ -62,8 +62,6 @@ export default function SendMessagePage({
     null
   );
 
-  const [isEditMessage, setIsEditMessage] = useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -302,12 +300,10 @@ export default function SendMessagePage({
           />
 
           <Button
-            isLoading={isEditMessage}
-            onClick={() => setIsEditMessage(true)}
             type="submit"
-            disabled={isPending || isLoading}
+            isLoading={isPending}
           >
-            {isPending ? `${t("editMessage")}...` : t("editMessage")}
+            {t("editMessage")}
           </Button>
         </form>
       </Form>

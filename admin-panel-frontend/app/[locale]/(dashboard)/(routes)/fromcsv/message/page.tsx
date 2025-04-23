@@ -52,7 +52,6 @@ export default function MessageFromCSV() {
 
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [isUploadFromCsv, setIsUploadFromCsv] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -130,11 +129,9 @@ export default function MessageFromCSV() {
             />
 
             <Button
-            isLoading={isUploadFromCsv}
-            onClick={() => setIsUploadFromCsv(true)}
             type="submit"
-            disabled={isPending}>
-              {t("Upload csv file") + (isPending ? "..." : "")}
+            isLoading={isPending}>
+              {t("Upload csv file")}
             </Button>
           </form>
         </Form>

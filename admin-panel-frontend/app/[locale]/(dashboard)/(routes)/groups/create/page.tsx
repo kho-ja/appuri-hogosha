@@ -33,7 +33,6 @@ export default function CreateGroup() {
   const t = useTranslations("CreateGroup");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();
-  const [isCreateGroup, setIsCreateGroup] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -132,10 +131,8 @@ export default function CreateGroup() {
             </FormItem>
 
             <Button
-            isLoading={isCreateGroup}
-            onClick={() => setIsCreateGroup(true)}
-            disabled={isPending}>
-              {t("CreateGroup")} {isPending && "..."}
+            isLoading={isPending}>
+              {t("CreateGroup")}
             </Button>
           </form>
         </Form>

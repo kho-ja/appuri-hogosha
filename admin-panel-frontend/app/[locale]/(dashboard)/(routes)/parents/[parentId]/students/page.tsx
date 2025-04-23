@@ -19,7 +19,6 @@ export default function EditStudents({
   const t = useTranslations("CreateStudent");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();
-  const [isSubmit, setIsSubmit] = useState(false);
   const { data, isLoading, isError } = useApiQuery<{
     students: Student[];
   }>(`parent/${parentId}/students`, ["editParentStudents", parentId]);
@@ -68,9 +67,7 @@ export default function EditStudents({
           setSelectedStudents={setSelectedStudents}
         />
         <Button
-        isLoading={isSubmit}
-        onClick={() => setIsSubmit(true)}
-        disabled={isLoading || isPending}>
+        isLoading={isPending}>
           {t("Submit") + `${isPending ? "..." : ""}`}
         </Button>
       </form>

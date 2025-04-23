@@ -56,7 +56,6 @@ type School = {
 export function NotificationsForm() {
   const { toast } = useToast();
   const t = useTranslations("NotificationsForm");
-  const [isNotificationSettingUpdateBtn, setIsNotificationSettingUpdateBtn] = useState(false);
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
@@ -171,10 +170,9 @@ export function NotificationsForm() {
         </div>
 
         <Button
-        isLoading={isNotificationSettingUpdateBtn}
-        onClick={() => setIsNotificationSettingUpdateBtn(true)}
-        disabled={!data || isLoading || isPending} type="submit">
-          {t("NotificationSettingUpdate") + (isPending ? "..." : "")}
+        isLoading={isPending}
+        disabled={!data} type="submit">
+          {t("NotificationSettingUpdate")}
         </Button>
       </form>
     </Form>

@@ -58,7 +58,6 @@ export default function CreateFromKintone() {
   const t = useTranslations("fromKintone");
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [isUploadFromKintone, setIsUploadFromKintone] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -239,11 +238,9 @@ export default function CreateFromKintone() {
             />
 
             <Button 
-            isLoading={isUploadFromKintone}
-            onClick={() => setIsUploadFromKintone(true)}
             type="submit" 
-            disabled={isPending}>
-              {t("uploadFromKintone") + (isPending ? "..." : "")}
+            isLoading={isPending}>
+              {t("uploadFromKintone")}
             </Button>
           </form>
         </Form>

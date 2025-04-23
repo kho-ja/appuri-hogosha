@@ -45,7 +45,6 @@ export default function EditParent({
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
   const router = useRouter();
-  const [isEditParent, setIsEditParent] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -164,12 +163,8 @@ export default function EditParent({
               />
 
               <div className="flex justify-between">
-                <Button
-                  isLoading={isEditParent}
-                  onClick={() => setIsEditParent(true)}
-                  disabled={isPending || isLoading}
-                >
-                  {t("EditParent") + (isPending ? "..." : "")}
+                <Button isLoading={isPending}>
+                  {t("EditParent")}
                 </Button>
               </div>
             </div>

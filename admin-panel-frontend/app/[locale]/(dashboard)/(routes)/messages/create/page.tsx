@@ -99,9 +99,6 @@ export default function SendMessagePage() {
     }
   );
 
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
-
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataMessages");
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
@@ -289,11 +286,11 @@ export default function SendMessagePage() {
             <DialogTrigger asChild>
               <Button
                 type="button"
-                isLoading={isSendingMessage}
-                onClick={() => setIsSendingMessage(true)}
-                disabled={isPending || !isFormValid || !hasRecipients}
+                isLoading={isPending}
+                disabled={!isFormValid || !hasRecipients}
+                icon={<Send className="h-4 w-4" />}
               >
-                {isPending ? `${t("sendMessage")}...` : <><Send className="mr-2 h-4 w-4" /> {t("sendMessage")}</>}
+                {t("sendMessage")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[80%] max-h-max">
@@ -359,10 +356,9 @@ export default function SendMessagePage() {
                 <DialogClose asChild>
                   <Button
                     type="submit"
-                    disabled={isPending || !isFormValid || !hasRecipients}
-                    isLoading={isConfirming}
+                    disabled={!isFormValid || !hasRecipients}
+                    isLoading={isPending}
                     onClick={() => {
-                      setIsConfirming(true);
                       if (formRef.current) {
                         formRef.current.dispatchEvent(
                           new Event("submit", { bubbles: true })

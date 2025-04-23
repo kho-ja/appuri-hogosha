@@ -45,7 +45,6 @@ export default function EditAdmin({
   const formSchema = GetFormSchema(t);
   const { toast } = useToast();
   const router = useRouter();
-  const [isEditAdmin, setIsEditAdmin] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -174,11 +173,9 @@ export default function EditAdmin({
                 <Button
                   className="self-start"
                   type="submit"
-                  disabled={isPending || isLoading}
-                  isLoading={isEditAdmin}
-                  onClick={() => setIsEditAdmin(true)}
+                  isLoading={isPending}
                 >
-                  {t("EditAdmin") + (isPending ? "..." : "")}
+                  {t("EditAdmin")}
                 </Button>
               </div>
             </div>

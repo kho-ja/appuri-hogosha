@@ -52,13 +52,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isLoading || props.disabled}
         {...props}
       >
-        {(icon || isLoading) && (
+        {icon && !isLoading && (
           <span className="mr-2 flex items-center">
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              icon
-            )}
+            {icon}
+          </span>
+        )}
+        {isLoading && (
+          <span className="mr-2 flex items-center">
+            <Loader2 className="h-4 w-4 animate-spin" />
           </span>
         )}
         {children}

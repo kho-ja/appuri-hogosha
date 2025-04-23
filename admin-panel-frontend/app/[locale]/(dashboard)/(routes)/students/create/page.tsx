@@ -45,7 +45,6 @@ export default function CreateStudent() {
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
-  const [isCreateStudent, setIsCreateStudent] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -218,11 +217,8 @@ export default function CreateStudent() {
             </FormControl>
           </FormItem>
 
-          <Button
-          isLoading={isCreateStudent}
-          onClick={() => setIsCreateStudent(true)}
-          disabled={isPending}>
-            {t("CreateStudent") + (isPending ? "..." : "")}
+          <Button isLoading={isPending}>
+            {t("CreateStudent")}
           </Button>
         </form>
       </Form>

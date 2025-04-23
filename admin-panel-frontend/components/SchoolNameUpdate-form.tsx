@@ -48,7 +48,6 @@ export function SchoolNameUpdate() {
   const { update } = useSession();
   const { toast } = useToast();
   const t = useTranslations("SchoolNameUpdate");
-  const [isSchoolNameEditBtn, setIsSchoolNameEditBtn] = useState(false);
   const form = useForm<SchoolNameValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -119,12 +118,11 @@ export function SchoolNameUpdate() {
               )}
             />
             <Button
-              isLoading={isSchoolNameEditBtn}
-              onClick={() => setIsSchoolNameEditBtn(true)}
-              disabled={!data || isLoading || isPending}
+              isLoading={isPending}
+              disabled={!data}
               type="submit"
             >
-              {t("SchoolNameEditBtn") + (isPending ? "..." : "")}
+              {t("SchoolNameEditBtn")}
             </Button>
           </div>
         </div>
