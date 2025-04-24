@@ -39,7 +39,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           flagComponent={FlagComponent}
           countrySelectComponent={CountrySelect}
           inputComponent={InputComponent}
-          smartCaret={false}
+          smartCaret={true} // Enable smartCaret to fix cursor position issues
           /**
            * Handles the onChange event.
            *
