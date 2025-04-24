@@ -117,11 +117,7 @@ export function SchoolNameUpdate() {
                 </FormItem>
               )}
             />
-            <Button
-              isLoading={isPending}
-              disabled={!data || isLoading}
-              type="submit"
-            >
+            <Button isLoading={isPending || !data || isLoading} type="submit">
               {t("SchoolNameEditBtn")}
             </Button>
           </div>
