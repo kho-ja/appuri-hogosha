@@ -18,6 +18,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { User } from "next-auth";
 import NavLinks from "@/components/NavLinks";
 import LanguageSelect from "@/components/LanguageSelect";
+import { useState } from "react";
 
 const handleSignOut = async () => {
   return await signOut({ callbackUrl: "/" });
@@ -29,6 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   });
   const t = useTranslations("app");
   const tName = useTranslations("names");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const user = session?.user as User;
 
@@ -60,7 +62,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
       <div className="flex flex-col flex-1 md:ml-[220px] lg:ml-[280px] min-w-0">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-          <Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
@@ -71,16 +73,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <span className="sr-only">{t("menu")}</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col">
+            <SheetContent side="left" className="flex flex-col w-[280px] max-w-[80vw]">
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
                   href="#"
-                  className="flex items-center gap-2 text-lg font-semibold"
+                  className="flex items-center gap-2 text-lg font-semibold mb-5"
                 >
                   <Package2 className="h-6 w-6" />
-                  <span className="sr-only">{session?.schoolName}</span>
+                  <span className="">{session && session?.schoolName}</span>
                 </Link>
-                <NavLinks user={user} />
+                <NavLinks user={user} onLinkClick={() => setIsSheetOpen(false)} />
               </nav>
             </SheetContent>
           </Sheet>
