@@ -152,7 +152,7 @@ export default function EditAdmin({
                 control={form.control}
                 name="phone_number"
                 render={({ field, formState }) => (
-                  <FormItem>
+                  <FormItem className="w-1/2">
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
                       <PhoneInput
