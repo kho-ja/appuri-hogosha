@@ -5,6 +5,7 @@ import {loginTypeButton} from "../buttons/loginTypeButton";
 export const menuHandler = async (ctx: IBotContext) => {
     // ctx.session.scene = '';
     // await ctx.save(ctx.session);
+    const isLoggedIn = !!ctx.session.parent_id; 
 
     if (ctx.session.parent_id !== 0) {
         let text;
@@ -15,7 +16,7 @@ export const menuHandler = async (ctx: IBotContext) => {
         } else {
             text = 'Endi siz xabarlarni olasiz';
         }
-        await ctx.reply(text, {reply_markup: menuButton(ctx.session.language)});
+        await ctx.reply(text, {reply_markup: menuButton(ctx.session.language, isLoggedIn)});
     } else {
         await sendLogin(ctx);
     }
