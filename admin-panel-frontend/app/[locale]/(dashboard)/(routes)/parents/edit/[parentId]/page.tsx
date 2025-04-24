@@ -150,7 +150,6 @@ export default function EditParent({
                     <FormControl>
                       <PhoneInput
                         placeholder={t("ParentPhone")}
-                        international={true}
                         {...field}
                       />
                     </FormControl>

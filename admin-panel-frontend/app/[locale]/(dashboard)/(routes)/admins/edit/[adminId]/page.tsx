@@ -157,7 +157,6 @@ export default function EditAdmin({
                     <FormControl>
                       <PhoneInput
                         placeholder={t("AdminPhone")}
-                        international={true}
                         {...field}
                       />
                     </FormControl>

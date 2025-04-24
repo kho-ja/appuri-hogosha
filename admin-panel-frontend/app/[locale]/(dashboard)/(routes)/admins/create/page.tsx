@@ -185,7 +185,6 @@ export default function CreateAdmin() {
                     <FormControl>
                       <PhoneInput
                         placeholder={t("AdminPhone")}
-                        international={true}
                         {...field}
                       />
                     </FormControl>
