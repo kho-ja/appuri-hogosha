@@ -50,7 +50,8 @@ import useApiMutation from "@/lib/useApiMutation";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
-import { X } from "lucide-react";
+import { X, Send } from "lucide-react";
+
 const formSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
@@ -360,9 +361,11 @@ export default function SendMessagePage() {
             <DialogTrigger asChild>
               <Button
                 type="button"
-                disabled={isPending || !isFormValid || !hasRecipients}
+                isLoading={isPending}
+                disabled={!isFormValid || !hasRecipients}
+                icon={<Send className="h-4 w-4" />}
               >
-                {isPending ? `${t("sendMessage")}...` : t("sendMessage")}
+                {t("sendMessage")}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[80%] max-h-max">
@@ -428,7 +431,8 @@ export default function SendMessagePage() {
                 <DialogClose asChild>
                   <Button
                     type="submit"
-                    disabled={isPending || !isFormValid || !hasRecipients}
+                    disabled={!isFormValid || !hasRecipients}
+                    isLoading={isPending}
                     onClick={() => {
                       if (formRef.current) {
                         formRef.current.dispatchEvent(

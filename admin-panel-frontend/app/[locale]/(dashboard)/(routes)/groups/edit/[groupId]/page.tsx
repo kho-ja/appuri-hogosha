@@ -120,9 +120,7 @@ export default function EditGroup({
               </FormControl>
             </FormItem>
 
-            <Button disabled={isPending || isLoading}>
-              {t("EditGroup") + (isPending ? "..." : "")}
-            </Button>
+            <Button isLoading={isPending || isLoading}>{t("EditGroup")}</Button>
           </form>
         </Form>
       </div>

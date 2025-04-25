@@ -246,8 +246,8 @@ export default function CreateFromKintone() {
               )}
             />
 
-            <Button type="submit" disabled={isPending}>
-              {t("uploadFromKintone") + (isPending ? "..." : "")}
+            <Button type="submit" isLoading={isPending}>
+              {t("uploadFromKintone")}
             </Button>
           </form>
         </Form>

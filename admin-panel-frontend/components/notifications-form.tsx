@@ -28,7 +28,7 @@ const notificationsFormSchema = z.object({
   high: z.boolean(),
   medium: z.boolean(),
   low: z.boolean(),
-  title: z.string().min(1).optional(), 
+  title: z.string().min(1).optional(),
 });
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
@@ -94,7 +94,9 @@ export function NotificationsForm() {
         className="space-y-4"
       >
         <div>
-          <FormLabel className="text-lg font-medium">{t("SMSHeader")}</FormLabel>
+          <FormLabel className="text-lg font-medium">
+            {t("SMSHeader")}
+          </FormLabel>
           <FormDescription>{t("SMSDescription")}</FormDescription>
         </div>
 
@@ -169,8 +171,12 @@ export function NotificationsForm() {
           />
         </div>
 
-        <Button disabled={!data || isLoading || isPending} type="submit">
-          {t("NotificationSettingUpdate") + (isPending ? "..." : "")}
+        <Button
+          isLoading={isPending}
+          disabled={!data || isLoading}
+          type="submit"
+        >
+          {t("NotificationSettingUpdate")}
         </Button>
       </form>
     </Form>

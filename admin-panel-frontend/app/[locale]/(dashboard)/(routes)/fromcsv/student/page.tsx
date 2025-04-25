@@ -168,8 +168,8 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button type="submit" disabled={isPending}>
-              {t("Upload csv file") + (isPending ? "..." : "")}
+            <Button type="submit" isLoading={isPending}>
+              {t("Upload csv file")}
             </Button>
           </form>
         </Form>
@@ -209,10 +209,10 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-            {errors.errors?.length > 0 &&
-              errors.errors.map((error, index) => (
-                <TableRow key={index}>
-                  <TableCell>
+              {errors.errors?.length > 0 &&
+                errors.errors.map((error, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
                       <ErrorCell name="email" error={error} />
                     </TableCell>
                     <TableCell>
@@ -227,10 +227,9 @@ export default function CreateFromCsv() {
                     <TableCell>
                       <ErrorCell name="student_number" error={error} />
                     </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-
+                  </TableRow>
+                ))}
+            </TableBody>
           </Table>
         </CardContent>
       </Card>
@@ -293,7 +292,6 @@ const ErrorCell = ({
     </div>
   );
 };
-
 
 const ErrorTable = ({
   title,

@@ -68,9 +68,7 @@ export default function EditParents({
           selectedParents={selectedParents}
           setSelectedParents={setSelectedParents}
         />
-        <Button disabled={isPending || isLoading}>
-          {isPending ? `${t("Submit")}...` : t("Submit")}
-        </Button>
+        <Button isLoading={isPending || isLoading}>{t("Submit")}</Button>
       </form>
     </div>
   );

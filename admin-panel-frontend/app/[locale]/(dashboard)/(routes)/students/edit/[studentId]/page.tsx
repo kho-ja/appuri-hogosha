@@ -27,7 +27,11 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
-    phone_number: z.string().min(10).max(20).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(20)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
     student_number: z.string().min(1).max(10),
@@ -95,7 +99,12 @@ export default function CreateStudent({
       </div>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate({...values, phone_number: values.phone_number.slice(1)} as any))}
+          onSubmit={form.handleSubmit((values) =>
+            mutate({
+              ...values,
+              phone_number: values.phone_number.slice(1),
+            } as any)
+          )}
           className="space-y-4"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -168,9 +177,7 @@ export default function CreateStudent({
             />
           </div>
 
-          <Button disabled={isLoading || isPending}>
-            {t("EditStudent") + (isPending ? "..." : "")}
-          </Button>
+          <Button isLoading={isPending || isLoading}>{t("EditStudent")}</Button>
         </form>
       </Form>
     </div>

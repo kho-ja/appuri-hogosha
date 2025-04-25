@@ -96,7 +96,7 @@ export default function SendMessagePage({
 
   useEffect(() => {
     if (data) {
-      setImage(data.post.image || "")
+      setImage(data.post.image || "");
       form.reset({
         title: data.post.title,
         description: data.post.description,
@@ -295,8 +295,8 @@ export default function SendMessagePage({
             )}
           />
 
-          <Button type="submit" disabled={isPending || isLoading}>
-            {isPending ? `${t("editMessage")}...` : t("editMessage")}
+          <Button type="submit" isLoading={isPending || isLoading}>
+            {t("editMessage")}
           </Button>
         </form>
       </Form>

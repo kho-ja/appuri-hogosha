@@ -166,8 +166,8 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button type="submit" disabled={isPending}>
-              {t("Upload csv file") + (isPending ? "..." : "")}
+            <Button type="submit" isLoading={isPending}>
+              {t("Upload csv file")}
             </Button>
           </form>
         </Form>

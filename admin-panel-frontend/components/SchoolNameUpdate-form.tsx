@@ -117,8 +117,8 @@ export function SchoolNameUpdate() {
                 </FormItem>
               )}
             />
-            <Button disabled={!data || isLoading || isPending} type="submit">
-              {t("SchoolNameEditBtn") + (isPending ? "..." : "")}
+            <Button isLoading={isPending || !data || isLoading} type="submit">
+              {t("SchoolNameEditBtn")}
             </Button>
           </div>
         </div>

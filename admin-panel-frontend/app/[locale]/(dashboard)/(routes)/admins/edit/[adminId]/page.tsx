@@ -29,7 +29,11 @@ const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    phone_number: z.string().min(10).max(500).refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    phone_number: z
+      .string()
+      .min(10)
+      .max(500)
+      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
   });
 };
 
@@ -98,7 +102,10 @@ export default function EditAdmin({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) => {
-            mutate({...values, phone_number: values.phone_number.slice(1)} as any);
+            mutate({
+              ...values,
+              phone_number: values.phone_number.slice(1),
+            } as any);
           })}
           className="space-y-4"
         >
@@ -173,9 +180,9 @@ export default function EditAdmin({
                 <Button
                   className="self-start"
                   type="submit"
-                  disabled={isPending || isLoading}
+                  isLoading={isPending || isLoading}
                 >
-                  {t("EditAdmin") + (isPending ? "..." : "")}
+                  {t("EditAdmin")}
                 </Button>
               </div>
             </div>
