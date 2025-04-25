@@ -193,7 +193,6 @@ export default function CreateStudent() {
                   <FormControl>
                     <PhoneInput
                       placeholder={t("PhoneNumber")}
-                      international={true}
                       {...field}
                     />
                   </FormControl>

@@ -35,11 +35,12 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
       return (
         <RPNInput.default
           ref={ref}
+          international={true}
           className={cn("flex", className)}
           flagComponent={FlagComponent}
           countrySelectComponent={CountrySelect}
           inputComponent={InputComponent}
-          smartCaret={false}
+          smartCaret={true} // Enable smartCaret to fix cursor position issues
           /**
            * Handles the onChange event.
            *
