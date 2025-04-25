@@ -47,7 +47,10 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
-import { Send } from "lucide-react";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import DraftsDialog from "@/components/DraftsDialog";
+import { X, Send } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -61,11 +64,10 @@ export default function SendMessagePage() {
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
   const tName = useTranslations("names");
-  const [selectedImageBase64, setSelectedImageBase64] = useState<string | null>(
-    null
-  );
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
+  const [draftsData, setDraftsData] = useState<any[]>([]);
+  const [fileKey, setFileKey] = useState(0);
   const formRef = React.useRef<HTMLFormElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,13 +93,17 @@ export default function SendMessagePage() {
         });
         setSelectedStudents([]);
         setSelectedGroups([]);
-        setSelectedImageBase64(null);
         form.reset();
         localStorage.removeItem("formDataMessages");
         router.push("/messages");
       },
     }
   );
+  const priority = form.watch("priority");
+
+  useEffect(() => {
+    form.setValue("priority", priority);
+  }, [priority, form]);
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataMessages");
@@ -111,6 +117,12 @@ export default function SendMessagePage() {
     });
     return () => subscription.unsubscribe();
   }, [form]);
+
+  useEffect(() => {
+    let draftsLocal = localStorage.getItem("DraftsData");
+    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    setDraftsData(parsedDrafts);
+  }, []);
 
   const handleFormSubmit = (data: z.infer<typeof formSchema>) => {
     if (selectedStudents.length === 0 && selectedGroups.length === 0) {
@@ -136,6 +148,58 @@ export default function SendMessagePage() {
   const hasRecipients =
     selectedStudents.length > 0 || selectedGroups.length > 0;
 
+  const handleSaveDraft = (e: any) => {
+    e.preventDefault();
+    const data = form.getValues();
+    const parsedData = {
+      ...data,
+      groups: selectedGroups,
+      students: selectedStudents,
+    };
+
+    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
+
+    if (parsedData) {
+      draftsLocal.push(parsedData);
+    }
+
+    localStorage.setItem("DraftsData", JSON.stringify(draftsLocal));
+    setDraftsData(draftsLocal);
+
+    setSelectedStudents([]);
+    setSelectedGroups([]);
+    setFileKey((prev) => prev + 1);
+    form.reset({
+      title: "",
+      description: "",
+      priority: "low",
+      image: "",
+    });
+    toast({
+      title: t("draftSaved"),
+      description: parsedData?.title,
+    });
+    localStorage.removeItem("formDataMessages");
+  };
+
+  const handleSelectedDraft = (draft: any) => {
+    form.reset({
+      title: draft.title,
+      description: draft.description,
+      priority: draft.priority,
+      image: draft.image,
+    });
+
+    setFileKey((prev) => prev + 1);
+    setSelectedGroups(draft.groups || []);
+    setSelectedStudents(draft.student || []);
+  };
+
+  const handleRemoveImg = () => {
+    form.setValue("image", "");
+    setFileKey((prev) => prev + 1);
+  }
+
   return (
     <div className="w-full">
       <Form {...form}>
@@ -147,6 +211,10 @@ export default function SendMessagePage() {
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-3xl font-bold">{t("sendMessage")}</h1>
             <div className="space-x-4">
+              <DraftsDialog
+                draftsDataProp={draftsData}
+                handleSelectedDraft={handleSelectedDraft}
+              />
               <Link href="/fromcsv/message">
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
@@ -201,8 +269,9 @@ export default function SendMessagePage() {
                 <FormLabel>{t("choosePriority")}</FormLabel>
                 <FormControl>
                   <Select
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onValueChange={field.onChange}
+                    value={field.value}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder={t("choosePriority")} />
@@ -234,13 +303,13 @@ export default function SendMessagePage() {
                   <Input
                     type="file"
                     accept="image/*"
+                    key={fileKey}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
                         field.onChange(file.name); // Save file name
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setSelectedImageBase64(reader.result as string);
                           form.setValue("image", reader.result as string);
                         };
                         reader.readAsDataURL(file);
@@ -249,15 +318,20 @@ export default function SendMessagePage() {
                   />
                 </FormControl>
                 <FormMessage />
-                {selectedImageBase64 && (
-                  <div className="mt-2">
-                    <Image
-                      src={selectedImageBase64}
-                      alt="Selected image"
-                      width={200}
-                      height={200}
-                      className="rounded object-cover"
-                    />
+                {form.getValues("image") && (
+                  <div className="flex justify-start">
+                    <div className="relative mt-2">
+                      <div className="absolute top-0 right-0 translate-x-[25%] -translate-y-[25%]" onClick={handleRemoveImg}>
+                        <X className="h-7 w-7 bg-red-500 rounded-full cursor-pointer hover:bg-red-600 aspect-square p-1 font-bold" />
+                      </div>
+                      <Image
+                        src={form.getValues("image") ?? ""}
+                        alt="Selected image"
+                        width={200}
+                        height={200}
+                        className="rounded object-cover"
+                      />
+                    </div>
                   </div>
                 )}
               </FormItem>
@@ -282,6 +356,7 @@ export default function SendMessagePage() {
               />
             </TabsContent>
           </Tabs>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button
@@ -308,10 +383,10 @@ export default function SendMessagePage() {
                       {formValues.priority && t(formValues.priority)}
                     </div>
                   </div>
-                  {selectedImageBase64 && (
+                  {form.getValues("image") && (
                     <div className="mt-4">
                       <Image
-                        src={selectedImageBase64}
+                        src={form.getValues("image") ?? ""}
                         alt="Selected image"
                         width={300}
                         height={200}
@@ -372,6 +447,15 @@ export default function SendMessagePage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Button
+            className="ml-2"
+            variant={"secondary"}
+            disabled={isPending || !isFormValid || !hasRecipients}
+            onClick={(e) => handleSaveDraft(e)}
+          >
+            {t("saveToDraft")}
+          </Button>
         </form>
       </Form>
     </div>

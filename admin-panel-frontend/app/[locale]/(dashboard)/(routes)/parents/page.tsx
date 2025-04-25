@@ -53,7 +53,7 @@ export default function Info() {
         queryClient.invalidateQueries({ queryKey: ["parents"] });
         toast({
           title: t("parentDeleted"),
-          description: data?.message,
+          description: t(data?.message),
         });
       },
     }

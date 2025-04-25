@@ -70,7 +70,7 @@ const sendNotifications = async (posts: any[]) => {
                     }
 
                     const button = Markup.inlineKeyboard([
-                        Markup.button.url(buttonText, "https://parents-monolithic.vercel.app/parentnotification")
+                        Markup.button.url(buttonText, "https://appuri-hogosha.vercel.app/parentnotification")
                     ]);
 
                     await bot.telegram.sendMessage(post.chat_id, text, button)
@@ -92,11 +92,11 @@ const sendNotifications = async (posts: any[]) => {
 
                     let text = '';
                     if (post.language === 'jp') {
-                        text = '新しい投稿: ' + post.title + ' に ' + post.family_name + ' リンク: https://parents-monolithic.vercel.app/parentnotification';
+                        text = '新しい投稿: ' + post.title + ' に ' + post.family_name + ' リンク: https://appuri-hogosha.vercel.app/parentnotification';
                     } else if (post.language === 'ru') {
-                        text = 'Новый пост: ' + post.title + ' для ' + post.family_name + ' ссылка: https://parents-monolithic.vercel.app/parentnotification';
+                        text = 'Новый пост: ' + post.title + ' для ' + post.family_name + ' ссылка: https://appuri-hogosha.vercel.app/parentnotification';
                     } else {
-                        text = 'Yangi post: ' + post.title + ' uchun ' + post.family_name + ' havola: https://parents-monolithic.vercel.app/parentnotification';
+                        text = 'Yangi post: ' + post.title + ' uchun ' + post.family_name + ' havola: https://appuri-hogosha.vercel.app/parentnotification';
                     }
 
                     const data = {

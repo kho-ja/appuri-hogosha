@@ -80,7 +80,7 @@ export default function CreateFromCsv() {
         form.reset();
         toast({
           title: t("adminsUploaded"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push("/admins");
       },

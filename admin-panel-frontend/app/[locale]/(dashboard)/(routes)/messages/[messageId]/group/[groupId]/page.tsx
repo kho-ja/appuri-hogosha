@@ -62,7 +62,7 @@ export default function ThisGroup({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: data.message,
+          description: t(data.message),
         });
       },
     }

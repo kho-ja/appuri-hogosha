@@ -7,6 +7,8 @@ import {
 	Pressable,
 } from 'react-native'
 import { TabBarIcon } from '@/components/navigation/TabBarIcon'
+import {ThemedView} from "@/components/ThemedView";
+import {ThemedText} from "@/components/ThemedText";
 
 const PopupMenu = ({
 	options,
@@ -29,26 +31,26 @@ const PopupMenu = ({
 		setShowMenu(false)
 	}
 	return (
-		<View style={styles.container}>
+		<ThemedView style={styles.container}>
 			<Pressable onPress={handleToggleMenu} style={styles.selectPlaceholder}>
-				<Text>{selectedOption.label}</Text>
-				<TabBarIcon name={showMenu ? 'chevron-up' : 'chevron-down'} size={18} />
+				<ThemedText>{selectedOption.label}</ThemedText>
+				<TabBarIcon name={showMenu ? 'chevron-up' : 'chevron-down'} size={18} color="#c2c2c2"/>
 			</Pressable>
 
 			{showMenu && (
-				<View style={styles.menu}>
+				<ThemedView style={styles.menu}>
 					{options.map((option, index) => (
 						<TouchableOpacity
 							key={index}
 							style={styles.option}
 							onPress={() => handleMenuOption(option)}
 						>
-							<Text style={styles.optionText}>{option.label}</Text>
+							<ThemedText style={styles.optionText}>{option.label}</ThemedText>
 						</TouchableOpacity>
 					))}
-				</View>
+				</ThemedView>
 			)}
-		</View>
+		</ThemedView>
 	)
 }
 export default PopupMenu

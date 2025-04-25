@@ -72,7 +72,7 @@ export default function CreateFromKintone() {
         });
         toast({
           title: t("parentsUploaded"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push("/parents");
       },

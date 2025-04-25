@@ -30,6 +30,8 @@ import { Href, router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { FontSizeSlider} from "@/components/FontSizeSlider";
 import {Separator} from "@/components/atomic/separator";
+import  ThemeSwitcher  from "@/components/ThemeSwitcher";
+import { useTheme } from '@rneui/themed';
 
 interface LanguageSelectionProps {
 	language: string
@@ -71,7 +73,7 @@ export default function SettingsScreen() {
 	const { signOut } = useSession()
 	const db = useSQLiteContext()
 	const [user, setUser] = useState<User | null>(null)
-	const theme = useColorScheme() ?? 'light'
+  const { theme } = useTheme();
 	const [, setIsOpen] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState(
 		language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
@@ -106,8 +108,9 @@ export default function SettingsScreen() {
 	const handlePress = useCallback(() => {
 		signOut()
 	}, [signOut])
+  const backgroundColor = theme.colors.background;
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<BottomSheetModalProvider>
 				<ScrollView showsVerticalScrollIndicator={false}>
 					<View style={styles.profile}>
@@ -193,6 +196,9 @@ export default function SettingsScreen() {
                 <View style={styles.rowSpacer} />
                 <FontSizeSlider />
               </View>
+              <Separator orientation='horizontal' />
+              <ThemeSwitcher />
+
             </View>
           </View>
 					<BottomSheetModal

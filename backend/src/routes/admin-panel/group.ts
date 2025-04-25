@@ -125,68 +125,117 @@ class GroupController implements IController {
                     .on('error', reject)
             })
 
-            const validResults: any[] = []
-            const existingGroupIdsInCSV: string[] = []
-            const existingStudentNumbersInCSV: any = {}
-
-            function addToExistingStudentNumbers(studentNumber: string, normalizedName: string) {
-                if (Array.isArray(existingStudentNumbersInCSV[normalizedName])) {
-                    existingStudentNumbersInCSV[normalizedName].push(studentNumber)
-                } else {
-                    existingStudentNumbersInCSV[normalizedName] = [studentNumber]
-                }
-            }
+            const validResults: any[] = [];
+            const existingNamesInCSV: any = [];
 
             for (const row of results) {
-                const { name, student_numbers } = row
-                const rowErrors: any = {}
-                const normalizedName = String(name).trim()
+                const { name, student_numbers } = row;
+                const rowErrors: any = {};
+
+                const normalizedName = String(name).trim();
                 const normalizedStudentNumbers = String(student_numbers).trim();
 
-                if (!isValidString(normalizedName)) rowErrors.name = 'invalid_name'
-                if (!isValidStudentNumber(normalizedStudentNumbers)) rowErrors.student_numbers = 'invalid_student_numbers';
-                if (existingGroupIdsInCSV.includes(normalizedName)) {
-                    rowErrors.name = 'group_name_already_exists'
-                }
-                if (existingStudentNumbersInCSV[normalizedName]?.includes(normalizedStudentNumbers)) {
-                    rowErrors.student_numbers = 'student_number_already_exists'
+                const studentNumbersArray = normalizedStudentNumbers.split(',').map(s => s.trim()).filter(Boolean);
+
+                if (!isValidString(normalizedName)) rowErrors.name = "invalid_name";
+
+                for (const sn of studentNumbersArray) {
+                    if (!isValidStudentNumber(sn)) rowErrors.student_numbers = "invalid_student_numbers";
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
-                    if (rowErrors.name && !rowErrors.student_numbers && validResults.length > 0) {
-                        validResults.at(-1).student_numbers.push(normalizedStudentNumbers)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
-                    } else if (!rowErrors.name && normalizedStudentNumbers) {
-                        validResults.push({
-                            name: normalizedName,
-                            student_numbers: [],
-                        });
-                    } else {
-                        let error = errors.find(error => error.row.name === normalizedName);
-                        if (error && error.errors.student_numbers === rowErrors.student_numbers) {
-                            error.row.student_numbers.push(normalizedStudentNumbers)
-                        } else {
-                            errors.push({ row: { ...row, student_numbers: [row.student_numbers] }, errors: { student_numbers: rowErrors.student_numbers } })
-                        }
-                    }
+                    handleInvalidGroup(
+                        row,
+                        rowErrors,
+                        normalizedName,
+                        studentNumbersArray
+                    );
+                    continue;
+                }
+
+                handleValidGroup(
+                    row,
+                    normalizedName,
+                    studentNumbersArray
+                );
+            }
+
+            function handleInvalidGroup(
+                row: any,
+                rowErrors: any,
+                name: string,
+                studentNumbersArray: string[]
+            ) {
+
+                const existingGroup = validResults.find(
+                    group =>
+                        group.name === name
+                );
+
+                if (existingGroup && !rowErrors.student_numbers) {
+                    existingGroup.student_numbers.push(...studentNumbersArray);
+                } else if (isCompletelyInvalidExceptArrays(rowErrors)) {
+                    validResults.at(-1).student_numbers.push(...studentNumbersArray);
                 } else {
-                    let group = validResults.find(group => group.name === normalizedName);
-                    if (group) {
-                        group.student_numbers.push(normalizedStudentNumbers)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
-                    } else {
-                        row.name = normalizedName
-                        row.student_numbers = [normalizedStudentNumbers]
-                        existingGroupIdsInCSV.push(row.name)
-                        addToExistingStudentNumbers(normalizedStudentNumbers, normalizedName)
-                        validResults.push(row)
-                    }
+                    addErrorGroup(row, rowErrors, studentNumbersArray);
                 }
             }
 
-            if (errors.length > 0 && throwInErrorBool) {
-                return res.status(400).json({ errors: errors }).end()
+            function handleValidGroup(
+                row: any,
+                name: string,
+                studentNumbersArray: string[]
+            ) {
+                const existingGroup = validResults.find(
+                    group =>
+                        group.name === name 
+                );
+
+                if (existingGroup) {
+                    existingGroup.student_numbers.push(...studentNumbersArray);
+                } else {
+                    validResults.push({
+                        name,
+                        student_numbers: studentNumbersArray,
+                    });
+                    existingNamesInCSV.push(name);
+                }
             }
+
+            function isCompletelyInvalidExceptArrays(errors: any) {
+                return (
+                    errors.name  || !errors.student_numbers
+                );
+            }
+
+            function addErrorGroup(
+                row: any,
+                rowErrors: any,
+                studentNumbersArray: string[]
+            ) {
+                let existingError = errors.find(
+                    err =>
+                        err.row.name === row.name
+                );
+                if (existingError) {
+                    existingError.row.student_numbers.push(...studentNumbersArray);
+                } else {
+                    errors.push({
+                        row: { ...row, student_numbers: studentNumbersArray},
+                        errors: { ...rowErrors },
+                    });
+                }
+            }
+
+            for (const group of validResults) {
+                group.student_numbers = Array.from(new Set(group.student_numbers));
+            }
+
+            if (errors.length > 0 && throwInErrorBool) {
+                return res.status(400).json({ errors }).end();
+            }
+
+
             const groupNames = validResults.map(row => row.name)
             if (groupNames.length === 0) {
                 return res.status(400).json({
@@ -194,6 +243,7 @@ class GroupController implements IController {
                     message: 'all_data_invalid'
                 }).end()
             }
+
             const existingGroups = await DB.query('SELECT name FROM StudentGroup WHERE name IN (:groupNames)', {
                 groupNames,
             })
@@ -479,7 +529,7 @@ class GroupController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Group deleted successfully'
+                message: 'groupDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {

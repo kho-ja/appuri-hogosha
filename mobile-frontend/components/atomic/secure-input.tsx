@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
 import Input, { AdvancedInputProps } from '@/components/atomic/input'
+import {useTheme} from "@rneui/themed";
 
 const styles = StyleSheet.create({
 	inputIcon: {
@@ -13,7 +14,8 @@ const styles = StyleSheet.create({
 })
 
 const SecureInput: React.FC<AdvancedInputProps> = props => {
-	const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+	const { theme } = useTheme()
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
 	const handleIconPress = () => {
 		setIsPasswordVisible(!isPasswordVisible)
@@ -21,12 +23,12 @@ const SecureInput: React.FC<AdvancedInputProps> = props => {
 
 	return (
 		<View>
-			<Input {...props} secureTextEntry={!isPasswordVisible} />
+			<Input {...props} secureTextEntry={!isPasswordVisible} style={{color: theme.mode === 'light' ? 'black' : 'white'}}/>
 			<TouchableOpacity style={styles.inputIcon} onPress={handleIconPress}>
 				<MaterialIcons
 					name={isPasswordVisible ? 'visibility' : 'visibility-off'}
 					size={24}
-					color='#a4a7aa'
+          color={ theme.mode === 'light' ? 'black' : 'white'}
 				/>
 			</TouchableOpacity>
 		</View>

@@ -56,7 +56,7 @@ export default function Admins() {
         });
         toast({
           title: t("adminDeleted"),
-          description: data?.message,
+          description: t(data?.message),
         });
       },
     }

@@ -23,11 +23,19 @@ class AuthController implements IController {
         this.router.post('/device-token', verifyToken, this.deviceToken)
     }
 
+    private normalizeToken(raw: any): string | null {
+        if (!raw) return null;
+        if (typeof raw === 'string') return raw.trim();
+        if (typeof raw === 'object' && typeof raw.data === 'string') return raw.data.trim();
+        return null;
+    }
+
     deviceToken = async (req: ExtendedRequest, res: Response) => {
         try {
             const { token } = req.body;
+            const normalizedToken = this.normalizeToken(token);
 
-            if (token == null || token == '[object Object]') {
+            if (normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
                     message: 'Invalid Device Token'
@@ -36,7 +44,7 @@ class AuthController implements IController {
 
             await DB.execute(`UPDATE Parent SET arn = :arn WHERE id = :id;`, {
                 id: req.user.id,
-                arn: token
+                arn: normalizedToken
             })
 
             return res.status(200).json({
@@ -79,6 +87,7 @@ class AuthController implements IController {
     login = async (req: Request, res: Response) => {
         try {
             const { email, password, token } = req.body;
+            const normalizedToken = this.normalizeToken(token);
             const authData = await this.cognitoClient.login(email, password)
 
 
@@ -92,7 +101,7 @@ class AuthController implements IController {
                 email: email
             });
 
-            if (parents.length <= 0 || token == null || token == '[object Object]') {
+            if (parents.length <= 0 || normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
                     message: 'Invalid email or password'
@@ -105,7 +114,7 @@ class AuthController implements IController {
                 // const endpoint = await ParentsSNS.createEndpoint(token)
                 await DB.execute(`UPDATE Parent SET arn = :arn WHERE id = :id;`, {
                     id: parent.id,
-                    arn: token
+                    arn: normalizedToken
                 })
             } catch (error) {
             }
@@ -160,6 +169,7 @@ class AuthController implements IController {
     changeTemporaryPassword = async (req: Request, res: Response) => {
         try {
             const { email, temp_password, new_password, token } = req.body
+            const normalizedToken = this.normalizeToken(token);
             const authData = await this.cognitoClient.changeTempPassword(email, temp_password, new_password)
 
             const parents = await DB.query(`SELECT
@@ -173,7 +183,7 @@ class AuthController implements IController {
             });
 
 
-            if (parents.length <= 0 || token == null || token == '[object Object]') {
+            if (parents.length <= 0 || normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
                     message: 'Invalid email or password'
@@ -186,7 +196,7 @@ class AuthController implements IController {
                 // const endpoint = await ParentsSNS.createEndpoint(token)
                 await DB.execute(`UPDATE Parent SET arn = :arn WHERE id = :id;`, {
                     id: parent.id,
-                    arn: token
+                    arn: normalizedToken
                 })
             } catch (error) {
             }

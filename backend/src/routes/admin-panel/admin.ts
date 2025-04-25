@@ -249,7 +249,7 @@ class AdminController implements IController {
             }
 
             return res.status(200).json({
-                message: 'CSV processed successfully',
+                message: 'csv_processed_successfully',
                 inserted: inserted,
                 updated: updated,
                 deleted: deleted,
@@ -298,7 +298,7 @@ class AdminController implements IController {
             })
 
             return res.status(200).json({
-                message: 'Admin deleted successfully'
+                message: 'adminDeleted'
             }).end()
         } catch (e: any) {
             if (e.status) {
