@@ -11,9 +11,10 @@ interface NavLinkProps {
   Icon: React.ElementType;
   name: string;
   badge?: number;
+  onLinkClick?: () => void;
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, badge }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, badge, onLinkClick }) => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { data: notificationCount } = useQuery<number>({
@@ -45,6 +46,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, badge }) => {
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${
         pathname.startsWith(href) ? "bg-muted text-primary" : ""
       }`}
+      onClick={onLinkClick}
     >
       <Icon className="h-4 w-4" />
       {name}

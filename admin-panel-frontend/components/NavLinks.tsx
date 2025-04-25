@@ -85,7 +85,7 @@ const navLinks = [
     nameKey: "settings",
   },
 ];
-const NavLinks = ({ user }: { user: User }) => {
+const NavLinks = ({ user, onLinkClick }: { user: User; onLinkClick?: () => void }) => {
   const t = useTranslations("nav");
 
   return (
@@ -102,6 +102,7 @@ const NavLinks = ({ user }: { user: User }) => {
             Icon={link.icon}
             name={t(link.nameKey)}
             // badge={link?.badge}
+            onLinkClick={onLinkClick}
           />
         );
       })}
