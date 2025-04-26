@@ -111,6 +111,7 @@ bot.hears(emailPasswordRegex, async (ctx) => {
         console.error('Error while sending email and password:', error);
     }
 });
+
 bot.hears([
     'Tilni o`zgartirish:🇯🇵🇺🇿🇷🇺',
     'Изменить язык:🇯🇵🇺🇿🇷🇺',
@@ -118,31 +119,33 @@ bot.hears([
   ], async (ctx) => {
     await languageScene(ctx);
   });
-bot.start().then(() => {
-    console.log('Bot is running!');
-}).catch((error) => {
-    console.error('Error while starting the bot:', error);
-});
 
-exports.handler = async (event: any) => {
-    try {
-        await bot.handleUpdate(JSON.parse(event.body));
-        return {statusCode: 200, body: "OK"};
-    } catch (error) {
-        console.error("Error in bot handler:", error);
-        return {statusCode: 500, body: "Internal Server Error"};
-    }
-};
 
-export const handler = async (event: any) => {
-    try {
-        console.log(await webhookCallback(bot, JSON.parse(event.body)))
-        console.log(await bot.api.sendMessage(731872751, JSON.stringify(event, null, 2)))
-        return {statusCode: 200, body: "OK"};
-    } catch (error) {
-        console.error("Error in bot handler:", error);
-        return {statusCode: 500, body: "Internal Server Error"};
-    }
-};
+// bot.start().then(() => {
+//     console.log('Bot is running!');
+// }).catch((error) => {
+//     console.error('Error while starting the bot:', error);
+// });
 
-// export const handler = webhookCallback(bot, 'aws-lambda-async')
+// exports.handler = async (event: any) => {
+//     try {
+//         await bot.handleUpdate(JSON.parse(event.body));
+//         return {statusCode: 200, body: "OK"};
+//     } catch (error) {
+//         console.error("Error in bot handler:", error);
+//         return {statusCode: 500, body: "Internal Server Error"};
+//     }
+// };
+
+// export const handler = async (event: any) => {
+//     try {
+//         console.log(await webhookCallback(bot, JSON.parse(event.body)))
+//         console.log(await bot.api.sendMessage(731872751, JSON.stringify(event, null, 2)))
+//         return {statusCode: 200, body: "OK"};
+//     } catch (error) {
+//         console.error("Error in bot handler:", error);
+//         return {statusCode: 500, body: "Internal Server Error"};
+//     }
+// };
+
+export const handler = webhookCallback(bot, 'aws-lambda-async')
