@@ -72,7 +72,8 @@ bot.callbackQuery('email_password_login', async (ctx) => {
 
 const emailPasswordRegex = /^([\w.%+-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,})\s(.+)$/;
 
-bot.hears('🚪 Logout', logoutHandler);
+const logoutRegex = /^🚪 (Logout|ログアウト|Выйти)$/;
+bot.hears(logoutRegex, logoutHandler);
 
 bot.hears(emailPasswordRegex, async (ctx) => {
     const messageText = ctx.message?.text;
