@@ -1,18 +1,18 @@
-import { Text, type TextProps, StyleSheet } from 'react-native'
-import { useFontSize } from '@/contexts/FontSizeContext'
-import { useThemeColor } from '@/hooks/useThemeColor'
+import { Text, type TextProps, StyleSheet } from 'react-native';
+import { useFontSize } from '@/contexts/FontSizeContext';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 export type ThemedTextProps = TextProps & {
-	lightColor?: string
-	darkColor?: string
-	type?:
-		| 'default'
-		| 'title'
-		| 'defaultSemiBold'
-		| 'subtitle'
-		| 'link'
-		| 'smaller'
-}
+  lightColor?: string;
+  darkColor?: string;
+  type?:
+    | 'default'
+    | 'title'
+    | 'defaultSemiBold'
+    | 'subtitle'
+    | 'link'
+    | 'smaller';
+};
 
 const baseFontSizes: Record<NonNullable<ThemedTextProps['type']>, number> = {
   default: 16,
@@ -21,49 +21,49 @@ const baseFontSizes: Record<NonNullable<ThemedTextProps['type']>, number> = {
   subtitle: 20,
   link: 16,
   smaller: 15,
-}
+};
 
 export function ThemedText({
-	style,
-	lightColor,
-	darkColor,
-	type = 'default',
-	...rest
+  style,
+  lightColor,
+  darkColor,
+  type = 'default',
+  ...rest
 }: ThemedTextProps) {
-	const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text')
-  const { multiplier } = useFontSize()
-  const fontSize = (baseFontSizes[type] || 16) * multiplier
-	return (
-		<Text
-			style={[
-				{ color, fontSize },
-				type === 'default' ? styles.default : undefined,
-				type === 'title' ? styles.title : undefined,
-				type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-				type === 'subtitle' ? styles.subtitle : undefined,
-				type === 'link' ? styles.link : undefined,
-				type === 'link' ? styles.smaller : undefined,
-				style,
-			]}
-			{...rest}
-		/>
-	)
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const { multiplier } = useFontSize();
+  const fontSize = (baseFontSizes[type] || 16) * multiplier;
+  return (
+    <Text
+      style={[
+        { color, fontSize },
+        type === 'default' ? styles.default : undefined,
+        type === 'title' ? styles.title : undefined,
+        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
+        type === 'subtitle' ? styles.subtitle : undefined,
+        type === 'link' ? styles.link : undefined,
+        type === 'link' ? styles.smaller : undefined,
+        style,
+      ]}
+      {...rest}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
-	default: {},
-	defaultSemiBold: {
-		fontWeight: '600',
-	},
-	title: {
-		fontWeight: 'bold',
-	},
-	subtitle: {
-		fontWeight: '400',
-	},
-	link: {
-		lineHeight: 30,
-		color: '#059669',
-	},
-	smaller: {},
-})
+  default: {},
+  defaultSemiBold: {
+    fontWeight: '600',
+  },
+  title: {
+    fontWeight: 'bold',
+  },
+  subtitle: {
+    fontWeight: '400',
+  },
+  link: {
+    lineHeight: 30,
+    color: '#059669',
+  },
+  smaller: {},
+});

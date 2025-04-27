@@ -1,4 +1,10 @@
-export function redirectSystemPath({ path, initial }: { path: string; initial: boolean; }) {
+export function redirectSystemPath({
+  path,
+  initial,
+}: {
+  path: string;
+  initial: boolean;
+}) {
   try {
     if (path.startsWith('https://')) {
       const url = new URL(path);
@@ -9,9 +15,9 @@ export function redirectSystemPath({ path, initial }: { path: string; initial: b
         }
         return pathname || '/';
       }
-    }else if (path.startsWith('jduapp://')) {
+    } else if (path.startsWith('jduapp://')) {
       return '/' + path.replace('jduapp://', '');
-    }else if (path.startsWith('exp://')) {
+    } else if (path.startsWith('exp://')) {
       const url = new URL(path);
       return url.pathname || '/';
     }

@@ -1,42 +1,38 @@
 import {
-	DarkTheme,
-	DefaultTheme,
-	ThemeProvider,
-} from '@react-navigation/native'
-import { useFonts } from 'expo-font'
-import { Stack } from 'expo-router'
-import * as SplashScreen from 'expo-splash-screen'
-import React from 'react'
-import 'react-native-reanimated'
-
-import { useColorScheme } from '@/hooks/useColorScheme'
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import React from 'react';
+import 'react-native-reanimated';
 import { useThemeMode } from '@rneui/themed';
-import { Colors } from '@/constants/Colors';
 
-SplashScreen.preventAutoHideAsync()
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-	const colorScheme = useColorScheme()
   const { mode } = useThemeMode(); // Use @rneui/themed mode
-	const [loaded] = useFonts({
-		SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
-	})
+  const [loaded] = useFonts({
+    SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
+  });
 
-	React.useEffect(() => {
-		if (loaded) {
-			SplashScreen.hideAsync()
-		}
-	}, [loaded])
+  React.useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
-	if (!loaded) {
-		return null
-	}
+  if (!loaded) {
+    return null;
+  }
 
-	return (
-		<ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
-			<Stack initialRouteName='(tabs)'>
-				<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-			</Stack>
-		</ThemeProvider>
-	)
+  return (
+    <ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack initialRouteName='(tabs)'>
+        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+      </Stack>
+    </ThemeProvider>
+  );
 }

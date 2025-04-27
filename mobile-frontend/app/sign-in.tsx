@@ -105,7 +105,7 @@ export default function SignIn() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => await signIn(email, password),
-    onError: (error) => {
+    onError: error => {
       Toast.show(i18n[language].loginFailed, {
         duration: Toast.durations.LONG,
         position: Toast.positions.BOTTOM,
@@ -143,8 +143,12 @@ export default function SignIn() {
         <ThemedView style={styles.container}>
           <ThemedView style={styles.header}>
             <ThemedView>
-              <ThemedText style={styles.title}>{i18n[language].welcome}</ThemedText>
-              <ThemedText style={styles.subtitle}>{i18n[language].login}</ThemedText>
+              <ThemedText style={styles.title}>
+                {i18n[language].welcome}
+              </ThemedText>
+              <ThemedText style={styles.subtitle}>
+                {i18n[language].login}
+              </ThemedText>
             </ThemedView>
             <ThemedView>
               <Select
@@ -160,28 +164,28 @@ export default function SignIn() {
             </ThemedView>
           </ThemedView>
           <Input
-            textContentType="emailAddress"
-            keyboardType="email-address"
-            autoCapitalize="none"
+            textContentType='emailAddress'
+            keyboardType='email-address'
+            autoCapitalize='none'
             maxLength={50}
             selectTextOnFocus={true}
             label={i18n[language].email}
             placeholder={i18n[language].enterEmail}
-            placeholderTextColor="grey"
+            placeholderTextColor='grey'
             onChangeText={setEmail}
             value={email}
           />
           <SecureInput
             label={i18n[language].password}
             placeholder={i18n[language].enterPassword}
-            placeholderTextColor="grey"
+            placeholderTextColor='grey'
             onChangeText={setPassword}
             maxLength={50}
             value={password}
             selectTextOnFocus
-            keyboardType="numbers-and-punctuation"
-            textContentType="password"
-            autoCapitalize="none"
+            keyboardType='numbers-and-punctuation'
+            textContentType='password'
+            autoCapitalize='none'
           />
           <Button
             onPress={() => mutate()}
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor:'#059669'
+    backgroundColor: '#059669',
   },
   header: {
     flexDirection: 'row',
