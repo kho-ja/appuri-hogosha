@@ -21,7 +21,7 @@ const bot = new Bot<IBotContext>(process.env.BOT_TOKEN!);
 
 bot.api.setMyCommands([
     { command: 'start', description: 'Start' },
-    { command: 'menu', description: 'Menu' },
+    { command: 'login', description: 'Login' },
     { command: 'logout', description: 'Logout' },
 ]);
 
@@ -32,7 +32,7 @@ bot.use(sessionMiddleware);
 bot.command('start', startHandler);
 languageCallback(bot);
 
-bot.command('menu', menuHandler);
+bot.command('login', menuHandler);
 bot.on('message:contact', contactHandler);
 
 bot.command('logout', logoutCommand);
