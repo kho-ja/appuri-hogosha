@@ -112,6 +112,15 @@ bot.hears(emailPasswordRegex, async (ctx) => {
     }
 });
 
+bot.hears([
+    'Tilni o`zgartirish:🇯🇵🇺🇿🇷🇺',
+    'Изменить язык:🇯🇵🇺🇿🇷🇺',
+    '言語を変更:🇯🇵🇺🇿🇷🇺'
+  ], async (ctx) => {
+    await languageScene(ctx);
+  });
+
+
 // bot.start().then(() => {
 //     console.log('Bot is running!');
 // }).catch((error) => {
