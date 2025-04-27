@@ -12,10 +12,18 @@ import { Parent } from "./utils/cognito-client";
 import DB from "./utils/db-client";
 import { userNotExist } from "./handlers/userNotExist";
 import { logoutHandler } from './handlers/logoutHandler';
+import { logoutCommand } from './commands/logoutCommand';
+
 
 dotenv.config();
 
 const bot = new Bot<IBotContext>(process.env.BOT_TOKEN!);
+
+bot.api.setMyCommands([
+    { command: 'start', description: 'Start' },
+    { command: 'menu', description: 'Menu' },
+    { command: 'logout', description: 'Logout' },
+]);
 
 sceneHandler.addScene('languageSelection', languageScene);
 
@@ -26,6 +34,8 @@ languageCallback(bot);
 
 bot.command('menu', menuHandler);
 bot.on('message:contact', contactHandler);
+
+bot.command('logout', logoutCommand);
 
 bot.callbackQuery('contact_login', async (ctx) => {
     let text;
@@ -121,31 +131,31 @@ bot.hears(emailPasswordRegex, async (ctx) => {
     }
 });
 
-// bot.start().then(() => {
-//     console.log('Bot is running!');
-// }).catch((error) => {
-//     console.error('Error while starting the bot:', error);
-// });
+bot.start().then(() => {
+    console.log('Bot is running!');
+}).catch((error) => {
+    console.error('Error while starting the bot:', error);
+});
 
-// exports.handler = async (event: any) => {
-//     try {
-//         await bot.handleUpdate(JSON.parse(event.body));
-//         return {statusCode: 200, body: "OK"};
-//     } catch (error) {
-//         console.error("Error in bot handler:", error);
-//         return {statusCode: 500, body: "Internal Server Error"};
-//     }
-// };
+exports.handler = async (event: any) => {
+    try {
+        await bot.handleUpdate(JSON.parse(event.body));
+        return {statusCode: 200, body: "OK"};
+    } catch (error) {
+        console.error("Error in bot handler:", error);
+        return {statusCode: 500, body: "Internal Server Error"};
+    }
+};
 
-// export const handler = async (event: any) => {
-//     try {
-//         console.log(await webhookCallback(bot, JSON.parse(event.body)))
-//         console.log(await bot.api.sendMessage(731872751, JSON.stringify(event, null, 2)))
-//         return {statusCode: 200, body: "OK"};
-//     } catch (error) {
-//         console.error("Error in bot handler:", error);
-//         return {statusCode: 500, body: "Internal Server Error"};
-//     }
-// };
+export const handler = async (event: any) => {
+    try {
+        console.log(await webhookCallback(bot, JSON.parse(event.body)))
+        console.log(await bot.api.sendMessage(731872751, JSON.stringify(event, null, 2)))
+        return {statusCode: 200, body: "OK"};
+    } catch (error) {
+        console.error("Error in bot handler:", error);
+        return {statusCode: 500, body: "Internal Server Error"};
+    }
+};
 
-export const handler = webhookCallback(bot, 'aws-lambda-async');
+// export const handler = webhookCallback(bot, 'aws-lambda-async');
