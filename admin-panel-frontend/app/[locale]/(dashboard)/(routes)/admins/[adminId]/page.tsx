@@ -8,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { signIn } from "next-auth/react";
 import NotFound from "@/components/NotFound";
+import { ChevronLeft } from "lucide-react";
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -44,7 +45,10 @@ export default async function ThisAdmin({
         <h1 className="text-3xl w-2/4 font-bold">{t("AdminView")}</h1>
         <div className="flex flex-wrap gap-2">
           <Link href={`/admins`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
+            <Button variant={"secondary"}>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
           <Link href={`/admins/edit/${adminId}`}>
             <Button>{t("editAdmin")}</Button>

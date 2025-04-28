@@ -42,6 +42,7 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Post from "@/types/post";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
+import { ChevronLeft } from "lucide-react";
 
 export default function MessageFromCSV() {
   const t = useTranslations("fromcsv");
@@ -95,6 +96,7 @@ export default function MessageFromCSV() {
         <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>
         <Link href="/messages/create" passHref>
           <Button type="button" variant={"secondary"}>
+            <ChevronLeft />
             {t("back")}
           </Button>
         </Link>

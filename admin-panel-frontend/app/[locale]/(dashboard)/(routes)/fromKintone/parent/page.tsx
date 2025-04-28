@@ -43,6 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Parent from "@/types/parent";
 import { useEffect } from "react";
 import useApiMutation from "@/lib/useApiMutation";
+import { ChevronLeft } from "lucide-react";
 
 const formSchema = z.object({
   kintoneUrl: z.string().url(),
@@ -113,6 +114,7 @@ export default function CreateFromKintone() {
         <h1 className="text-3xl font-bold">{t("createParentFromKintone")}</h1>
         <Link href="/parents/create" passHref>
           <Button type="button" variant={"secondary"}>
+            <ChevronLeft />
             {t("back")}
           </Button>
         </Link>

@@ -24,6 +24,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { ChevronLeft } from "lucide-react";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -94,7 +95,10 @@ export default function CreateStudent({
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditStudent")}</h1>
         <Link href={`/students/${studentId}`} passHref>
-          <Button variant={"secondary"}>{t("back")}</Button>
+          <Button variant={"secondary"}>
+            <ChevronLeft />
+            {t("back")}
+          </Button>
         </Link>
       </div>
       <Form {...form}>
@@ -147,10 +151,7 @@ export default function CreateStudent({
                 <FormItem>
                   <FormLabel>{t("PhoneNumber")}</FormLabel>
                   <FormControl>
-                    <PhoneInput
-                      placeholder={t("PhoneNumber")}
-                      {...field}
-                    />
+                    <PhoneInput placeholder={t("PhoneNumber")} {...field} />
                   </FormControl>
                   <FormMessage>
                     {formState.errors.phone_number?.message}

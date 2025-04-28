@@ -24,6 +24,8 @@ import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { ChevronLeft } from "lucide-react";
+import { FiSave } from "react-icons/fi";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -98,11 +100,25 @@ export default function CreateParent() {
           </Link>
 
           <Link href="/fromcsv/parent">
-            <Button variant={"secondary"}>{t("createFromCSV")}</Button>
+            <Button variant={"secondary"}>
+              <div className="bg-gray-200 p-1 rounded-sm mr-2">
+                <svg
+                  className="w-4 h-4 text-gray-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
+                </svg>
+              </div>
+              {t("createFromCSV")}
+            </Button>
           </Link>
 
           <Link href={`/parents`}>
-            <Button>{t("back")}</Button>
+            <Button>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
         </div>
       </div>
@@ -190,10 +206,7 @@ export default function CreateParent() {
                   <FormItem>
                     <FormLabel>{t("ParentPhone")}</FormLabel>
                     <FormControl>
-                      <PhoneInput
-                        placeholder={t("ParentPhone")}
-                        {...field}
-                      />
+                      <PhoneInput placeholder={t("ParentPhone")} {...field} />
                     </FormControl>
                     <FormMessage>
                       {formState.errors.phone_number &&
@@ -214,7 +227,12 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button isLoading={isPending}>{t("CreateParent")}</Button>
+                <Button isLoading={isPending}>
+                  <span className="flex items-center gap-2">
+                    <FiSave size={20} />
+                    {t("CreateParent")}
+                  </span>
+                </Button>
               </div>
             </div>
           </div>

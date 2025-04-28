@@ -16,6 +16,7 @@ import DisplayProperty from "@/components/DisplayProperty";
 import { useState } from "react";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
+import { ChevronLeft } from "lucide-react";
 
 export default function ThisGroup({
   params: { groupId },
@@ -61,7 +62,10 @@ export default function ThisGroup({
         <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
         <div className="flex gap-2 flex-wrap">
           <Link href={`/groups`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
+            <Button variant={"secondary"}>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
           <Link href={`/groups/edit/${groupId}`}>
             <Button>{t("editGroup")}</Button>

@@ -52,6 +52,7 @@ import Student from "@/types/student";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import useApiMutation from "@/lib/useApiMutation";
 import { useEffect } from "react";
+import { ChevronLeft } from "lucide-react";
 
 const formSchema = z.object({
   kintoneUrl: z.string().min(1).url(),
@@ -122,6 +123,7 @@ export default function CreateFromKintone() {
         <h1 className="text-3xl font-bold">{t("createFromKintone")}</h1>
         <Link href="/students/create" passHref>
           <Button type="button" variant={"secondary"}>
+            <ChevronLeft />
             {t("back")}
           </Button>
         </Link>

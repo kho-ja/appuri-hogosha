@@ -27,6 +27,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import { Plus } from "lucide-react";
 
 export default function Info() {
   const t = useTranslations("parents");
@@ -135,7 +136,12 @@ export default function Info() {
         <div className="w-full flex justify-between">
           <h1 className="text-3xl w-2/4 font-bold">{t("parents")}</h1>
           <Link href={`${pathName}/create`}>
-            <Button>{t("createparent")}</Button>
+            <Button>
+              <span className="flex items-center gap-1">
+                <Plus className="h-4 w-4" />
+                {t("createparent")}
+              </span>
+            </Button>
           </Link>
         </div>
         <div className="flex flex-wrap justify-between">

@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
+import { ChevronLeft } from "lucide-react";
 
 export default function EditParents({
   params: { studentId },
@@ -50,7 +51,10 @@ export default function EditParents({
         <h1 className="text-3xl w-2/4 font-bold">{t("editStudentParents")}</h1>
         <div className="space-x-2">
           <Link href={`/students/${studentId}`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
+            <Button variant={"secondary"}>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
         </div>
       </div>

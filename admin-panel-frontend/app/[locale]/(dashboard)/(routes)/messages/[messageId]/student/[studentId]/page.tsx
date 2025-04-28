@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
 import { useState } from "react";
+import { ChevronLeft } from "lucide-react";
 
 export default function ThisStudent({
   params: { messageId, studentId },
@@ -162,7 +163,10 @@ export default function ThisStudent({
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
         <div className="flex flex-wrap gap-2">
           <Link href={`/messages/${messageId}`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
+            <Button variant={"secondary"}>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
           <Dialog key={"resendStudent"}>
             <DialogTrigger asChild>

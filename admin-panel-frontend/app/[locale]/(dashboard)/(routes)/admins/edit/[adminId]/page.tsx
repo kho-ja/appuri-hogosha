@@ -24,6 +24,7 @@ import Admin from "@/types/admin";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { ChevronLeft } from "lucide-react";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -96,7 +97,10 @@ export default function EditAdmin({
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditAdmin")}</h1>
         <Link href={`/admins/${adminId}`} passHref>
-          <Button variant={"secondary"}>{t("back")}</Button>
+          <Button variant={"secondary"}>
+            <ChevronLeft />
+            {t("back")}
+          </Button>
         </Link>
       </div>
       <Form {...form}>
@@ -162,10 +166,7 @@ export default function EditAdmin({
                   <FormItem className="w-1/2">
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
-                      <PhoneInput
-                        placeholder={t("AdminPhone")}
-                        {...field}
-                      />
+                      <PhoneInput placeholder={t("AdminPhone")} {...field} />
                     </FormControl>
                     <FormMessage>
                       {formState.errors.phone_number &&

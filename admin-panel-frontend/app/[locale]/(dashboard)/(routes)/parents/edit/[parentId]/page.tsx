@@ -25,6 +25,7 @@ import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { ChevronLeft } from "lucide-react";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -91,7 +92,10 @@ export default function EditParent({
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditParent")}</h1>
         <Link href={`/parents/${parentId}`} passHref>
-          <Button variant={"secondary"}>{t("back")}</Button>
+          <Button variant={"secondary"}>
+            <ChevronLeft />
+            {t("back")}
+          </Button>
         </Link>
       </div>
       <Form {...form}>
@@ -157,10 +161,7 @@ export default function EditParent({
                   <FormItem className="w-1/2">
                     <FormLabel>{t("ParentPhone")}</FormLabel>
                     <FormControl>
-                      <PhoneInput
-                        placeholder={t("ParentPhone")}
-                        {...field}
-                      />
+                      <PhoneInput placeholder={t("ParentPhone")} {...field} />
                     </FormControl>
                     <FormMessage>
                       {formState.errors.phone_number &&
@@ -171,7 +172,9 @@ export default function EditParent({
               />
 
               <div className="flex justify-between">
-                <Button isLoading={isPending || isLoading}>{t("EditParent")}</Button>
+                <Button isLoading={isPending || isLoading}>
+                  {t("EditParent")}
+                </Button>
               </div>
             </div>
           </div>

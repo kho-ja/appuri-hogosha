@@ -50,6 +50,7 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Student from "@/types/student";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
+import { ChevronLeft } from "lucide-react";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -109,6 +110,7 @@ export default function CreateFromCsv() {
         <h1 className="text-3xl font-bold">{t("createFromCsv")}</h1>
         <Link href="/students/create" passHref>
           <Button type="button" variant={"secondary"}>
+            <ChevronLeft />
             {t("back")}
           </Button>
         </Link>

@@ -22,6 +22,8 @@ import useApiMutation from "@/lib/useApiMutation";
 import Admin from "@/types/admin";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { ChevronLeft } from "lucide-react";
+import { FiSave } from "react-icons/fi";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -107,7 +109,10 @@ export default function CreateAdmin() {
           </Link>
 
           <Link href={"/admins"}>
-            <Button variant={"secondary"}>{t("back")}</Button>
+            <Button variant={"secondary"}>
+              <ChevronLeft />
+              {t("back")}
+            </Button>
           </Link>
         </div>
       </div>
@@ -192,10 +197,7 @@ export default function CreateAdmin() {
                   <FormItem>
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
-                      <PhoneInput
-                        placeholder={t("AdminPhone")}
-                        {...field}
-                      />
+                      <PhoneInput placeholder={t("AdminPhone")} {...field} />
                     </FormControl>
                     <FormMessage>
                       {formState.errors.phone_number &&
@@ -210,7 +212,10 @@ export default function CreateAdmin() {
                 type="submit"
                 isLoading={isPending}
               >
-                {t("CreateAdmin")}
+                <span className="flex items-center gap-2">
+                  <FiSave size={20} />
+                  {t("CreateAdmin")}
+                </span>
               </Button>
             </div>
           </div>
