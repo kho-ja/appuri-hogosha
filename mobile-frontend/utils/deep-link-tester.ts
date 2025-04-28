@@ -6,16 +6,24 @@ import { Alert, Platform } from 'react-native';
  * @param {string} path - The path to test (e.g., 'home', 'message/123')
  * @param {Object} params - Optional parameters to include in the URL
  */
-export const testDeepLink = (path: string, params: Record<string, string> = {}) => {
+export const testDeepLink = (
+  path: string,
+  params: Record<string, string> = {}
+) => {
   // Construct URL with the app scheme
   const baseUrl = 'jduapp://';
 
   // Construct query parameters if any
-  const queryParams = Object.keys(params).length > 0
-    ? '?' + Object.entries(params)
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join('&')
-    : '';
+  const queryParams =
+    Object.keys(params).length > 0
+      ? '?' +
+        Object.entries(params)
+          .map(
+            ([key, value]) =>
+              `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+          )
+          .join('&')
+      : '';
 
   const url = `${baseUrl}${path}${queryParams}`;
 
@@ -32,7 +40,10 @@ export const testDeepLink = (path: string, params: Record<string, string> = {}) 
     .catch(err => {
       console.error('Error opening deep link:', err);
       if (__DEV__) {
-        Alert.alert('Deep Link Error', `Failed to open: ${url}\n\nError: ${err.message}`);
+        Alert.alert(
+          'Deep Link Error',
+          `Failed to open: ${url}\n\nError: ${err.message}`
+        );
       }
     });
 };
@@ -59,13 +70,13 @@ export const getExternalTestCommands = () => {
     android: [
       'adb shell am start -a android.intent.action.VIEW -d "jduapp://home" com.jduapp.parentnotification',
       'adb shell am start -a android.intent.action.VIEW -d "jduapp://message/123" com.jduapp.parentnotification',
-      'adb shell am start -a android.intent.action.VIEW -d "https://appuri-hogosha.vercel.app/parentnotification/home" com.jduapp.parentnotification'
+      'adb shell am start -a android.intent.action.VIEW -d "https://appuri-hogosha.vercel.app/parentnotification/home" com.jduapp.parentnotification',
     ],
     ios: [
       'xcrun simctl openurl booted "jduapp://home"',
       'xcrun simctl openurl booted "jduapp://message/123"',
-      'xcrun simctl openurl booted "https://appuri-hogosha.vercel.app/parentnotification/home"'
-    ]
+      'xcrun simctl openurl booted "https://appuri-hogosha.vercel.app/parentnotification/home"',
+    ],
   };
 
   return Platform.OS === 'ios' ? commands.ios : commands.android;
@@ -86,10 +97,11 @@ export const DeepLinkDebugHelper = {
   testSettingsProfile: () => testDeepLink('settings/profile'),
 
   // Links with parameters
-  testWithNotificationParams: () => testDeepLink('home', {
-    notificationId: '789',
-    type: 'reminder'
-  }),
+  testWithNotificationParams: () =>
+    testDeepLink('home', {
+      notificationId: '789',
+      type: 'reminder',
+    }),
 
   // Web URL format (for testing universal links)
   testWebUrl: () => {
@@ -98,6 +110,5 @@ export const DeepLinkDebugHelper = {
     Linking.openURL(url)
       .then(() => console.log('Web URL test successful'))
       .catch(err => console.error('Error opening web URL:', err));
-  }
+  },
 };
-

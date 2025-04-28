@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Switch, StyleSheet } from 'react-native';
 import { useThemeMode } from '@rneui/themed';
 import { ThemedText } from '@/components/ThemedText';
-import {Ionicons} from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ThemeSwitcher() {
   const { mode, setMode } = useThemeMode();
@@ -15,7 +15,11 @@ export default function ThemeSwitcher() {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Ionicons name={mode === 'light' ? 'sunny' : 'moon'} size={20} color="#fff" />
+        <Ionicons
+          name={mode === 'light' ? 'sunny' : 'moon'}
+          size={20}
+          color='#fff'
+        />
       </View>
       <ThemedText style={styles.label}>
         {mode === 'light' ? 'Light Mode' : 'Dark Mode'}

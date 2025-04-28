@@ -3,3 +3,4 @@ node_modules
 !/android/
 !/ios/
 !/.idea/
+!.vscode/

@@ -1,15 +1,15 @@
-import * as SQLite from 'expo-sqlite'
+import * as SQLite from 'expo-sqlite';
 
 export default class Database {
-	db: SQLite.SQLiteDatabase
+  db: SQLite.SQLiteDatabase;
 
-	constructor(db: SQLite.SQLiteDatabase) {
-		this.db = db
-	}
+  constructor(db: SQLite.SQLiteDatabase) {
+    this.db = db;
+  }
 
-	async create() {
-		const db = await SQLite.openDatabaseAsync('parentnotification')
-		await db.execAsync(`
+  async create() {
+    const db = await SQLite.openDatabaseAsync('parentnotification');
+    await db.execAsync(`
       PRAGMA journal_mode = WAL;
       PRAGMA foreign_keys = ON;
       CREATE TABLE IF NOT EXISTS student (
@@ -43,42 +43,42 @@ export default class Database {
           student_id INTEGER,
           FOREIGN KEY (student_id) REFERENCES student (id)
       );
-    `)
-		return new Database(db)
-	}
+    `);
+    return new Database(db);
+  }
 
-	async prepareAsyncQuery(
-		query: string,
-		paramsArray: { [key: string]: string | number }[]
-	) {
-		const statement = await this.db.prepareAsync(query)
+  async prepareAsyncQuery(
+    query: string,
+    paramsArray: { [key: string]: string | number }[]
+  ) {
+    const statement = await this.db.prepareAsync(query);
 
-		try {
-			for (const params of paramsArray) {
-				await statement.executeAsync(params)
-			}
-		} catch (error) {
-			console.error('Error:', error)
-		} finally {
-			await statement.finalizeAsync()
-		}
-	}
+    try {
+      for (const params of paramsArray) {
+        await statement.executeAsync(params);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      await statement.finalizeAsync();
+    }
+  }
 
-	async execAsyncQuery(queries: string): Promise<void> {
-		return await this.db.execAsync(queries)
-	}
+  async execAsyncQuery(queries: string): Promise<void> {
+    return await this.db.execAsync(queries);
+  }
 
-	async runAsyncQuery(
-		query: string,
-		params: SQLite.SQLiteBindParams
-	): Promise<SQLite.SQLiteRunResult> {
-		return await this.db.runAsync(query, params)
-	}
+  async runAsyncQuery(
+    query: string,
+    params: SQLite.SQLiteBindParams
+  ): Promise<SQLite.SQLiteRunResult> {
+    return await this.db.runAsync(query, params);
+  }
 
-	async getAllAsyncQuery(
-		query: string,
-		...params: SQLite.SQLiteVariadicBindParams
-	): Promise<any[]> {
-		return await this.db.getAllAsync(query)
-	}
+  async getAllAsyncQuery(
+    query: string,
+    ...params: SQLite.SQLiteVariadicBindParams
+  ): Promise<any[]> {
+    return await this.db.getAllAsync(query);
+  }
 }
