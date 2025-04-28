@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
+import { ThemedView } from '@/components/ThemedView';
 
 const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
   const router = useRouter();
@@ -75,26 +76,52 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
     <Pressable onPress={handlePress}>
       <View style={[styles.container, { opacity: isRead ? 0.5 : 1 }]}>
         <View style={styles.titleRow}>
-          {!isRead && (
+          {!isRead ? (
             <View style={styles.iconContainer}>
-              <Ionicons color='#2089dc' name='ellipse' size={12} />
+              <ThemedText style={{ fontSize: 10, color: '#fff' }}>
+                New
+              </ThemedText>
             </View>
-          )}
-          <ThemedText
-            type='default'
-            numberOfLines={1}
-            style={cn(isRead ? null : { marginRight: 20 })}
+          ) : null}
+          <ThemedView
+            style={{
+              flexDirection: 'row',
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: 'transparent',
+              marginRight: 10,
+            }}
           >
-            {firstMessage.title}
-          </ThemedText>
+            <View style={styles.MessageTitleContainer}>
+              <ThemedText
+                type='default'
+                numberOfLines={1}
+                style={cn(
+                  isRead
+                    ? { fontWeight: 'bold' }
+                    : { marginRight: 20, fontWeight: 'bold' },
+                  { color: textColor }
+                )}
+              >
+                {firstMessage.title}
+              </ThemedText>
+            </View>
+          </ThemedView>
+          <ThemedView
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+          >
+            <ThemedText style={getImportanceBadgeStyle(firstMessage.priority)}>
+              {getImportanceLabel(firstMessage.priority)}
+            </ThemedText>
+            {isRead ? (
+              <View style={styles.iconReadContainer}>
+                <Ionicons name='checkmark' size={15} color='white' />
+              </View>
+            ) : null}
+          </ThemedView>
         </View>
         <View style={styles.dateRow}>
-          <ThemedText style={styles.dateText}>
-            {formatMessageDate(new Date(firstMessage.sent_time), language)}
-          </ThemedText>
-          <ThemedText style={getImportanceBadgeStyle(firstMessage.priority)}>
-            {getImportanceLabel(firstMessage.priority)}
-          </ThemedText>
           {groupNames.map((groupName, index) => (
             <ThemedText key={index} style={styles.groupStyle}>
               {groupName}
@@ -107,7 +134,7 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
             hashtag='instagram'
             mention='instagram'
             text={firstMessage.content}
-            numberOfLines={1}
+            numberOfLines={5}
             style={autolinkStyles}
             textProps={{ style: autolinkStyles }}
           />
@@ -115,6 +142,9 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
         <TouchableOpacity style={styles.readMoreButton}>
           <ThemedText style={styles.readMoreText} onPress={handlePress}>
             {i18n[language].continueReading}
+          </ThemedText>
+          <ThemedText style={styles.dateText}>
+            {formatMessageDate(new Date(firstMessage.sent_time), language)}
           </ThemedText>
         </TouchableOpacity>
       </View>
@@ -127,15 +157,45 @@ export default Card;
 const styles = StyleSheet.create({
   container: {
     padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    minHeight: 50,
+    zIndex: 1,
+    position: 'relative',
+    marginHorizontal: 15,
+    marginTop: 10,
+  },
+  MessageTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 5,
     marginRight: 15,
+    width: '100%',
   },
   iconContainer: {
     marginRight: 8,
+    backgroundColor: '#FF0000',
+    borderRadius: 10,
+    height: 25,
+    width: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconReadContainer: {
+    backgroundColor: '#808080',
+    borderRadius: 20,
+    height: 25,
+    width: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dateRow: {
     flexDirection: 'row',
@@ -154,6 +214,10 @@ const styles = StyleSheet.create({
   },
   readMoreButton: {
     marginTop: 5,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   readMoreText: {
     color: '#2089dc',
