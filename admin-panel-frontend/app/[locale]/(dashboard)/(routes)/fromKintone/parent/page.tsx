@@ -43,7 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Parent from "@/types/parent";
 import { useEffect } from "react";
 import useApiMutation from "@/lib/useApiMutation";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   kintoneUrl: z.string().url(),
@@ -112,12 +112,7 @@ export default function CreateFromKintone() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createParentFromKintone")}</h1>
-        <Link href="/parents/create" passHref>
-          <Button type="button" variant={"secondary"}>
-            <ChevronLeft />
-            {t("back")}
-          </Button>
-        </Link>
+        <BackButton href="/parents/create"></BackButton>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>

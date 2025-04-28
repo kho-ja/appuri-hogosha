@@ -10,7 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function EditStudents({
   params: { parentId },
@@ -50,12 +50,7 @@ export default function EditStudents({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("editParentStudents")}</h1>
         <div className="space-x-2">
-          <Link href={`/parents/${parentId}`}>
-            <Button variant={"secondary"}>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton href={`/parents/${parentId}`}></BackButton>
         </div>
       </div>
 

@@ -22,8 +22,8 @@ import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Group from "@/types/group";
-import { ChevronLeft } from "lucide-react";
-import { FiSave } from "react-icons/fi";
+import { Save } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -91,11 +91,7 @@ export default function CreateGroup() {
               {t("createGroupfromCSV")}
             </Button>
           </Link>
-
-          <Button onClick={() => router.push("/groups")} variant={"secondary"}>
-            <ChevronLeft />
-            {t("back")}
-          </Button>
+          <BackButton href={`/groups`}></BackButton>
         </div>
       </div>
       <div className="w-full mt-8">
@@ -133,12 +129,7 @@ export default function CreateGroup() {
               </FormControl>
             </FormItem>
 
-            <Button isLoading={isPending}>
-              <span className="flex items-center gap-2">
-                <FiSave size={20} />
-                {t("CreateGroup")}
-              </span>
-            </Button>
+            <Button icon={<Save size={20} />}>{t("CreateGroup")}</Button>
           </form>
         </Form>
       </div>

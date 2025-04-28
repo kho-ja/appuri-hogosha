@@ -1106,5 +1106,8 @@
     "back": "Orqaga",
     "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi",
     "post_sender_updated_successfully": "Post yuboruvchisi muvaffaqiyatli yangilandi"
+  },
+  "BackButton": {
+    "back": "Orqaga"
   }
 }

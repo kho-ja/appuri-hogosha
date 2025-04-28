@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisGroup({
   params: { messageId, groupId },
@@ -164,12 +164,7 @@ export default function ThisGroup({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/messages/${messageId}`}>
-            <Button variant={"secondary"}>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton href={`/messages/${messageId}`}></BackButton>
           <Dialog key={"resendStudent"}>
             <DialogTrigger asChild>
               <Button>{t("resend")}</Button>

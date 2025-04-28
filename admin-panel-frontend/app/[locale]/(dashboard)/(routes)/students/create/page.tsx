@@ -24,9 +24,8 @@ import useApiMutation from "@/lib/useApiMutation";
 import Student from "@/types/student";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { ChevronLeft } from "lucide-react";
-import { BsSave } from "react-icons/bs";
-import { FiSave } from "react-icons/fi";
+import { Save } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -118,13 +117,8 @@ export default function CreateStudent() {
               {t("createFromCSV")}
             </Button>
           </Link>
-
-          <Link href={"/students"}>
-            <Button variant={"secondary"}>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton href="/students">
+          </BackButton>
         </div>
       </div>
       <Form {...form}>
@@ -228,12 +222,7 @@ export default function CreateStudent() {
             </FormControl>
           </FormItem>
 
-          <Button>
-            <span className="flex items-center gap-2">
-              <FiSave size={20} />
-              {t("CreateStudent")}
-            </span>
-          </Button>
+          <Button icon={<Save size={20} />}>{t("CreateStudent")}</Button>
         </form>
       </Form>
     </div>

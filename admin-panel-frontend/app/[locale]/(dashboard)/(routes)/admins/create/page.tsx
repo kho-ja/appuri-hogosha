@@ -22,8 +22,8 @@ import useApiMutation from "@/lib/useApiMutation";
 import Admin from "@/types/admin";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { ChevronLeft } from "lucide-react";
-import { FiSave } from "react-icons/fi";
+import { Save } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -107,13 +107,7 @@ export default function CreateAdmin() {
               {t("createfromCSV")}
             </Button>
           </Link>
-
-          <Link href={"/admins"}>
-            <Button variant={"secondary"}>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton href={"/admins"}></BackButton>
         </div>
       </div>
       <Form {...form}>
@@ -206,16 +200,13 @@ export default function CreateAdmin() {
                   </FormItem>
                 )}
               />
-
               <Button
                 className="self-start"
                 type="submit"
                 isLoading={isPending}
+                icon={<Save size={20} />}
               >
-                <span className="flex items-center gap-2">
-                  <FiSave size={20} />
-                  {t("CreateAdmin")}
-                </span>
+                {t("CreateAdmin")}
               </Button>
             </div>
           </div>

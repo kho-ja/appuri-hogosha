@@ -41,7 +41,7 @@ import Image from "next/image";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -131,12 +131,7 @@ export default function SendMessagePage({
         >
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-3xl font-bold">{t("editMessage")}</h1>
-            <Link href={`/messages/${messageId}`} passHref>
-              <Button variant={"secondary"}>
-                <ChevronLeft />
-                {t("back")}
-              </Button>
-            </Link>
+            <BackButton href={`/messages/${messageId}`}></BackButton>
           </div>
 
           <FormField

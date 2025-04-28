@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisStudent({
   params: { messageId, studentId, groupId },
@@ -168,12 +168,10 @@ export default function ThisStudent({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/messages/${messageId}/group/${groupId}`}>
-            <Button variant={"secondary"}>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton
+            href={`/messages/${messageId}/group/${groupId}`}
+          ></BackButton>
+
           <Dialog key={"resendStudent"}>
             <DialogTrigger asChild>
               <Button>{t("resend")}</Button>

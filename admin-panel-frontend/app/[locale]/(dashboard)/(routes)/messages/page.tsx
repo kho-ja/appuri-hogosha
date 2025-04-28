@@ -156,12 +156,7 @@ export default function Info() {
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
         <Link href={`${pathName}/create`} passHref>
-          <Button>
-                      <span className="flex items-center gap-1">
-                        <Plus className="h-4 w-4" />
-                        {t("createpost")}
-                      </span>
-                    </Button>
+          <Button icon={<Plus className="h-4 w-4" />}>{t("createpost")}</Button>
         </Link>
       </div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">

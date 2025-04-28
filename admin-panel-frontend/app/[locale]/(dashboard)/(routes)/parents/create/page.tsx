@@ -24,8 +24,8 @@ import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { ChevronLeft } from "lucide-react";
-import { FiSave } from "react-icons/fi";
+import { Save } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -114,12 +114,7 @@ export default function CreateParent() {
             </Button>
           </Link>
 
-          <Link href={`/parents`}>
-            <Button>
-              <ChevronLeft />
-              {t("back")}
-            </Button>
-          </Link>
+          <BackButton href={`/parents`}></BackButton>
         </div>
       </div>
       <Form {...form}>
@@ -227,11 +222,8 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button isLoading={isPending}>
-                  <span className="flex items-center gap-2">
-                    <FiSave size={20} />
-                    {t("CreateParent")}
-                  </span>
+                <Button isLoading={isPending} icon={<Save size={20} />}>
+                  {t("CreateParent")}
                 </Button>
               </div>
             </div>

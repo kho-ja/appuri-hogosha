@@ -25,7 +25,7 @@ import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -91,12 +91,7 @@ export default function EditParent({
     <div className="w-full space-y-8">
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditParent")}</h1>
-        <Link href={`/parents/${parentId}`} passHref>
-          <Button variant={"secondary"}>
-            <ChevronLeft />
-            {t("back")}
-          </Button>
-        </Link>
+        <BackButton href={`/parents/${parentId}`}></BackButton>
       </div>
       <Form {...form}>
         <form

@@ -50,7 +50,7 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Group from "@/types/group";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -106,12 +106,7 @@ export default function CreateFromCsv() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createGroupFromCsv")}</h1>
-        <Link href="/groups/create" passHref>
-          <Button type="button" variant={"secondary"}>
-            <ChevronLeft />
-            {t("back")}
-          </Button>
-        </Link>
+        <BackButton href="/groups/create"></BackButton>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>

@@ -51,7 +51,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -219,12 +219,7 @@ export default function SendMessagePage() {
               <Link href="/fromcsv/message">
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
-              <Link href="/messages" passHref>
-                <Button type="button" variant={"secondary"}>
-                  <ChevronLeft />
-                  {t("back")}
-                </Button>
-              </Link>
+              <BackButton href="/messages"></BackButton>
             </div>
           </div>
           <FormField
