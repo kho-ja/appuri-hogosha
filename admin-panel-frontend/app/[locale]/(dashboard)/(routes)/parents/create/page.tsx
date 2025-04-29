@@ -222,7 +222,7 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button isLoading={isPending} icon={<Save size={20} />}>
+                <Button isLoading={isPending} icon={<Save className="h-5 w-5" />}>
                   {t("CreateParent")}
                 </Button>
               </div>

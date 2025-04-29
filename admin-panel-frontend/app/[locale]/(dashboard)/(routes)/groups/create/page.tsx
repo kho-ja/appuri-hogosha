@@ -129,7 +129,7 @@ export default function CreateGroup() {
               </FormControl>
             </FormItem>
 
-            <Button icon={<Save size={20} />}>{t("CreateGroup")}</Button>
+            <Button icon={<Save className="h-5 w-5" />}>{t("CreateGroup")}</Button>
           </form>
         </Form>
       </div>

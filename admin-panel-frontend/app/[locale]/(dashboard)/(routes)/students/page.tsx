@@ -139,7 +139,7 @@ export default function Students() {
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("students")}</h1>
         <Link href={`${pathname}/create`}>
-        <Button icon={<Plus size={20} />}>{t("createstudent")}</Button>
+        <Button icon={<Plus className="h-5 w-5" />}>{t("createstudent")}</Button>
         </Link>
       </div>
       <div className="flex flex-wrap justify-between w-full">

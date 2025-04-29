@@ -221,7 +221,7 @@ export default function CreateStudent() {
             </FormControl>
           </FormItem>
 
-          <Button icon={<Save size={20} />}>{t("CreateStudent")}</Button>
+          <Button icon={<Save className="h-5 w-5" />}>{t("CreateStudent")}</Button>
         </form>
       </Form>
     </div>

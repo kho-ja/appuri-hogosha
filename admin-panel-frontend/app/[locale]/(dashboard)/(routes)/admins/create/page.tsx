@@ -204,7 +204,7 @@ export default function CreateAdmin() {
                 className="self-start"
                 type="submit"
                 isLoading={isPending}
-                icon={<Save size={20} />}
+                icon={<Save className="h-5 w-5" />}
               >
                 {t("CreateAdmin")}
               </Button>
