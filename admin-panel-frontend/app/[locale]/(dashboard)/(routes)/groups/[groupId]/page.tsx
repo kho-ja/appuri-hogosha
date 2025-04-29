@@ -61,7 +61,7 @@ export default function ThisGroup({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
         <div className="flex gap-2 flex-wrap">
-          <BackButton href={`/groups`}></BackButton>
+          <BackButton href={`/groups`} />
           <Link href={`/groups/edit/${groupId}`}>
             <Button>{t("editGroup")}</Button>
           </Link>

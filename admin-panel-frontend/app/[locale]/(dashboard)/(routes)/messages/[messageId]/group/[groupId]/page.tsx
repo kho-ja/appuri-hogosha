@@ -164,7 +164,7 @@ export default function ThisGroup({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
         <div className="flex flex-wrap gap-2">
-          <BackButton href={`/messages/${messageId}`}></BackButton>
+          <BackButton href={`/messages/${messageId}`} />
           <Dialog key={"resendStudent"}>
             <DialogTrigger asChild>
               <Button>{t("resend")}</Button>

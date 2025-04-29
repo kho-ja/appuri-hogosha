@@ -56,7 +56,7 @@ export default function ThisParent({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("ParentView")}</h1>
         <div className="flex flex-wrap gap-2">
-          <BackButton href={`/parents`}></BackButton>
+          <BackButton href={`/parents`} />
           <Link href={`/parents/edit/${parentId}`}>
             <Button>{t("editParent")}</Button>
           </Link>

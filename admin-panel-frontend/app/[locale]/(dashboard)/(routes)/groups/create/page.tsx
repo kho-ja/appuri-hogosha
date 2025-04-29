@@ -91,7 +91,7 @@ export default function CreateGroup() {
               {t("createGroupfromCSV")}
             </Button>
           </Link>
-          <BackButton href={`/groups`}></BackButton>
+          <BackButton href={`/groups`} />
         </div>
       </div>
       <div className="w-full mt-8">

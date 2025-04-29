@@ -117,8 +117,7 @@ export default function CreateStudent() {
               {t("createFromCSV")}
             </Button>
           </Link>
-          <BackButton href={`/students`}>
-          </BackButton>
+          <BackButton href={`/students`} />
         </div>
       </div>
       <Form {...form}>

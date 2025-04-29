@@ -107,7 +107,7 @@ export default function CreateAdmin() {
               {t("createfromCSV")}
             </Button>
           </Link>
-          <BackButton href={"/admins"}></BackButton>
+          <BackButton href={"/admins"} />
         </div>
       </div>
       <Form {...form}>

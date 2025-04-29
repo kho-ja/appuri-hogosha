@@ -131,7 +131,7 @@ export default function SendMessagePage({
         >
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-3xl font-bold">{t("editMessage")}</h1>
-            <BackButton href={`/messages/${messageId}`}></BackButton>
+            <BackButton href={`/messages/${messageId}`} />
           </div>
 
           <FormField

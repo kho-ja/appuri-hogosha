@@ -94,7 +94,7 @@ export default function CreateStudent({
     <div className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditStudent")}</h1>
-        <BackButton href={`/students/${studentId}`}></BackButton>
+        <BackButton href={`/students/${studentId}`} />
       </div>
       <Form {...form}>
         <form

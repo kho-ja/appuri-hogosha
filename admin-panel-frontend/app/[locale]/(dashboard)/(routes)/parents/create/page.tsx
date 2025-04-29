@@ -114,7 +114,7 @@ export default function CreateParent() {
             </Button>
           </Link>
 
-          <BackButton href={`/parents`}></BackButton>
+          <BackButton href={`/parents`} />
         </div>
       </div>
       <Form {...form}>

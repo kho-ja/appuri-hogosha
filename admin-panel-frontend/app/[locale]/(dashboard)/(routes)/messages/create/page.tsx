@@ -219,7 +219,7 @@ export default function SendMessagePage() {
               <Link href="/fromcsv/message">
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
-              <BackButton href={`/messages`}></BackButton>
+              <BackButton href={`/messages`} />
             </div>
           </div>
           <FormField

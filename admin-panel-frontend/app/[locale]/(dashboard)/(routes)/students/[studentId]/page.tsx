@@ -63,7 +63,7 @@ export default function ThisStudent({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
         <div className="flex space-x-2">
-          <BackButton href={`/students/`}></BackButton>
+          <BackButton href={`/students/`} />
           <Link href={`/students/edit/${studentId}`}>
             <Button>{t("EditStudent")}</Button>
           </Link>

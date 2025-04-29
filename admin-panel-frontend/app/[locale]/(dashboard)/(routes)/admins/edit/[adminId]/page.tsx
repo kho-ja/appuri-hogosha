@@ -96,7 +96,7 @@ export default function EditAdmin({
     <div className="w-full space-y-8">
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditAdmin")}</h1>
-        <BackButton href={`/admins/${adminId}`}></BackButton>
+        <BackButton href={`/admins/${adminId}`} />
       </div>
       <Form {...form}>
         <form

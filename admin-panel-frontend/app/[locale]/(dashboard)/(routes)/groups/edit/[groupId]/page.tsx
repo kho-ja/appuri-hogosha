@@ -80,7 +80,7 @@ export default function EditGroup({
     <div className="flex flex-col items-center">
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditGroup")}</h1>
-        <BackButton href={`/groups/${groupId}`}></BackButton>
+        <BackButton href={`/groups/${groupId}`} />
       </div>
       <div className="w-full mt-8">
         <Form {...form}>

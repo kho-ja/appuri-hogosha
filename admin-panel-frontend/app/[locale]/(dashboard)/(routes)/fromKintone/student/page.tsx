@@ -122,7 +122,7 @@ export default function CreateFromKintone() {
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createFromKintone")}</h1>
 
-        <BackButton href={`/students/create`}></BackButton>
+        <BackButton href={`/students/create`} />
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>

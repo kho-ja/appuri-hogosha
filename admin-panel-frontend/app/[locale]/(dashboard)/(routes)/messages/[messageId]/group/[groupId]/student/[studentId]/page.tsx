@@ -168,10 +168,7 @@ export default function ThisStudent({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
         <div className="flex flex-wrap gap-2">
-          <BackButton
-            href={`/messages/${messageId}/group/${groupId}`}
-          ></BackButton>
-
+          <BackButton href={`/messages/${messageId}/group/${groupId}`} />
           <Dialog key={"resendStudent"}>
             <DialogTrigger asChild>
               <Button>{t("resend")}</Button>

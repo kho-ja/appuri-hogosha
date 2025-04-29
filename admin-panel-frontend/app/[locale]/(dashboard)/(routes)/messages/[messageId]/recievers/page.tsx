@@ -73,7 +73,7 @@ export default function Recievers({
       <div className="flex gap-2 justify-between items-center w-full">
         <h1 className="text-3xl font-bold mb-4">{t("ChangeRecievers")}</h1>
 
-        <BackButton href={`/messages/${messageId}`}></BackButton>
+        <BackButton href={`/messages/${messageId}`} />
       </div>
 
       <Tabs className="w-full" defaultValue="groups">
