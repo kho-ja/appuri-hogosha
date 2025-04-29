@@ -121,7 +121,7 @@ export function SchoolNameUpdate() {
             <Button
               isLoading={isPending || !data || isLoading}
               type="submit"
-              icon={<University className="h-5 w-5 mr-1.5" />}
+              icon={<University className="h-5 w-5" />}
             >
               {t("SchoolNameEditBtn")}
             </Button>
