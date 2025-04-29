@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Phone } from "lucide-react";
 
 const notificationsFormSchema = z.object({
   high: z.boolean(),
@@ -175,6 +176,7 @@ export function NotificationsForm() {
           isLoading={isPending}
           disabled={!data || isLoading}
           type="submit"
+          icon={<Phone className="h-5 w-5" />}
         >
           {t("NotificationSettingUpdate")}
         </Button>

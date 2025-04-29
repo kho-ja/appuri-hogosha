@@ -20,6 +20,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
+import { University } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -117,7 +118,11 @@ export function SchoolNameUpdate() {
                 </FormItem>
               )}
             />
-            <Button isLoading={isPending || !data || isLoading} type="submit">
+            <Button
+              isLoading={isPending || !data || isLoading}
+              type="submit"
+              icon={<University className="h-5 w-5" />}
+            >
               {t("SchoolNameEditBtn")}
             </Button>
           </div>
