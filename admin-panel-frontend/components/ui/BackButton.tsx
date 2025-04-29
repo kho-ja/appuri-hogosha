@@ -7,7 +7,7 @@ export function BackButton({ href }: { href: string }) {
   const t = useTranslations("BackButton");
 
   return (
-    <Link href={href}>
+    <Link href={href} passHref>
       <Button icon={<ChevronLeft className="-ml-2" />} variant={"secondary"}>
         {t("back")}
       </Button>

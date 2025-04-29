@@ -165,7 +165,7 @@ export default function ThisMessage({
       <div className="flex wrap justify-between">
         <h1 className="text-3xl font-bold">{t("ViewMessage")}</h1>
         <div className="space-x-4">
-          <BackButton href="/messages"></BackButton>
+          <BackButton href={`/messages`}></BackButton>
 
           <Link href={`/messages/edit/${messageId}`} passHref>
             <Button>{t("editMessage")}</Button>

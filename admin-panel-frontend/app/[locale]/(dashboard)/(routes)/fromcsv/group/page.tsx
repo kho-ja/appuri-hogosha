@@ -106,7 +106,7 @@ export default function CreateFromCsv() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl font-bold">{t("createGroupFromCsv")}</h1>
-        <BackButton href="/groups/create"></BackButton>
+        <BackButton href={`/groups/create`}></BackButton>
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>
