@@ -1567,20 +1567,19 @@ class PostController implements IController {
     postList = async (req: ExtendedRequest, res: Response) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(process.env.PER_PAGE + '');
+            const limit = parseInt(process.env.PER_PAGE + '') || 10;
             const offset = (page - 1) * limit;
-
+    
             const priority = req.query.priority as string || '';
             const text = req.query.text as string || '';
-
-            const filters: string[] = [];
+    
+            const filters: string[] = ['po.school_id = :school_id'];
             const params: any = {
                 school_id: req.user.school_id,
-                limit: limit,
-                offset: offset
+                limit,
+                offset
             };
-
-
+    
             if (priority && isValidPriority(priority)) {
                 filters.push('po.priority = :priority');
                 params.priority = priority;
@@ -1589,39 +1588,50 @@ class PostController implements IController {
                 filters.push('(po.title LIKE :text OR po.description LIKE :text)');
                 params.text = `%${text}%`;
             }
-
-            const whereClause = filters.length > 0 ? ' AND ' + filters.join(' AND ') : '';
-
-            const postList = await DB.query(`SELECT po.id,
-                                                    po.title,
-                                                    po.description,
-                                                    po.priority,
-                                                    ad.id          AS admin_id,
-                                                    ad.given_name  AS admin_given_name,
-                                                    ad.family_name AS admin_family_name,
-                                                    po.sent_at,
-                                                    po.edited_at,
-                                                    COALESCE(ROUND((COUNT(DISTINCT CASE
-                                                                                       WHEN pp.viewed_at IS NOT NULL
-                                                                                           THEN ps.student_id END) /
-                                                                    COUNT(DISTINCT ps.student_id)) * 100, 2),
-                                                             0)    AS read_percent
-                                             FROM Post AS po
-                                                      INNER JOIN Admin AS ad ON ad.id = po.admin_id
-                                                      LEFT JOIN PostStudent AS ps ON ps.post_id = po.id
-                                                      LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id
-                                             WHERE po.school_id = :school_id ${whereClause}
-                                             GROUP BY po.id, po.title, po.description, po.priority, ad.given_name, ad.family_name, po.sent_at, po.edited_at
-                                             ORDER BY po.sent_at DESC
-                                                 LIMIT :limit
-                                             OFFSET :offset;`, params);
-
-
-            const totalPosts = (await DB.query(`SELECT COUNT(DISTINCT po.id) AS total
-                                                FROM Post AS po
-                                                WHERE po.school_id = :school_id ${whereClause};`, params))[0].total
+    
+            const whereClause = 'WHERE ' + filters.join(' AND ');
+    
+            const postList = await DB.query(`
+                SELECT po.id,
+                       po.title,
+                       po.description,
+                       po.priority,
+                       ad.id          AS admin_id,
+                       ad.given_name  AS admin_given_name,
+                       ad.family_name AS admin_family_name,
+                       po.sent_at,
+                       po.edited_at,
+                       COALESCE(ROUND((
+                           COUNT(DISTINCT CASE WHEN pp.viewed_at IS NOT NULL THEN ps.student_id END) /
+                           NULLIF(COUNT(DISTINCT ps.student_id), 0)
+                       ) * 100, 2), 0) AS read_percent
+                FROM Post AS po
+                INNER JOIN Admin AS ad ON ad.id = po.admin_id
+                LEFT JOIN PostStudent AS ps ON ps.post_id = po.id
+                LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id
+                ${whereClause}
+                GROUP BY po.id, ad.id, ad.given_name, ad.family_name
+                ORDER BY po.sent_at DESC
+                LIMIT :limit OFFSET :offset
+            `, params);
+    
+            const totalPostsResult = await DB.query(`
+                SELECT COUNT(*) AS total FROM (
+                    SELECT DISTINCT po.id
+                    FROM Post AS po
+                    INNER JOIN Admin AS ad ON ad.id = po.admin_id
+                    LEFT JOIN PostStudent AS ps ON ps.post_id = po.id
+                    LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id
+                    ${whereClause}
+                ) AS subquery
+            `, params);
+            const totalPosts = totalPostsResult[0].total;
             const totalPages = Math.ceil(totalPosts / limit);
-
+    
+            if (page > totalPages && totalPages !== 0) {
+                return res.status(400).json({ error: 'invalid_page' }).end();
+            }
+    
             const pagination = {
                 current_page: page,
                 per_page: limit,
@@ -1631,36 +1641,43 @@ class PostController implements IController {
                 prev_page: page > 1 ? page - 1 : null,
                 links: generatePaginationLinks(page, totalPages)
             };
-
-            const formattedPostList = postList.map((post: any) => ({
-                id: post.id,
-                title: post.title,
-                description: post.description,
-                priority: post.priority,
-                sent_at: post.sent_at,
-                edited_at: post.edited_at,
-                read_percent: post.read_percent,
+    
+            const formattedPostList = postList.map(({
+                id,
+                title,
+                description,
+                priority,
+                sent_at,
+                edited_at,
+                read_percent,
+                admin_id,
+                admin_given_name,
+                admin_family_name
+            }: any) => ({
+                id,
+                title,
+                description,
+                priority,
+                sent_at,
+                edited_at,
+                read_percent,
                 admin: {
-                    id: post.admin_id,
-                    given_name: post.admin_given_name,
-                    family_name: post.admin_family_name
+                    id: admin_id,
+                    given_name: admin_given_name,
+                    family_name: admin_family_name
                 }
             }));
-
-
+    
             return res.status(200).json({
                 posts: formattedPostList,
-                pagination: pagination
-            }).end()
+                pagination
+            }).end();
+    
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res.status(e.status).json({ error: e.message }).end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res.status(500).json({ error: 'internal_server_error' }).end();
             }
         }
     }
