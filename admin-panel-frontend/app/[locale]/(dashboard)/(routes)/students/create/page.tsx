@@ -24,6 +24,8 @@ import useApiMutation from "@/lib/useApiMutation";
 import Student from "@/types/student";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
+import { Save } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -102,12 +104,20 @@ export default function CreateStudent() {
             <Button variant={"secondary"}>{t("createFromKintone")}</Button>
           </Link>
           <Link href="/fromcsv/student">
-            <Button variant={"secondary"}>{t("createFromCSV")}</Button>
+            <Button variant={"secondary"}>
+              <div className="bg-gray-200 p-1 rounded-sm mr-2">
+                <svg
+                  className="w-4 h-4 text-gray-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
+                </svg>
+              </div>
+              {t("createFromCSV")}
+            </Button>
           </Link>
-
-          <Link href={"/students"}>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+          <BackButton href={`/students`} />
         </div>
       </div>
       <Form {...form}>
@@ -191,10 +201,7 @@ export default function CreateStudent() {
                 <FormItem>
                   <FormLabel>{t("PhoneNumber")}</FormLabel>
                   <FormControl>
-                    <PhoneInput
-                      placeholder={t("PhoneNumber")}
-                      {...field}
-                    />
+                    <PhoneInput placeholder={t("PhoneNumber")} {...field} />
                   </FormControl>
                   <FormMessage>
                     {formState.errors.phone_number?.message}
@@ -214,7 +221,7 @@ export default function CreateStudent() {
             </FormControl>
           </FormItem>
 
-          <Button isLoading={isPending}>{t("CreateStudent")}</Button>
+          <Button icon={<Save className="h-5 w-5" />}>{t("CreateStudent")}</Button>
         </form>
       </Form>
     </div>

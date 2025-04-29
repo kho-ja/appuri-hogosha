@@ -23,6 +23,7 @@ import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -79,9 +80,7 @@ export default function EditGroup({
     <div className="flex flex-col items-center">
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("EditGroup")}</h1>
-        <Link href={`/groups/${groupId}`} passHref>
-          <Button variant={"secondary"}>{t("back")}</Button>
-        </Link>
+        <BackButton href={`/groups/${groupId}`} />
       </div>
       <div className="w-full mt-8">
         <Form {...form}>

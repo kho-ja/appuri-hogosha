@@ -41,6 +41,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisMessage({
   params: { messageId },
@@ -164,9 +165,8 @@ export default function ThisMessage({
       <div className="flex wrap justify-between">
         <h1 className="text-3xl font-bold">{t("ViewMessage")}</h1>
         <div className="space-x-4">
-          <Link href="/messages" passHref>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+          <BackButton href={`/messages`} />
+
           <Link href={`/messages/edit/${messageId}`} passHref>
             <Button>{t("editMessage")}</Button>
           </Link>

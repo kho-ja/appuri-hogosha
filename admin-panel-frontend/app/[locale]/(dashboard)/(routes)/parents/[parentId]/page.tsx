@@ -13,6 +13,7 @@ import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisParent({
   params: { parentId },
@@ -55,9 +56,7 @@ export default function ThisParent({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("ParentView")}</h1>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/parents`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+          <BackButton href={`/parents`} />
           <Link href={`/parents/edit/${parentId}`}>
             <Button>{t("editParent")}</Button>
           </Link>

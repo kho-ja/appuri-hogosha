@@ -28,6 +28,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import { Plus } from "lucide-react";
 
 export default function Groups() {
   const t = useTranslations("groups");
@@ -41,7 +42,7 @@ export default function Groups() {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    
+
     params.set("page", page.toString());
     params.set("search", search);
 
@@ -131,7 +132,9 @@ export default function Groups() {
         <div className="w-full flex justify-between">
           <h1 className="text-3xl w-2/4 font-bold">{t("groups")}</h1>
           <Link href={`${pathName}/create`}>
-            <Button>{t("creategroup")}</Button>
+            <Button icon={<Plus className="h-5 w-5" />}>
+              {t("creategroup")}
+            </Button>
           </Link>
         </div>
         <div className="flex flex-wrap justify-between">

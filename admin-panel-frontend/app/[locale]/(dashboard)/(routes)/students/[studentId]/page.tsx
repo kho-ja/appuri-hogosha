@@ -13,6 +13,7 @@ import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisStudent({
   params: { studentId },
@@ -61,10 +62,8 @@ export default function ThisStudent({
     <div className="space-y-4">
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
-        <div className="space-x-2">
-          <Link href={`/students/`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+        <div className="flex space-x-2">
+          <BackButton href={`/students/`} />
           <Link href={`/students/edit/${studentId}`}>
             <Button>{t("EditStudent")}</Button>
           </Link>

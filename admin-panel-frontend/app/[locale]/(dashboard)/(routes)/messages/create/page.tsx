@@ -51,6 +51,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -198,7 +199,7 @@ export default function SendMessagePage() {
   const handleRemoveImg = () => {
     form.setValue("image", "");
     setFileKey((prev) => prev + 1);
-  }
+  };
 
   return (
     <div className="w-full">
@@ -210,7 +211,7 @@ export default function SendMessagePage() {
         >
           <div className="flex flex-row justify-between items-center">
             <h1 className="text-3xl font-bold">{t("sendMessage")}</h1>
-            <div className="space-x-4">
+            <div className="flex space-x-4">
               <DraftsDialog
                 draftsDataProp={draftsData}
                 handleSelectedDraft={handleSelectedDraft}
@@ -218,11 +219,7 @@ export default function SendMessagePage() {
               <Link href="/fromcsv/message">
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
-              <Link href="/messages" passHref>
-                <Button type="button" variant={"secondary"}>
-                  {t("back")}
-                </Button>
-              </Link>
+              <BackButton href={`/messages`} />
             </div>
           </div>
           <FormField
@@ -321,7 +318,10 @@ export default function SendMessagePage() {
                 {form.getValues("image") && (
                   <div className="flex justify-start">
                     <div className="relative mt-2">
-                      <div className="absolute top-0 right-0 translate-x-[25%] -translate-y-[25%]" onClick={handleRemoveImg}>
+                      <div
+                        className="absolute top-0 right-0 translate-x-[25%] -translate-y-[25%]"
+                        onClick={handleRemoveImg}
+                      >
                         <X className="h-7 w-7 bg-red-500 rounded-full cursor-pointer hover:bg-red-600 aspect-square p-1 font-bold" />
                       </div>
                       <Image

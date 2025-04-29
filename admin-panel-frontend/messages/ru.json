@@ -1103,5 +1103,8 @@
     "back": "Назад",
     "recieversChanged": "Получатели изменены",
     "post_sender_updated_successfully": "Отправитель поста успешно обновлён"
+  },
+  "BackButton": {
+    "back": "Назад"
   }
 }

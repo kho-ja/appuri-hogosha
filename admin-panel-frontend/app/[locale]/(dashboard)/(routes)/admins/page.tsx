@@ -28,6 +28,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import { Plus } from "lucide-react";
 
 export default function Admins() {
   const t = useTranslations("admins");
@@ -134,7 +135,9 @@ export default function Admins() {
         <div className="w-full flex justify-between">
           <h1 className="text-3xl w-2/4 font-bold">{t("admins")}</h1>
           <Link href={`./admins/create`}>
-            <Button>{t("createadmin")}</Button>
+            <Button icon={<Plus className="h-5 w-5" />}>
+              {t("createadmin")}
+            </Button>
           </Link>
         </div>
         <div className="flex flex-wrap justify-between">

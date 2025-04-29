@@ -42,6 +42,7 @@ import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Post from "@/types/post";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function MessageFromCSV() {
   const t = useTranslations("fromcsv");
@@ -92,12 +93,8 @@ export default function MessageFromCSV() {
   return (
     <main className="space-y-4">
       <div className="flex justify-between">
-        <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>
-        <Link href="/messages/create" passHref>
-          <Button type="button" variant={"secondary"}>
-            {t("back")}
-          </Button>
-        </Link>
+        <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>А
+        <BackButton href={`/messages/create`} />
       </div>
       <Card className="p-5 space-y-2">
         <Form {...form}>

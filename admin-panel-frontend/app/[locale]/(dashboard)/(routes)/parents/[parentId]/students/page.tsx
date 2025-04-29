@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function EditStudents({
   params: { parentId },
@@ -49,9 +50,7 @@ export default function EditStudents({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("editParentStudents")}</h1>
         <div className="space-x-2">
-          <Link href={`/parents/${parentId}`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+          <BackButton href={`/parents/${parentId}`} />
         </div>
       </div>
 
@@ -66,7 +65,9 @@ export default function EditStudents({
           selectedStudents={selectedStudents}
           setSelectedStudents={setSelectedStudents}
         />
-        <Button isLoading={isPending || isLoading}>{t("editParentStudents")}</Button>
+        <Button isLoading={isPending || isLoading}>
+          {t("editParentStudents")}
+        </Button>
       </form>
     </div>
   );

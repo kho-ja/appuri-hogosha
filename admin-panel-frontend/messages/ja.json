@@ -1104,5 +1104,8 @@
     "back": "戻る",
     "recieversChanged": "受信者が変更されました",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました"
+  },
+  "BackButton": {
+    "back": "戻る"
   }
 }

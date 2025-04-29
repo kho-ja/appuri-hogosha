@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Link, useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function Recievers({
   params: { messageId },
@@ -71,9 +72,8 @@ export default function Recievers({
     <div className="flex flex-col gap-2 justify-start items-start">
       <div className="flex gap-2 justify-between items-center w-full">
         <h1 className="text-3xl font-bold mb-4">{t("ChangeRecievers")}</h1>
-        <Link href={`/messages/${messageId}`} passHref>
-          <Button variant={"secondary"}>{t("back")}</Button>
-        </Link>
+
+        <BackButton href={`/messages/${messageId}`} />
       </div>
 
       <Tabs className="w-full" defaultValue="groups">

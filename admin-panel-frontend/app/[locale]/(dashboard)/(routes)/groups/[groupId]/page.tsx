@@ -16,6 +16,7 @@ import DisplayProperty from "@/components/DisplayProperty";
 import { useState } from "react";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisGroup({
   params: { groupId },
@@ -60,9 +61,7 @@ export default function ThisGroup({
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
         <div className="flex gap-2 flex-wrap">
-          <Link href={`/groups`}>
-            <Button variant={"secondary"}>{t("back")}</Button>
-          </Link>
+          <BackButton href={`/groups`} />
           <Link href={`/groups/edit/${groupId}`}>
             <Button>{t("editGroup")}</Button>
           </Link>

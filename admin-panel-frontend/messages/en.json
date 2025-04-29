@@ -1105,5 +1105,8 @@
     "back": "Back",
     "recieversChanged": "Recievers Changed Successfully",
     "post_sender_updated_successfully": "Post sender updated successfully"
+  },
+  "BackButton": {
+    "back": "Back"
   }
 }

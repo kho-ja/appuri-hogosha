@@ -28,6 +28,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import { Plus } from "lucide-react";
 
 export default function Students() {
   const t = useTranslations("students");
@@ -63,7 +64,7 @@ export default function Students() {
     `student/export`,
     ["exportStudents"]
   );
-  
+
   useEffect(() => {
     const params = new URLSearchParams();
 
@@ -138,7 +139,7 @@ export default function Students() {
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("students")}</h1>
         <Link href={`${pathname}/create`}>
-          <Button>{t("createstudent")}</Button>
+        <Button icon={<Plus className="h-5 w-5" />}>{t("createstudent")}</Button>
         </Link>
       </div>
       <div className="flex flex-wrap justify-between w-full">
