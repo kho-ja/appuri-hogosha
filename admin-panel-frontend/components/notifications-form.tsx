@@ -176,7 +176,7 @@ export function NotificationsForm() {
           isLoading={isPending}
           disabled={!data || isLoading}
           type="submit"
-          icon={<Phone className="h-5 w-5" />}
+          icon={<Phone className="h-5 w-5 mr-1.5" />}
         >
           {t("NotificationSettingUpdate")}
         </Button>
