@@ -31,6 +31,7 @@ class StudentController implements IController {
             WHERE sp.parent_id = :parent_id;`, {
                 parent_id: req.user.id,
             });
+            console.log('unread' , students)
 
             return res.status(200).json(students).end()
         } catch (e: any) {
@@ -48,16 +49,40 @@ class StudentController implements IController {
 
     studentList = async (req: ExtendedRequest, res: Response) => {
         try {
-            const students = await DB.query(`SELECT
-                st.id,st.family_name,st.given_name,st.student_number,st.email,st.phone_number
-            FROM StudentParent as sp
-            INNER JOIN Student AS st
-            ON st.id = sp.student_id
-            WHERE sp.parent_id = :parent_id;`, {
-                parent_id: req.user.id,
+            // const students = await DB.query(`SELECT
+            //     st.id,st.family_name,st.given_name,st.student_number,st.email,st.phone_number
+            // FROM StudentParent as sp
+            // INNER JOIN Student AS st
+            // ON st.id = sp.student_id
+            // WHERE sp.parent_id = :parent_id;`, {
+            //     parent_id: req.user.id,
+            // });
+
+            // const messageNumber = await DB.query(`SELECT COUNT(*) as messageCount
+            // FROM PostStudent as ps
+            // Where ps.student_id = 144`);
+            const students = await DB.query(`
+                        SELECT 
+                            st.id,
+                            st.family_name,
+                            st.given_name,
+                            st.student_number,
+                            st.email,
+                            st.phone_number,
+                            COUNT(ps.id) AS messageCount
+                        FROM StudentParent AS sp
+                        INNER JOIN Student AS st ON st.id = sp.student_id
+                        LEFT JOIN PostStudent AS ps ON ps.student_id = st.id
+                        WHERE sp.parent_id = :parent_id
+                        GROUP BY st.id, st.family_name, st.given_name, st.student_number, st.email, st.phone_number;
+                        `, {
+                        parent_id: req.user.id,
             });
 
-            console.log(students)
+
+     
+
+            console.log('students' , students)
 
 
             return res.status(200).json(students).end()

@@ -25,6 +25,7 @@ interface Student {
   student_number: string;
   email: string;
   phone_number: string;
+  messageCount: number;
 }
 
 interface MessageRequestBody {
