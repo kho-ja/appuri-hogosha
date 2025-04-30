@@ -31,7 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
+import { Bell, EllipsisVertical } from "lucide-react";
 import { useState } from "react";
 import { BackButton } from "@/components/ui/BackButton";
 
@@ -120,9 +120,9 @@ export default function ThisStudent({
         <Dialog key={`resendParent${row.original.id}`}>
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <EllipsisVertical />
+              <Bell />
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
               <DialogTrigger>
                 <DropdownMenuItem>{t("resend")}</DropdownMenuItem>
               </DialogTrigger>
