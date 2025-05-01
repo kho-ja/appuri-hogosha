@@ -48,11 +48,15 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                       {student.email}
                     </ThemedText>
                   </View>
-                  <ThemedView style={styles.MessageCount}>
-                    <ThemedText style={styles.MessageCountText}>
-                      {student.messageCount}
-                    </ThemedText>
-                  </ThemedView>
+                  <ThemedText>
+                    {student.unread_count ? (
+                      <ThemedView style={styles.MessageCount}>
+                        <ThemedText style={styles.MessageCountText}>
+                          {student.unread_count}
+                        </ThemedText>
+                      </ThemedView>
+                    ) : null}
+                  </ThemedText>
                 </ThemedView>
               </Pressable>
             </React.Fragment>
