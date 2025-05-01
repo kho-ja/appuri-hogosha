@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
-import { Pressable, StyleSheet, Image, View } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import { Pressable, StyleSheet, Image, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -38,14 +39,25 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                   }}
                   style={styles.studentAvatar}
                 />
-                <View>
-                  <ThemedText style={styles.studentName}>
-                    {student.given_name}
+                <ThemedView style={styles.StudentContainer}>
+                  <View>
+                    <ThemedText style={styles.studentName}>
+                      {student.given_name}
+                    </ThemedText>
+                    <ThemedText style={styles.studentEmail}>
+                      {student.email}
+                    </ThemedText>
+                  </View>
+                  <ThemedText>
+                    {student.unread_count ? (
+                      <ThemedView style={styles.MessageCount}>
+                        <ThemedText style={styles.MessageCountText}>
+                          {student.unread_count}
+                        </ThemedText>
+                      </ThemedView>
+                    ) : null}
                   </ThemedText>
-                  <ThemedText style={styles.studentEmail}>
-                    {student.email}
-                  </ThemedText>
-                </View>
+                </ThemedView>
               </Pressable>
             </React.Fragment>
           ))}
@@ -89,5 +101,24 @@ const styles = StyleSheet.create({
   studentEmail: {
     fontSize: 14,
     color: 'gray',
+  },
+  MessageCount: {
+    width: 25,
+    height: 25,
+    borderRadius: 15,
+    backgroundColor: '#005678',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  MessageCountText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  StudentContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
