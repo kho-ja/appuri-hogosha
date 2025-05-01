@@ -49,7 +49,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, 
       }`}
       onClick={onLinkClick}
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-4 w-4" />
       {isMenuOpen && <span>{name}</span>}
       {!!notificationCount && (
         <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
