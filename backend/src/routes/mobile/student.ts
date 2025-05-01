@@ -49,18 +49,6 @@ class StudentController implements IController {
 
     studentList = async (req: ExtendedRequest, res: Response) => {
         try {
-            // const students = await DB.query(`SELECT
-            //     st.id,st.family_name,st.given_name,st.student_number,st.email,st.phone_number
-            // FROM StudentParent as sp
-            // INNER JOIN Student AS st
-            // ON st.id = sp.student_id
-            // WHERE sp.parent_id = :parent_id;`, {
-            //     parent_id: req.user.id,
-            // });
-
-            // const messageNumber = await DB.query(`SELECT COUNT(*) as messageCount
-            // FROM PostStudent as ps
-            // Where ps.student_id = 144`);
             const students = await DB.query(`
                         SELECT 
                             st.id,
@@ -78,13 +66,7 @@ class StudentController implements IController {
                         `, {
                         parent_id: req.user.id,
             });
-
-
-     
-
-            console.log('students' , students)
-
-
+            
             return res.status(200).json(students).end()
         } catch (e: any) {
             if (e.status) {

@@ -39,14 +39,7 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                   }}
                   style={styles.studentAvatar}
                 />
-                <ThemedView
-                  style={{
-                    flexDirection: 'row',
-                    flex: 1,
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
+                <ThemedView style={styles.StudentContainer}>
                   <View>
                     <ThemedText style={styles.studentName}>
                       {student.given_name}
@@ -55,23 +48,8 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                       {student.email}
                     </ThemedText>
                   </View>
-                  <ThemedView
-                    style={{
-                      width: 25,
-                      height: 25,
-                      borderRadius: 15,
-                      backgroundColor: '#005678',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <ThemedText
-                      style={{
-                        fontSize: 12,
-                        color: '#fff',
-                        fontWeight: 'bold',
-                      }}
-                    >
+                  <ThemedView style={styles.MessageCount}>
+                    <ThemedText style={styles.MessageCountText}>
                       {student.messageCount}
                     </ThemedText>
                   </ThemedView>
@@ -119,5 +97,24 @@ const styles = StyleSheet.create({
   studentEmail: {
     fontSize: 14,
     color: 'gray',
+  },
+  MessageCount: {
+    width: 25,
+    height: 25,
+    borderRadius: 15,
+    backgroundColor: '#005678',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  MessageCountText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  StudentContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
