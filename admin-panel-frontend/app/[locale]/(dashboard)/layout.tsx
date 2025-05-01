@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/navigation";
-import { Bell, CircleUser, Menu, Package2 } from "lucide-react";
+import { Bell, CircleUser, Menu, Package2, ChevronLeft, ChevronRight } from "lucide-react"; // ChevronLeft va ChevronRight import qilindi
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("app");
   const tName = useTranslations("names");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(true); 
 
   const user = session?.user as User;
 
@@ -38,31 +39,41 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full">
-      <div className="fixed top-0 bottom-0 left-0 z-20 hidden md:block w-[220px] lg:w-[280px] border-r bg-muted/40 overflow-y-auto">
+      <div
+        className={`fixed top-0 bottom-0 left-0 z-20 hidden md:block ${
+          isMenuOpen ? "w-[220px] lg:w-[280px]" : "w-[60px]"
+        } border-r bg-muted/40 overflow-y-auto transition-all duration-300`}
+      >
         <div className="flex h-full flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link
-              href="/"
-              className="flex items-center gap-2 font-semibold leading-none"
-            >
-              <Package2 className="h-6 w-6" />
-              <span className="">{session && session?.schoolName}</span>
-            </Link>
+          <Link
+            href="/"
+            className={`flex items-center gap-2 font-semibold leading-none ${
+              !isMenuOpen && "justify-center"
+            }`} 
+          >
+            <Package2 className="h-6 w-6" /> 
+            {isMenuOpen && <span>{session && session?.schoolName}</span>}
+          </Link>
             {/* <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
               <Bell className="h-4 w-4" />
               <span className="sr-only">{t("notifications")}</span>
             </Button> */}
           </div>
           <div className="flex-1">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-              <NavLinks user={user} />
-            </nav>
+          <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+            <NavLinks user={user} isMenuOpen={isMenuOpen} />
+          </nav>
           </div>
         </div>
       </div>
-      <div className="flex flex-col flex-1 md:ml-[220px] lg:ml-[280px] min-w-0">
+      <div
+        className={`flex flex-col flex-1 ${
+          isMenuOpen ? "md:ml-[220px] lg:ml-[280px]" : "md:ml-[60px]"
+        } min-w-0 transition-all duration-300`}
+      >
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
@@ -82,10 +93,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Package2 className="h-6 w-6" />
                   <span className="">{session && session?.schoolName}</span>
                 </Link>
-                <NavLinks user={user} onLinkClick={() => setIsSheetOpen(false)} />
-              </nav>
+                <NavLinks user={user} isMenuOpen={true} onLinkClick={() => setIsSheetOpen(false)} />
+                </nav>
             </SheetContent>
           </Sheet>
+          <div className="hidden md:block">
+            <Button
+                variant="outline"
+                size="icon"
+                className="ml-auto h-10 w-10"
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+              >
+                {isMenuOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </Button>
+            </div>
           <div className="sm:flex gap-2 hidden">
             <LanguageSelect />
             <ToggleMode />

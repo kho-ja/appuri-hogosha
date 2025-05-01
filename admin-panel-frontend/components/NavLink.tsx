@@ -11,10 +11,11 @@ interface NavLinkProps {
   Icon: React.ElementType;
   name: string;
   badge?: number;
+  isMenuOpen?: boolean;
   onLinkClick?: () => void;
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, badge, onLinkClick }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, onLinkClick }) => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { data: notificationCount } = useQuery<number>({
@@ -48,8 +49,8 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, badge, onLinkClick 
       }`}
       onClick={onLinkClick}
     >
-      <Icon className="h-4 w-4" />
-      {name}
+      <Icon className="h-5 w-5" />
+      {isMenuOpen && <span>{name}</span>}
       {!!notificationCount && (
         <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
           {notificationCount}
