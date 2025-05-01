@@ -116,18 +116,14 @@ export default function ThisStudent({
     },
     {
       header: t("Actions"),
+      meta: {
+        notClickable: true,
+      },
       cell: ({ row }) => (
         <Dialog key={`resendParent${row.original.id}`}>
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Bell />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-              <DialogTrigger>
-                <DropdownMenuItem>{t("resend")}</DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <DialogTrigger>
+            <Bell />
+          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
