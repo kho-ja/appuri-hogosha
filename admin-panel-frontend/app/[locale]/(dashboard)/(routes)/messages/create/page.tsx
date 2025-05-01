@@ -209,9 +209,9 @@ export default function SendMessagePage() {
           ref={formRef}
           className="space-y-4"
         >
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-wrap gap-4 sm:flex-row justify-between items-center space-y-0">
             <h1 className="text-3xl font-bold">{t("sendMessage")}</h1>
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap gap-4">
               <DraftsDialog
                 draftsDataProp={draftsData}
                 handleSelectedDraft={handleSelectedDraft}
