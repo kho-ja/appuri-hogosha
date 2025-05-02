@@ -7,6 +7,9 @@ import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
+import { color } from '@rneui/base';
+import { Colors } from '@/constants/Colors';
+
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -21,6 +24,18 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     };
     const { theme } = useTheme();
     const backgroundColor = theme.colors.background;
+    const borderColor = theme.colors.black;
+    const avatarColors = ['#fc958d', '#fc9abc', '#c45ad6', '#8191eb', '#03a9f4', '#68bab3', '#7feb83', '#f7c274', '#f2b49d', '#e1f296', '#f7a6a6'];
+
+    const getConsistentAvatarColor = (id: number) => {
+      const key = id.toString();
+      let hash = 0;
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const index = Math.abs(hash % avatarColors.length);
+      return avatarColors[index];
+    };
 
     return (
       <View style={[styles.card, { backgroundColor }]}>
@@ -33,12 +48,17 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                 style={styles.studentEntry}
                 onPress={() => handleStudentSelect(student)}
               >
-                <Image
+                <ThemedView style={[styles.studentAvatar, { backgroundColor: getConsistentAvatarColor(student.id), borderColor: borderColor }]}>
+                  <Text style={{ fontWeight: 'bold' }}>
+                    {student.given_name.charAt(0)}{student.given_name.charAt(1)}
+                  </Text>
+                </ThemedView>
+                {/* <Image
                   source={{
                     uri: 'https://vectorenok.ru/wp-content/uploads/2021/12/%D0%B2%D0%B5%D0%BA%D1%82_%D1%84%D0%BE%D0%BD.png',
                   }}
                   style={styles.studentAvatar}
-                />
+                /> */}
                 <ThemedView style={styles.StudentContainer}>
                   <View>
                     <ThemedText style={styles.studentName}>
@@ -93,6 +113,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   studentName: {
     fontSize: 16,
