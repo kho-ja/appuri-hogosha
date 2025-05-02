@@ -50,7 +50,7 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
               >
                 <ThemedView style={[styles.studentAvatar, { backgroundColor: getConsistentAvatarColor(student.id), borderColor: borderColor }]}>
                   <Text style={{ fontWeight: 'bold' }}>
-                    {student.given_name.charAt(0)}{student.given_name.charAt(1)}
+                    {student.given_name.charAt(0).toUpperCase()}{student.given_name.charAt(1)}
                   </Text>
                 </ThemedView>
                 {/* <Image
