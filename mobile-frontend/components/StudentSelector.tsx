@@ -53,12 +53,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                     {student.given_name.charAt(0).toUpperCase()}{student.given_name.charAt(1)}
                   </Text>
                 </ThemedView>
-                {/* <Image
-                  source={{
-                    uri: 'https://vectorenok.ru/wp-content/uploads/2021/12/%D0%B2%D0%B5%D0%BA%D1%82_%D1%84%D0%BE%D0%BD.png',
-                  }}
-                  style={styles.studentAvatar}
-                /> */}
                 <ThemedView style={styles.StudentContainer}>
                   <View>
                     <ThemedText style={styles.studentName}>
