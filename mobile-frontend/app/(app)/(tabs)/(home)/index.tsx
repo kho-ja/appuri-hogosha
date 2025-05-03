@@ -12,7 +12,7 @@ import { RefreshControl, ScrollView } from 'react-native-gesture-handler';
 
 const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const { students, isLoading, refetch } = useStudents(); // Fetch students from context
+  const { students, refetch } = useStudents(); // Fetch students from context
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   // Loading state while students are being fetched
@@ -54,7 +54,7 @@ const HomeScreen = () => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      style = {{ backgroundColor }}
+      style={{ backgroundColor }}
     >
       <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
         <StudentSelector students={students} />

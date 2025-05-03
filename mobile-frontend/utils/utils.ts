@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { DevicePushToken } from 'expo-notifications';
 import * as Device from 'expo-device';
 
 type Style = { [key: string]: any } | undefined | null | false;
@@ -25,38 +24,40 @@ export function formatDate(input: string | number): string {
   });
 }
 
-export const sendPushTokenToBackend = (token: DevicePushToken) => {
-  AsyncStorage.getItem('session')
-    .then(sessionToken => {
-      if (!sessionToken) {
-        console.warn(
-          'No session token found. Cannot send push token to backend.'
-        );
-        return;
-      }
+/**
+ * Upload the push‑token to your backend.
+ * Returns `true` when the request was accepted (2xx),
+ * `false` on any other outcome — but never *throws*.
+ */
+export async function sendPushTokenToBackend(token: string): Promise<boolean> {
+  try {
+    const session = await AsyncStorage.getItem('session');
+    if (!session) {
+      console.warn('[Push] No session found → token not uploaded');
+      return false;
+    }
 
-      return fetch(`${process.env.EXPO_PUBLIC_API_URL}/device-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
-        },
-        body: JSON.stringify({ token: token }),
-      });
-    })
-    .then(response => {
-      if (!response) return;
-
-      if (!response.ok) {
-        return response.json().then(errorData => {
-          console.error('Failed to send push token:', errorData);
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error sending push token to backend:', error);
+    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/device-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session}`,
+      },
+      body: JSON.stringify({ token }),
     });
-};
+
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      console.warn('[Push] Upload failed →', detail);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Push] Network error while uploading token →', err);
+    return false;
+  }
+}
 
 export async function registerForPushNotificationsAsync() {
   if (Platform.OS === 'android') {
