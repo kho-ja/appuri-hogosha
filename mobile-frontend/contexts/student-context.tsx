@@ -17,8 +17,8 @@ interface StudentContextValue {
   students: Student[] | null;
   activeStudent: Student | null;
   setActiveStudent: (student: Student) => void;
-  refetch: () => void,
-  isLoading: boolean,
+  refetch: () => void;
+  isLoading: boolean;
 }
 
 const StudentContext = createContext<StudentContextValue>({
@@ -70,7 +70,14 @@ export function StudentProvider(props: PropsWithChildren) {
     [db]
   );
 
-  const { data, error, isError, isSuccess, refetch, isFetching: isLoading } = useQuery<Student[], Error>({
+  const {
+    data,
+    error,
+    isError,
+    isSuccess,
+    refetch,
+    isFetching: isLoading,
+  } = useQuery<Student[], Error>({
     queryKey: ['students'],
     queryFn: async () => {
       if (isOnline) {

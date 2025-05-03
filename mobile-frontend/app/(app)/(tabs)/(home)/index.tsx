@@ -54,7 +54,7 @@ const HomeScreen = () => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      style = {{ backgroundColor }}
+      style={{ backgroundColor }}
     >
       <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
         <StudentSelector students={students} />
