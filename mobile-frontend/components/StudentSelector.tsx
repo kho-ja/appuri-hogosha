@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Pressable, StyleSheet, Image, View, Text } from 'react-native';
+import { Pressable, StyleSheet, Image, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
