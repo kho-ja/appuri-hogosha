@@ -2,14 +2,11 @@ import React, { useContext } from 'react';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Pressable, StyleSheet, Image, View } from 'react-native';
+import { Pressable, StyleSheet, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
-import { color } from '@rneui/base';
-import { Colors } from '@/constants/Colors';
-
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -25,7 +22,19 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     const { theme } = useTheme();
     const backgroundColor = theme.colors.background;
     const borderColor = theme.colors.black;
-    const avatarColors = ['#fc958d', '#fc9abc', '#c45ad6', '#8191eb', '#03a9f4', '#68bab3', '#7feb83', '#f7c274', '#f2b49d', '#e1f296', '#f7a6a6'];
+    const avatarColors = [
+      '#fc958d',
+      '#fc9abc',
+      '#c45ad6',
+      '#8191eb',
+      '#03a9f4',
+      '#68bab3',
+      '#7feb83',
+      '#f7c274',
+      '#f2b49d',
+      '#e1f296',
+      '#f7a6a6',
+    ];
 
     const getConsistentAvatarColor = (id: number) => {
       const key = id.toString();
@@ -48,9 +57,18 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                 style={styles.studentEntry}
                 onPress={() => handleStudentSelect(student)}
               >
-                <ThemedView style={[styles.studentAvatar, { backgroundColor: getConsistentAvatarColor(student.id), borderColor: borderColor }]}>
+                <ThemedView
+                  style={[
+                    styles.studentAvatar,
+                    {
+                      backgroundColor: getConsistentAvatarColor(student.id),
+                      borderColor: borderColor,
+                    },
+                  ]}
+                >
                   <Text style={{ fontWeight: 'bold' }}>
-                    {student.given_name.charAt(0).toUpperCase()}{student.given_name.charAt(1)}
+                    {student.given_name.charAt(0).toUpperCase()}
+                    {student.given_name.charAt(1)}
                   </Text>
                 </ThemedView>
                 <ThemedView style={styles.StudentContainer}>
