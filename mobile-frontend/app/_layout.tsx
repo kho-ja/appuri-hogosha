@@ -21,6 +21,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -29,7 +31,8 @@ function useNotificationObserver() {
     let isMounted = true;
 
     function redirect(notification: Notifications.Notification) {
-      const url = notification.request.content.data?.url;
+      const url = notification.request.content.data?.url as string;
+      console.log('Notification URL:', url);
       if (url) {
         router.push(url);
       }
