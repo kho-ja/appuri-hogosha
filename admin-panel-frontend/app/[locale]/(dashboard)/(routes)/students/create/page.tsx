@@ -96,10 +96,10 @@ export default function CreateStudent() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateStudent")}</h1>
+      <div className="flex flex-wrap gap-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+        <h1 className="text-3xl font-bold sm:w-auto w-full">{t("CreateStudent")}</h1>
 
-        <div className="flex gap-2.5">
+        <div className="flex flex-wrap gap-4">
           <Link href="/fromKintone/student">
             <Button variant={"secondary"}>{t("createFromKintone")}</Button>
           </Link>

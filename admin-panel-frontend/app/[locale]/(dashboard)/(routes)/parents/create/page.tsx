@@ -92,15 +92,16 @@ export default function CreateParent() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateParent")}</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-wrap gap-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+        <h1 className="text-3xl font-bold sm:w-auto w-full">{t("CreateParent")}</h1>
+        
+        <div className="flex flex-wrap gap-4">
           <Link href="/fromKintone/parent">
             <Button variant={"secondary"}>{t("createFromKintone")}</Button>
           </Link>
 
           <Link href="/fromcsv/parent">
-            <Button variant={"secondary"}>
+            <Button variant={"secondary"} className="flex items-center">
               <div className="bg-gray-200 p-1 rounded-sm mr-2">
                 <svg
                   className="w-4 h-4 text-gray-600"

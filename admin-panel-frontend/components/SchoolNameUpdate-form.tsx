@@ -99,18 +99,18 @@ export function SchoolNameUpdate() {
             <FormDescription>{t("SchoolNameDescription")}</FormDescription>
           </div>
 
-          <div className="flex flex-row gap-4 items-center mt-2">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mt-2">
             <FormField
               control={form.control}
               name={"name"}
               render={({ field }) => (
-                <FormItem>
-                  <div className="flex gap-2 place-items-center">
+                <FormItem className="w-full sm:w-auto">
+                  <div className="flex gap-2 place-items-center w-full">
                     <FormControl>
                       <Input
                         {...field}
                         placeholder={t("SchoolName")}
-                        className="w-[300px]"
+                        className="w-full sm:w-[300px]"
                       />
                     </FormControl>
                     <FormMessage />
@@ -122,6 +122,7 @@ export function SchoolNameUpdate() {
               isLoading={isPending || !data || isLoading}
               type="submit"
               icon={<University className="h-5 w-5" />}
+              className="w-full sm:w-auto"
             >
               {t("SchoolNameEditBtn")}
             </Button>

@@ -93,7 +93,7 @@ export default function MessageFromCSV() {
   return (
     <main className="space-y-4">
       <div className="flex justify-between">
-        <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>А
+        <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>
         <BackButton href={`/messages/create`} />
       </div>
       <Card className="p-5 space-y-2">

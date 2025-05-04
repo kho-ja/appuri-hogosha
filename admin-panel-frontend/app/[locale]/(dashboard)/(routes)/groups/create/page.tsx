@@ -73,10 +73,10 @@ export default function CreateGroup() {
   }, [form]);
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateGroup")}</h1>
-        <div className="flex gap-2">
+    <div className="flex flex-col">
+      <div className="flex flex-wrap gap-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+        <h1 className="text-3xl font-bold sm:w-auto w-full">{t("CreateGroup")}</h1>
+        <div className="flex flex-wrap gap-4">
           <Link href="/fromcsv/group">
             <Button variant={"secondary"}>
               <div className="bg-gray-200 p-1 rounded-sm mr-2">
