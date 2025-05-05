@@ -112,7 +112,7 @@ export default function Root() {
       // }
       try{
         const token = await registerForPushNotificationsAsync();
-        await AsyncStorage.setItem('expoPushToken', token ? '': token);
+        await AsyncStorage.setItem('expoPushToken', token ? token : '');
       } catch ( error: any ){
         console.error('Push notification error:', error);
       }
