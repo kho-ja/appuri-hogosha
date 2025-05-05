@@ -1,7 +1,8 @@
 import React from 'react';
 import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { sendPushTokenToBackend } from '@/utils/utils';
+import { registerForPushNotificationsAsync, sendPushTokenToBackend } from '@/utils/utils';
 import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
 import { RootSiblingParent } from 'react-native-root-siblings';
@@ -15,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { theme } from '@/constants/theme';
 import { initPushNotifications } from '@/utils/notifications';
+import { redirectSystemPath } from "@/+native-intent";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -34,7 +36,8 @@ function useNotificationObserver() {
       const url = notification.request.content.data?.url as string;
       console.log('Notification URL:', url);
       if (url) {
-        router.push(url);
+        const processedPath = redirectSystemPath({ path: url, initial: false });
+        router.push(processedPath);
       }
     }
 
@@ -69,6 +72,9 @@ function useNotificationObserver() {
 }
 export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
+
+  //Theme mode provider
+
   React.useEffect(() => {
     // Load saved theme
     AsyncStorage.getItem('themeMode').then(savedMode => {
@@ -88,19 +94,27 @@ export default function Root() {
     [themeMode]
   );
 
+
+
   React.useEffect(() => {
     (async () => {
-      const result = await initPushNotifications();
-
-      if (result.status === 'granted' && result.token) {
-        await sendPushTokenToBackend(result.token);
-      } else if (result.status === 'denied') {
-        // Optional UI: guide users to Settings ➜ Notifications
-        console.log('[Push] User denied permission');
-      } else if (result.status === 'device_unsupported') {
-        console.log('[Push] Running in an emulator / web – skipping push');
-      } else if (result.status === 'error') {
-        // Already logged, but you could show a toast here
+      // const result = await initPushNotifications();
+      //
+      // if (result.status === 'granted' && result.token) {
+      //   await sendPushTokenToBackend(result.token);
+      // } else if (result.status === 'denied') {
+      //   // Optional UI: guide users to Settings ➜ Notifications
+      //   console.log('[Push] User denied permission');
+      // } else if (result.status === 'device_unsupported') {
+      //   console.log('[Push] Running in an emulator / web – skipping push');
+      // } else if (result.status === 'error') {
+      //   // Already logged, but you could show a toast here
+      // }
+      try{
+        const token = await registerForPushNotificationsAsync();
+        await AsyncStorage.setItem('expoPushToken', token ? '': token);
+      } catch ( error: any ){
+        console.error('Push notification error:', error);
       }
     })();
 
@@ -111,7 +125,24 @@ export default function Root() {
 
     return () => sub.remove();
   }, []);
+  React.useEffect(() => {
+    const handleDeepLink = ({ url } : any ) => {
+      if (url) {
+        const processedPath = redirectSystemPath({ path: url, initial: false });
+        router.push(processedPath);
+      }
+    };
 
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        const processedPath = redirectSystemPath({ path: url, initial: true });
+        router.push(processedPath);
+      }
+    });
+
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, []);
   useNotificationObserver();
 
   const queryClient = new QueryClient();
