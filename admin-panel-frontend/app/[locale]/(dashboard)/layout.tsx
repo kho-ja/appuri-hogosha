@@ -61,7 +61,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {isMenuOpen !== undefined && (
         <div
           className={`fixed top-0 bottom-0 left-0 z-20 hidden md:block ${
-            isMenuOpen ? "w-[220px] lg:w-[280px]" : "w-[80px]"
+            isMenuOpen ? "w-[220px] lg:w-[280px]" : "w-[75px]"
           } border-r bg-muted/40 overflow-y-auto transition-[width] duration-300 ease-in-out`}
         >
           <div className="flex flex-col gap-2 h-[100dvh]">
@@ -86,7 +86,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       )}
       <div
         className={`flex flex-col flex-1 ${
-          isMenuOpen ? "md:ml-[220px] lg:ml-[280px]" : "md:ml-[60px]"
+          isMenuOpen ? "md:ml-[220px] lg:ml-[280px]" : "md:ml-[75px]"
         } min-w-0 transition-all duration-300`}
       >
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
@@ -103,7 +103,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="flex flex-col w-[280px] max-w-[80vw]"
+              className="flex flex-col w-[280px] max-w-[75vw]"
             >
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
