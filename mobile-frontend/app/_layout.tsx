@@ -125,24 +125,29 @@ export default function Root() {
 
     return () => sub.remove();
   }, []);
-  React.useEffect(() => {
-    const handleDeepLink = ({ url } : any ) => {
+  React.useEffect(()=>{
+    // this should handle deep linking
+    const handleDeepLink = ({url}:{url: string}) => {
       if (url) {
         const processedPath = redirectSystemPath({ path: url, initial: false });
         router.push(processedPath);
       }
-    };
+    }
 
-    Linking.getInitialURL().then((url) => {
+
+    Linking.getInitialURL().then(url => {
       if (url) {
         const processedPath = redirectSystemPath({ path: url, initial: true });
         router.push(processedPath);
       }
-    });
+    })
+    const subscription = Linking.addEventListener('url', handleDeepLink)
 
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-    return () => subscription.remove();
-  }, []);
+    return () => {
+      subscription.remove()
+    }
+
+  }, [])
   useNotificationObserver();
 
   const queryClient = new QueryClient();
