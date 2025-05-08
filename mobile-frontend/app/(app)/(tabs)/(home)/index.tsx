@@ -44,9 +44,9 @@ const HomeScreen = () => {
   }
 
   // If there's only one student, show their messages directly
-  if (students.length === 1) {
-    return <MessageList studentId={students[0].id} />;
-  }
+  // if (students.length === 1) {
+  //   return <MessageList studentId={students[0].id} />;
+  // }
 
   // If there are multiple students, show the selection list
   return (
