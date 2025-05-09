@@ -42,6 +42,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -129,10 +130,9 @@ export default function SendMessagePage({
           onSubmit={form.handleSubmit((values) => mutate(values as any))}
           className="space-y-4"
         >
-          <div className="flex flex-row justify-between items-center">
-            <h1 className="text-3xl font-bold">{t("editMessage")}</h1>
-            <BackButton href={`/messages/${messageId}`} />
-          </div>
+        <PageHeader title={t("editMessage")}>
+          <BackButton href={`/messages/${messageId}`} />
+        </PageHeader>
 
           <FormField
             control={form.control}

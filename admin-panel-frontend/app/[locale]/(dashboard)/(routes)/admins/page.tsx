@@ -29,6 +29,7 @@ import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
+import { ListPageHeader } from "@/components/ListPageHeader";
 
 export default function Admins() {
   const t = useTranslations("admins");
@@ -132,15 +133,14 @@ export default function Admins() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <div className="w-full flex justify-between">
-          <h1 className="text-3xl w-2/4 font-bold">{t("admins")}</h1>
-          <Link href={`./admins/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("createadmin")}
-            </Button>
-          </Link>
-        </div>
-        <div className="flex flex-wrap justify-between">
+      <ListPageHeader title={t("admins")}>
+        <Link href={`./admins/create`}>
+          <Button icon={<Plus className="h-5 w-5" />}>
+            {t("createadmin")}
+          </Button>
+        </Link>
+      </ListPageHeader>
+        <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -148,7 +148,7 @@ export default function Admins() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm mb-4"
+            className="sm:max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />

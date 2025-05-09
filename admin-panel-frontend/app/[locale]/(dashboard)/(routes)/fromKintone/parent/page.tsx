@@ -44,6 +44,7 @@ import Parent from "@/types/parent";
 import { useEffect } from "react";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   kintoneUrl: z.string().url(),
@@ -110,10 +111,9 @@ export default function CreateFromKintone() {
 
   return (
     <main className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-3xl font-bold">{t("createParentFromKintone")}</h1>
+      <PageHeader title={t("createParentFromKintone")}>
         <BackButton href={`/parents/create`} />
-      </div>
+      </PageHeader>
       <Card className="p-5 space-y-2">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

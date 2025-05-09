@@ -29,6 +29,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
+import { ListPageHeader } from "@/components/ListPageHeader";
 
 export default function Groups() {
   const t = useTranslations("groups");
@@ -129,15 +130,14 @@ export default function Groups() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <div className="w-full flex justify-between">
-          <h1 className="text-3xl w-2/4 font-bold">{t("groups")}</h1>
+        <ListPageHeader title={t("groups")}>
           <Link href={`${pathName}/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("creategroup")}
             </Button>
           </Link>
-        </div>
-        <div className="flex flex-wrap justify-between">
+        </ListPageHeader>
+        <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -145,7 +145,7 @@ export default function Groups() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm mb-4"
+            className="sm:max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination || null} setPage={setPage} />

@@ -27,6 +27,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { Plus } from "lucide-react";
+import { ListPageHeader } from "@/components/ListPageHeader";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -153,12 +154,11 @@ export default function Info() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
+      <ListPageHeader title={t("posts")}>
         <Link href={`${pathName}/create`} passHref>
           <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
         </Link>
-      </div>
+      </ListPageHeader>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
         <div className="w-full sm:max-w-sm">
           <Input

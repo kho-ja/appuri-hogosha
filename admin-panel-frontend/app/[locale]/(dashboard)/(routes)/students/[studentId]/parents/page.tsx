@@ -11,6 +11,7 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function EditParents({
   params: { studentId },
@@ -47,13 +48,9 @@ export default function EditParents({
 
   return (
     <div>
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("editStudentParents")}</h1>
-        <div className="space-x-2">
-          <BackButton href={`/students/${studentId}`} />
-        </div>
-      </div>
-
+      <PageHeader title={t("editStudentParents")}>
+        <BackButton href={`/students/${studentId}`} />
+      </PageHeader> 
       <form
         onSubmit={(event) => {
           event.preventDefault();
