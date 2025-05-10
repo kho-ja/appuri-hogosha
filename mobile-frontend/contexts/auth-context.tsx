@@ -126,6 +126,20 @@ export function SessionProvider(props: React.PropsWithChildren) {
             await db.execAsync('DELETE FROM user');
             await db.execAsync('DELETE FROM student');
             await db.execAsync('DELETE FROM message');
+
+            const refreshToken = await AsyncStorage.getItem('refresh_token');
+            if (refreshToken) {
+              await fetch(`${apiUrl}/revoke`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+              });
+            }
+
+            // Clear AsyncStorage
+            await AsyncStorage.removeItem('email');
+            await AsyncStorage.removeItem('password');
+            await AsyncStorage.removeItem('refresh_token');
           } catch (error) {
             console.error('Error during sign out:', error);
           } finally {

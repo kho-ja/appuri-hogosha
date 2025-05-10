@@ -68,6 +68,9 @@ export interface I18nContextType {
       passwordChangedSuccess: string;
       changePassword: string;
       savePassword: string;
+      textSize: string;
+      lightMode: string;
+      darkMode: string;
       /*settings*/
 
       chooseCorrectDate: string;
