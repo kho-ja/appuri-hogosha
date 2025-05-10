@@ -85,7 +85,16 @@ const navLinks = [
     nameKey: "settings",
   },
 ];
-const NavLinks = ({ user, onLinkClick }: { user: User; onLinkClick?: () => void }) => {
+
+const NavLinks = ({
+  user,
+  onLinkClick,
+  isMenuOpen,
+}: {
+  user: User;
+  onLinkClick?: () => void;
+  isMenuOpen: boolean;
+}) => {
   const t = useTranslations("nav");
 
   return (
@@ -101,7 +110,7 @@ const NavLinks = ({ user, onLinkClick }: { user: User; onLinkClick?: () => void 
             href={link.href}
             Icon={link.icon}
             name={t(link.nameKey)}
-            // badge={link?.badge}
+            isMenuOpen={isMenuOpen}
             onLinkClick={onLinkClick}
           />
         );
