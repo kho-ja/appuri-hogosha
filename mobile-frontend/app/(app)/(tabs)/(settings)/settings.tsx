@@ -194,7 +194,9 @@ export default function SettingsScreen() {
                 <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
                   <Ionicons color='#fff' name='text' size={20} />
                 </View>
-                <ThemedText style={styles.rowLabel}>Text Size</ThemedText>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].textSize}
+                </ThemedText>
                 <View style={styles.rowSpacer} />
                 <FontSizeSlider />
               </View>
