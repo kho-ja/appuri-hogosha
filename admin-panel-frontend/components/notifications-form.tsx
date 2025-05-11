@@ -173,8 +173,7 @@ export function NotificationsForm() {
         </div>
 
         <Button
-          isLoading={isPending}
-          disabled={!data || isLoading}
+          isLoading={isPending || !data || isLoading}
           type="submit"
           icon={<MessageSquareShare className="h-5 w-5" />}
         >
