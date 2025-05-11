@@ -68,8 +68,12 @@ export default function Students() {
   useEffect(() => {
     const params = new URLSearchParams();
 
-    params.set("page", page.toString());
-    params.set("search", search);
+    if (page > 1) {
+      params.set("page", page.toString());
+    }
+    if (search.trim() !== "") {
+      params.set("search", search);
+    }
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [page, search, router, pathname]);
