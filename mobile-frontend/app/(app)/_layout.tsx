@@ -35,7 +35,6 @@ export default function RootLayout() {
       <StatusBar
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
         backgroundColor={theme === 'dark' ? 'black' : 'white'}
-        translucent
       />
       <Stack initialRouteName='(tabs)'>
         <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
