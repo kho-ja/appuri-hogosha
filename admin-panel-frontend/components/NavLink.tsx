@@ -50,7 +50,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, 
   `}
   onClick={onLinkClick}
 >
-  <Icon className="h-5 w-5 min-w-[20px]" />
+  <Icon className="h-4 w-4" />
 
   <span
     className={`
