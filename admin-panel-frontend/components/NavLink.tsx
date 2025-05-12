@@ -43,30 +43,31 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, 
 
   return (
     <Link
-      href={href}
-      className={`flex items-center rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary
-        ${pathname.startsWith(href) ? "bg-muted text-primary" : ""}
-        ${isMenuOpen ? "justify-start" : "justify-center"}
-      `}
-      onClick={onLinkClick}
-    >
-      <Icon className="h-5 w-5 min-w-[20px]" />
+  href={href}
+  className={`flex items-center rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary
+    ${pathname.startsWith(href) ? "bg-muted text-primary" : ""}
+    ${isMenuOpen ? "justify-start gap-3" : "justify-center"}
+  `}
+  onClick={onLinkClick}
+>
+  <Icon className="h-5 w-5 min-w-[20px]" />
 
-      <span
-        className={`
-          transition-all duration-200 overflow-hidden whitespace-nowrap
-          ${isMenuOpen ? "opacity-100 ml-2 w-auto" : "opacity-0 w-0"}
-        `}
-      >
-        {name}
-      </span>
+  <span
+    className={`
+      transition-all duration-200 overflow-hidden whitespace-nowrap
+      ${isMenuOpen ? "opacity-100 ml-0 w-auto" : "opacity-0 w-0"}
+    `}
+  >
+    {name}
+  </span>
 
-      {!!notificationCount && isMenuOpen && (
-        <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-          {notificationCount}
-        </Badge>
-      )}
-    </Link>
+  {!!notificationCount && isMenuOpen && (
+    <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
+      {notificationCount}
+    </Badge>
+  )}
+</Link>
+
   );
 };
 

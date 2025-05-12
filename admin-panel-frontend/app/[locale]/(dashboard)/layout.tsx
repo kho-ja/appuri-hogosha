@@ -36,17 +36,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("app");
   const tName = useTranslations("names");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean | undefined>(undefined);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(() => {
+  const saved = localStorage.getItem("sidebar-open");
+  return saved === null ? true : saved === "true";
+});
+
 
   const user = session?.user as User;
 
   if (session?.error === "RefreshAccessTokenError") handleSignOut();
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-open");
-    if (saved !== null) {
-      setIsMenuOpen(saved === "true");
-    }
+  const saved = localStorage.getItem("sidebar-open");
+  if (saved !== null) {
+    setIsMenuOpen(saved === "true");
+  }
   }, []);
+
 
   const toggleSidebar = () => {
     setIsMenuOpen((prev) => {
