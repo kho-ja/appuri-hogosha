@@ -5,11 +5,10 @@ import { Edit3, Trash2 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
-import { Link, usePathname, useRouter } from "@/navigation";
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import PostApi from "@/types/postApi";
 import Post from "@/types/post";
-import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogDescription,
@@ -22,26 +21,21 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { Plus } from "lucide-react";
+import useTableQuery from "@/lib/useTableQuery";
 
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
-  const searchParams = useSearchParams();
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const searchFromUrl = searchParams.get("search") || "";
-  const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState(searchFromUrl);
+  const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<PostApi>(
     `post/list?page=${page}&text=${search}`,
     ["posts", page, search]
   );
-  const pathName = usePathname();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
@@ -58,15 +52,6 @@ export default function Info() {
       },
     }
   );
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("page", page.toString());
-    params.set("search", search);
-
-    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search, pathName, router]);
 
   const postColumns: ColumnDef<Post>[] = [
     {
@@ -113,7 +98,7 @@ export default function Info() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`${pathName}/${row.original.id}`}>
+          <Link href={`/messages/${row.original.id}`}>
             <Edit3 />
           </Link>
           <Dialog>
@@ -155,7 +140,7 @@ export default function Info() {
     <div className="w-full space-y-4">
       <div className="w-full flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
-        <Link href={`${pathName}/create`} passHref>
+        <Link href={`/messages/create`} passHref>
           <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
         </Link>
       </div>
