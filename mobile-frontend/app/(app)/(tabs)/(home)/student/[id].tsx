@@ -4,9 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 const StudentMessagesScreen = () => {
   const { id } = useLocalSearchParams();
-  console.log('id', id);
   const studentId = Number(id);
-  console.log('studentId', studentId);
   return <MessageList studentId={studentId} />;
 };
 
