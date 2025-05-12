@@ -1,12 +1,14 @@
 // components/ThemeSwitcher.tsx
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Switch, StyleSheet } from 'react-native';
 import { useThemeMode } from '@rneui/themed';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
+import { I18nContext } from '@/contexts/i18n-context';
 
 export default function ThemeSwitcher() {
   const { mode, setMode } = useThemeMode();
+  const { language, i18n, setLanguage } = useContext(I18nContext);
 
   const toggleTheme = () => {
     setMode(mode === 'light' ? 'dark' : 'light');
@@ -22,7 +24,7 @@ export default function ThemeSwitcher() {
         />
       </View>
       <ThemedText style={styles.label}>
-        {mode === 'light' ? 'Light Mode' : 'Dark Mode'}
+        {mode === 'light' ? i18n[language].lightMode : i18n[language].darkMode}
       </ThemedText>
       <View style={styles.rowSpacer} />
       <Switch

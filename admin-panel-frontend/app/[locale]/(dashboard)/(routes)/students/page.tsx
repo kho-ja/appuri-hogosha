@@ -9,8 +9,7 @@ import Student from "@/types/student";
 import StudentApi from "@/types/studentApi";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
-import { Link, usePathname, useRouter } from "@/navigation";
-import { useSearchParams } from "next/navigation";
+import { Link } from "@/navigation";
 import {
   Dialog,
   DialogClose,
@@ -23,24 +22,19 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
+import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 
 export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const searchFromUrl = searchParams.get("search") || "";
-  const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState(searchFromUrl);
+  const { page, setPage, search, setSearch } = useTableQuery();
   const { data: studentData } = useApiQuery<StudentApi>(
     `student/list?page=${page}&name=${search}`,
     ["students", page, search]
@@ -65,15 +59,6 @@ export default function Students() {
     `student/export`,
     ["exportStudents"]
   );
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("page", page.toString());
-    params.set("search", search);
-
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [page, search, router, pathname]);
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -100,7 +85,7 @@ export default function Students() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`${pathname}/${row.original.id}`}>
+          <Link href={`/students/${row.original.id}`}>
             <Edit3 />
           </Link>
           <Dialog>
@@ -138,8 +123,10 @@ export default function Students() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("students")} variant="list">
-        <Link href={`${pathname}/create`}>
-        <Button icon={<Plus className="h-5 w-5" />}>{t("createstudent")}</Button>
+        <Link href={`/students/create`}>
+          <Button icon={<Plus className="h-5 w-5" />}>
+            {t("createstudent")}
+          </Button>
         </Link>
       </PageHeader>
       <div className="flex flex-col sm:flex-row justify-between w-full">

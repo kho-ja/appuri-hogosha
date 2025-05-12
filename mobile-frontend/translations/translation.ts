@@ -59,6 +59,9 @@ export default {
     passwordChangedSuccess: 'Password changed successfully',
     changePassword: 'Change Password',
     savePassword: 'Save Password',
+    textSize: 'Text Size',
+    lightMode: 'Light Mode',
+    darkMode: 'Dark Mode',
     /*settings page*/
 
     /*message*/
@@ -142,6 +145,9 @@ export default {
     passwordChangedSuccess: 'パスワードが正常に変更されました',
     changePassword: 'パスワードを変更',
     savePassword: 'パスワードを保存',
+    textSize: '文字サイズ',
+    lightMode: 'ライトモード',
+    darkMode: 'ダークモード',
     /*settings page*/
 
     /*message*/
@@ -224,6 +230,9 @@ export default {
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
     savePassword: 'Parolni saqlash',
+    textSize: 'Matn o’lchami',
+    lightMode: "Yorug' rejim",
+    darkMode: "Qorong'u rejim",
     /*settings page*/
 
     /*message*/

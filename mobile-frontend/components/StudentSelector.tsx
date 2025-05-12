@@ -1,7 +1,8 @@
 import React, { useContext } from 'react';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
-import { Pressable, StyleSheet, Image, View } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import { Pressable, StyleSheet, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -20,6 +21,30 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     };
     const { theme } = useTheme();
     const backgroundColor = theme.colors.background;
+    const borderColor = theme.colors.black;
+    const avatarColors = [
+      '#fc958d',
+      '#fc9abc',
+      '#c45ad6',
+      '#8191eb',
+      '#03a9f4',
+      '#68bab3',
+      '#7feb83',
+      '#f7c274',
+      '#f2b49d',
+      '#e1f296',
+      '#f7a6a6',
+    ];
+
+    const getConsistentAvatarColor = (id: number) => {
+      const key = id.toString();
+      let hash = 0;
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const index = Math.abs(hash % avatarColors.length);
+      return avatarColors[index];
+    };
 
     return (
       <View style={[styles.card, { backgroundColor }]}>
@@ -32,20 +57,39 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                 style={styles.studentEntry}
                 onPress={() => handleStudentSelect(student)}
               >
-                <Image
-                  source={{
-                    uri: 'https://vectorenok.ru/wp-content/uploads/2021/12/%D0%B2%D0%B5%D0%BA%D1%82_%D1%84%D0%BE%D0%BD.png',
-                  }}
-                  style={styles.studentAvatar}
-                />
-                <View>
-                  <ThemedText style={styles.studentName}>
-                    {student.given_name}
+                <ThemedView
+                  style={[
+                    styles.studentAvatar,
+                    {
+                      backgroundColor: getConsistentAvatarColor(student.id),
+                      borderColor: borderColor,
+                    },
+                  ]}
+                >
+                  <Text style={{ fontWeight: 'bold' }}>
+                    {student.given_name.charAt(0).toUpperCase()}
+                    {student.given_name.charAt(1)}
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.StudentContainer}>
+                  <View>
+                    <ThemedText style={styles.studentName}>
+                      {student.given_name}
+                    </ThemedText>
+                    <ThemedText style={styles.studentEmail}>
+                      {student.email}
+                    </ThemedText>
+                  </View>
+                  <ThemedText>
+                    {student.unread_count ? (
+                      <ThemedView style={styles.MessageCount}>
+                        <ThemedText style={styles.MessageCountText}>
+                          {student.unread_count}
+                        </ThemedText>
+                      </ThemedView>
+                    ) : null}
                   </ThemedText>
-                  <ThemedText style={styles.studentEmail}>
-                    {student.email}
-                  </ThemedText>
-                </View>
+                </ThemedView>
               </Pressable>
             </React.Fragment>
           ))}
@@ -81,6 +125,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   studentName: {
     fontSize: 16,
@@ -89,5 +137,24 @@ const styles = StyleSheet.create({
   studentEmail: {
     fontSize: 14,
     color: 'gray',
+  },
+  MessageCount: {
+    width: 25,
+    height: 25,
+    borderRadius: 15,
+    backgroundColor: '#005678',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  MessageCountText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  StudentContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });

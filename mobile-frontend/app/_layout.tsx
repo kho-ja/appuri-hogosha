@@ -1,10 +1,7 @@
 import React from 'react';
 import * as Notifications from 'expo-notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-  registerForPushNotificationsAsync,
-  sendPushTokenToBackend,
-} from '@/utils/utils';
+import { sendPushTokenToBackend } from '@/utils/utils';
 import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
 import { RootSiblingParent } from 'react-native-root-siblings';
@@ -17,12 +14,15 @@ import { I18nProvider } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { theme } from '@/constants/theme';
+import { initPushNotifications } from '@/utils/notifications';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -31,7 +31,8 @@ function useNotificationObserver() {
     let isMounted = true;
 
     function redirect(notification: Notifications.Notification) {
-      const url = notification.request.content.data?.url;
+      const url = notification.request.content.data?.url as string;
+      console.log('Notification URL:', url);
       if (url) {
         router.push(url);
       }
@@ -88,13 +89,27 @@ export default function Root() {
   );
 
   React.useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then(token => AsyncStorage.setItem('expoPushToken', token ?? ''))
-      .catch((error: any) => console.error(`${error}`));
-    const subscription = Notifications.addPushTokenListener(
-      sendPushTokenToBackend
+    (async () => {
+      const result = await initPushNotifications();
+
+      if (result.status === 'granted' && result.token) {
+        await sendPushTokenToBackend(result.token);
+      } else if (result.status === 'denied') {
+        // Optional UI: guide users to Settings ➜ Notifications
+        console.log('[Push] User denied permission');
+      } else if (result.status === 'device_unsupported') {
+        console.log('[Push] Running in an emulator / web – skipping push');
+      } else if (result.status === 'error') {
+        // Already logged, but you could show a toast here
+      }
+    })();
+
+    // keep backend in sync when the token rotates (re‑install, OS update...)
+    const sub = Notifications.addPushTokenListener(({ data }) =>
+      sendPushTokenToBackend(data)
     );
-    return () => subscription.remove();
+
+    return () => sub.remove();
   }, []);
 
   useNotificationObserver();

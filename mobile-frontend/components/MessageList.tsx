@@ -5,7 +5,13 @@ import React, {
   useState,
   useCallback,
 } from 'react';
-import { ScrollView, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  ScrollView,
+  RefreshControl,
+  StyleSheet,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,6 +32,11 @@ import { useMemo } from 'react';
 
 // Styles for the component
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
   },
@@ -259,8 +270,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Loading state while fetching student data
   if (!student) {
     return (
-      <View style={styles.container}>
-        <ThemedText>Loading student...</ThemedText>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size='large' color='#adb5bd' />
+        <ThemedText>Loading messages...</ThemedText>
       </View>
     );
   }

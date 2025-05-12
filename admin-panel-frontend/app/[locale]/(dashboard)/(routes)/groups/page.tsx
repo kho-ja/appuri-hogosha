@@ -8,12 +8,11 @@ import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
-import { Link, usePathname, useRouter } from "@/navigation";
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -29,26 +28,12 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
+import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 
 export default function Groups() {
   const t = useTranslations("groups");
-  const searchParams = useSearchParams();
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const searchFromUrl = searchParams.get("search") || "";
-  const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState(searchFromUrl);
-  const router = useRouter();
-  const pathName = usePathname();
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("page", page.toString());
-    params.set("search", search);
-
-    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search, pathName, router]);
+  const { page, setPage, search, setSearch } = useTableQuery();
 
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${search}`,
@@ -131,7 +116,7 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
-          <Link href={`${pathName}/create`}>
+          <Link href={`/groups/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("creategroup")}
             </Button>
