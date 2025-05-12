@@ -29,7 +29,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
-import { ListPageHeader } from "@/components/ListPageHeader";
+import PageHeader from "@/components/PageHeader";
 
 export default function Students() {
   const t = useTranslations("students");
@@ -137,11 +137,11 @@ export default function Students() {
 
   return (
     <div className="space-y-4">
-      <ListPageHeader title={t("students")}>
+      <PageHeader title={t("students")} variant="list">
         <Link href={`${pathname}/create`}>
         <Button icon={<Plus className="h-5 w-5" />}>{t("createstudent")}</Button>
         </Link>
-      </ListPageHeader>
+      </PageHeader>
       <div className="flex flex-col sm:flex-row justify-between w-full">
         <Input
           placeholder={t("filter")}

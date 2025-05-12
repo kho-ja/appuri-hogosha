@@ -28,7 +28,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
-import { ListPageHeader } from "@/components/ListPageHeader";
+import PageHeader from "@/components/PageHeader";
 
 export default function Info() {
   const t = useTranslations("parents");
@@ -134,11 +134,11 @@ export default function Info() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <ListPageHeader title={t("parents")}>
+        <PageHeader title={t("parents")} variant="list">
           <Link href={`${pathName}/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>{t("createparent")}</Button>
           </Link>
-        </ListPageHeader>
+        </PageHeader>
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}

@@ -29,7 +29,7 @@ import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
-import { ListPageHeader } from "@/components/ListPageHeader";
+import PageHeader  from "@/components/PageHeader";
 
 export default function Admins() {
   const t = useTranslations("admins");
@@ -133,13 +133,13 @@ export default function Admins() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-      <ListPageHeader title={t("admins")}>
+      <PageHeader title={t("admins")} variant="list">
         <Link href={`./admins/create`}>
           <Button icon={<Plus className="h-5 w-5" />}>
             {t("createadmin")}
           </Button>
         </Link>
-      </ListPageHeader>
+      </PageHeader>
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
