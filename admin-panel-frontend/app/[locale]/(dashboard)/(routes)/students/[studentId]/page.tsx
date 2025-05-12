@@ -14,6 +14,7 @@ import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function ThisStudent({
   params: { studentId },
@@ -60,15 +61,12 @@ export default function ThisStudent({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
-        <div className="flex space-x-2">
+      <PageHeader title={t("posts")}>
           <BackButton href={`/students/`} />
           <Link href={`/students/edit/${studentId}`}>
             <Button>{t("EditStudent")}</Button>
           </Link>
-        </div>
-      </div>
+      </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty

@@ -42,6 +42,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function ThisMessage({
   params: { messageId },
@@ -162,16 +163,13 @@ export default function ThisMessage({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex wrap justify-between">
-        <h1 className="text-3xl font-bold">{t("ViewMessage")}</h1>
-        <div className="flex space-x-4">
+      <PageHeader title={t("ViewMessage")}>
           <BackButton href={`/messages`} />
 
           <Link href={`/messages/edit/${messageId}`} passHref>
             <Button>{t("editMessage")}</Button>
           </Link>
-        </div>
-      </div>
+      </PageHeader>
       <Card className="space-y-8 p-4">
         <div>
           <CardTitle className="text-xl w-2/4 font-bold">
@@ -238,7 +236,7 @@ export default function ThisMessage({
       </div>
 
       <Tabs defaultValue="groups" className="w-full">
-        <div className="flex gap-2 justify-between">
+        <div className="flex flex-wrap gap-2 justify-between">
           <TabsList>
             <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
             <TabsTrigger value="students">{t("Students")}</TabsTrigger>
@@ -248,16 +246,16 @@ export default function ThisMessage({
           </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
-          <div className="flex justify-between w-full">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between w-full gap-2">
             <Input
               placeholder={t("filterEmail")}
               onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setGroupSearch(e.target.value);
                 setGroupPage(1);
               }}
-              className="max-w-xs"
+              className="sm:max-w-xs"
             />
-            <div className="flex gap-3">
+            <div className="w-full sm:w-auto flex  justify-center sm:justify-end ">
               <PaginationApi
                 data={groupData?.pagination ?? null}
                 setPage={setGroupPage}
@@ -274,16 +272,16 @@ export default function ThisMessage({
           </div>
         </TabsContent>
         <TabsContent value="students" className="space-y-4">
-          <div className="flex justify-between w-full">
+          <div className="flex flex-wrap items-center justify-between w-full gap-2">
             <Input
               placeholder={t("filterEmail")}
               onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setStudentSearch(e.target.value);
                 setStudentPage(1);
               }}
-              className="max-w-xs"
+              className="sm:max-w-xs"
             />
-            <div className="flex gap-3">
+            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
               <PaginationApi
                 data={studentData?.pagination ?? null}
                 setPage={setStudentPage}

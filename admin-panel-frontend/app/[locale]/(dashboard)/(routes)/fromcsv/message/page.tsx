@@ -43,6 +43,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Post from "@/types/post";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function MessageFromCSV() {
   const t = useTranslations("fromcsv");
@@ -92,10 +93,9 @@ export default function MessageFromCSV() {
 
   return (
     <main className="space-y-4">
-      <div className="flex justify-between">
-        <h1 className="text-3xl font-bold">{t("createPostsFromCsv")}</h1>А
+      <PageHeader title={t("createPostsFromCsv")} >
         <BackButton href={`/messages/create`} />
-      </div>
+      </PageHeader>
       <Card className="p-5 space-y-2">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

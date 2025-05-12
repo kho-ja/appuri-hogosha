@@ -29,6 +29,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
+import PageHeader from "@/components/PageHeader";
 
 export default function Students() {
   const t = useTranslations("students");
@@ -121,15 +122,14 @@ export default function Students() {
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("students")}</h1>
+      <PageHeader title={t("students")} variant="list">
         <Link href={`/students/create`}>
           <Button icon={<Plus className="h-5 w-5" />}>
             {t("createstudent")}
           </Button>
         </Link>
-      </div>
-      <div className="flex flex-wrap justify-between w-full">
+      </PageHeader>
+      <div className="flex flex-col sm:flex-row justify-between w-full">
         <Input
           placeholder={t("filter")}
           value={search}
@@ -137,7 +137,7 @@ export default function Students() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="max-w-xs mb-4"
+          className="sm:max-w-xs mb-4"
         />
         <div>
           <PaginationApi

@@ -25,13 +25,7 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Bell, EllipsisVertical } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useState } from "react";
 import { BackButton } from "@/components/ui/BackButton";
 
@@ -155,8 +149,8 @@ export default function ThisStudent({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
+      <div className="flex flex-wrap items-center justify-between w-full gap-2">
+        <h1 className="text-3xl font-bold">{t("posts")}</h1>
         <div className="flex flex-wrap gap-2">
           <BackButton href={`/messages/${messageId}`} />
           <Dialog key={"resendStudent"}>

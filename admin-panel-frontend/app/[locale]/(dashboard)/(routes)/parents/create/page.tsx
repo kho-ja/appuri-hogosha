@@ -26,6 +26,7 @@ import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -92,15 +93,13 @@ export default function CreateParent() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateParent")}</h1>
-        <div className="flex gap-2">
+      <PageHeader title={t("CreateParent")} variant="create">
           <Link href="/fromKintone/parent">
             <Button variant={"secondary"}>{t("createFromKintone")}</Button>
           </Link>
 
           <Link href="/fromcsv/parent">
-            <Button variant={"secondary"}>
+            <Button variant={"secondary"} className="flex items-center">
               <div className="bg-gray-200 p-1 rounded-sm mr-2">
                 <svg
                   className="w-4 h-4 text-gray-600"
@@ -115,8 +114,7 @@ export default function CreateParent() {
           </Link>
 
           <BackButton href={`/parents`} />
-        </div>
-      </div>
+      </PageHeader>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) =>

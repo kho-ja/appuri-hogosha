@@ -17,6 +17,7 @@ import { useState } from "react";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function ThisGroup({
   params: { groupId },
@@ -58,15 +59,12 @@ export default function ThisGroup({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
-        <div className="flex gap-2 flex-wrap">
+      <PageHeader title={t("GroupView")} >
           <BackButton href={`/groups`} />
           <Link href={`/groups/edit/${groupId}`}>
             <Button>{t("editGroup")}</Button>
           </Link>
-        </div>
-      </div>
+      </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty
@@ -80,12 +78,15 @@ export default function ThisGroup({
         </CardHeader>
         <Separator />
         <CardContent className="space-y-4">
-          <div className="flex">
-            <h2 className="text-2xl w-2/4 font-bold">{t("students")}</h2>
-            <PaginationApi
-              data={groupData?.pagination ?? null}
-              setPage={setStudentPage}
-            />
+          <div className="flex flex-wrap items-center justify-between w-full gap-2">
+            <h2 className="text-2xl font-bold">{t("students")}</h2>
+
+            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+              <PaginationApi
+                data={groupData?.pagination ?? null}
+                setPage={setStudentPage}
+              />
+            </div>
           </div>
           <div className="rounded-md border">
             <TableApi

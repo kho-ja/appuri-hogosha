@@ -27,6 +27,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
+import PageHeader from "@/components/PageHeader";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -138,12 +139,11 @@ export default function Info() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("posts")}</h1>
+      <PageHeader title={t("posts")} variant="list">
         <Link href={`/messages/create`} passHref>
           <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
         </Link>
-      </div>
+      </PageHeader>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
         <div className="w-full sm:max-w-sm">
           <Input

@@ -52,6 +52,7 @@ import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -209,9 +210,7 @@ export default function SendMessagePage() {
           ref={formRef}
           className="space-y-4"
         >
-          <div className="flex flex-row justify-between items-center">
-            <h1 className="text-3xl font-bold">{t("sendMessage")}</h1>
-            <div className="flex space-x-4">
+          <PageHeader title={t("sendMessage")} variant="create">
               <DraftsDialog
                 draftsDataProp={draftsData}
                 handleSelectedDraft={handleSelectedDraft}
@@ -220,8 +219,7 @@ export default function SendMessagePage() {
                 <Button variant={"secondary"}>{t("createFromCSV")}</Button>
               </Link>
               <BackButton href={`/messages`} />
-            </div>
-          </div>
+          </PageHeader>
           <FormField
             control={form.control}
             name="title"

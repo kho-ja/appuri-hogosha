@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, EllipsisVertical, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 export default function Admins() {
   const t = useTranslations("admins");
@@ -117,15 +118,14 @@ export default function Admins() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <div className="w-full flex justify-between">
-          <h1 className="text-3xl w-2/4 font-bold">{t("admins")}</h1>
+        <PageHeader title={t("admins")} variant="list">
           <Link href={`./admins/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("createadmin")}
             </Button>
           </Link>
-        </div>
-        <div className="flex flex-wrap justify-between">
+        </PageHeader>
+        <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -133,7 +133,7 @@ export default function Admins() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm mb-4"
+            className="sm:max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
