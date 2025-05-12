@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import React, { useContext } from 'react';
 import { ThemedText } from '@/components/ThemedText';
-import { Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
 import formatMessageDate from '@/utils/format';
 import { Message } from '@/constants/types';
