@@ -18,6 +18,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
 import { ThemedView } from '@/components/ThemedView';
+import { DateTime } from 'luxon';
 
 const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
   const router = useRouter();
@@ -71,6 +72,15 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
     color: textColor,
     fontSize: 16,
   };
+
+  const sentTimeString = firstMessage.sent_time;
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const utcDateTime = DateTime.fromFormat(sentTimeString, 'yyyy-MM-dd HH:mm', {
+    zone: 'utc',
+  });
+  const localDateTime = utcDateTime.setZone(userTimeZone);
+  const formattedTime = localDateTime.toFormat('yyyy-MM-dd HH:mm');
 
   return (
     <Pressable onPress={handlePress}>
@@ -144,7 +154,7 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
             {i18n[language].continueReading}
           </ThemedText>
           <ThemedText style={styles.dateText}>
-            {formatMessageDate(new Date(firstMessage.sent_time), language)}
+            {formatMessageDate(new Date(formattedTime), language)}
           </ThemedText>
         </TouchableOpacity>
       </View>
