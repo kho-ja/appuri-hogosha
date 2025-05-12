@@ -287,7 +287,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       >
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
-            <Card messageGroup={group.messages} />
+            <Card messageGroup={group.messages} studentId={student.id} />
           </React.Fragment>
         ))}
         <Button

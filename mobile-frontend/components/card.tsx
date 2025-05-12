@@ -20,13 +20,18 @@ import Autolink from 'react-native-autolink';
 import { ThemedView } from '@/components/ThemedView';
 import { DateTime } from 'luxon';
 
-const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
+const Card = ({
+  messageGroup,
+  studentId,
+}: {
+  messageGroup: Message[];
+  studentId: number;
+}) => {
   const router = useRouter();
   const { language, i18n } = useContext(I18nContext);
   const db = useSQLiteContext();
   // const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
   const textColor = useThemeColor({}, 'text');
-
   const firstMessage = messageGroup[0];
   const groupNames = [
     ...new Set(messageGroup.map(m => m.group_name).filter(Boolean)),
@@ -42,7 +47,11 @@ const Card = ({ messageGroup }: { messageGroup: Message[] }) => {
           [new Date().toISOString(), message.id]
         );
       }
-      router.push(`message/${firstMessage.id}` as Href);
+      // router.push({ pathname: `message/${firstMessage.id}` as Href });
+      router.push({
+        pathname: `message/${firstMessage.id}`,
+        params: { studentId: studentId },
+      });
     }
   };
 
