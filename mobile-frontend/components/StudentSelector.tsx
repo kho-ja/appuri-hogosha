@@ -72,15 +72,15 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                   </Text>
                 </ThemedView>
                 <ThemedView style={styles.StudentContainer}>
-                  <View>
+                  <View style={{ maxWidth: '85%' }}>
                     <ThemedText style={styles.studentName}>
                       {student.given_name}
                     </ThemedText>
-                    <ThemedText style={styles.studentEmail}>
+                    <ThemedText style={styles.studentEmail} numberOfLines={1}>
                       {student.email}
                     </ThemedText>
                   </View>
-                  <ThemedText>
+                  <ThemedText style={{ width: 25, height: 25 }}>
                     {student.unread_count ? (
                       <ThemedView style={styles.MessageCount}>
                         <ThemedText style={styles.MessageCountText}>
@@ -139,8 +139,8 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   MessageCount: {
-    width: 25,
-    height: 25,
+    width: '100%',
+    height: '100%',
     borderRadius: 15,
     backgroundColor: '#005678',
     justifyContent: 'center',

@@ -9,17 +9,38 @@ const Layout = () => {
       <Stack.Screen name='index' options={{ headerShown: false }} />
       <Stack.Screen
         name='student/[id]'
-        options={{ headerTitle: 'Student', headerTitleAlign: 'center' }}
+        options={{
+          headerTitle: 'Student',
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <Pressable
+              onPress={() => {
+                router.replace('/');
+              }}
+              style={{ marginLeft: 10 }}
+            >
+              <Ionicons name={'arrow-back-outline'} size={24} color='#adb5bd' />
+            </Pressable>
+          ),
+        }}
       />
       <Stack.Screen
         name='message/[id]'
-        options={{
-          headerTitle: 'Detailed view',
-          headerTitleAlign: 'center',
-          headerLeft: () => {
-            return (
+        options={({ route }) => {
+          const { studentId } = route.params as { studentId?: string };
+
+          return {
+            headerTitle: 'Detailed view',
+            headerTitleAlign: 'center',
+            headerLeft: () => (
               <Pressable
-                onPress={() => router.navigate('/')}
+                onPress={() => {
+                  if (studentId) {
+                    router.replace(`/student/${studentId}`);
+                  } else {
+                    router.back();
+                  }
+                }}
                 style={{ marginLeft: 10 }}
               >
                 <Ionicons
@@ -28,8 +49,8 @@ const Layout = () => {
                   color='#adb5bd'
                 />
               </Pressable>
-            );
-          },
+            ),
+          };
         }}
       />
     </Stack>
