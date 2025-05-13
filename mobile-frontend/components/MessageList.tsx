@@ -101,8 +101,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   }, [db, studentId]);
 
   // Fetch messages from API (online mode)
-  const fetchMessagesFromAPI = async ({ pageParam = 0 }) => {
+  const fetchMessagesFromAPI = async ({ pageParam = {} }) => {
     if (!student) return [];
+    const { last_post_id = 0, last_sent_at = null }: any = pageParam || {};
     try {
       const response = await fetch(`${apiUrl}/posts`, {
         method: 'POST',
@@ -112,7 +113,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         },
         body: JSON.stringify({
           student_id: student.id,
-          last_post_id: pageParam,
+          last_post_id,
+          last_sent_at,
           read_post_ids: readButNotSentMessageIDs.current,
         }),
       });
@@ -156,10 +158,17 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     useInfiniteQuery({
       queryKey: ['messages', student?.id],
       queryFn: fetchMessagesFromAPI,
-      initialPageParam: 0,
+      initialPageParam: {
+        last_post_id: 0,
+        last_sent_at: null as any,
+      },
       getNextPageParam: lastPage => {
         if (lastPage && lastPage.length > 0) {
-          return lastPage[lastPage.length - 1].id;
+          const lastPost = lastPage[lastPage.length - 1];
+          return {
+            last_post_id: lastPost.id,
+            last_sent_at: lastPost.sent_time,
+          };
         }
         return undefined;
       },
