@@ -86,8 +86,8 @@ export const getDynamicAppConfig = (
       name: `${baseName} Preview`,
       bundleIdentifier: `${baseBundleId}.preview`,
       packageName: `${basePackageName}.preview`,
-      icon: './assets/images/icons/icon-Prev.png', // Specific preview icon
-      adaptiveIconPath: './assets/images/icons/adaptive-icon-Prev.png', // Specific preview adaptive icon
+      icon: './assets/images/icon-Prev.png', // Specific preview icon
+      adaptiveIconPath: './assets/images/adaptive-icon-Prev.png', // Specific preview adaptive icon
       scheme: `${baseScheme}-prev`,
     };
   }
@@ -97,8 +97,8 @@ export const getDynamicAppConfig = (
     name: `${baseName} Development`,
     bundleIdentifier: `${baseBundleId}.dev`,
     packageName: `${basePackageName}.dev`,
-    icon: './assets/images/icons/icon-Dev.png', // Specific dev icon
-    adaptiveIconPath: './assets/images/icons/adaptive-icon-Dev.png', // Specific dev adaptive icon
+    icon: './assets/images/icon-Dev.png', // Specific dev icon
+    adaptiveIconPath: './assets/images/adaptive-icon-Dev.png', // Specific dev adaptive icon
     scheme: `${baseScheme}-dev`,
   };
 };
