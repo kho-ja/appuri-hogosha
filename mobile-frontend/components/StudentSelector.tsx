@@ -14,7 +14,6 @@ interface StudentSelectorProps {
 
 export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
   ({ students }) => {
-    console.log('students', students);
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
     const handleStudentSelect = (student: Student) => {

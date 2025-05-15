@@ -93,8 +93,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
           'SELECT * FROM student WHERE id = ?',
           [studentId]
         );
-        console.log('studentId', studentId);
-        console.log('result', result);
         setStudent(result);
       } catch (error) {
         console.error('Error fetching student:', error);
