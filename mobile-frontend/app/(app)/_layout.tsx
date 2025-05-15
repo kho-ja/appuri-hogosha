@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
 import 'react-native-reanimated';
 import { useThemeMode } from '@rneui/themed';
+import { MessageProvider } from '@/contexts/message-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,9 +31,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName='(tabs)'>
-        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-      </Stack>
+      <MessageProvider>
+        <Stack initialRouteName='(tabs)'>
+          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+        </Stack>
+      </MessageProvider>
     </ThemeProvider>
   );
 }

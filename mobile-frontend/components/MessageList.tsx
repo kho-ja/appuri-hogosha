@@ -29,6 +29,7 @@ import {
 } from '@/utils/queries';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
+import { useMessageContext } from '@/contexts/message-context';
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -92,6 +93,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
           'SELECT * FROM student WHERE id = ?',
           [studentId]
         );
+        console.log('studentId', studentId);
+        console.log('result', result);
         setStudent(result);
       } catch (error) {
         console.error('Error fetching student:', error);
@@ -266,6 +269,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
     return groupMessages(allMessages);
   }, [isOnline, data, localMessages]);
+
+  const { setUnreadCount } = useMessageContext();
+  useEffect(() => {
+    const message_group = messageGroups.map(m => m.messages);
+    const unreadMessages = message_group.filter(m => m[0].viewed_at === null);
+    setUnreadCount(unreadMessages.length);
+  }, [messageGroups, setUnreadCount]);
 
   // Loading state while fetching student data
   if (!student) {
