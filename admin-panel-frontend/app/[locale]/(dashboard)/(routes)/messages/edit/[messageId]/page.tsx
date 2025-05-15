@@ -43,6 +43,7 @@ import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -130,9 +131,9 @@ export default function SendMessagePage({
           onSubmit={form.handleSubmit((values) => mutate(values as any))}
           className="space-y-4"
         >
-        <PageHeader title={t("editMessage")}>
-          <BackButton href={`/messages/${messageId}`} />
-        </PageHeader>
+          <PageHeader title={t("editMessage")}>
+            <BackButton href={`/messages/${messageId}`} />
+          </PageHeader>
 
           <FormField
             control={form.control}
@@ -268,23 +269,23 @@ export default function SendMessagePage({
               <FormItem>
                 <FormLabel>{t("choosePriority")}</FormLabel>
                 <FormControl>
-                  <Select
-                    defaultValue={field.value}
+                  <RadioGroup
                     onValueChange={field.onChange}
                     value={field.value}
                   >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder={t("choosePriority")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t("priority")}</SelectLabel>
-                        <SelectItem value="high">{t("high")}</SelectItem>
-                        <SelectItem value="medium">{t("medium")}</SelectItem>
-                        <SelectItem value="low">{t("low")}</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="high" id="high" />
+                      <Label htmlFor="high">{t("high")}</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="medium" id="medium" />
+                      <Label htmlFor="medium">{t("medium")}</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="low" id="low" />
+                      <Label htmlFor="low">{t("low")}</Label>
+                    </div>
+                  </RadioGroup>
                 </FormControl>
                 <FormMessage>
                   {formState.errors.priority &&
