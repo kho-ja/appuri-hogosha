@@ -1,6 +1,6 @@
 {
 	"expo": {
-		"runtimeVersion": "1.0.0",
+		"runtimeVersion": "1.0.1",
 		"name": "parent-notification",
 		"slug": "parent-notification",
 		"version": "1.0.0",
@@ -19,7 +19,8 @@
 			"bundleIdentifier": "com.jduapp.parentnotification",
 			"infoPlist": {
 				"CFBundleAllowMixedLocalizations": true
-			}
+			},
+      "associatedDomains": ["applinks:appuri-hogosha.vercel.app"]
 		},
 		"android": {
 			"adaptiveIcon": {
@@ -30,8 +31,8 @@
 			"googleServicesFile": "./google-services.json",
 			"intentFilters": [
 				{
+          "action": "VIEW",
 					"autoVerify": true,
-					"action": "VIEW",
 					"data": [
 						{
 							"scheme": "https",
