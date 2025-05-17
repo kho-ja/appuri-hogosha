@@ -272,6 +272,7 @@ export default function SendMessagePage({
                   <RadioGroup
                     onValueChange={field.onChange}
                     value={field.value}
+                    className="flex space-x-4"
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="high" id="high" />
