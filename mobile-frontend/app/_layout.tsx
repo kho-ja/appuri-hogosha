@@ -15,7 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { theme } from '@/constants/theme';
 import { initPushNotifications } from '@/utils/notifications';
-import * as Linking from 'expo-linking';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -114,13 +113,6 @@ export default function Root() {
   }, []);
 
   useNotificationObserver();
-
-  React.useEffect(() => {
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      router.push(url);
-    });
-    return () => subscription.remove();
-  }, []);
 
   const queryClient = new QueryClient();
 

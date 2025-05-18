@@ -20,7 +20,7 @@
 			"infoPlist": {
 				"CFBundleAllowMixedLocalizations": true
 			},
-      "associatedDomains": ["applinks:appuri-hogosha.vercel.app"]
+      "associatedDomains": ["applinks:appuri-hogosha.vercel.app"] 
 		},
 		"android": {
 			"adaptiveIcon": {

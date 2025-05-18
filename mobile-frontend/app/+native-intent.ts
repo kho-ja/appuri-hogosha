@@ -5,6 +5,7 @@ export function redirectSystemPath({
   path: string;
   initial: boolean;
 }) {
+  console.log('redirectSystemPath called with path:', path);
   try {
     if (path.startsWith('https://')) {
       const url = new URL(path);
