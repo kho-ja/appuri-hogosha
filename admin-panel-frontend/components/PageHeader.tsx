@@ -24,7 +24,7 @@ export default function PageHeader({
   const titleClasses = {
     default: "text-3xl font-bold",
     create: "text-3xl font-bold sm:w-auto w-full",
-    list: "text-3xl w-2/4 font-bold",
+    list: "text-3xl w-fit font-bold",
   };
 
 

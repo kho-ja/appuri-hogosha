@@ -82,7 +82,7 @@ export default function Admins() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/admins/${row.original.id}`}>
+          <Link href={`/admins/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
           <Dialog>
