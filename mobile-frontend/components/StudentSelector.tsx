@@ -17,9 +17,15 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
     const handleStudentSelect = (student: Student) => {
-      router.push(`/(tabs)/(home)/student/${student.id}`);
+      router.push({
+        pathname: `/(tabs)/(home)/student/${student.id}`,
+        params: { unread_count: student.unread_count as number },
+      });
     };
     const { theme } = useTheme();
+    if (students?.length === 1) {
+      router.push(`/student/${students[0].id}`);
+    }
     const backgroundColor = theme.colors.background;
     const borderColor = theme.colors.black;
     const avatarColors = [
