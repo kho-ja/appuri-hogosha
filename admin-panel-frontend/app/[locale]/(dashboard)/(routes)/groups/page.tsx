@@ -77,7 +77,7 @@ export default function Groups() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/groups/${row.original.id}`}>
+          <Link href={`/groups/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
           <Dialog>

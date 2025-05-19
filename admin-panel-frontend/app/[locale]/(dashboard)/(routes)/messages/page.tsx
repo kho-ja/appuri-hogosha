@@ -99,7 +99,7 @@ export default function Info() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/messages/${row.original.id}`}>
+          <Link href={`/messages/edit/${row.original.id}`}>
             <Edit3 />
           </Link>
           <Dialog>
