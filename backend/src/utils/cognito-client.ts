@@ -46,7 +46,6 @@ class CognitoClient {
                 message: 'user deleted successfully'
             }
         } catch (e: any) {
-            console.log('error:', e, params)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
@@ -84,7 +83,6 @@ class CognitoClient {
                 sub_id: data.User?.Username ?? ''
             }
         } catch (e: any) {
-            console.log('error:', e, params)
             if (e.name === 'UsernameExistsException') {
                 throw {
                     status: 401,
@@ -138,7 +136,6 @@ class CognitoClient {
                 } as changeTempPasswordThrow
             }
         } catch (e: any) {
-            console.log('error:', e, params)
             if (e.name === 'InvalidPasswordException') {
                 throw {
                     status: 401,
@@ -190,7 +187,6 @@ class CognitoClient {
                 throw false;
             }
         } catch (e: any) {
-            console.log('error:', e, params)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
