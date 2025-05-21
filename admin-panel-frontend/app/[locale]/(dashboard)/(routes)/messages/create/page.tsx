@@ -53,6 +53,8 @@ import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -211,14 +213,14 @@ export default function SendMessagePage() {
           className="space-y-4"
         >
           <PageHeader title={t("sendMessage")} variant="create">
-              <DraftsDialog
-                draftsDataProp={draftsData}
-                handleSelectedDraft={handleSelectedDraft}
-              />
-              <Link href="/fromcsv/message">
-                <Button variant={"secondary"}>{t("createFromCSV")}</Button>
-              </Link>
-              <BackButton href={`/messages`} />
+            <DraftsDialog
+              draftsDataProp={draftsData}
+              handleSelectedDraft={handleSelectedDraft}
+            />
+            <Link href="/fromcsv/message">
+              <Button variant={"secondary"}>{t("createFromCSV")}</Button>
+            </Link>
+            <BackButton href={`/messages`} />
           </PageHeader>
           <FormField
             control={form.control}
@@ -263,23 +265,24 @@ export default function SendMessagePage() {
               <FormItem>
                 <FormLabel>{t("choosePriority")}</FormLabel>
                 <FormControl>
-                  <Select
-                    defaultValue={field.value}
+                  <RadioGroup
                     onValueChange={field.onChange}
                     value={field.value}
+                    className="flex space-x-4"
                   >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder={t("choosePriority")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t("priority")}</SelectLabel>
-                        <SelectItem value="high">{t("high")}</SelectItem>
-                        <SelectItem value="medium">{t("medium")}</SelectItem>
-                        <SelectItem value="low">{t("low")}</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="high" id="high" />
+                      <Label htmlFor="high">{t("high")}</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="medium" id="medium" />
+                      <Label htmlFor="medium">{t("medium")}</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="low" id="low" />
+                      <Label htmlFor="low">{t("low")}</Label>
+                    </div>
+                  </RadioGroup>
                 </FormControl>
                 <FormMessage>
                   {formState.errors.priority &&
