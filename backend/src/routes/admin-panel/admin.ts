@@ -602,7 +602,7 @@ class AdminController implements IController {
                 }
             }
 
-            const admin = await this.cognitoClient.register(email)
+            const admin = await this.cognitoClient.register(email, email)
 
             const adminInsert = await DB.execute(`INSERT INTO Admin 
                 (cognito_sub_id, email, phone_number, given_name, family_name
@@ -627,6 +627,7 @@ class AdminController implements IController {
                 }
             }).end()
         } catch (e: any) {
+            console.log(e)
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message

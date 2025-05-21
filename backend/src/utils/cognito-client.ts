@@ -31,21 +31,22 @@ class CognitoClient {
         this.client_id = client_id;
     }
 
-    async delete(email: string): Promise<deleteOutput> {
+    async delete(identifier: string): Promise<deleteOutput> {
         const params: AdminDeleteUserCommandInput = {
-            Username: email,
+            Username: identifier,
             UserPoolId: this.pool_id,
         }
 
         try {
             const command = new AdminDeleteUserCommand(params);
             const changeData = await this.client.send(command);
-            // console.log('user deleted successfully', changeData);
+            console.log('user deleted successfully', changeData);
 
             return {
                 message: 'user deleted successfully'
             }
         } catch (e: any) {
+            console.log('error:', e, params)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
@@ -65,15 +66,13 @@ class CognitoClient {
         }
     }
 
-    async register(email: string): Promise<registerOutput> {
+    async register(identifier: string, email: string, phone_number: string): Promise<registerOutput> {
         const params: AdminCreateUserCommandInput = {
             UserPoolId: this.pool_id,
-            Username: email,
+            Username: identifier,
             UserAttributes: [
-                {
-                    Name: 'email',
-                    Value: email,
-                }
+                { Name: 'email', Value: email, },
+                ...(phone_number ? [{ Name: 'phone_number', Value: phone_number, }] : [])
             ]
         }
 
@@ -85,6 +84,7 @@ class CognitoClient {
                 sub_id: data.User?.Username ?? ''
             }
         } catch (e: any) {
+            console.log('error:', e, params)
             if (e.name === 'UsernameExistsException') {
                 throw {
                     status: 401,
@@ -99,34 +99,39 @@ class CognitoClient {
         }
     }
 
-    async changeTempPassword(email: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
+    async changeTempPassword(identifier: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'USER_PASSWORD_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
-                USERNAME: email,
+                USERNAME: identifier,
                 PASSWORD: tempPassword,
             }
         };
 
         try {
             const authCommand = new InitiateAuthCommand(params);
+            console.log('authCommand:', authCommand)
             const authData = await this.client.send(authCommand);
 
+            console.log('authData:', authData)
             if (authData.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
                 const challengeParams: RespondToAuthChallengeCommandInput = {
                     ClientId: this.client_id,
                     ChallengeName: "NEW_PASSWORD_REQUIRED",
                     Session: authData.Session,
                     ChallengeResponses: {
-                        USERNAME: email,
+                        USERNAME: identifier,
                         NEW_PASSWORD: newPassword,
                     }
                 }
 
-                const challengeCommand = new RespondToAuthChallengeCommand(challengeParams);
-                const challengeData = await this.client.send(challengeCommand);
+                console.log('challengeParams:', challengeParams)
 
+                const challengeCommand = new RespondToAuthChallengeCommand(challengeParams);
+                console.log('challengeCommand:', challengeCommand)
+                const challengeData = await this.client.send(challengeCommand);
+                console.log('challengeData:', challengeData)
                 return {
                     accessToken: challengeData.AuthenticationResult?.AccessToken ?? '',
                     refreshToken: challengeData.AuthenticationResult?.RefreshToken ?? ''
@@ -138,6 +143,7 @@ class CognitoClient {
                 } as changeTempPasswordThrow
             }
         } catch (e: any) {
+            console.log('error:', e, params)
             if (e.name === 'InvalidPasswordException') {
                 throw {
                     status: 401,
@@ -146,7 +152,7 @@ class CognitoClient {
             } else if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password',
+                    message: 'Invalid username or password',
                 } as changeTempPasswordThrow
             } else {
                 if (e.status) {
@@ -161,12 +167,12 @@ class CognitoClient {
         }
     }
 
-    async login(email: string, password: string): Promise<loginOutput> {
+    async login(identifier: string, password: string): Promise<loginOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'USER_PASSWORD_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
-                USERNAME: email,
+                USERNAME: identifier,
                 PASSWORD: password,
             }
         }
@@ -189,10 +195,11 @@ class CognitoClient {
                 throw false;
             }
         } catch (e: any) {
+            console.log('error:', e, params)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'Invalid username or password'
                 } as loginThrow
             } else if (e.status === 403) {
                 throw e as loginThrow;

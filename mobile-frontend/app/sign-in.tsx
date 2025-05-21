@@ -1,15 +1,15 @@
-// app/(app)/sign-in.tsx
 import React, { useCallback, useContext, useState } from 'react';
 import {
   BackHandler,
   Keyboard,
   StyleSheet,
+  Text,
   TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Select from '@/components/atomic/select';
-import Input from '@/components/atomic/input';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,10 +19,12 @@ import Toast from 'react-native-root-toast';
 import { useTheme } from '@rneui/themed';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 
 export default function SignIn() {
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
   const { signIn } = useSession();
   const { theme } = useTheme();
@@ -55,10 +57,10 @@ export default function SignIn() {
   React.useEffect(() => {
     const loadCredentials = async () => {
       try {
-        const storedEmail = await AsyncStorage.getItem('email');
-        if (storedEmail) {
-          setEmail(storedEmail);
-        }
+        const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+        const storedCountry = await AsyncStorage.getItem('country');
+        if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
+        if (storedCountry) setSelectedCountry(JSON.parse(storedCountry));
       } catch (error) {
         console.error('Failed to load credentials from AsyncStorage', error);
       }
@@ -104,7 +106,8 @@ export default function SignIn() {
   }, [handleBackPress]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async () => await signIn(email, password),
+    mutationFn: async () =>
+      await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
     onError: error => {
       Toast.show(i18n[language].loginFailed, {
         duration: Toast.durations.LONG,
@@ -163,18 +166,27 @@ export default function SignIn() {
               />
             </ThemedView>
           </ThemedView>
-          <Input
-            textContentType='emailAddress'
-            keyboardType='email-address'
-            autoCapitalize='none'
-            maxLength={50}
-            selectTextOnFocus={true}
-            label={i18n[language].email}
-            placeholder={i18n[language].enterEmail}
-            placeholderTextColor='grey'
-            onChangeText={setEmail}
-            value={email}
-          />
+          <View
+            style={{
+              marginBottom: 16,
+            }}
+          >
+            <Text style={styles.label}>{i18n[language].phoneNumber}</Text>
+            <PhoneInput
+              defaultCountry='UZ'
+              value={phoneNumber}
+              onChangePhoneNumber={setPhoneNumber}
+              selectedCountry={selectedCountry}
+              onChangeSelectedCountry={setSelectedCountry}
+              textContentType='telephoneNumber'
+              keyboardType='phone-pad'
+              autoCapitalize='none'
+              maxLength={50}
+              selectTextOnFocus={true}
+              placeholder={i18n[language].phoneNumber}
+              placeholderTextColor='grey'
+            />
+          </View>
           <SecureInput
             label={i18n[language].password}
             placeholder={i18n[language].enterPassword}
@@ -225,5 +237,9 @@ const styles = StyleSheet.create({
   subtitle: {
     color: 'gray',
     fontSize: 16,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 4,
   },
 });

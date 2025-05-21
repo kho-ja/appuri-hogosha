@@ -1,7 +1,7 @@
 {
 	"expo": {
 		"runtimeVersion": "1.0.0",
-		"name": "parent-notification",
+		"name": "Parent Notification",
 		"slug": "parent-notification",
 		"version": "1.0.0",
 		"orientation": "portrait",
