@@ -627,7 +627,6 @@ class AdminController implements IController {
                 }
             }).end()
         } catch (e: any) {
-            console.log(e)
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message

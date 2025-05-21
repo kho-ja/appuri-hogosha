@@ -111,10 +111,8 @@ class CognitoClient {
 
         try {
             const authCommand = new InitiateAuthCommand(params);
-            console.log('authCommand:', authCommand)
             const authData = await this.client.send(authCommand);
 
-            console.log('authData:', authData)
             if (authData.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
                 const challengeParams: RespondToAuthChallengeCommandInput = {
                     ClientId: this.client_id,
@@ -126,12 +124,9 @@ class CognitoClient {
                     }
                 }
 
-                console.log('challengeParams:', challengeParams)
-
                 const challengeCommand = new RespondToAuthChallengeCommand(challengeParams);
-                console.log('challengeCommand:', challengeCommand)
                 const challengeData = await this.client.send(challengeCommand);
-                console.log('challengeData:', challengeData)
+
                 return {
                     accessToken: challengeData.AuthenticationResult?.AccessToken ?? '',
                     refreshToken: challengeData.AuthenticationResult?.RefreshToken ?? ''

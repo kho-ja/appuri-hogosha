@@ -89,7 +89,6 @@ class AuthController implements IController {
             const { phone_number, password, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
             const authData = await this.cognitoClient.login(phone_number, password)
-            console.log('authData', authData);
 
             const parents = await DB.query(`SELECT
                 pa.id,pa.phone_number,pa.phone_number,
@@ -101,7 +100,6 @@ class AuthController implements IController {
                 phone_number: phone_number.slice(1)
             });
 
-            console.log('parents', parents)
             if (parents.length <= 0 || normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
@@ -133,7 +131,6 @@ class AuthController implements IController {
                 school_name: parent.school_name,
             }).end()
         } catch (e: any) {
-            console.error('Error during sign in in auth:', e);
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message

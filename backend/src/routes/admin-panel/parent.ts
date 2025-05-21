@@ -765,7 +765,6 @@ class ParentController implements IController {
                 }
             }
         } catch (e: any) {
-            console.log(e)
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message
