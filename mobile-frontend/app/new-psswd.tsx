@@ -17,6 +17,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { registerForPushNotificationsAsync } from '@/utils/utils';
+import { ICountry } from 'react-native-international-phone-number';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,6 +72,10 @@ export default function Index() {
         return;
       }
     }
+    const phoneNumber = await AsyncStorage.getItem('phoneNumber');
+    const country = JSON.parse(
+      (await AsyncStorage.getItem('country')) as string
+    ) as ICountry;
     await fetch(`${apiUrl}/change-temp-password`, {
       method: 'POST',
       headers: {
@@ -78,7 +83,7 @@ export default function Index() {
         Accept: 'Application/json',
       },
       body: JSON.stringify({
-        email: await AsyncStorage.getItem('email'),
+        phone_number: country.callingCode + phoneNumber?.replaceAll(' ', ''),
         temp_password: await AsyncStorage.getItem('temp_password'),
         new_password: password,
         token: token,

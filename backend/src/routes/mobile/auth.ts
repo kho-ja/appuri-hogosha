@@ -86,25 +86,24 @@ class AuthController implements IController {
 
     login = async (req: Request, res: Response) => {
         try {
-            const { email, password, token } = req.body;
+            const { phone_number, password, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
-            const authData = await this.cognitoClient.login(email, password)
-
+            const authData = await this.cognitoClient.login(phone_number, password)
 
             const parents = await DB.query(`SELECT
-                pa.id,pa.email,pa.phone_number,
+                pa.id,pa.phone_number,pa.phone_number,
                 pa.given_name,pa.family_name,
                 sc.name AS school_name
             FROM Parent AS pa
             INNER JOIN School AS sc ON sc.id = pa.school_id
-            WHERE pa.email = :email`, {
-                email: email
+            WHERE pa.phone_number = :phone_number`, {
+                phone_number: phone_number.slice(1)
             });
 
             if (parents.length <= 0 || normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'Invalid phone_number or password'
                 }
             }
 
@@ -168,9 +167,9 @@ class AuthController implements IController {
 
     changeTemporaryPassword = async (req: Request, res: Response) => {
         try {
-            const { email, temp_password, new_password, token } = req.body
+            const { phone_number, temp_password, new_password, token } = req.body
             const normalizedToken = this.normalizeToken(token);
-            const authData = await this.cognitoClient.changeTempPassword(email, temp_password, new_password)
+            const authData = await this.cognitoClient.changeTempPassword(phone_number, temp_password, new_password)
 
             const parents = await DB.query(`SELECT
                 pa.id,pa.email,pa.phone_number,
@@ -178,15 +177,15 @@ class AuthController implements IController {
                 sc.name AS school_name
             FROM Parent AS pa
             INNER JOIN School AS sc ON sc.id = pa.school_id
-            WHERE pa.email = :email`, {
-                email: email
+            WHERE pa.phone_number = :phone_number`, {
+                phone_number: phone_number.slice(1)
             });
 
 
             if (parents.length <= 0 || normalizedToken == null || normalizedToken == '[object Object]') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'Invalid phone number or password'
                 }
             }
 
@@ -199,6 +198,7 @@ class AuthController implements IController {
                     arn: normalizedToken
                 })
             } catch (error) {
+                console.error('Error during updating device token:', error);
             }
 
             return res.status(200).json({
@@ -214,6 +214,7 @@ class AuthController implements IController {
                 school_name: parent.school_name,
             }).end()
         } catch (e: any) {
+            console.error('Error during sign in in auth:', e);
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message

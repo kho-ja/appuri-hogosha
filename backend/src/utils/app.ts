@@ -2,6 +2,7 @@ import express from 'express'
 import { Application } from 'express'
 import cors from 'cors';
 import process from "node:process";
+import morgan from 'morgan';
 
 class App {
     public app: Application
@@ -12,6 +13,9 @@ class App {
         this.app.use(express.json({
             limit: '20mb'
         }));
+
+        this.app.use(morgan('dev'));
+
         this.app.use(cors({
             origin: '*',
             methods: 'GET,HEAD,PUT,POST,DELETE',
