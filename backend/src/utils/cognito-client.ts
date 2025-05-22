@@ -187,6 +187,7 @@ class CognitoClient {
                 throw false;
             }
         } catch (e: any) {
+            console.error('error:', e)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
