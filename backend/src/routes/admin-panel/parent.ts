@@ -1286,7 +1286,7 @@ class ParentController implements IController {
 
 
             const findDuplicates = await DB.query('SELECT phone_number,email FROM Parent WHERE phone_number = :phone_number OR email = :email;', {
-                email: email,
+                email: email || null,
                 phone_number: phone_number,
             })
 
@@ -1319,7 +1319,7 @@ class ParentController implements IController {
                 `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
     VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`, {
                 cognito_sub_id: parent.sub_id,
-                email: email,
+                email: email || null,
                 phone_number: phone_number,
                 given_name: given_name,
                 family_name: family_name,

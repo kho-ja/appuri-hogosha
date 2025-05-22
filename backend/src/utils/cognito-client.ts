@@ -83,6 +83,7 @@ class CognitoClient {
                 sub_id: data.User?.Username ?? ''
             }
         } catch (e: any) {
+            console.error('error:', e)
             if (e.name === 'UsernameExistsException') {
                 throw {
                     status: 401,
