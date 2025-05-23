@@ -28,6 +28,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -38,11 +39,12 @@ export default function Info() {
     ["posts", page, search]
   );
   const queryClient = useQueryClient();
-  const [postId, setPostId] = useState<number | null>(null);
-  const { mutate } = useApiMutation<{ message: string }>(
-    `post/${postId}`,
-    "DELETE",
-    ["deletePost"],
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const deleteMultiple = useApiMutation<{ message: string }, { ids: number[] }>(
+    `post/delete-multiple`,
+    "POST",
+    ["posts"],
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -50,11 +52,35 @@ export default function Info() {
           title: t("postDeleted"),
           description: t(data?.message),
         });
+        setSelectedPosts([]);
+        setIsDialogOpen(false);
       },
     }
   );
 
+  const handleCheckboxChange = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedPosts([...selectedPosts, id]);
+    } else {
+      setSelectedPosts(selectedPosts.filter((pid) => pid !== id));
+    }
+  };
   const postColumns: ColumnDef<Post>[] = [
+    {
+      id: "select",
+      header: () => null,
+      cell: ({ row }) => (
+        <Checkbox
+          checked={selectedPosts.includes(row.original.id)}
+          onCheckedChange={(checked) =>
+            handleCheckboxChange(row.original.id, Boolean(checked))
+          }
+        />
+      ),
+      meta: {
+        notClickable: true,
+      },
+    },
     {
       accessorKey: "title",
       header: t("postTitle"),
@@ -98,41 +124,9 @@ export default function Info() {
         notClickable: true,
       },
       cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Link href={`/messages/${row.original.id}`}>
-            <Edit3 />
-          </Link>
-          <Dialog>
-            <DialogTrigger className="w-full">
-              <Trash2 className="text-red-500" />
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>{row.getValue("title")}</DialogTitle>
-                <DialogDescription>
-                  {row.getValue("description")}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <p>{t("doYouDeleteMessage")}</p>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
-                </DialogClose>
-                <Button
-                  type="submit"
-                  onClick={() => {
-                    setPostId(row.original.id);
-                    mutate();
-                  }}
-                >
-                  {t("delete")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Link href={`/messages/${row.original.id}`}>
+          <Edit3 />
+        </Link>
       ),
     },
   ];
@@ -140,9 +134,57 @@ export default function Info() {
   return (
     <div className="w-full space-y-4">
       <PageHeader title={t("posts")} variant="list">
-        <Link href={`/messages/create`} passHref>
-          <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button
+            icon={<Trash2 className="h-5 w-5" />}
+            variant="destructive"
+            disabled={selectedPosts.length === 0}
+            onClick={() => setIsDialogOpen(true)}
+          >
+            {t("delete")} ({selectedPosts.length})
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {t("confirmDeleteTitle") || "Confirm Delete"}
+                </DialogTitle>
+                <DialogDescription>
+                  {t("confirmDeleteDesc")}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-48 overflow-auto border rounded p-2 my-4">
+                {data?.posts
+                  ?.filter((post) => selectedPosts.includes(post.id))
+                  .map((post) => (
+                    <div
+                      key={post.id}
+                      className="py-1 border-b last:border-b-0 flex justify-between"
+                    >
+                      <span>{post.title}</span>
+                      <Trash2 className="inline-block mr-2 text-red-600" />
+                    </div>
+                  ))}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant={"secondary"}>{t("cancel")}</Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={() => deleteMultiple.mutate({ ids: selectedPosts })}
+                >
+                  {t("delete")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Link href={`/messages/create`} passHref>
+            <Button icon={<Plus className="h-5 w-5" />}>
+              {t("createpost")}
+            </Button>
+          </Link>
+        </div>
       </PageHeader>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
         <div className="w-full sm:max-w-sm">

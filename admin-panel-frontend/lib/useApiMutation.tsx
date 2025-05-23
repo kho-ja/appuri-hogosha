@@ -4,18 +4,18 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import HttpError from "./HttpError";
 
-export default function useApiMutation<T>(
+export default function useApiMutation<TResponse, TInput = void>(
   mutationUrl: string,
   method: string,
   mutationKey: unknown[],
-  options: MutationOptions<T, HttpError, any, unknown> = {}
+  options: MutationOptions<TResponse, HttpError, TInput, unknown> = {}
 ) {
   const { data: session } = useSession();
   const t = useTranslations("errors");
 
-  return useMutation<T, HttpError>({
+  return useMutation<TResponse, HttpError, TInput>({
     mutationKey,
-    mutationFn: async (data: any = {}): Promise<T> => {
+    mutationFn: async (data: TInput): Promise<TResponse> => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/${mutationUrl}`,
         {
@@ -31,7 +31,7 @@ export default function useApiMutation<T>(
         const error = await res.json();
         throw new HttpError(error.error, res.status, error);
       }
-      return res.json() as T;
+      return res.json() as TResponse;
     },
     onMutate: () => {
       toast({
@@ -49,3 +49,4 @@ export default function useApiMutation<T>(
     ...options,
   });
 }
+  
