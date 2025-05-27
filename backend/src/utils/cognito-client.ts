@@ -237,6 +237,7 @@ class CognitoClient {
             const userData = await this.client.send(command)
             return {
                 email: userData.UserAttributes?.find(obj => obj.Name === 'email')?.Value ?? '',
+                phone_number: userData.UserAttributes?.find(obj => obj.Name === 'phone_number')?.Value ?? '',
                 sub_id: userData.UserAttributes?.find(obj => obj.Name === 'sub')?.Value ?? ''
             }
         } catch (e: any) {
@@ -308,6 +309,7 @@ class CognitoClient {
 
 interface accessTokenOutput {
     email: string;
+    phone_number: string;
     sub_id: string;
 }
 

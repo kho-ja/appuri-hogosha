@@ -46,6 +46,9 @@ export function SessionProvider(props: React.PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: async (country, phoneNumber, password) => {
+          phoneNumber = phoneNumber.startsWith('0')
+            ? phoneNumber.slice(1)
+            : phoneNumber;
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
@@ -145,7 +148,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
             }
 
             // Clear AsyncStorage
-            await AsyncStorage.removeItem('email');
+            await AsyncStorage.removeItem('phoneNumber');
+            await AsyncStorage.removeItem('country');
             await AsyncStorage.removeItem('password');
             await AsyncStorage.removeItem('refresh_token');
           } catch (error) {

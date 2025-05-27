@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useStudents } from '@/contexts/student-context'; // Your student context
 import { ThemedText } from '@/components/ThemedText';
@@ -11,8 +11,7 @@ import { useCallback } from 'react';
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler';
 
 const HomeScreen = () => {
-  const [refreshing, setRefreshing] = useState(false);
-  const { students, refetch } = useStudents(); // Fetch students from context
+  const { students, refetch, isLoading } = useStudents(); // Fetch students from context
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   // Loading state while students are being fetched
@@ -24,17 +23,14 @@ const HomeScreen = () => {
   );
 
   const onRefresh = async () => {
-    setRefreshing(true);
     try {
       await refetch();
     } catch (error) {
       console.error('Refresh failed:', error);
-    } finally {
-      setRefreshing(false);
     }
   };
 
-  if (!students || students.length === 0) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size='large' color='#adb5bd' />
@@ -52,7 +48,7 @@ const HomeScreen = () => {
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
       }
       style={{ backgroundColor }}
     >
