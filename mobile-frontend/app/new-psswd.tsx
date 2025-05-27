@@ -64,6 +64,22 @@ export default function Index() {
   const db = useSQLiteContext();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const handlePress = async () => {
+    const passwordRegex =
+      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
+
+    // Validate password
+    if (!passwordRegex.test(password)) {
+      setErrorMessage(
+        'New password should contain:\n' +
+          '- 8-characters minimum length\n' +
+          '- At least 1 number\n' +
+          '- At least 1 uppercase letter\n' +
+          '- At least 1 lowercase letter\n' +
+          '- At least 1 special character from the set: ^$.[]{}()?!" !@#%&/\\,><\':;|_~`+= or a non-leading, non-trailing space character.'
+      );
+      return;
+    }
+
     let token = await AsyncStorage.getItem('expoPushToken');
     if (!token) {
       token = await registerForPushNotificationsAsync();
