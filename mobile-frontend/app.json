@@ -32,6 +32,10 @@
       },
       "package": "com.jduapp.parentnotification",
       "googleServicesFile": "./google-services.json",
+      "statusBar": {
+        "barStyle": "dark-content",
+        "backgroundColor": "#ffffff"
+      },
       "intentFilters": [
         {
           "autoVerify": true,
