@@ -29,6 +29,9 @@ import {
 } from '@/utils/queries';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMemo } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@rneui/themed';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -36,6 +39,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   container: {
     flex: 1,
@@ -44,11 +48,134 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginHorizontal: 15,
     padding: 16,
-    borderRadius: 4,
+    borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#005678',
+  },
+  noMessagesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  noMessagesIcon: {
+    marginBottom: 20,
+    opacity: 0.6,
+  },
+  noMessagesTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  noMessagesText: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    opacity: 0.7,
+    marginBottom: 30,
+  },
+  refreshButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  messageListContainer: {
+    paddingBottom: 80,
+    position: 'relative',
+  },
+  loadingSpinner: {
+    marginTop: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });
+
+// Loading component for initial message loading
+const MessageListLoading: React.FC = () => {
+  const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
+  const textColor = useThemeColor({}, 'text');
+
+  return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator
+        size='large'
+        color={theme.colors.primary || '#005678'}
+      />
+      <ThemedText
+        style={{
+          marginTop: 12,
+          color: textColor,
+        }}
+      >
+        {i18n[language].loading}
+      </ThemedText>
+    </View>
+  );
+};
+
+// No messages component
+const NoMessagesState: React.FC<{
+  onRefresh: () => void;
+  isRefreshing: boolean;
+}> = ({ onRefresh, isRefreshing }) => {
+  const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
+  const textColor = useThemeColor({}, 'text');
+
+  return (
+    <View style={styles.noMessagesContainer}>
+      <View style={styles.noMessagesIcon}>
+        <Ionicons
+          name='mail-outline'
+          size={80}
+          color={
+            theme.colors.disabled ||
+            (theme.mode === 'dark' ? '#6c757d' : '#adb5bd')
+          }
+        />
+      </View>
+
+      <ThemedText style={[styles.noMessagesTitle, { color: textColor }]}>
+        {i18n[language].noMessagesYet}
+      </ThemedText>
+
+      <ThemedText style={[styles.noMessagesText, { color: textColor }]}>
+        {i18n[language].noMessagesDescription}
+      </ThemedText>
+
+      <Button
+        title={i18n[language].refresh}
+        onPress={onRefresh}
+        buttonStyle={[
+          styles.refreshButton,
+          { backgroundColor: theme.colors.primary || '#005678' },
+        ]}
+        loading={isRefreshing}
+        disabled={isRefreshing}
+        icon={
+          !isRefreshing ? (
+            <Ionicons
+              name='refresh-outline'
+              size={20}
+              color='white'
+              style={{ marginRight: 8 }}
+            />
+          ) : undefined
+        }
+      />
+    </View>
+  );
+};
 
 // Group messages by title, content, and sent_time
 const groupMessages = (
@@ -76,6 +203,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   const { isOnline } = useNetwork();
   const { session, refreshToken, signOut } = useSession();
   const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
+  const textColor = useThemeColor({}, 'text');
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
   // State management
@@ -83,7 +212,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoadingMoreOffline, setIsLoadingMoreOffline] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const readButNotSentMessageIDs = useRef<number[]>([]);
+
   // Fetch student details based on studentId
   useEffect(() => {
     const loadStudent = async () => {
@@ -152,23 +283,34 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   };
 
   // Infinite query setup for online message fetching
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['messages', student?.id],
-      queryFn: fetchMessagesFromAPI,
-      initialPageParam: 0,
-      getNextPageParam: lastPage => {
-        if (lastPage && lastPage.length > 0) {
-          return lastPage[lastPage.length - 1].id;
-        }
-        return undefined;
-      },
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: ['messages', student?.id],
+    queryFn: fetchMessagesFromAPI,
+    initialPageParam: 0,
+    getNextPageParam: lastPage => {
+      if (lastPage && lastPage.length > 0) {
+        return lastPage[lastPage.length - 1].id;
+      }
+      return undefined;
+    },
+    enabled: !!student,
+  });
 
   // Load initial data when component mounts or online status changes
   useEffect(() => {
     const loadData = async () => {
       if (!student) return;
+
+      setInitialLoading(true);
+
       if (!isOnline) {
         try {
           const messages = await fetchMessagesFromDB(
@@ -179,6 +321,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         } catch (error) {
           console.error('Error loading offline messages:', error);
         } finally {
+          setInitialLoading(false);
         }
       } else {
         try {
@@ -189,6 +332,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
           await refetch();
         } catch (error) {
           console.error('Error syncing read statuses:', error);
+        } finally {
+          setInitialLoading(false);
         }
       }
     };
@@ -267,13 +412,45 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     return groupMessages(allMessages);
   }, [isOnline, data, localMessages]);
 
-  // Loading state while fetching student data
-  if (!student) {
+  // Show loading state during initial load
+  if (initialLoading || (isLoading && isOnline)) {
+    return <MessageListLoading />;
+  }
+
+  // Show error state if needed
+  if (isError && isOnline) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color='#adb5bd' />
-        <ThemedText>Loading messages...</ThemedText>
+      <View style={styles.errorContainer}>
+        <ThemedText
+          style={[styles.errorText, { color: theme.colors.error || textColor }]}
+        >
+          {i18n[language].errorLoadingMessages}
+        </ThemedText>
+        <Button
+          title={i18n[language].tryAgain}
+          onPress={() => refetch()}
+          buttonStyle={[
+            styles.refreshButton,
+            { backgroundColor: theme.colors.primary || '#005678' },
+          ]}
+        />
       </View>
+    );
+  }
+
+  // Show no messages state
+  if (messageGroups.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          contentContainerStyle={{ flex: 1 }}
+        >
+          <NoMessagesState onRefresh={onRefresh} isRefreshing={refreshing} />
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
@@ -283,22 +460,41 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ paddingBottom: 80, position: 'relative' }}
+        contentContainerStyle={styles.messageListContainer}
       >
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
             <Card messageGroup={group.messages} />
           </React.Fragment>
         ))}
-        <Button
-          title={i18n[language].loadMoreMessages}
-          onPress={handleLoadMore}
-          buttonStyle={styles.loadMoreButton}
-          disabled={
-            isOnline ? !hasNextPage || isFetchingNextPage : isLoadingMoreOffline
-          }
-          loading={isOnline ? isFetchingNextPage : isLoadingMoreOffline}
-        />
+
+        {/* Load more button */}
+        {(hasNextPage || (!isOnline && localMessages.length >= 10)) && (
+          <Button
+            title={i18n[language].loadMoreMessages}
+            onPress={handleLoadMore}
+            buttonStyle={[
+              styles.loadMoreButton,
+              { backgroundColor: theme.colors.primary || '#005678' },
+            ]}
+            disabled={
+              isOnline
+                ? !hasNextPage || isFetchingNextPage
+                : isLoadingMoreOffline
+            }
+            loading={isOnline ? isFetchingNextPage : isLoadingMoreOffline}
+          />
+        )}
+
+        {/* Loading indicator for infinite scroll */}
+        {(isFetchingNextPage || isLoadingMoreOffline) && (
+          <View style={styles.loadingSpinner}>
+            <ActivityIndicator
+              size='small'
+              color={theme.colors.primary || '#005678'}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

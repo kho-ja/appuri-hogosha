@@ -73,6 +73,11 @@ export default {
     continueReading: 'Continue reading',
     loadMoreMessages: 'Load More Messages',
     messageNotFound: 'Message not found',
+    noMessagesYet: 'No Messages Yet',
+    noMessagesDescription:
+      'When you receive messages from school, they will appear here. Pull down to refresh.',
+    errorLoadingMessages: 'Error loading messages. Please try again.',
+    tryAgain: 'Try Again',
     /*message*/
 
     /*error messages*/
@@ -214,6 +219,12 @@ export default {
     continueReading: '続きを読む',
     loadMoreMessages: 'もっと見る',
     messageNotFound: 'メッセージが見つかりません',
+    noMessagesYet: 'まだメッセージがありません',
+    noMessagesDescription:
+      '学校からのメッセージを受信すると、ここに表示されます。下にスワイプして更新してください。',
+    errorLoadingMessages:
+      'メッセージの読み込み中にエラーが発生しました。もう一度お試しください。',
+    tryAgain: 'もう一度試す',
     /*message*/
 
     /*error messages*/
@@ -355,6 +366,12 @@ export default {
     continueReading: 'Davom etish',
     loadMoreMessages: "Ko'proq xabarlar",
     messageNotFound: 'Xabar topilmadi',
+    noMessagesYet: "Hali xabarlar yo'q",
+    noMessagesDescription:
+      "Maktabdan xabar kelganida, ular shu yerda ko'rsatiladi. Yangilash uchun pastga torting.",
+    errorLoadingMessages:
+      "Xabarlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    tryAgain: 'Qayta urinish',
     /*message*/
 
     /*error messages*/

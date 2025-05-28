@@ -65,6 +65,10 @@ export type TranslationKeys = {
   continueReading: string;
   loadMoreMessages: string;
   messageNotFound: string;
+  noMessagesYet: string;
+  noMessagesDescription: string;
+  errorLoadingMessages: string;
+  tryAgain: string;
 
   // Error messages
   chooseCorrectDate: string;
