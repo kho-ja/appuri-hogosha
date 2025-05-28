@@ -3,9 +3,7 @@ import {
   BackHandler,
   Keyboard,
   StyleSheet,
-  Text,
   TouchableWithoutFeedback,
-  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +17,9 @@ import Toast from 'react-native-root-toast';
 import { useTheme } from '@rneui/themed';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import PhoneInput, { ICountry } from 'react-native-international-phone-number';
+import ThemedPhoneInput from '@/components/atomic/ThemedPhoneInput';
+import { ICountry } from 'react-native-international-phone-number';
+import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 
 export default function SignIn() {
   const [password, setPassword] = useState('');
@@ -166,27 +166,15 @@ export default function SignIn() {
               />
             </ThemedView>
           </ThemedView>
-          <View
-            style={{
-              marginBottom: 16,
-            }}
-          >
-            <Text style={styles.label}>{i18n[language].phoneNumber}</Text>
-            <PhoneInput
-              defaultCountry='UZ'
-              value={phoneNumber}
-              onChangePhoneNumber={setPhoneNumber}
-              selectedCountry={selectedCountry}
-              onChangeSelectedCountry={setSelectedCountry}
-              textContentType='telephoneNumber'
-              keyboardType='phone-pad'
-              autoCapitalize='none'
-              maxLength={50}
-              selectTextOnFocus={true}
-              placeholder={i18n[language].phoneNumber}
-              placeholderTextColor='grey'
-            />
-          </View>
+          <ThemedPhoneInput
+            label={i18n[language].phoneNumber}
+            value={phoneNumber}
+            onChangePhoneNumber={setPhoneNumber}
+            selectedCountry={selectedCountry}
+            onChangeSelectedCountry={setSelectedCountry}
+            placeholder={i18n[language].phoneNumber}
+            defaultCountry={'UZ' as ICountryCca2}
+          />
           <SecureInput
             label={i18n[language].password}
             placeholder={i18n[language].enterPassword}
@@ -237,9 +225,5 @@ const styles = StyleSheet.create({
   subtitle: {
     color: 'gray',
     fontSize: 16,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 4,
   },
 });
