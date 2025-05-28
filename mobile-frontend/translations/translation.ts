@@ -86,6 +86,21 @@ export default {
 
     /*student select page*/
     SelectStudent: 'Select Student',
+
+    /*password requirements*/
+    passwordRequirements: 'Password Requirements',
+    minLength: 'At least 8 characters',
+    hasNumber: 'At least 1 number',
+    hasUppercase: 'At least 1 uppercase letter',
+    hasLowercase: 'At least 1 lowercase letter',
+    hasSpecialChar:
+      'At least 1 special character (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'Password Strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    createNewPassword: 'Create New Password',
+    /*password requirements*/
   },
   ja: {
     /*sign in page*/
@@ -171,6 +186,20 @@ export default {
     pressBackAgainToExit: 'もう一度押して終了',
     /*student select page*/
     SelectStudent: '学生を選びなさい',
+
+    /*password requirements*/
+    passwordRequirements: 'パスワード要件',
+    minLength: '8文字以上',
+    hasNumber: '数字を1つ以上',
+    hasUppercase: '大文字を1つ以上',
+    hasLowercase: '小文字を1つ以上',
+    hasSpecialChar: '特殊文字を1つ以上 (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'パスワード強度',
+    weak: '弱い',
+    medium: '中程度',
+    strong: '強い',
+    createNewPassword: '新しいパスワードを作成',
+    /*password requirements*/
   },
   uz: {
     /*sign in page*/
@@ -256,6 +285,21 @@ export default {
     pressBackAgainToExit: 'Chiqish uchun yana bir marta bosing',
     /*student select page*/
     SelectStudent: "O'quvchini tanlang",
+
+    /*password requirements*/
+    passwordRequirements: 'Parol talablari',
+    minLength: 'Kamida 8 ta belgi',
+    hasNumber: 'Kamida 1 ta raqam',
+    hasUppercase: 'Kamida 1 ta katta harf',
+    hasLowercase: 'Kamida 1 ta kichik harf',
+    hasSpecialChar:
+      'Kamida 1 ta maxsus belgi (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'Parol kuchi',
+    weak: 'Zaif',
+    medium: "O'rtacha",
+    strong: 'Kuchli',
+    createNewPassword: 'Yangi parol yaratish',
+    /*password requirements*/
   },
 };
 

@@ -83,6 +83,19 @@ export interface I18nContextType {
 
       /*select student page*/
       SelectStudent: string;
+
+      /*password requirements*/
+      passwordRequirements: string;
+      minLength: string;
+      hasNumber: string;
+      hasUppercase: string;
+      hasLowercase: string;
+      hasSpecialChar: string;
+      passwordStrength: string;
+      weak: string;
+      medium: string;
+      strong: string;
+      createNewPassword: string;
     };
   };
 }
