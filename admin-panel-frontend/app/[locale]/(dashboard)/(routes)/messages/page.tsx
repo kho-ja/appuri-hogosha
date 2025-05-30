@@ -37,6 +37,13 @@ export default function Info() {
     `post/list?page=${page}&text=${search}`,
     ["posts", page, search]
   );
+
+  const { data: scheduledPosts } = useApiQuery<any>(
+    `post/schedule/list?page=${page}&text=${search}`,
+    ["scheduledPosts", page, search]
+  );
+
+  console.log("scheduledPosts", scheduledPosts)
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
