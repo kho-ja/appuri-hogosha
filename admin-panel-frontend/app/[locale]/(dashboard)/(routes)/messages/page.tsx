@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -60,15 +60,53 @@ export default function Info() {
 
   const handleCheckboxChange = (id: number, checked: boolean) => {
     if (checked) {
-      setSelectedPosts([...selectedPosts, id]);
+      setSelectedPosts((prev) => [...prev, id]);
     } else {
-      setSelectedPosts(selectedPosts.filter((pid) => pid !== id));
+      setSelectedPosts((prev) => prev.filter((pid) => pid !== id));
     }
   };
+
+  const handleSelectAllChange = (checked: boolean) => {
+    if (checked) {
+      const allIds = data?.posts?.map((post) => post.id) || [];
+      setSelectedPosts(allIds);
+    } else {
+      setSelectedPosts([]);
+    }
+  };
+
   const postColumns: ColumnDef<Post>[] = [
     {
-      id: "select",
-      header: () => null,
+      accessorKey: "select",
+      header: () => {
+        const checkboxRef = useRef<HTMLButtonElement>(null);
+
+        useEffect(() => {
+          const total = data?.posts?.length ?? 0;
+          const selected = selectedPosts.length;
+          const indeterminate = selected > 0 && selected < total;
+
+          if (checkboxRef.current) {
+            const input = checkboxRef.current.querySelector("input");
+            if (input) {
+              input.indeterminate = indeterminate;
+            }
+          }
+        }, [selectedPosts, data?.posts]);
+
+        return (
+          <Checkbox
+            ref={checkboxRef}
+            checked={
+              selectedPosts.length > 0 &&
+              selectedPosts.length === (data?.posts?.length ?? 0)
+            }
+            onCheckedChange={(checked) =>
+              handleSelectAllChange(Boolean(checked))
+            }
+          />
+        );
+      },
       cell: ({ row }) => (
         <Checkbox
           checked={selectedPosts.includes(row.original.id)}
@@ -149,9 +187,7 @@ export default function Info() {
                 <DialogTitle>
                   {t("confirmDeleteTitle") || "Confirm Delete"}
                 </DialogTitle>
-                <DialogDescription>
-                  {t("confirmDeleteDesc")}
-                </DialogDescription>
+                <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
               </DialogHeader>
               <div className="max-h-48 overflow-auto border rounded p-2 my-4">
                 {data?.posts
