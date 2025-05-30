@@ -1896,8 +1896,6 @@ class PostController implements IController {
                 }
             }
 
-            let postInsert;
-
             if (image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
                 if (!matches || matches.length !== 3) {
@@ -1920,28 +1918,28 @@ class PostController implements IController {
                 const imagePath = 'images/' + imageName;
                 const uploadResult = await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
-                postInsert = await DB.execute(`
+                const postInsert = await DB.execute(`
                 INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at, groups_json, students_json)
                     VALUE (:title, :description, :priority, :admin_id, :image, :school_id, :scheduled_at, :groups_json, :students_json);`, {
                     title: title,
                     description: description,
                     priority: priority,
                     image: imageName,
-                    admin_id: 2,
-                    school_id: 1,
+                    admin_id: req.user.id,
+                    school_id: req.user.school_id,
                     scheduled_at: formattedUTC,
                     groups_json: groups,
                     students_json: students
                 });
             } else {
-                postInsert = await DB.execute(`
+                const postInsert = await DB.execute(`
                 INSERT INTO scheduledPost (title, description, priority, admin_id, school_id, scheduled_at, groups_json, students_json)
                     VALUE (:title, :description, :priority, :admin_id, :school_id, :scheduled_at, :groups_json, :students_json);`, {
                     title: title,
                     description: description,
                     priority: priority,
-                    admin_id: 2,
-                    school_id: 1,
+                    admin_id: req.user.id,
+                    school_id: req.user.school_id,
                     scheduled_at: formattedUTC,
                     groups_json: groups,
                     students_json: students
