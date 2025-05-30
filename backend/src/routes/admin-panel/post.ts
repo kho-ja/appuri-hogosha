@@ -17,8 +17,6 @@ import { Readable } from 'node:stream';
 import csvParser from 'csv-parser';
 import { stringify } from "csv-stringify";
 import cron from "node-cron";
-import { verify } from 'node:crypto';
-
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -52,7 +50,7 @@ class PostController implements IController {
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
 
-        this.router.post('/schedule', this.schedulePost)
+        this.router.post('/schedule', verifyToken, this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
 
         cron.schedule("* * * * *", async () => {
