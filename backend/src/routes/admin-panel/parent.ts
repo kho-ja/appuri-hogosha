@@ -178,7 +178,7 @@ class ParentController implements IController {
             }
 
             for (const row of createList) {
-                const parent = await this.cognitoClient.register(row.email);
+                const parent = await this.cognitoClient.register(row.phone_number, row.email, row.phone_number);
                 const parentInsert = await DB.execute(`INSERT INTO 
                     Parent (cognito_sub_id, email, phone_number, given_name, family_name, school_id) 
                     VALUES (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id)`, {
@@ -497,7 +497,7 @@ class ParentController implements IController {
                     } else if (existingPhoneNumbers.includes(row.phone_number)) {
                         errors.push({ row, errors: { phone_number: 'parent_phone_number_already_exists' } });
                     } else {
-                        const parent = await this.cognitoClient.register(row.email);
+                        const parent = await this.cognitoClient.register(row.phone_number, row.email, row.phone_number);
                         const parentInsert = await DB.execute(
                             `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
                             VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`, {
@@ -610,9 +610,9 @@ class ParentController implements IController {
                     if (!existingEmails.includes(row.email)) {
                         errors.push({ row, errors: { email: 'parent_does_not_exist' } });
                     } else {
-                        await this.cognitoClient.delete(row.email)
-                        await DB.execute('DELETE FROM Parent WHERE email = :email AND school_id = :school_id', {
-                            email: row.email,
+                        await this.cognitoClient.delete(`+${row.phone_number}`)
+                        await DB.execute('DELETE FROM Parent WHERE phone_number = :phone_number AND school_id = :school_id', {
+                            phone_number: row.phone_number,
                             school_id: req.user.school_id,
                         });
                         deleted.push(row);
@@ -765,7 +765,6 @@ class ParentController implements IController {
                 }
             }
         } catch (e: any) {
-            console.log(e)
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message
@@ -894,7 +893,7 @@ class ParentController implements IController {
 
             const parent = parentInfo[0];
 
-            await Parent.delete(parent.email)
+            await this.cognitoClient.delete(`+${parent.phone_number}`)
 
             await DB.execute('DELETE FROM Parent WHERE id = :id;', {
                 id: parent.id
@@ -1266,13 +1265,6 @@ class ParentController implements IController {
                 students
             } = req.body
 
-
-            if (!email || !isValidEmail(email)) {
-                throw {
-                    status: 401,
-                    message: 'invalid_or_missing_email'
-                }
-            }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
@@ -1294,7 +1286,7 @@ class ParentController implements IController {
 
 
             const findDuplicates = await DB.query('SELECT phone_number,email FROM Parent WHERE phone_number = :phone_number OR email = :email;', {
-                email: email,
+                email: email || null,
                 phone_number: phone_number,
             })
 
@@ -1320,14 +1312,14 @@ class ParentController implements IController {
                 }
             }
 
-
-            const parent = await this.cognitoClient.register(email)
+            const phoneNumber = `+${phone_number}`
+            const parent = await this.cognitoClient.register(phoneNumber, email, phoneNumber)
 
             const parentInsert = await DB.execute(
                 `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
     VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`, {
                 cognito_sub_id: parent.sub_id,
-                email: email,
+                email: email || null,
                 phone_number: phone_number,
                 given_name: given_name,
                 family_name: family_name,

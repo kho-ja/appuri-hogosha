@@ -1,5 +1,6 @@
 interface User {
     email: string;
+    phone_number?: string;
     password: string;
     tempPassword?: string;
     accessToken?: string;
@@ -76,15 +77,15 @@ export class MockCognitoClient {
             throw new Error('User not found');
         }
         delete mockDatabase[email];
-        return {message: 'User deleted successfully'};
+        return { message: 'User deleted successfully' };
     }
 
     static async register(email: string) {
         if (mockDatabase[email]) {
             throw new Error('Email already exists');
         }
-        mockDatabase[email] = {email, password: 'tempPassword', sub_id: sub_id};
-        return {sub_id: sub_id};
+        mockDatabase[email] = { email, password: 'tempPassword', sub_id: sub_id };
+        return { sub_id: sub_id };
     }
 
     static async accessToken(accessToken: string) {
@@ -95,6 +96,7 @@ export class MockCognitoClient {
         }
         return {
             email: user.email,
+            phone_number: user.phone_number ?? '',
             sub_id: user.sub_id ?? ''
         };
     }
