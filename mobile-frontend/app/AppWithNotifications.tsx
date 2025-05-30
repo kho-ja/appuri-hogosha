@@ -9,6 +9,7 @@ import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { initPushNotifications } from '@/utils/notifications';
 import { Platform, Alert, Linking } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
+import { useSession } from '@/contexts/auth-context';
 
 // Helper function to guide users for battery optimization
 const showBatteryOptimizationAlert = async (i18n: any, language: string) => {
@@ -78,16 +79,21 @@ function useNotificationObserver() {
 
 const AppWithNotifications: React.FC = () => {
   const { language, i18n } = useContext(I18nContext);
+  const { session } = useSession();
+  const [pushToken, setPushToken] = React.useState<string | null>(null);
 
+  // Initialize push notifications once
   React.useEffect(() => {
     (async () => {
       const result = await initPushNotifications();
 
       if (result.status === 'granted' && result.token) {
+        setPushToken(result.token);
+        
+        // Try to send token immediately (will work if already logged in)
         const success = await sendPushTokenToBackend(result.token);
-
         if (!success) {
-          console.warn('[Push] Failed to register token with backend');
+          console.log('[Push] Token registration will retry after login');
         }
       } else if (result.status === 'denied') {
         console.log('[Push] User denied permission');
@@ -139,6 +145,21 @@ const AppWithNotifications: React.FC = () => {
 
     return () => sub.remove();
   }, [language, i18n]);
+
+  // Retry token registration when session becomes available
+  React.useEffect(() => {
+    if (session && pushToken) {
+      (async () => {
+        console.log('[Push] Session available, retrying token registration');
+        const success = await sendPushTokenToBackend(pushToken);
+        if (success) {
+          console.log('[Push] Token successfully registered after login');
+        } else {
+          console.warn('[Push] Token registration failed even with session');
+        }
+      })();
+    }
+  }, [session, pushToken]);
 
   useNotificationObserver();
 

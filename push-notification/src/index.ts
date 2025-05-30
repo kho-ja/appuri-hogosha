@@ -127,6 +127,10 @@ const sendNotifications = async (posts: any[]) => {
             // Firebase push notification
             try {
                 const message = {
+                    notification: {
+                        title: post.title,
+                        body: post.family_name,
+                    },
                     data: {
                         title: post.title,
                         body: post.family_name,
