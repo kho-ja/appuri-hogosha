@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 76-login-with-phone-number-for-mobile
     paths:
       - "backend/**"
 
@@ -70,7 +69,7 @@ jobs:
           entrypoint: /usr/local/bin/aws
           args: >-
             lambda update-function-code
-            --function-name HogoshaBackendTest
+            --function-name ParentsAdminAPI
             --zip-file fileb://backend.zip
 
       - name: Notify GitHub of Deployment Status
