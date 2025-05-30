@@ -81,7 +81,7 @@ export default function Info() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/parents/${row.original.id}`}>
+          <Link href={`/parents/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
           <Dialog key={row.original.id}>

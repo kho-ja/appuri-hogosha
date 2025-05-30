@@ -5,9 +5,14 @@ import { Session } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotificationsAsync } from '@/utils/utils';
+import { ICountry } from 'react-native-international-phone-number';
 
 const AuthContext = React.createContext<{
-  signIn: (email: string, password: string) => Promise<any>;
+  signIn: (
+    country: ICountry | null,
+    phoneNumber: string,
+    password: string
+  ) => Promise<any>;
   signOut: () => void;
   session?: string | null;
   refreshToken: () => void;
@@ -40,8 +45,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
   return (
     <AuthContext.Provider
       value={{
-        signIn: async (email: string, password: string) => {
-          await AsyncStorage.setItem('email', email);
+        signIn: async (country, phoneNumber, password) => {
+          phoneNumber = phoneNumber.startsWith('0')
+            ? phoneNumber.slice(1)
+            : phoneNumber;
+          await AsyncStorage.setItem('phoneNumber', phoneNumber);
+          await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
           try {
             await registerForPushNotificationsAsync().then(async token => {
@@ -51,13 +60,14 @@ export function SessionProvider(props: React.PropsWithChildren) {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  email,
+                  phone_number:
+                    country?.callingCode + phoneNumber.replaceAll(' ', ''),
                   password,
                   token,
                 }),
               });
               if (response.status === 403) {
-                await AsyncStorage.setItem('email', email);
+                await AsyncStorage.setItem('phoneNumber', phoneNumber);
                 await AsyncStorage.setItem('temp_password', password);
                 return router.push('/new-psswd');
               }
@@ -80,6 +90,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
               router.replace('/');
             });
           } catch (error) {
+            console.error('Error during sign in:', error);
             if (error instanceof Error) {
               throw error;
             } else {
@@ -137,7 +148,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
             }
 
             // Clear AsyncStorage
-            await AsyncStorage.removeItem('email');
+            await AsyncStorage.removeItem('phoneNumber');
+            await AsyncStorage.removeItem('country');
             await AsyncStorage.removeItem('password');
             await AsyncStorage.removeItem('refresh_token');
           } catch (error) {
