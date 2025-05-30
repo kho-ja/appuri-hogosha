@@ -33,7 +33,7 @@ export async function sendPushTokenToBackend(token: string): Promise<boolean> {
   try {
     const session = await AsyncStorage.getItem('session');
     if (!session) {
-      console.warn('[Push] No session found → token not uploaded');
+      console.log('[Push] No session yet - will retry when user logs in');
       return false;
     }
 
