@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { theme } from '@/constants/theme';
 import { initPushNotifications } from '@/utils/notifications';
+import { Linking } from 'react-native';
+import { redirectSystemPath } from '@/app/+native-intent';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -25,6 +27,63 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+function useExternalLinkHandler() {
+  React.useEffect(() => {
+    let isMounted = true;
+    const handleInitialUrl = async () => {
+      try {
+        const initialUrl = await Linking.getInitialURL();
+        if (initialUrl && isMounted) {
+          const path = redirectSystemPath({ path: initialUrl, initial: true });
+          console.log('[useExternalLinkHandler] Parsed path:', path);
+          if (path && path !== '/unexpected-error') {
+            const studentIdMatch = path.match(/\/parentnotification\/(\d+)\//);
+            if (studentIdMatch) {
+              const studentId = studentIdMatch[1];
+              router.push(`/message/${studentId}`);
+            } else {
+              router.push(path);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(
+          '[useExternalLinkHandler] Error handling initial URL:',
+          error
+        );
+      }
+    };
+
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      console.log('[useExternalLinkHandler] Received URL:', url);
+      if (url && isMounted) {
+        try {
+          const path = redirectSystemPath({ path: url, initial: false });
+          console.log('[useExternalLinkHandler] Parsed path:', path);
+          if (path && path !== '/unexpected-error') {
+            const studentIdMatch = path.match(/\/parentnotification\/(\d+)\//);
+            if (studentIdMatch) {
+              const studentId = studentIdMatch[1];
+              router.push(`/message/${studentId}`);
+            } else {
+              router.push(path);
+            }
+          }
+        } catch (error) {
+          console.error('[useExternalLinkHandler] Error handling URL:', error);
+        }
+      }
+    });
+
+    handleInitialUrl();
+
+    return () => {
+      isMounted = false;
+      subscription.remove();
+    };
+  }, []);
+}
 
 function useNotificationObserver() {
   React.useEffect(() => {
@@ -112,6 +171,7 @@ export default function Root() {
     return () => sub.remove();
   }, []);
 
+  useExternalLinkHandler();
   useNotificationObserver();
 
   const queryClient = new QueryClient();
