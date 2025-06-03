@@ -1,4 +1,4 @@
-import { Language } from '@/contexts/i18n-context';
+import type { ReasonMapping } from '@/types/i18n';
 
 export default {
   en: {
@@ -62,6 +62,7 @@ export default {
     textSize: 'Text Size',
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
+    batteryOptimization: 'Battery Optimization',
     /*settings page*/
 
     /*message*/
@@ -72,6 +73,11 @@ export default {
     continueReading: 'Continue reading',
     loadMoreMessages: 'Load More Messages',
     messageNotFound: 'Message not found',
+    noMessagesYet: 'No Messages Yet',
+    noMessagesDescription:
+      'When you receive messages from school, they will appear here. Pull down to refresh.',
+    errorLoadingMessages: 'Error loading messages. Please try again.',
+    tryAgain: 'Try Again',
     /*message*/
 
     /*error messages*/
@@ -86,6 +92,60 @@ export default {
 
     /*student select page*/
     SelectStudent: 'Select Student',
+
+    /*no students screen*/
+    noStudentsFound: 'No Students Found',
+    noStudentsDescription:
+      'It looks like no students are assigned to your account yet. Please contact your school administrator or try refreshing.',
+    refresh: 'Refresh',
+    needHelp: 'Need Help?',
+    checkCorrectAccount: "Make sure you're logged in with the correct account",
+    contactSchool: 'Contact your school if this problem persists',
+    checkInternet: 'Check your internet connection',
+    /*no students screen*/
+
+    /*battery optimization*/
+    improveNotificationDelivery: 'Improve Notification Delivery',
+    batteryOptimizationDescription:
+      'Some Android devices may delay or block notifications to save battery. For the best experience, please disable battery optimization for this app.',
+    openSettings: 'Open Settings',
+    deviceGuide: 'Device Guide',
+    dismiss: 'Dismiss',
+    batteryOptimizationSettings: 'Battery Optimization Settings',
+    batteryOptimizationInstructions:
+      'To ensure you receive all notifications:\n\n1. Find this app in the list\n2. Select "Don\'t optimize" or "Allow"\n3. Restart the app\n\nNote: Steps may vary by device manufacturer.',
+    deviceSpecificInstructions: 'Device-Specific Instructions',
+    deviceInstructionsText:
+      'Different Android manufacturers have different settings:\n\n• Samsung: Settings → Apps → [App] → Battery → Optimize battery usage\n• Xiaomi: Settings → Apps → Manage apps → [App] → Battery saver\n• OnePlus: Settings → Apps → [App] → Battery → Battery optimization\n• Huawei: Settings → Apps → [App] → Battery → App launch',
+    gotIt: 'Got it',
+    /*battery optimization*/
+
+    /*notification alerts*/
+    notificationsDisabled: 'Notifications Disabled',
+    notificationsDisabledMessage:
+      "You won't receive important updates. You can enable notifications in Settings.",
+    notificationsNotWorking: 'Notifications Not Working?',
+    batteryOptimizationAlert:
+      'For reliable notifications, please disable battery optimization for this app in your device settings.',
+    later: 'Later',
+    ok: 'OK',
+    cancel: 'Cancel',
+    /*notification alerts*/
+
+    /*password requirements*/
+    passwordRequirements: 'Password Requirements',
+    minLength: 'At least 8 characters',
+    hasNumber: 'At least 1 number',
+    hasUppercase: 'At least 1 uppercase letter',
+    hasLowercase: 'At least 1 lowercase letter',
+    hasSpecialChar:
+      'At least 1 special character (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'Password Strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    strong: 'Strong',
+    createNewPassword: 'Create New Password',
+    /*password requirements*/
   },
   ja: {
     /*sign in page*/
@@ -148,6 +208,7 @@ export default {
     textSize: '文字サイズ',
     lightMode: 'ライトモード',
     darkMode: 'ダークモード',
+    batteryOptimization: 'バッテリー最適化',
     /*settings page*/
 
     /*message*/
@@ -158,6 +219,12 @@ export default {
     continueReading: '続きを読む',
     loadMoreMessages: 'もっと見る',
     messageNotFound: 'メッセージが見つかりません',
+    noMessagesYet: 'まだメッセージがありません',
+    noMessagesDescription:
+      '学校からのメッセージを受信すると、ここに表示されます。下にスワイプして更新してください。',
+    errorLoadingMessages:
+      'メッセージの読み込み中にエラーが発生しました。もう一度お試しください。',
+    tryAgain: 'もう一度試す',
     /*message*/
 
     /*error messages*/
@@ -169,8 +236,63 @@ export default {
     /*states*/
 
     pressBackAgainToExit: 'もう一度押して終了',
+
     /*student select page*/
     SelectStudent: '学生を選びなさい',
+
+    /*no students screen*/
+    noStudentsFound: '学生が見つかりません',
+    noStudentsDescription:
+      'まだあなたのアカウントに学生が割り当てられていないようです。学校の管理者にお問い合わせいただくか、更新してみてください。',
+    refresh: '更新',
+    needHelp: 'ヘルプが必要ですか？',
+    checkCorrectAccount:
+      '正しいアカウントでログインしていることを確認してください',
+    contactSchool: 'この問題が続く場合は学校にお問い合わせください',
+    checkInternet: 'インターネット接続を確認してください',
+    /*no students screen*/
+
+    /*battery optimization*/
+    improveNotificationDelivery: '通知配信を改善',
+    batteryOptimizationDescription:
+      '一部のAndroidデバイスは、バッテリーを節約するために通知を遅延またはブロックする場合があります。最高のエクスペリエンスのために、このアプリのバッテリー最適化を無効にしてください。',
+    openSettings: '設定を開く',
+    deviceGuide: 'デバイスガイド',
+    dismiss: '閉じる',
+    batteryOptimizationSettings: 'バッテリー最適化設定',
+    batteryOptimizationInstructions:
+      'すべての通知を確実に受信するために：\n\n1. リストでこのアプリを見つけます\n2. "最適化しない"または"許可"を選択します\n3. アプリを再起動します\n\n注：手順はデバイスメーカーによって異なる場合があります。',
+    deviceSpecificInstructions: 'デバイス固有の手順',
+    deviceInstructionsText:
+      'Androidメーカーごとに設定が異なります：\n\n• Samsung：設定→アプリ→[アプリ]→バッテリー→バッテリー使用量の最適化\n• Xiaomi：設定→アプリ→アプリの管理→[アプリ]→バッテリーセーバー\n• OnePlus：設定→アプリ→[アプリ]→バッテリー→バッテリー最適化\n• Huawei：設定→アプリ→[アプリ]→バッテリー→アプリ起動',
+    gotIt: 'わかりました',
+    /*battery optimization*/
+
+    /*notification alerts*/
+    notificationsDisabled: '通知が無効',
+    notificationsDisabledMessage:
+      '重要な更新を受信できません。設定で通知を有効にできます。',
+    notificationsNotWorking: '通知が機能しませんか？',
+    batteryOptimizationAlert:
+      '信頼性の高い通知のために、デバイス設定でこのアプリのバッテリー最適化を無効にしてください。',
+    later: '後で',
+    ok: 'OK',
+    cancel: 'キャンセル',
+    /*notification alerts*/
+
+    /*password requirements*/
+    passwordRequirements: 'パスワード要件',
+    minLength: '8文字以上',
+    hasNumber: '数字を1つ以上',
+    hasUppercase: '大文字を1つ以上',
+    hasLowercase: '小文字を1つ以上',
+    hasSpecialChar: '特殊文字を1つ以上 (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'パスワード強度',
+    weak: '弱い',
+    medium: '中程度',
+    strong: '強い',
+    createNewPassword: '新しいパスワードを作成',
+    /*password requirements*/
   },
   uz: {
     /*sign in page*/
@@ -230,9 +352,10 @@ export default {
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
     savePassword: 'Parolni saqlash',
-    textSize: 'Matn o’lchami',
+    textSize: "Matn o'lchami",
     lightMode: "Yorug' rejim",
     darkMode: "Qorong'u rejim",
+    batteryOptimization: 'Batareya optimizatsiyasi',
     /*settings page*/
 
     /*message*/
@@ -243,6 +366,12 @@ export default {
     continueReading: 'Davom etish',
     loadMoreMessages: "Ko'proq xabarlar",
     messageNotFound: 'Xabar topilmadi',
+    noMessagesYet: "Hali xabarlar yo'q",
+    noMessagesDescription:
+      "Maktabdan xabar kelganida, ular shu yerda ko'rsatiladi. Yangilash uchun pastga torting.",
+    errorLoadingMessages:
+      "Xabarlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    tryAgain: 'Qayta urinish',
     /*message*/
 
     /*error messages*/
@@ -254,12 +383,67 @@ export default {
     /*states*/
 
     pressBackAgainToExit: 'Chiqish uchun yana bir marta bosing',
+
     /*student select page*/
     SelectStudent: "O'quvchini tanlang",
+
+    /*no students screen*/
+    noStudentsFound: "O'quvchilar topilmadi",
+    noStudentsDescription:
+      "Hisobingizga hali hech qanday o'quvchi tayinlanmaganga o'xshaydi. Maktab ma'muriga murojaat qiling yoki yangilashga harakat qiling.",
+    refresh: 'Yangilash',
+    needHelp: 'Yordam kerakmi?',
+    checkCorrectAccount: "To'g'ri hisob bilan kirganingizni tekshiring",
+    contactSchool: 'Agar bu muammo davom etsa, maktabingizga murojaat qiling',
+    checkInternet: 'Internet ulanishingizni tekshiring',
+    /*no students screen*/
+
+    /*battery optimization*/
+    improveNotificationDelivery: 'Bildirishnoma yetkazishni yaxshilash',
+    batteryOptimizationDescription:
+      "Ba'zi Android qurilmalari batareyani tejash uchun bildirishnomalarni kechiktirishi yoki bloklashi mumkin. Eng yaxshi tajriba uchun, ushbu ilova uchun batareya optimizatsiyasini o'chiring.",
+    openSettings: 'Sozlamalarni ochish',
+    deviceGuide: "Qurilma qo'llanmasi",
+    dismiss: 'Yopish',
+    batteryOptimizationSettings: 'Batareya optimizatsiyasi sozlamalari',
+    batteryOptimizationInstructions:
+      'Barcha bildirishnomalarni olishingizni ta\'minlash uchun:\n\n1. Ro\'yxatdan ushbu ilovani toping\n2. "Optimallashtirmaslik" yoki "Ruxsat berish"ni tanlang\n3. Ilovani qayta ishga tushiring\n\nEslatma: Qadamlar qurilma ishlab chiqaruvchisiga qarab farq qilishi mumkin.',
+    deviceSpecificInstructions: "Qurilmaga xos ko'rsatmalar",
+    deviceInstructionsText:
+      'Turli Android ishlab chiqaruvchilarining turli sozlamalari bor:\n\n• Samsung: Sozlamalar → Ilovalar → [Ilova] → Batareya → Batareya ishlatishini optimallashtirish\n• Xiaomi: Sozlamalar → Ilovalar → Ilovalarni boshqarish → [Ilova] → Batareya tejagich\n• OnePlus: Sozlamalar → Ilovalar → [Ilova] → Batareya → Batareya optimizatsiyasi\n• Huawei: Sozlamalar → Ilovalar → [Ilova] → Batareya → Ilova ishga tushirish',
+    gotIt: 'Tushunarli',
+    /*battery optimization*/
+
+    /*notification alerts*/
+    notificationsDisabled: "Bildirishnomalar o'chirilgan",
+    notificationsDisabledMessage:
+      'Siz muhim yangilanishlarni olmaysiz. Sozlamalarda bildirishnomalarni yoqishingiz mumkin.',
+    notificationsNotWorking: 'Bildirishnomalar ishlamayaptimi?',
+    batteryOptimizationAlert:
+      "Ishonchli bildirishnomalar uchun qurilma sozlamalarida ushbu ilova uchun batareya optimizatsiyasini o'chiring.",
+    later: 'Keyinroq',
+    ok: 'OK',
+    cancel: 'Bekor qilish',
+    /*notification alerts*/
+
+    /*password requirements*/
+    passwordRequirements: 'Parol talablari',
+    minLength: 'Kamida 8 ta belgi',
+    hasNumber: 'Kamida 1 ta raqam',
+    hasUppercase: 'Kamida 1 ta katta harf',
+    hasLowercase: 'Kamida 1 ta kichik harf',
+    hasSpecialChar:
+      'Kamida 1 ta maxsus belgi (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'Parol kuchi',
+    weak: 'Zaif',
+    medium: "O'rtacha",
+    strong: 'Kuchli',
+    createNewPassword: 'Yangi parol yaratish',
+    /*password requirements*/
   },
 };
 
-export const reasonMapping: { [key in Language]: { [key: string]: string } } = {
+export const reasonMapping: ReasonMapping = {
   en: {
     absense: 'absense',
     lateness: 'lateness',

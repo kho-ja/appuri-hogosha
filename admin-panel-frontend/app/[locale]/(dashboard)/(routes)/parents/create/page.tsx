@@ -37,7 +37,7 @@ const GetFormSchema = (t: (key: string) => string) => {
       .min(10)
       .max(500)
       .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    email: z.string().email(),
+    email: z.string().max(0).or(z.string().email()),
   });
 };
 
@@ -94,26 +94,26 @@ export default function CreateParent() {
   return (
     <div className="w-full space-y-8">
       <PageHeader title={t("CreateParent")} variant="create">
-          <Link href="/fromKintone/parent">
-            <Button variant={"secondary"}>{t("createFromKintone")}</Button>
-          </Link>
+        <Link href="/fromKintone/parent">
+          <Button variant={"secondary"}>{t("createFromKintone")}</Button>
+        </Link>
 
-          <Link href="/fromcsv/parent">
-            <Button variant={"secondary"} className="flex items-center">
-              <div className="bg-gray-200 p-1 rounded-sm mr-2">
-                <svg
-                  className="w-4 h-4 text-gray-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
-                </svg>
-              </div>
-              {t("createFromCSV")}
-            </Button>
-          </Link>
+        <Link href="/fromcsv/parent">
+          <Button variant={"secondary"} className="flex items-center">
+            <div className="bg-gray-200 p-1 rounded-sm mr-2">
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
+              </svg>
+            </div>
+            {t("createFromCSV")}
+          </Button>
+        </Link>
 
-          <BackButton href={`/parents`} />
+        <BackButton href={`/parents`} />
       </PageHeader>
       <Form {...form}>
         <form
@@ -220,7 +220,10 @@ export default function CreateParent() {
               </FormItem>
 
               <div className="flex justify-between">
-                <Button isLoading={isPending} icon={<Save className="h-5 w-5" />}>
+                <Button
+                  isLoading={isPending}
+                  icon={<Save className="h-5 w-5" />}
+                >
                   {t("CreateParent")}
                 </Button>
               </div>
