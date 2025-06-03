@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { signIn } from "next-auth/react";
 import NotFound from "@/components/NotFound";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -41,15 +42,12 @@ export default async function ThisAdmin({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("AdminView")}</h1>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader title={t("AdminView")}>
           <BackButton href={`/admins`} />
           <Link href={`/admins/edit/${adminId}`}>
             <Button>{t("editAdmin")}</Button>
           </Link>
-        </div>
-      </div>
+      </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty

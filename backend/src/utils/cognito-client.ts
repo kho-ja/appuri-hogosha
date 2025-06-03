@@ -31,16 +31,16 @@ class CognitoClient {
         this.client_id = client_id;
     }
 
-    async delete(email: string): Promise<deleteOutput> {
+    async delete(identifier: string): Promise<deleteOutput> {
         const params: AdminDeleteUserCommandInput = {
-            Username: email,
+            Username: identifier,
             UserPoolId: this.pool_id,
         }
 
         try {
             const command = new AdminDeleteUserCommand(params);
             const changeData = await this.client.send(command);
-            // console.log('user deleted successfully', changeData);
+            console.log('user deleted successfully', changeData);
 
             return {
                 message: 'user deleted successfully'
@@ -65,15 +65,13 @@ class CognitoClient {
         }
     }
 
-    async register(email: string): Promise<registerOutput> {
+    async register(identifier: string, email: string, phone_number: string): Promise<registerOutput> {
         const params: AdminCreateUserCommandInput = {
             UserPoolId: this.pool_id,
-            Username: email,
+            Username: identifier,
             UserAttributes: [
-                {
-                    Name: 'email',
-                    Value: email,
-                }
+                { Name: 'email', Value: email, },
+                ...(phone_number ? [{ Name: 'phone_number', Value: phone_number, }] : [])
             ]
         }
 
@@ -85,6 +83,7 @@ class CognitoClient {
                 sub_id: data.User?.Username ?? ''
             }
         } catch (e: any) {
+            console.error('error:', e)
             if (e.name === 'UsernameExistsException') {
                 throw {
                     status: 401,
@@ -99,12 +98,12 @@ class CognitoClient {
         }
     }
 
-    async changeTempPassword(email: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
+    async changeTempPassword(identifier: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'USER_PASSWORD_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
-                USERNAME: email,
+                USERNAME: identifier,
                 PASSWORD: tempPassword,
             }
         };
@@ -119,7 +118,7 @@ class CognitoClient {
                     ChallengeName: "NEW_PASSWORD_REQUIRED",
                     Session: authData.Session,
                     ChallengeResponses: {
-                        USERNAME: email,
+                        USERNAME: identifier,
                         NEW_PASSWORD: newPassword,
                     }
                 }
@@ -146,7 +145,7 @@ class CognitoClient {
             } else if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password',
+                    message: 'Invalid username or password',
                 } as changeTempPasswordThrow
             } else {
                 if (e.status) {
@@ -161,12 +160,12 @@ class CognitoClient {
         }
     }
 
-    async login(email: string, password: string): Promise<loginOutput> {
+    async login(identifier: string, password: string): Promise<loginOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'USER_PASSWORD_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
-                USERNAME: email,
+                USERNAME: identifier,
                 PASSWORD: password,
             }
         }
@@ -189,10 +188,11 @@ class CognitoClient {
                 throw false;
             }
         } catch (e: any) {
+            console.error('error:', e)
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Invalid email or password'
+                    message: 'Invalid username or password'
                 } as loginThrow
             } else if (e.status === 403) {
                 throw e as loginThrow;
@@ -237,6 +237,7 @@ class CognitoClient {
             const userData = await this.client.send(command)
             return {
                 email: userData.UserAttributes?.find(obj => obj.Name === 'email')?.Value ?? '',
+                phone_number: userData.UserAttributes?.find(obj => obj.Name === 'phone_number')?.Value ?? '',
                 sub_id: userData.UserAttributes?.find(obj => obj.Name === 'sub')?.Value ?? ''
             }
         } catch (e: any) {
@@ -308,6 +309,7 @@ class CognitoClient {
 
 interface accessTokenOutput {
     email: string;
+    phone_number: string;
     sub_id: string;
 }
 

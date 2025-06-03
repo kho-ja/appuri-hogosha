@@ -2,14 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, EllipsisVertical, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
-import { Link, usePathname, useRouter } from "@/navigation";
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import Admin from "@/types/admin";
-import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -22,28 +21,24 @@ import {
 import TableApi from "@/components/TableApi";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 export default function Admins() {
   const t = useTranslations("admins");
   const tName = useTranslations("names");
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const searchFromUrl = searchParams.get("search") || "";
-  const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState(searchFromUrl);
+  const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<AdminApi>(
     `admin/list?page=${[page]}&name=${search}`,
     ["admins", page, search]
   );
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [adminId, setAdminId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
@@ -66,15 +61,6 @@ export default function Admins() {
     "exportAdmins",
   ]);
 
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("page", page.toString());
-    params.set("search", search);
-
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [page, search, pathname, router]);
-
   const adminColumns: ColumnDef<Admin>[] = [
     {
       accessorKey: "name",
@@ -96,7 +82,7 @@ export default function Admins() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/admins/${row.original.id}`}>
+          <Link href={`/admins/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
           <Dialog>
@@ -132,15 +118,14 @@ export default function Admins() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <div className="w-full flex justify-between">
-          <h1 className="text-3xl w-2/4 font-bold">{t("admins")}</h1>
+        <PageHeader title={t("admins")} variant="list">
           <Link href={`./admins/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("createadmin")}
             </Button>
           </Link>
-        </div>
-        <div className="flex flex-wrap justify-between">
+        </PageHeader>
+        <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -148,7 +133,7 @@ export default function Admins() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm mb-4"
+            className="sm:max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />

@@ -24,6 +24,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import Group from "@/types/group";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -73,10 +74,8 @@ export default function CreateGroup() {
   }, [form]);
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateGroup")}</h1>
-        <div className="flex gap-2">
+    <div className="flex flex-col">
+      <PageHeader title={t("CreateGroup")} variant="create">
           <Link href="/fromcsv/group">
             <Button variant={"secondary"}>
               <div className="bg-gray-200 p-1 rounded-sm mr-2">
@@ -92,8 +91,7 @@ export default function CreateGroup() {
             </Button>
           </Link>
           <BackButton href={`/groups`} />
-        </div>
-      </div>
+      </PageHeader>
       <div className="w-full mt-8">
         <Form {...form}>
           <form

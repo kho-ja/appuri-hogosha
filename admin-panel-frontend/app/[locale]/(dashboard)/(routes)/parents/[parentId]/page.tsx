@@ -14,6 +14,7 @@ import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function ThisParent({
   params: { parentId },
@@ -53,15 +54,12 @@ export default function ThisParent({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("ParentView")}</h1>
-        <div className="flex flex-wrap gap-2">
+      <PageHeader title={t("ParentView")}>
           <BackButton href={`/parents`} />
           <Link href={`/parents/edit/${parentId}`}>
             <Button>{t("editParent")}</Button>
           </Link>
-        </div>
-      </div>
+      </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty

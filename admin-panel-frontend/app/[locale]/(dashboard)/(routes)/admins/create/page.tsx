@@ -24,6 +24,7 @@ import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -90,9 +91,7 @@ export default function CreateAdmin() {
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("CreateAdmin")}</h1>
-        <div className="flex gap-2 flex-wrap">
+      <PageHeader title={t("CreateAdmin")} variant="create">
           <Link href="/fromcsv/admin">
             <Button variant={"secondary"}>
               <div className="bg-gray-200 p-1 rounded-sm mr-2">
@@ -108,8 +107,7 @@ export default function CreateAdmin() {
             </Button>
           </Link>
           <BackButton href={"/admins"} />
-        </div>
-      </div>
+      </PageHeader>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) =>

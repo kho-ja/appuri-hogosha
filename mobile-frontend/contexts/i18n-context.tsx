@@ -2,97 +2,23 @@ import React, { createContext, ReactNode, useState } from 'react';
 import translation from '@/translations/translation';
 import { getLocales } from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export type Language = 'en' | 'ja' | 'uz';
+import type { Language, Translations, TranslationKeys } from '@/types/i18n';
+export type { Language, TranslationKeys };
 
 export interface I18nContextType {
   language: Language;
   setLanguage: (language: Language) => void;
-  i18n: {
-    [key in Language]: {
-      welcome: string;
-      login: string;
-      email: string;
-      enterEmail: string;
-      password: string;
-      enterPassword: string;
-      loginToAccount: string;
-      forgotPassword: string;
-      resetPassword: string;
-      noaccount: string;
-      justregister: string;
-      loginSuccess: string;
-      loginFailed: string;
-
-      home: string;
-      form: string;
-      settings: string;
-
-      register: string;
-      alreadyaccount: string;
-      justlogin: string;
-      enterotp: string;
-      otp: string;
-      newpassword: string;
-
-      form_message: string;
-      reason: string;
-      absense: string;
-      lateness: string;
-      leaving: string;
-      other: string;
-      chooseDate: string;
-      additionalMessage: string;
-      submitForm: string;
-      message_placeholder: string;
-
-      /*message*/
-      critical: string;
-      important: string;
-      ordinary: string;
-      group: string;
-      continueReading: string;
-      loadMoreMessages: string;
-      messageNotFound: string;
-      /*message*/
-
-      /*settings*/
-      information: string;
-      firstName: string;
-      lastName: string;
-      emailaddress: string;
-      phoneNumber: string;
-      preferences: string;
-      language: string;
-      logout: string;
-      passwordChangedSuccess: string;
-      changePassword: string;
-      savePassword: string;
-      textSize: string;
-      lightMode: string;
-      darkMode: string;
-      /*settings*/
-
-      chooseCorrectDate: string;
-      choose_student: string;
-
-      /*state*/
-      loading: string;
-
-      pressBackAgainToExit: string;
-
-      /*select student page*/
-      SelectStudent: string;
-    };
-  };
+  i18n: Translations;
+  t: (key: keyof TranslationKeys) => string; // Helper function for getting translations
 }
 
-const i18n: I18nContextType['i18n'] = translation;
+const i18n: Translations = translation;
 
 export const I18nContext = createContext<I18nContextType>({
   language: 'en',
   setLanguage: () => {},
   i18n: i18n,
+  t: (key: keyof TranslationKeys) => '',
 });
 
 interface I18nProviderProps {
@@ -113,6 +39,7 @@ const getInitialLanguage = async (): Promise<Language> => {
 
 export const I18nProvider = ({ children }: I18nProviderProps) => {
   const [language, setLanguage] = useState<Language>('en');
+
   React.useEffect(() => {
     const fetchInitialLanguage = async () => {
       const initialLanguage = await getInitialLanguage();
@@ -121,8 +48,14 @@ export const I18nProvider = ({ children }: I18nProviderProps) => {
 
     fetchInitialLanguage();
   }, []);
+
+  // Helper function to get translation by key
+  const t = (key: keyof TranslationKeys): string => {
+    return i18n[language][key] || key;
+  };
+
   return (
-    <I18nContext.Provider value={{ language, setLanguage, i18n }}>
+    <I18nContext.Provider value={{ language, setLanguage, i18n, t }}>
       {children}
     </I18nContext.Provider>
   );

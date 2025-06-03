@@ -24,6 +24,7 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -78,10 +79,9 @@ export default function EditGroup({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("EditGroup")}</h1>
+      <PageHeader title={t("EditGroup")}>
         <BackButton href={`/groups/${groupId}`} />
-      </div>
+      </PageHeader>
       <div className="w-full mt-8">
         <Form {...form}>
           <form

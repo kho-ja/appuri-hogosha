@@ -25,6 +25,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
@@ -94,10 +95,9 @@ export default function EditAdmin({
 
   return (
     <div className="w-full space-y-8">
-      <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("EditAdmin")}</h1>
+      <PageHeader title={t("EditAdmin")}>
         <BackButton href={`/admins/${adminId}`} />
-      </div>
+      </PageHeader>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((values) => {
@@ -158,7 +158,7 @@ export default function EditAdmin({
                 control={form.control}
                 name="phone_number"
                 render={({ field, formState }) => (
-                  <FormItem className="w-1/2">
+                  <FormItem className="sm:w-1/2">
                     <FormLabel>{t("AdminPhone")}</FormLabel>
                     <FormControl>
                       <PhoneInput placeholder={t("AdminPhone")} {...field} />

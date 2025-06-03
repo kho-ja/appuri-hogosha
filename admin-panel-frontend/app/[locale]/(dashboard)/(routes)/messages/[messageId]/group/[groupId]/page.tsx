@@ -161,8 +161,8 @@ export default function ThisGroup({
 
   return (
     <div className="space-y-4">
-      <div className="w-full flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("GroupView")}</h1>
+      <div className="flex flex-wrap items-center justify-between w-full gap-2">
+        <h1 className="text-3xl font-bold">{t("GroupView")}</h1>
         <div className="flex flex-wrap gap-2">
           <BackButton href={`/messages/${messageId}`} />
           <Dialog key={"resendStudent"}>
@@ -197,12 +197,14 @@ export default function ThisGroup({
         </CardHeader>
         <Separator />
         <CardContent className="space-y-4">
-          <div className="flex">
-            <h2 className="text-2xl w-2/4 font-bold">{t("students")}</h2>
-            <PaginationApi
-              data={groupData?.pagination ?? null}
-              setPage={setStudentPage}
-            />
+          <div className="flex flex-wrap items-center justify-between w-full gap-2">
+            <h2 className="text-2xl font-bold">{t("students")}</h2>
+              <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+                <PaginationApi
+                  data={groupData?.pagination ?? null}
+                  setPage={setStudentPage}
+                />
+              </div>
           </div>
           <div className="rounded-md border">
             <TableApi

@@ -1,6 +1,6 @@
-import {NextFunction, Request, Response} from "express";
-import {Parent} from '../utils/cognito-client';
-import {MockCognitoClient} from '../utils/mock-cognito-client'
+import { NextFunction, Request, Response } from "express";
+import { Parent } from '../utils/cognito-client';
+import { MockCognitoClient } from '../utils/mock-cognito-client'
 import DB from '../utils/db-client'
 
 const bearerRegex = /^Bearer .+$/;
@@ -24,8 +24,8 @@ export const verifyToken = async (req: ExtendedRequest, res: Response, next: Nex
     try {
         const userData = await cognitoClient.accessToken(token);
         const parents = await DB.query(`SELECT * FROM Parent as pa
-            WHERE pa.email = :email and pa.cognito_sub_id = :sub_id`, {
-            email: userData.email,
+            WHERE pa.phone_number = :phone_number and pa.cognito_sub_id = :sub_id`, {
+            phone_number: userData.phone_number.slice(1),
             sub_id: userData.sub_id,
         })
 

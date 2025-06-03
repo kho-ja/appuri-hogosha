@@ -16,6 +16,7 @@ import { Link, useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BackButton } from "@/components/ui/BackButton";
+import PageHeader from "@/components/PageHeader";
 
 export default function Recievers({
   params: { messageId },
@@ -70,12 +71,9 @@ export default function Recievers({
 
   return (
     <div className="flex flex-col gap-2 justify-start items-start">
-      <div className="flex gap-2 justify-between items-center w-full">
-        <h1 className="text-3xl font-bold mb-4">{t("ChangeRecievers")}</h1>
-
+      <PageHeader title={t("ChangeRecievers")}>
         <BackButton href={`/messages/${messageId}`} />
-      </div>
-
+      </PageHeader>
       <Tabs className="w-full" defaultValue="groups">
         <TabsList className="flex justify-start items-center mb-4 w-fit">
           <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>

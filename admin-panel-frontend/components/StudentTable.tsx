@@ -267,14 +267,14 @@ export function StudentTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
+      <div className="flex flex-wrap gap-2 sm:flex-row sm:justify-between sm:items-center">
+        <div className="text-sm text-muted-foreground sm:w-auto w-full">
           {t("rowsSelected", {
             count: table.getFilteredSelectedRowModel().rows.length,
             total: table.getFilteredRowModel().rows.length,
           })}
         </div>
-        <div className="space-x-2">
+        <div className="w-full sm:w-auto">
           <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
         </div>
       </div>

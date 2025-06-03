@@ -5,11 +5,10 @@ import { Edit3Icon, File, Trash2Icon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
-import { Link, usePathname, useRouter } from "@/navigation";
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import ParentApi from "@/types/parentApi";
 import Parent from "@/types/parent";
-import { useSearchParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -22,27 +21,23 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
+import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 
 export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
-  const searchParams = useSearchParams();
-  const pageFromUrl = Number(searchParams.get("page")) || 1;
-  const searchFromUrl = searchParams.get("search") || "";
-  const [page, setPage] = useState(pageFromUrl);
-  const [search, setSearch] = useState(searchFromUrl);
+  const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<ParentApi>(
     `parent/list?page=${page}&name=${search}`,
     ["parents", page, search]
   );
-  const pathName = usePathname();
-  const router = useRouter();
   const queryClient = useQueryClient();
   const [parentId, setParentId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
@@ -59,15 +54,6 @@ export default function Info() {
       },
     }
   );
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-
-    params.set("page", page.toString());
-    params.set("search", search);
-
-    router.replace(`${pathName}?${params.toString()}`, { scroll: false });
-  }, [page, search, pathName, router]);
 
   const { mutate: exportParents } = useFileMutation<{ message: string }>(
     `parent/export`,
@@ -95,7 +81,7 @@ export default function Info() {
       },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`${pathName}/${row.original.id}`}>
+          <Link href={`/parents/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
           <Dialog key={row.original.id}>
@@ -133,13 +119,14 @@ export default function Info() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <div className="w-full flex justify-between">
-          <h1 className="text-3xl w-2/4 font-bold">{t("parents")}</h1>
-          <Link href={`${pathName}/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>{t("createparent")}</Button>
+        <PageHeader title={t("parents")} variant="list">
+          <Link href={`/parents/create`}>
+            <Button icon={<Plus className="h-5 w-5" />}>
+              {t("createparent")}
+            </Button>
           </Link>
-        </div>
-        <div className="flex flex-wrap justify-between">
+        </PageHeader>
+        <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
             value={search}
@@ -147,7 +134,7 @@ export default function Info() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm mb-4"
+            className="sm:max-w-sm mb-4"
           />
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />

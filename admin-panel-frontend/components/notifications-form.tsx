@@ -1,7 +1,6 @@
 "use client";
 
 import { useToast } from "@/components/ui/use-toast";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,9 +19,6 @@ import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
 import { useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquareShare } from "lucide-react";
 
 const notificationsFormSchema = z.object({
@@ -173,8 +169,7 @@ export function NotificationsForm() {
         </div>
 
         <Button
-          isLoading={isPending}
-          disabled={!data || isLoading}
+          isLoading={isPending || !data || isLoading}
           type="submit"
           icon={<MessageSquareShare className="h-5 w-5" />}
         >
