@@ -91,6 +91,7 @@
     "accept": "Qabul qilish"
   },
   "sendmessage": {
+    "schedule": "rejalashtirish",
     "sendMessage": "Xabar yuboring",
     "makeChanges": "Hisobingizga o'zgarishlar kiriting. Bajarilganda saqlang.",
     "title": "Sarlavha",

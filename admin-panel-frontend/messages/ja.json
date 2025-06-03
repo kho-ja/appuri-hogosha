@@ -91,6 +91,7 @@
     "accept": "承認"
   },
   "sendmessage": {
+    "schedule": "スケジュール",
     "sendMessage": "メッセージを送信する",
     "makeChanges": "ここでアカウントの変更を行います。完了したら保存してください。",
     "title": "タイトル",

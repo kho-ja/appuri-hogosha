@@ -67,9 +67,14 @@ export default function ScheduledMessagesPage() {
       header: t("Priority"),
     },
     {
-      accessorKey: "scheduled_at",
-      header: t("Scheduled At"),
+        accessorKey: "scheduled_at",
+        header: t("Scheduled At"),
+        cell: ({ row }) => {
+            const value = row.getValue("scheduled_at");
+            return value ? new Date(value as string).toLocaleString() : "-";
+        }
     },
+
     {
       header: t("action"),
       cell: ({ row }) => (

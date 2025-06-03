@@ -90,6 +90,7 @@
     "accept": "Accept"
   },
   "sendmessage": {
+    "schedule": "Schedule",
     "sendMessage": "Send Message",
     "makeChanges": "Make changes to your account here. Click save when you are done.",
     "title": "Title",
@@ -132,7 +133,10 @@
     "cancel": "Cancel",
     "AreYouSureDelete": "Are you sure you want to delete this draft?",
     "saveToDraft": "Save to Draft",
-    "draftDeleted": "Draft Deleted Successfully"
+    "draftDeleted": "Draft Deleted Successfully",
+    "selectScheduleTime": "Select Schedule Time",
+    "confirmSchedule": "Confirm Schedule",
+    "scheduledSuccessfully":"Post scheduled successfully"
   },
   "ThisMessage": {
     "editStudents": "Edit Students",
