@@ -1999,6 +1999,7 @@ class PostController implements IController {
                        sp.title,
                        sp.description,
                        sp.priority,
+                       sp.scheduled_at,
                        ad.id          AS admin_id,
                        ad.given_name  AS admin_given_name,
                        ad.family_name AS admin_family_name,
@@ -2042,6 +2043,7 @@ class PostController implements IController {
                 title,
                 description,
                 priority,
+                scheduled_at,
                 sent_at,
                 edited_at,
                 admin_id,
@@ -2052,6 +2054,7 @@ class PostController implements IController {
                 title,
                 description,
                 priority,
+                scheduled_at,
                 sent_at,
                 edited_at,
                 admin: {
