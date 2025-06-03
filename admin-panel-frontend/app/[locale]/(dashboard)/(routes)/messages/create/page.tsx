@@ -55,8 +55,6 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -510,16 +508,14 @@ const handleSchedulePost = () => {
       <DialogTitle>{t("selectScheduleTime")}</DialogTitle>
     </DialogHeader>
     <div className="space-y-4">
-      <DatePicker
-        selected={scheduledAt}
-        onChange={(date) => setScheduledAt(date)}
-        showTimeSelect
-        timeFormat="HH:mm"
-        timeIntervals={15}
-        dateFormat="yyyy-MM-dd HH:mm"
+      <input
+        type="datetime-local"
+        value={scheduledAt ? new Date(scheduledAt).toISOString().slice(0, 16) : ""}
+        onChange={(e) => setScheduledAt(new Date(e.target.value))}
+        min={new Date().toISOString().slice(0, 16)}
         className="border p-2 w-full rounded"
-        minDate={new Date()}
       />
+
     </div>
     <DialogFooter className="mt-4">
       <Button onClick={handleSchedulePost} disabled={!scheduledAt}>
