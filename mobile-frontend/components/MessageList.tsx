@@ -232,8 +232,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   }, [db, studentId]);
 
   // Fetch messages from API (online mode)
-  const fetchMessagesFromAPI = async ({ pageParam = 0 }) => {
+  const fetchMessagesFromAPI = async ({ pageParam = {} }) => {
     if (!student) return [];
+    const { last_post_id = 0, last_sent_at = null }: any = pageParam || {};
     try {
       const response = await fetch(`${apiUrl}/posts`, {
         method: 'POST',
@@ -243,7 +244,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         },
         body: JSON.stringify({
           student_id: student.id,
-          last_post_id: pageParam,
+          last_post_id,
+          last_sent_at,
           read_post_ids: readButNotSentMessageIDs.current,
         }),
       });
@@ -464,7 +466,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       >
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
-            <Card messageGroup={group.messages} />
+            <Card messageGroup={group.messages} studentId={student.id} />
           </React.Fragment>
         ))}
 

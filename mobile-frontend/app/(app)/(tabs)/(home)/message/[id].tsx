@@ -27,6 +27,7 @@ import { Separator } from '@/components/atomic/separator';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
+import { DateTime } from 'luxon';
 
 const styles = StyleSheet.create({
   container: {
@@ -293,6 +294,15 @@ export default function DetailsScreen() {
     }
   };
 
+  const sentTimeString = message.sent_time;
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const utcDateTime = DateTime.fromFormat(sentTimeString, 'yyyy-MM-dd HH:mm', {
+    zone: 'utc',
+  });
+  const localDateTime = utcDateTime.setZone(userTimeZone);
+  const formattedTime = localDateTime.toFormat('yyyy-MM-dd HH:mm');
+
   return (
     <ScrollView style={[styles.container, { backgroundColor }]}>
       <View style={styles.titleRow}>
@@ -345,7 +355,7 @@ export default function DetailsScreen() {
       <View style={styles.dateRow}>
         <Ionicons name={'calendar-outline'} size={24} color='#adb5bd' />
         <ThemedText style={styles.dateText}>
-          {formatMessageDate(new Date(message.sent_time), language)}
+          {formatMessageDate(new Date(formattedTime), language)}
         </ThemedText>
       </View>
       <Modal
