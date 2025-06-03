@@ -55,6 +55,8 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -105,6 +107,54 @@ export default function SendMessagePage() {
   );
   const priority = form.watch("priority");
 
+const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+
+const scheduleMutation = useApiMutation<{ post: Post }>(
+  `post/schedule`,
+  "POST",
+  ["scheduledPosts"],
+  {
+    onSuccess: (data) => {
+      if (data?.post?.title) {
+        toast({
+          title: t("scheduledSuccessfully"),
+          description: data.post.title,
+        });
+      } else {
+        toast({
+          title: t("scheduledSuccessfully"),
+          description: t("noTitleAvailable"),
+        });
+      }
+      setSelectedStudents([]);
+      setSelectedGroups([]);
+      form.reset();
+      router.push("/messages/scheduled"); 
+    },
+  }
+);
+
+const handleSchedulePost = () => {
+  if (!scheduledAt) {
+    toast({ title: t("error"), description: t("selectDateTime") });
+    return;
+  }
+
+  const data = form.getValues();
+  const payload = {
+    title: data.title,
+    description: data.description,
+    priority: data.priority,
+    students: selectedStudents.map((s) => s.id),
+    groups: selectedGroups.map((g) => g.id),
+    image: data.image,
+    scheduled_at: scheduledAt.toISOString(),
+  };
+
+  scheduleMutation.mutate(payload as any);
+};
+  
   useEffect(() => {
     form.setValue("priority", priority);
   }, [priority, form]);
@@ -358,96 +408,127 @@ export default function SendMessagePage() {
             </TabsContent>
           </Tabs>
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                isLoading={isPending}
-                disabled={!isFormValid || !hasRecipients}
-                icon={<Send className="h-4 w-4" />}
-              >
-                {t("sendMessage")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[80%] max-h-max">
-              <div className="sm:flex gap-4">
-                <DialogHeader className="w-full whitespace-pre-wrap">
-                  <DialogTitle className="whitespace-pre-wrap text-center">
-                    {formValues.title}
-                  </DialogTitle>
-                  <DialogDescription className="whitespace-pre-wrap">
-                    <ReactLinkify>{formValues.description}</ReactLinkify>
-                  </DialogDescription>
-                  <div className="flex w-full">
-                    <div className="bg-slate-500 px-4 py-1 rounded ">
-                      {t("priority")}:{" "}
-                      {formValues.priority && t(formValues.priority)}
-                    </div>
-                  </div>
-                  {form.getValues("image") && (
-                    <div className="mt-4">
-                      <Image
-                        src={form.getValues("image") ?? ""}
-                        alt="Selected image"
-                        width={300}
-                        height={200}
-                        className="rounded object-cover"
-                      />
-                    </div>
-                  )}
-                </DialogHeader>
-                <div className="sm:w-1 sm:h-full bg-slate-600"></div>
-                <div className="flex flex-wrap gap-4 items-start content-start sm:max-w-[40%]">
-                  <div className="flex flex-col gap-1">
-                    <b>{t("groups")}</b>
-                    <div className="flex flex-wrap gap-2 items-start content-start ">
-                      {selectedGroups.map((group) => (
-                        <Badge key={group.id}>{group?.name}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <b>{t("students")}</b>
-                    <div className="flex flex-wrap gap-2 items-start content-start ">
-                      {selectedStudents.map((e) => (
-                        <Badge key={e.id}>
-                          {tName("name", { ...e, parents: "" })}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  {!hasRecipients && (
-                    <div className="w-full text-destructive text-center font-semibold">
-                      {t("selectatleastone")}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <DialogFooter className="flex gap-2 sm:gap-0">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    {t("close")}
-                  </Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || !hasRecipients}
-                    isLoading={isPending}
-                    onClick={() => {
-                      if (formRef.current) {
-                        formRef.current.dispatchEvent(
-                          new Event("submit", { bubbles: true })
-                        );
-                      }
-                    }}
-                  >
-                    {t("confirm")}
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+<Dialog>
+  <DialogTrigger asChild>
+    <Button
+      type="button"
+      isLoading={isPending}
+      disabled={!isFormValid || !hasRecipients}
+      icon={<Send className="h-4 w-4" />}
+    >
+      {t("sendMessage")}
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="sm:max-w-[80%] max-h-max">
+    <div className="sm:flex gap-4">
+      <DialogHeader className="w-full whitespace-pre-wrap">
+        <DialogTitle className="whitespace-pre-wrap text-center">
+          {formValues.title}
+        </DialogTitle>
+        <DialogDescription className="whitespace-pre-wrap">
+          <ReactLinkify>{formValues.description}</ReactLinkify>
+        </DialogDescription>
+        <div className="flex w-full">
+          <div className="bg-slate-500 px-4 py-1 rounded ">
+            {t("priority")}: {formValues.priority && t(formValues.priority)}
+          </div>
+        </div>
+        {form.getValues("image") && (
+          <div className="mt-4">
+            <Image
+              src={form.getValues("image") ?? ""}
+              alt="Selected image"
+              width={300}
+              height={200}
+              className="rounded object-cover"
+            />
+          </div>
+        )}
+      </DialogHeader>
+      <div className="sm:w-1 sm:h-full bg-slate-600"></div>
+      <div className="flex flex-wrap gap-4 items-start content-start sm:max-w-[40%]">
+        <div className="flex flex-col gap-1">
+          <b>{t("groups")}</b>
+          <div className="flex flex-wrap gap-2 items-start content-start ">
+            {selectedGroups.map((group) => (
+              <Badge key={group.id}>{group?.name}</Badge>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <b>{t("students")}</b>
+          <div className="flex flex-wrap gap-2 items-start content-start ">
+            {selectedStudents.map((e) => (
+              <Badge key={e.id}>{tName("name", { ...e, parents: "" })}</Badge>
+            ))}
+          </div>
+        </div>
+        {!hasRecipients && (
+          <div className="w-full text-destructive text-center font-semibold">
+            {t("selectatleastone")}
+          </div>
+        )}
+      </div>
+    </div>
+    <DialogFooter className="flex flex-wrap justify-end gap-2">
+      <DialogClose asChild>
+        <Button type="button" variant="secondary">
+          {t("close")}
+        </Button>
+      </DialogClose>
+      <DialogClose asChild>
+        <Button
+          type="submit"
+          disabled={!isFormValid || !hasRecipients}
+          isLoading={isPending}
+          onClick={() => {
+            if (formRef.current) {
+              formRef.current.dispatchEvent(new Event("submit", { bubbles: true }));
+            }
+          }}
+        >
+          {t("confirm")}
+        </Button>
+      </DialogClose>
+      <DialogClose asChild>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setScheduleDialogOpen(true)}
+          disabled={!isFormValid || !hasRecipients}
+        >
+          {t("schedule")}
+        </Button>
+      </DialogClose>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+<Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>{t("selectScheduleTime")}</DialogTitle>
+    </DialogHeader>
+    <div className="space-y-4">
+      <DatePicker
+        selected={scheduledAt}
+        onChange={(date) => setScheduledAt(date)}
+        showTimeSelect
+        timeFormat="HH:mm"
+        timeIntervals={15}
+        dateFormat="yyyy-MM-dd HH:mm"
+        className="border p-2 w-full rounded"
+        minDate={new Date()}
+      />
+    </div>
+    <DialogFooter className="mt-4">
+      <Button onClick={handleSchedulePost} disabled={!scheduledAt}>
+        {t("confirmSchedule")}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 
           <Button
             className="ml-2"

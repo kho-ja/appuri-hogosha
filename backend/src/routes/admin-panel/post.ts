@@ -1867,9 +1867,10 @@ class PostController implements IController {
                 students,
                 groups,
                 image,
-                scheduled_at = new Date()
+                scheduled_at: scheduled_at_string
             } = req.body
 
+            const scheduled_at = new Date(scheduled_at_string);
             const year = scheduled_at.getUTCFullYear();
             const month = String(scheduled_at.getUTCMonth() + 1).padStart(2, '0');
             const day = String(scheduled_at.getUTCDate()).padStart(2, '0');
@@ -1945,6 +1946,14 @@ class PostController implements IController {
                     students_json: students
                 });
             }
+            return res.status(200).json({
+                post: {
+                    title,
+                    description,
+                    priority,
+                    scheduled_at: formattedUTC,
+                },
+                });
         } catch (e: any) {
             if (e.status) {
                 return res.status(e.status).json({
@@ -2094,27 +2103,6 @@ class PostController implements IController {
 
                         let postInsert;
                         if (image) {
-                            const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-                            if (!matches || matches.length !== 3) {
-                                throw {
-                                    status: 401,
-                                    message: 'invalid_image_format'
-                                }
-                            }
-                            const mimeType = matches[1];
-                            const base64Data = matches[2];
-                            const buffer = Buffer.from(base64Data, 'base64');
-                            if (buffer.length > 1024 * 1024 * 10) {
-                                throw {
-                                    status: 401,
-                                    message: 'image_size_too_large'
-                                }
-                            }
-
-                            const imageName = randomImageName() + mimeType.replace('image/', '.');
-                            const imagePath = 'images/' + imageName;
-                            const uploadResult = await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
                             postInsert = await DB.execute(`
                             INSERT INTO Post (title, description, priority, admin_id, image, school_id)
                                 VALUE (:title, :description, :priority, :admin_id, :image, :school_id);`, {
@@ -2122,7 +2110,7 @@ class PostController implements IController {
                                 description: description,
                                 priority: priority,
                                 admin_id: admin_id,
-                                image: imageName,
+                                image: image,
                                 school_id: school_id,
                             });
                         } else {

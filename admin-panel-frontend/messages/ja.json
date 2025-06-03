@@ -457,6 +457,7 @@
     "export": "ファイルに書き出す"
   },
   "posts": {
+    "scheduledMessages": "スケジュールされたメッセージ",
     "posts": "投稿",
     "postTitle": "投稿タイトル",
     "Description": "詳細",
@@ -1107,5 +1108,13 @@
   },
   "BackButton": {
     "back": "戻る"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "投稿が正常にスケジュールされました",
+    "noTitleAvailable": "タイトルがありません",
+    "selectDateTime": "日付と時間を選択",
+    "error": "エラー",
+    "confirmSchedule": "スケジュールを確認",
+    "postDeleted": "投稿が削除されました"
   }
 }

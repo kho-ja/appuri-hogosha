@@ -7,8 +7,6 @@ import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
-import PostApi from "@/types/postApi";
-import Post from "@/types/post";
 import {
   Dialog,
   DialogDescription,
@@ -25,34 +23,28 @@ import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
-import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import Post from "@/types/post";
 
-export default function Info() {
+export default function ScheduledMessagesPage() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiQuery<PostApi>(
-    `post/list?page=${page}&text=${search}`,
-    ["posts", page, search]
-  );
-
-  const { data: scheduledPosts } = useApiQuery<any>(
+  const { data } = useApiQuery<any>(
     `post/schedule/list?page=${page}&text=${search}`,
     ["scheduledPosts", page, search]
   );
 
-  console.log("scheduledPosts", scheduledPosts)
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
-    `post/${postId}`,
+    `post/schedule/${postId}`,
     "DELETE",
-    ["deletePost"],
+    ["scheduledPosts"],
     {
       onSuccess: (data) => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        queryClient.invalidateQueries({ queryKey: ["scheduledPosts"] });
         toast({
           title: t("postDeleted"),
           description: t(data?.message),
@@ -65,45 +57,21 @@ export default function Info() {
     {
       accessorKey: "title",
       header: t("postTitle"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.title}
-          className="truncate max-w-20 sm:max-w-30 md:max-w-40 lg:max-w-60 xl:max-w-60 2xl:max-w-80 block"
-        >
-          {row.getValue("title")}
-        </div>
-      ),
     },
     {
       accessorKey: "description",
       header: t("Description"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.description}
-          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
-        >
-          {row.getValue("description")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "admin_name",
-      header: t("Admin_name"),
-      cell: ({ row }) => tName("name", { ...row?.original?.admin }),
     },
     {
       accessorKey: "priority",
       header: t("Priority"),
     },
     {
-      accessorKey: "read_percent",
-      header: t("Read_percent"),
+      accessorKey: "scheduled_at",
+      header: t("Scheduled At"),
     },
     {
       header: t("action"),
-      meta: {
-        notClickable: true,
-      },
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Link href={`/messages/edit/${row.original.id}`}>
@@ -116,9 +84,7 @@ export default function Info() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{row.getValue("title")}</DialogTitle>
-                <DialogDescription>
-                  {row.getValue("description")}
-                </DialogDescription>
+                <DialogDescription>{row.getValue("description")}</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <p>{t("doYouDeleteMessage")}</p>
@@ -146,16 +112,11 @@ export default function Info() {
 
   return (
     <div className="w-full space-y-4">
-<PageHeader title={t("posts")} variant="list">
-  <div className="flex gap-2">
-    <Link href={`/messages/scheduled`}>
-      <Button variant="outline">{t("scheduledMessages")}</Button>
-    </Link>
-    <Link href={`/messages/create`}>
-      <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
-    </Link>
-  </div>
-</PageHeader>
+      <PageHeader title={t("scheduledMessages")} variant="list">
+        <Link href={`/messages/create`}>
+          <Button>{t("createpost")}</Button>
+        </Link>
+      </PageHeader>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
         <div className="w-full sm:max-w-sm">
@@ -170,15 +131,17 @@ export default function Info() {
           />
         </div>
         <div className="">
-          <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
+            <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
         </div>
       </div>
-      <Card x-chunk="dashboard-05-chunk-3">
+
+      <Card>
         <TableApi
-          linkPrefix="/messages"
-          data={data?.posts ?? null}
-          columns={postColumns}
+        linkPrefix="/messages"
+        data={data?.scheduledPosts ?? []}
+        columns={postColumns}
         />
+
       </Card>
     </div>
   );

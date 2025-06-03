@@ -458,6 +458,7 @@
     "export": "Export"
   },
   "posts": {
+    "scheduledMessages": "Scheduled Messages",
     "posts": "Posts",
     "postTitle": "Post Title",
     "Description": "Description",
@@ -1108,5 +1109,13 @@
   },
   "BackButton": {
     "back": "Back"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post scheduled successfully",
+    "noTitleAvailable": "No title available",
+    "selectDateTime": "Select Date and Time",
+    "error": "Error",
+    "confirmSchedule":"Confirm Schedule",
+    "postDeleted": "Post deleted successfully"
   }
 }

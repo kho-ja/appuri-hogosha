@@ -456,6 +456,7 @@
     "export": "Экспорт"
   },
   "posts": {
+    "scheduledMessages": "Запланированные сообщения",
     "posts": "Сообщения",
     "postTitle": "Заголовок сообщения",
     "Description": "Описание",
@@ -1106,5 +1107,13 @@
   },
   "BackButton": {
     "back": "Назад"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Сообщение успешно запланировано",
+    "noTitleAvailable": "Заголовок не доступен",
+    "selectDateTime": "Выберите дату и время",
+    "error": "Ошибка",
+    "confirmSchedule": "Подтвердить планирование",
+    "postDeleted": "Сообщение удалено"
   }
 }

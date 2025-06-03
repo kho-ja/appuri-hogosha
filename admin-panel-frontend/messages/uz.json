@@ -459,6 +459,7 @@
     "export": "Yuklab olish"
   },
   "posts": {
+    "scheduledMessages": "Rejalashtirilgan xabarlar",
     "posts": "Xabarlar",
     "postTitle": "Xabar sarlavhasi",
     "Description": "Tavsif",
@@ -1109,5 +1110,13 @@
   },
   "BackButton": {
     "back": "Orqaga"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post muvaffaqiyatli rejalashtirildi",
+    "noTitleAvailable": "Sarlavha mavjud emas",
+    "selectDateTime": "Sana va vaqtni tanlang",
+    "error": "Xatolik",
+    "confirmSchedule":"Postni rejalashtirish",
+    "postDeleted": "Post muvaffaqiyatli o'chirildi"
   }
 }
