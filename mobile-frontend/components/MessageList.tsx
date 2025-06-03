@@ -32,6 +32,7 @@ import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useMessageContext } from '@/contexts/message-context';
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -411,6 +412,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
     return groupMessages(allMessages);
   }, [isOnline, data, localMessages]);
+
+  const { setUnreadCount } = useMessageContext();
+  useEffect(() => {
+    const message_group = messageGroups.map(m => m.messages);
+    const unreadMessages = message_group.filter(m => m[0].viewed_at === null);
+    setUnreadCount(unreadMessages.length);
+  }, [messageGroups, setUnreadCount]);
 
   // Show loading state during initial load
   if (initialLoading || (isLoading && isOnline)) {
