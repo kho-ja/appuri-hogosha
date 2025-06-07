@@ -131,7 +131,7 @@ const scheduleMutation = useApiMutation<{ post: Post }>(
       setSelectedStudents([]);
       setSelectedGroups([]);
       form.reset();
-      router.push("/messages/scheduled"); 
+      router.push("/messages?tab=scheduled"); 
     },
   }
 );

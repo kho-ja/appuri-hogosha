@@ -29,6 +29,7 @@ import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -145,7 +146,9 @@ export default function Info() {
     },
   ];
 
-  const [tab, setTab] = useState<"messages" | "scheduled">("messages");
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as "messages" | "scheduled") || "messages";
+  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   const handleDate = (date: string) => {
     const localDate = new Date(date);
