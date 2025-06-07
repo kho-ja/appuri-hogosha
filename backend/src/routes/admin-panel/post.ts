@@ -52,6 +52,9 @@ class PostController implements IController {
 
         this.router.post('/schedule', verifyToken, this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
+        this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
+        this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
+        this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
 
         cron.schedule("* * * * *", async () => {
             console.log("Checking for scheduled messages...", `${new Date()}`);
@@ -2068,6 +2071,262 @@ class PostController implements IController {
                 scheduledPosts: formattedPostList,
                 pagination
             }).end();
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    scheduledPostView = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const postInfo = await DB.query(`SELECT sp.id,
+                                                    sp.title,
+                                                    sp.description,
+                                                    sp.priority,
+                                                    scheduled_at,
+                                                    groups_json,
+                                                    students_json,
+                                                    sp.sent_at,
+                                                    sp.edited_at,
+                                                    sp.image,
+                                                    ad.id                                                                    AS admin_id,
+                                                    ad.given_name,
+                                                    ad.family_name,
+                                             FROM scheduledPost AS sp
+                                                      INNER JOIN Admin AS ad ON sp.admin_id = ad.id
+                                             WHERE sp.id = :id
+                                               AND sp.school_id = :school_id
+                                             GROUP BY sp.id, ad.id, ad.given_name, ad.family_name`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const post = postInfo[0];
+
+            return res.status(200).json({
+                post: {
+                    id: post.id,
+                    title: post.title,
+                    description: post.description,
+                    image: post.image,
+                    priority: post.priority,
+                    scheduled_at: post.scheduled_at,
+                    groups: post.groups,
+                    students: post.students,
+                    sent_at: post.sent_at,
+                    edited_at: post.edited_at,
+                },
+                admin: {
+                    id: post.admin_id,
+                    given_name: post.given_name,
+                    family_name: post.family_name,
+                },
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    deleteScheduledPost = async (req: ExtendedRequest, res: Response) => {
+        try{
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+            const postInfo = await DB.query(`SELECT id,
+                                                    title,
+                                                    description,
+                                                    priority,
+                                                    scheduled_at,
+                                                    image
+                                             FROM scheduledPost
+                                             WHERE school_id = :school_id
+                                               AND id = :id`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+
+                throw {
+                    status: 404,
+                    message: 'Scheduled Post not found'
+                }
+            }
+
+            Images3Client.deleteFile('images/' + postInfo[0].image)
+
+            await DB.execute('DELETE FROM scheduledPost WHERE id = :id;', {
+                id: postId,
+            })
+
+            return res.status(200).json({
+                message: 'scheduledPostDeleted'
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    updateScheduledPost = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const {
+                title,
+                description,
+                priority,
+                scheduled_at_string,
+                image,
+            } = req.body
+
+            const scheduled_at = new Date(scheduled_at_string);
+
+            if (!title || !isValidString(title)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_title'
+                }
+            }
+            if (!description || !isValidString(description)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_description'
+                }
+            }
+            if (!priority || !isValidPriority(priority)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_priority'
+                }
+            }
+
+            const postInfo = await DB.query(`SELECT id,
+                                                    title,
+                                                    description,
+                                                    priority,
+                                                    scheduled_at,
+                                                    image
+                                             FROM scheduledPost
+                                             WHERE school_id = :school_id
+                                               AND id = :id`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const post = postInfo[0]
+
+            if (image && image !== post.image) {
+                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                
+                if (!matches || matches.length !== 3) {
+                    throw {
+                        status: 401,
+                        message: 'Invalid image format. Make sure it is Base64 encoded.'
+                    };
+                }
+            
+                const mimeType = matches[1];
+                const base64Data = matches[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+            
+                if (buffer.length > 10 * 1024 * 1024) {
+                    throw {
+                        status: 401,
+                        message: 'Image size is too large (max 10MB)'
+                    };
+                }
+            
+                const imageName = randomImageName() + mimeType.replace('image/', '.');
+                const imagePath = `images/${imageName}`;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            
+                post.image = imageName; 
+            } else if (!image) {
+                post.image = null; 
+            }
+            
+            await DB.execute(
+                `UPDATE scheduledPost
+                 SET title       = :title,
+                     description = :description,
+                     priority    = :priority,
+                     scheduled_at = :scheduled_at,
+                     image       = :image,
+                     edited_at   = NOW()
+                 WHERE id = :id
+                 AND school_id = :school_id`,
+                {
+                    id: post.id,
+                    school_id: req.user.school_id,
+                    title,
+                    description,
+                    priority,
+                    scheduled_at,
+                    image: post.image,
+                }
+            );
+
+            return res.status(200).json({
+                message: 'Scheduled Post edited successfully'
+            }).end()
         } catch (e: any) {
             if (e.status) {
                 return res.status(e.status).json({
