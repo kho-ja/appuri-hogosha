@@ -90,6 +90,10 @@
     "accept": "Accept"
   },
   "sendmessage": {
+    "yes": "Yes",
+    "no": "No",
+    "doYouWantSchedule": "Do you want to schedule this message?",
+    "scheduledAt": "Scheduled at",
     "schedule": "Schedule",
     "sendMessage": "Send Message",
     "makeChanges": "Make changes to your account here. Click save when you are done.",

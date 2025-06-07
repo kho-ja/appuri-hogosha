@@ -55,6 +55,8 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DateTimePicker24h } from "@/components/DateTimePicker24h"; 
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -106,6 +108,7 @@ export default function SendMessagePage() {
   const priority = form.watch("priority");
 
 const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+const [scheduleEnabled, setScheduleEnabled] = useState(false);
 const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
 const scheduleMutation = useApiMutation<{ post: Post }>(
@@ -193,8 +196,20 @@ const handleSchedulePost = () => {
       image: data.image,
     };
 
-    mutate(payload as any);
+    if (scheduleEnabled) {
+      if (!scheduledAt) {
+        toast({
+          title: t("error"),
+          description: t("selectDateTime"),
+        });
+        return;
+      }
+      scheduleMutation.mutate({ ...payload, scheduled_at: scheduledAt.toISOString() } as any);
+    } else {
+      mutate(payload as any);
+    }
   };
+
 
   const isFormValid = form.formState.isValid;
   const hasRecipients =
@@ -405,7 +420,28 @@ const handleSchedulePost = () => {
               />
             </TabsContent>
           </Tabs>
-
+<div className="flex flex-col gap-4 border p-4 rounded-md bg-muted/40">
+  <div className="flex items-center justify-between">
+    <Label className="text-base font-medium">
+      {t("doYouWantSchedule")}
+    </Label>
+    <div className="flex items-center gap-2">
+      <Switch
+        checked={scheduleEnabled}
+        onCheckedChange={setScheduleEnabled}
+        id="schedule-switch"
+      />
+      <Label htmlFor="schedule-switch" className="ml-2">
+        {scheduleEnabled ? t("yes") : t("no")}
+      </Label>
+    </div>
+  </div>
+  {scheduleEnabled && (
+    <div className="mt-2">
+      <DateTimePicker24h value={scheduledAt} onChange={setScheduledAt} />
+    </div>
+  )}
+</div>
 <Dialog>
   <DialogTrigger asChild>
     <Button
@@ -440,6 +476,23 @@ const handleSchedulePost = () => {
               height={200}
               className="rounded object-cover"
             />
+          </div>
+        )}
+        {/* SHU YERGA QO'SHING */}
+        {scheduleEnabled && scheduledAt && (
+          <div className="mt-2 text-left text-sm">
+            {t("scheduledAt")}:{" "}
+            {scheduledAt &&
+              scheduledAt
+                .toLocaleString("uz-UZ", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
+                .replace(",", "")}
           </div>
         )}
       </DialogHeader>
@@ -489,43 +542,10 @@ const handleSchedulePost = () => {
         </Button>
       </DialogClose>
       <DialogClose asChild>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setScheduleDialogOpen(true)}
-          disabled={!isFormValid || !hasRecipients}
-        >
-          {t("schedule")}
-        </Button>
       </DialogClose>
     </DialogFooter>
   </DialogContent>
 </Dialog>
-
-<Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>{t("selectScheduleTime")}</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-4">
-      <input
-        type="datetime-local"
-        value={scheduledAt ? new Date(scheduledAt).toISOString().slice(0, 16) : ""}
-        onChange={(e) => setScheduledAt(new Date(e.target.value))}
-        min={new Date().toISOString().slice(0, 16)}
-        className="border p-2 w-full rounded"
-      />
-
-    </div>
-    <DialogFooter className="mt-4">
-      <Button onClick={handleSchedulePost} disabled={!scheduledAt}>
-        {t("confirmSchedule")}
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-
-
           <Button
             className="ml-2"
             variant={"secondary"}

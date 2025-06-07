@@ -91,6 +91,10 @@
     "accept": "Qabul qilish"
   },
   "sendmessage": {
+    "yes": "Ha",
+    "no": "Yo'q",
+    "doYouWantSchedule": "Rejalashtirishni xohlaysizmi?",
+    "scheduledAt": "Rejalashtirilgan vaqti",
     "schedule": "rejalashtirish",
     "sendMessage": "Xabar yuboring",
     "makeChanges": "Hisobingizga o'zgarishlar kiriting. Bajarilganda saqlang.",
