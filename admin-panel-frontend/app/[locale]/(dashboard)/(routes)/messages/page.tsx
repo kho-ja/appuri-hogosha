@@ -146,6 +146,94 @@ export default function Info() {
     },
   ];
 
+  const schedulesPostColumns: ColumnDef<Post>[] = [
+    {
+      accessorKey: "title",
+      header: t("postTitle"),
+      cell: ({ row }) => (
+        <div
+          title={row.original.title}
+          className="truncate max-w-20 sm:max-w-30 md:max-w-40 lg:max-w-60 xl:max-w-60 2xl:max-w-80 block"
+        >
+          {row.getValue("title")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "description",
+      header: t("Description"),
+      cell: ({ row }) => (
+        <div
+          title={row.original.description}
+          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
+        >
+          {row.getValue("description")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "admin_name",
+      header: t("Admin_name"),
+      cell: ({ row }) => tName("name", { ...row?.original?.admin }),
+    },
+    {
+      accessorKey: "priority",
+      header: t("Priority"),
+    },
+    {
+      accessorKey: "scheduled_at",
+      header: t("scheduledat"),
+      cell: ({ row }) => {
+        const value = row.getValue("scheduled_at");
+        if (!value) return "-";
+        return handleDate(value as string);
+      },
+    },
+    {
+      header: t("action"),
+      meta: {
+        notClickable: true,
+      },
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Link href={`/messages/edit/${row.original.id}`}>
+            <Edit3 />
+          </Link>
+          <Dialog>
+            <DialogTrigger className="w-full">
+              <Trash2 className="text-red-500" />
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>{row.getValue("title")}</DialogTitle>
+                <DialogDescription>
+                  {row.getValue("description")}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <p>{t("doYouDeleteMessage")}</p>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant={"secondary"}>{t("cancel")}</Button>
+                </DialogClose>
+                <Button
+                  type="submit"
+                  onClick={() => {
+                    setPostId(row.original.id);
+                    mutate();
+                  }}
+                >
+                  {t("delete")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      ),
+    },
+  ];
+
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get("tab") as "messages" | "scheduled") || "messages";
   const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
@@ -223,71 +311,11 @@ export default function Info() {
               <PaginationApi data={scheduledPosts?.pagination ?? null} setPage={setPage} />
             </div>
           </div>
-          <Card>
+          <Card x-chunk="dashboard-05-chunk-3">
             <TableApi
               linkPrefix="/messages"
-              data={scheduledPosts?.scheduledPosts ?? []}
-              columns={[
-                {
-                  accessorKey: "title",
-                  header: t("postTitle"),
-                },
-                {
-                  accessorKey: "description",
-                  header: t("Description"),
-                },
-                {
-                  accessorKey: "priority",
-                  header: t("Priority"),
-                },
-                {
-                  accessorKey: "scheduled_at",
-                  header: t("scheduledat"),
-                  cell: ({ row }) => {
-                    const value = row.getValue("scheduled_at");
-                    if (!value) return "-";
-                    return handleDate(value as string);
-                  },
-                },
-                {
-                  header: t("action"),
-                  cell: ({ row }) => (
-                    <div className="flex gap-2">
-                      <Link href={`/messages/edit/${(row.original as any).id}`}>
-                        <Edit3 />
-                      </Link>
-                      <Dialog>
-                        <DialogTrigger className="w-full">
-                          <Trash2 className="text-red-500" />
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>{row.getValue("title")}</DialogTitle>
-                            <DialogDescription>{row.getValue("description")}</DialogDescription>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4">
-                            <p>{t("doYouDeleteMessage")}</p>
-                          </div>
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button variant={"secondary"}>{t("cancel")}</Button>
-                            </DialogClose>
-                            <Button
-                              type="submit"
-                              onClick={() => {
-                                setPostId((row.original as any).id);
-                                mutate();
-                              }}
-                            >
-                              {t("delete")}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ),
-                },
-              ]}
+              data={scheduledPosts?.scheduledPosts ?? null}
+              columns={schedulesPostColumns}
             />
           </Card>
         </TabsContent>
