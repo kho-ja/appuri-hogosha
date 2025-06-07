@@ -147,6 +147,20 @@ export default function Info() {
 
   const [tab, setTab] = useState<"messages" | "scheduled">("messages");
 
+  const handleDate = (date: string) => {
+    const localDate = new Date(date);
+    const offset = localDate.getTimezoneOffset() * 60000;
+    const localTime = new Date(localDate.getTime() - offset);
+
+    const y = localTime.getFullYear();
+    const m = String(localTime.getMonth() + 1).padStart(2, "0");
+    const d = String(localTime.getDate()).padStart(2, "0");
+    const h = String(localTime.getHours()).padStart(2, "0");
+    const min = String(localTime.getMinutes()).padStart(2, "0");
+
+    return `${y}-${m}-${d} ${h}:${min}`;
+  };
+
   return (
     <div className="w-full space-y-4">
       <PageHeader title={t("posts")} variant="list">
@@ -229,14 +243,7 @@ export default function Info() {
                   cell: ({ row }) => {
                     const value = row.getValue("scheduled_at");
                     if (!value) return "-";
-                    const date = new Date(value as string);
-                    // YYYY-MM-DD HH:mm format
-                    const y = date.getFullYear();
-                    const m = String(date.getMonth() + 1).padStart(2, "0");
-                    const d = String(date.getDate()).padStart(2, "0");
-                    const h = String(date.getHours()).padStart(2, "0");
-                    const min = String(date.getMinutes()).padStart(2, "0");
-                    return `${y}-${m}-${d} ${h}:${min}`;
+                    return handleDate(value as string);
                   },
                 },
                 {
