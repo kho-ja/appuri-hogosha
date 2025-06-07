@@ -1,0 +1,10 @@
+PUT http://localhost:3001/admin-panel/post/schedule/35
+Content-Type: application/json
+
+{
+    "title": "Vaqtni rejalashtirish",
+    "description": "to'g'ri urlga boryaptimi sinab ko'rish uchun",
+    "priority": "medium",
+    "scheduled_at": "2023-06-08T00:00:00.000Z",
+    "image": null
+}

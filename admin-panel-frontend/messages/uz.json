@@ -91,6 +91,11 @@
     "accept": "Qabul qilish"
   },
   "sendmessage": {
+    "yes": "Ha",
+    "no": "Yo'q",
+    "doYouWantSchedule": "Rejalashtirishni xohlaysizmi?",
+    "scheduledAt": "Rejalashtirilgan vaqti",
+    "schedule": "rejalashtirish",
     "sendMessage": "Xabar yuboring",
     "makeChanges": "Hisobingizga o'zgarishlar kiriting. Bajarilganda saqlang.",
     "title": "Sarlavha",
@@ -459,6 +464,9 @@
     "export": "Yuklab olish"
   },
   "posts": {
+    "messages": "Xabarlar",
+    "scheduledat": "Rejalashtirilgan vaqti",
+    "scheduledMessages": "Rejalashtirilgan xabarlar",
     "posts": "Xabarlar",
     "postTitle": "Xabar sarlavhasi",
     "Description": "Tavsif",
@@ -1109,5 +1117,13 @@
   },
   "BackButton": {
     "back": "Orqaga"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post muvaffaqiyatli rejalashtirildi",
+    "noTitleAvailable": "Sarlavha mavjud emas",
+    "selectDateTime": "Sana va vaqtni tanlang",
+    "error": "Xatolik",
+    "confirmSchedule":"Postni rejalashtirish",
+    "postDeleted": "Post muvaffaqiyatli o'chirildi"
   }
 }

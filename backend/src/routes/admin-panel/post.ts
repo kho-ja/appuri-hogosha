@@ -16,6 +16,7 @@ import iconv from "iconv-lite";
 import { Readable } from 'node:stream';
 import csvParser from 'csv-parser';
 import { stringify } from "csv-stringify";
+import cron from "node-cron";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -32,7 +33,7 @@ class PostController implements IController {
         this.router.post('/create', verifyToken, this.createPost)
         this.router.get('/list', verifyToken, this.postList)
         this.router.post("/upload", verifyToken, upload.single("file"), this.uploadPostsFromCSV);
-
+        
         this.router.get('/:id', verifyToken, this.postView)
         this.router.put('/:id', verifyToken, this.postUpdate)
         this.router.put('/:id/sender', verifyToken, this.postUpdateSender)
@@ -48,6 +49,17 @@ class PostController implements IController {
         this.router.post('/:id/groups/:group_id', verifyToken, this.groupRetryPush)
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
+
+        this.router.post('/schedule', verifyToken, this.schedulePost)
+        this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
+        this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
+        this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
+        this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
+
+        cron.schedule("* * * * *", async () => {
+            console.log("Checking for scheduled messages...", `${new Date()}`);
+            this.createPlannedMessage();
+        });
     }
 
     uploadPostsFromCSV = async (req: ExtendedRequest, res: Response) => {
@@ -1768,7 +1780,6 @@ class PostController implements IController {
                      WHERE st.id IN (:students)`,
                     { students }
                 );
-                console.log(studentList)
 
                 if (studentList.length > 0) {
                     for (const student of studentList) {
@@ -1847,6 +1858,608 @@ class PostController implements IController {
                     error: 'internal_server_error'
                 }).end();
             }
+        }
+    }
+
+    schedulePost = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const {
+                title,
+                description,
+                priority,
+                students,
+                groups,
+                image,
+                scheduled_at: scheduled_at_string
+            } = req.body
+
+            const scheduled_at = new Date(scheduled_at_string);
+            const year = scheduled_at.getUTCFullYear();
+            const month = String(scheduled_at.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(scheduled_at.getUTCDate()).padStart(2, '0');
+            const hours = String(scheduled_at.getUTCHours()).padStart(2, '0');
+            const minutes = String(scheduled_at.getUTCMinutes()).padStart(2, '0');
+
+            const formattedUTC = `${year}-${month}-${day} ${hours}:${minutes}:00`;
+            if (!title || !isValidString(title)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_title'
+                }
+            }
+            if (!description || !isValidString(description)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_description'
+                }
+            }
+            if (!priority || !isValidPriority(priority)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_priority'
+                }
+            }
+
+            if (image) {
+                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                if (!matches || matches.length !== 3) {
+                    throw {
+                        status: 401,
+                        message: 'invalid_image_format'
+                    }
+                }
+                const mimeType = matches[1];
+                const base64Data = matches[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+                if (buffer.length > 1024 * 1024 * 10) {
+                    throw {
+                        status: 401,
+                        message: 'image_size_too_large'
+                    }
+                }
+
+                const imageName = randomImageName() + mimeType.replace('image/', '.');
+                const imagePath = 'images/' + imageName;
+                const uploadResult = await Images3Client.uploadFile(buffer, mimeType, imagePath);
+
+                const postInsert = await DB.execute(`
+                INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at, groups_json, students_json)
+                    VALUE (:title, :description, :priority, :admin_id, :image, :school_id, :scheduled_at, :groups_json, :students_json);`, {
+                    title: title,
+                    description: description,
+                    priority: priority,
+                    image: imageName,
+                    admin_id: req.user.id,
+                    school_id: req.user.school_id,
+                    scheduled_at: formattedUTC,
+                    groups_json: groups,
+                    students_json: students
+                });
+            } else {
+                const postInsert = await DB.execute(`
+                INSERT INTO scheduledPost (title, description, priority, admin_id, school_id, scheduled_at, groups_json, students_json)
+                    VALUE (:title, :description, :priority, :admin_id, :school_id, :scheduled_at, :groups_json, :students_json);`, {
+                    title: title,
+                    description: description,
+                    priority: priority,
+                    admin_id: req.user.id,
+                    school_id: req.user.school_id,
+                    scheduled_at: formattedUTC,
+                    groups_json: groups,
+                    students_json: students
+                });
+            }
+            return res.status(200).json({
+                post: {
+                    title,
+                    description,
+                    priority,
+                    scheduled_at: formattedUTC,
+                },
+                });
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    scheduledPostList = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(process.env.PER_PAGE + '') || 10;
+            const offset = (page - 1) * limit;
+    
+            const priority = req.query.priority as string || '';
+            const text = req.query.text as string || '';
+    
+            const filters: string[] = ['sp.school_id = :school_id'];
+            const params: any = {
+                school_id: req.user.school_id,
+                limit,
+                offset
+            };
+    
+            if (priority && isValidPriority(priority)) {
+                filters.push('sp.priority = :priority');
+                params.priority = priority;
+            }
+            if (text) {
+                filters.push('(sp.title LIKE :text OR sp.description LIKE :text)');
+                params.text = `%${text}%`;
+            }
+    
+            const whereClause = 'WHERE ' + filters.join(' AND ');
+    
+            const postList = await DB.query(`
+                SELECT sp.id,
+                       sp.title,
+                       sp.description,
+                       sp.priority,
+                       sp.scheduled_at,
+                       ad.id          AS admin_id,
+                       ad.given_name  AS admin_given_name,
+                       ad.family_name AS admin_family_name,
+                       sp.sent_at,
+                       sp.edited_at
+                FROM scheduledPost AS sp
+                INNER JOIN Admin AS ad ON ad.id = sp.admin_id
+                ${whereClause}
+                GROUP BY sp.id, ad.id, ad.given_name, ad.family_name
+                ORDER BY sp.sent_at DESC
+                LIMIT :limit OFFSET :offset
+            `, params);
+    
+            const totalPostsResult = await DB.query(`
+                SELECT COUNT(*) AS total FROM (
+                    SELECT DISTINCT sp.id
+                    FROM scheduledPost AS sp
+                    INNER JOIN Admin AS ad ON ad.id = sp.admin_id
+                    ${whereClause}
+                ) AS subquery
+            `, params);
+            const totalPosts = totalPostsResult[0].total;
+            const totalPages = Math.ceil(totalPosts / limit);
+    
+            if (page > totalPages && totalPages !== 0) {
+                return res.status(400).json({ error: 'invalid_page' }).end();
+            }
+    
+            const pagination = {
+                current_page: page,
+                per_page: limit,
+                total_pages: totalPages,
+                total_posts: totalPosts,
+                next_page: page < totalPages ? page + 1 : null,
+                prev_page: page > 1 ? page - 1 : null,
+                links: generatePaginationLinks(page, totalPages)
+            };
+    
+            const formattedPostList = postList.map(({
+                id,
+                title,
+                description,
+                priority,
+                scheduled_at,
+                sent_at,
+                edited_at,
+                admin_id,
+                admin_given_name,
+                admin_family_name
+            }: any) => ({
+                id,
+                title,
+                description,
+                priority,
+                scheduled_at,
+                sent_at,
+                edited_at,
+                admin: {
+                    id: admin_id,
+                    given_name: admin_given_name,
+                    family_name: admin_family_name
+                }
+            }));
+    
+            return res.status(200).json({
+                scheduledPosts: formattedPostList,
+                pagination
+            }).end();
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    scheduledPostView = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const postInfo = await DB.query(`SELECT sp.id,
+                                                    sp.title,
+                                                    sp.description,
+                                                    sp.priority,
+                                                    scheduled_at,
+                                                    groups_json,
+                                                    students_json,
+                                                    sp.sent_at,
+                                                    sp.edited_at,
+                                                    sp.image,
+                                                    ad.id                                                                    AS admin_id,
+                                                    ad.given_name,
+                                                    ad.family_name,
+                                             FROM scheduledPost AS sp
+                                                      INNER JOIN Admin AS ad ON sp.admin_id = ad.id
+                                             WHERE sp.id = :id
+                                               AND sp.school_id = :school_id
+                                             GROUP BY sp.id, ad.id, ad.given_name, ad.family_name`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const post = postInfo[0];
+
+            return res.status(200).json({
+                post: {
+                    id: post.id,
+                    title: post.title,
+                    description: post.description,
+                    image: post.image,
+                    priority: post.priority,
+                    scheduled_at: post.scheduled_at,
+                    groups: post.groups,
+                    students: post.students,
+                    sent_at: post.sent_at,
+                    edited_at: post.edited_at,
+                },
+                admin: {
+                    id: post.admin_id,
+                    given_name: post.given_name,
+                    family_name: post.family_name,
+                },
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    deleteScheduledPost = async (req: ExtendedRequest, res: Response) => {
+        try{
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+            const postInfo = await DB.query(`SELECT id,
+                                                    title,
+                                                    description,
+                                                    priority,
+                                                    scheduled_at,
+                                                    image
+                                             FROM scheduledPost
+                                             WHERE school_id = :school_id
+                                               AND id = :id`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+
+                throw {
+                    status: 404,
+                    message: 'Scheduled Post not found'
+                }
+            }
+
+            Images3Client.deleteFile('images/' + postInfo[0].image)
+
+            await DB.execute('DELETE FROM scheduledPost WHERE id = :id;', {
+                id: postId,
+            })
+
+            return res.status(200).json({
+                message: 'scheduledPostDeleted'
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    updateScheduledPost = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const {
+                title,
+                description,
+                priority,
+                scheduled_at_string,
+                image,
+            } = req.body
+
+            const scheduled_at = new Date(scheduled_at_string);
+
+            if (!title || !isValidString(title)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_title'
+                }
+            }
+            if (!description || !isValidString(description)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_description'
+                }
+            }
+            if (!priority || !isValidPriority(priority)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_priority'
+                }
+            }
+
+            const postInfo = await DB.query(`SELECT id,
+                                                    title,
+                                                    description,
+                                                    priority,
+                                                    scheduled_at,
+                                                    image
+                                             FROM scheduledPost
+                                             WHERE school_id = :school_id
+                                               AND id = :id`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const post = postInfo[0]
+
+            if (image && image !== post.image) {
+                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+                
+                if (!matches || matches.length !== 3) {
+                    throw {
+                        status: 401,
+                        message: 'Invalid image format. Make sure it is Base64 encoded.'
+                    };
+                }
+            
+                const mimeType = matches[1];
+                const base64Data = matches[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+            
+                if (buffer.length > 10 * 1024 * 1024) {
+                    throw {
+                        status: 401,
+                        message: 'Image size is too large (max 10MB)'
+                    };
+                }
+            
+                const imageName = randomImageName() + mimeType.replace('image/', '.');
+                const imagePath = `images/${imageName}`;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            
+                post.image = imageName; 
+            } else if (!image) {
+                post.image = null; 
+            }
+            
+            await DB.execute(
+                `UPDATE scheduledPost
+                 SET title       = :title,
+                     description = :description,
+                     priority    = :priority,
+                     scheduled_at = :scheduled_at,
+                     image       = :image,
+                     edited_at   = NOW()
+                 WHERE id = :id
+                 AND school_id = :school_id`,
+                {
+                    id: post.id,
+                    school_id: req.user.school_id,
+                    title,
+                    description,
+                    priority,
+                    scheduled_at,
+                    image: post.image,
+                }
+            );
+
+            return res.status(200).json({
+                message: 'Scheduled Post edited successfully'
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    createPlannedMessage = async () => {
+        const scheduledPostList = await DB.query(`Select * from scheduledPost`)
+
+        if(scheduledPostList.length > 0){
+            scheduledPostList.map(async (post: any) => {
+                const {
+                    title, 
+                    description, 
+                    priority, 
+                    image, 
+                    scheduled_at, 
+                    admin_id, 
+                    school_id, 
+                    groups_json: groups, 
+                    students_json: students
+                } = post
+                
+                if(scheduled_at){
+                    const scheduledAt = new Date(scheduled_at);
+                    const now = new Date();
+                    if(now >= scheduledAt){
+                        const scheduledPostId = post.id;
+
+                        let postInsert;
+                        if (image) {
+                            postInsert = await DB.execute(`
+                            INSERT INTO Post (title, description, priority, admin_id, image, school_id)
+                                VALUE (:title, :description, :priority, :admin_id, :image, :school_id);`, {
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                admin_id: admin_id,
+                                image: image,
+                                school_id: school_id,
+                            });
+                        } else {
+                            postInsert = await DB.execute(`
+                            INSERT INTO Post (title, description, priority, admin_id, school_id)
+                                VALUE (:title, :description, :priority, :admin_id, :school_id);`, {
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                admin_id: admin_id,
+                                school_id: school_id,
+                            });
+                        }
+                    
+                        // deleteing the scheduled post
+                        await DB.execute(`DELETE FROM scheduledPost WHERE id = ${scheduledPostId}`);
+
+                        const postId = postInsert.insertId;
+
+                        if (students && Array.isArray(students) && isValidStringArrayId(students) && students.length > 0) {
+                            const studentList = await DB.query(
+                                `SELECT st.id
+                                FROM Student AS st
+                                WHERE st.id IN (:students)`,
+                                { students }
+                            );
+
+                            if (studentList.length > 0) {
+                                for (const student of studentList) {
+                                    const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id) VALUE (:post_id, :student_id)`, {
+                                        post_id: postId,
+                                        student_id: student.id,
+                                    });
+
+                                    const studentAttachList = await DB.query(`SELECT sp.parent_id
+                                                                            FROM StudentParent AS sp
+                                                                            WHERE sp.student_id = :student_id`,
+                                        {
+                                            student_id: student.id
+                                        });
+
+                                    if (studentAttachList.length > 0) {
+                                        const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
+                                        await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
+                                                        VALUES ${studentValues}`);
+                                    }
+                                }
+                            }
+                        }
+                        if (groups && Array.isArray(groups) && isValidArrayId(groups) && groups.length > 0) {
+                            const studentList = await DB.query(
+                                `SELECT gm.student_id, gm.group_id
+                                FROM GroupMember AS gm
+                                        RIGHT JOIN StudentGroup sg on gm.group_id = sg.id
+                                WHERE group_id IN (:groups)
+                                AND sg.school_id = :school_id`, {
+                                groups: groups,
+                                school_id: school_id
+                            }
+                            );
+
+                            if (studentList.length > 0) {
+                                for (const student of studentList) {
+                                    const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id, group_id) VALUE (:post_id, :student_id, :group_id)`, {
+                                        post_id: postId,
+                                        student_id: student.student_id,
+                                        group_id: student.group_id
+                                    });
+
+                                    const studentAttachList = await DB.query(`SELECT sp.parent_id
+                                                                            FROM StudentParent AS sp
+                                                                            WHERE sp.student_id = :student_id`,
+                                        {
+                                            student_id: student.student_id
+                                        });
+
+                                    if (studentAttachList.length > 0) {
+                                        const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
+                                        await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
+                                                        VALUES ${studentValues}`);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
         }
     }
 }

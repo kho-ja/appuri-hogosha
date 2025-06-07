@@ -90,6 +90,11 @@
     "accept": "Accept"
   },
   "sendmessage": {
+    "yes": "Yes",
+    "no": "No",
+    "doYouWantSchedule": "Do you want to schedule this message?",
+    "scheduledAt": "Scheduled at",
+    "schedule": "Schedule",
     "sendMessage": "Send Message",
     "makeChanges": "Make changes to your account here. Click save when you are done.",
     "title": "Title",
@@ -132,7 +137,10 @@
     "cancel": "Cancel",
     "AreYouSureDelete": "Are you sure you want to delete this draft?",
     "saveToDraft": "Save to Draft",
-    "draftDeleted": "Draft Deleted Successfully"
+    "draftDeleted": "Draft Deleted Successfully",
+    "selectScheduleTime": "Select Schedule Time",
+    "confirmSchedule": "Confirm Schedule",
+    "scheduledSuccessfully":"Post scheduled successfully"
   },
   "ThisMessage": {
     "editStudents": "Edit Students",
@@ -458,6 +466,9 @@
     "export": "Export"
   },
   "posts": {
+    "messages": "Messages",
+    "scheduledat": "Scheduled at",
+    "scheduledMessages": "Scheduled Messages",
     "posts": "Posts",
     "postTitle": "Post Title",
     "Description": "Description",
@@ -1108,5 +1119,13 @@
   },
   "BackButton": {
     "back": "Back"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post scheduled successfully",
+    "noTitleAvailable": "No title available",
+    "selectDateTime": "Select Date and Time",
+    "error": "Error",
+    "confirmSchedule":"Confirm Schedule",
+    "postDeleted": "Post deleted successfully"
   }
 }
