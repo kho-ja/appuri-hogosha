@@ -464,6 +464,8 @@
     "export": "Yuklab olish"
   },
   "posts": {
+    "messages": "Xabarlar",
+    "scheduledat": "Rejalashtirilgan vaqti",
     "scheduledMessages": "Rejalashtirilgan xabarlar",
     "posts": "Xabarlar",
     "postTitle": "Xabar sarlavhasi",

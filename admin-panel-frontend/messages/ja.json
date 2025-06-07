@@ -462,6 +462,8 @@
     "export": "ファイルに書き出す"
   },
   "posts": {
+    "messages": "メッセージ",
+    "scheduledat": "スケジュール日時",
     "scheduledMessages": "スケジュールされたメッセージ",
     "posts": "投稿",
     "postTitle": "投稿タイトル",

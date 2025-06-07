@@ -466,6 +466,8 @@
     "export": "Export"
   },
   "posts": {
+    "messages": "Messages",
+    "scheduledat": "Scheduled at",
     "scheduledMessages": "Scheduled Messages",
     "posts": "Posts",
     "postTitle": "Post Title",

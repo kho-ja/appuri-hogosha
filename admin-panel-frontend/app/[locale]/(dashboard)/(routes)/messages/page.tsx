@@ -28,6 +28,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -144,42 +145,143 @@ export default function Info() {
     },
   ];
 
+  const [tab, setTab] = useState<"messages" | "scheduled">("messages");
+
   return (
     <div className="w-full space-y-4">
-<PageHeader title={t("posts")} variant="list">
-  <div className="flex gap-2">
-    <Link href={`/messages/scheduled`}>
-      <Button variant="outline">{t("scheduledMessages")}</Button>
-    </Link>
-    <Link href={`/messages/create`}>
-      <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
-    </Link>
-  </div>
-</PageHeader>
+      <PageHeader title={t("posts")} variant="list">
+        <div className="min-w-[180px] max-w-xs ml-auto flex justify-end">
+          <Link href={`/messages/create`}>
+            <Button icon={<Plus className="h-5 w-5" />}>{t("createpost")}</Button>
+          </Link>
+        </div>
+      </PageHeader>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
-        <div className="w-full sm:max-w-sm">
-          <Input
-            placeholder={t("filter")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full"
-          />
-        </div>
-        <div className="">
-          <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
-        </div>
-      </div>
-      <Card x-chunk="dashboard-05-chunk-3">
-        <TableApi
-          linkPrefix="/messages"
-          data={data?.posts ?? null}
-          columns={postColumns}
-        />
-      </Card>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "messages" | "scheduled")}>
+        <TabsList className="mx-auto mb-4 w-fit flex justify-center">
+          <TabsTrigger value="messages">{t("messages")}</TabsTrigger>
+          <TabsTrigger value="scheduled">{t("scheduledMessages")}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="messages">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
+            <div className="w-full sm:max-w-sm">
+              <Input
+                placeholder={t("filter")}
+                value={search}
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
+            </div>
+          </div>
+          <Card x-chunk="dashboard-05-chunk-3">
+            <TableApi
+              linkPrefix="/messages"
+              data={data?.posts ?? null}
+              columns={postColumns}
+            />
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="scheduled">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
+            <div className="w-full sm:max-w-sm">
+              <Input
+                placeholder={t("filter")}
+                value={search}
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <PaginationApi data={scheduledPosts?.pagination ?? null} setPage={setPage} />
+            </div>
+          </div>
+          <Card>
+            <TableApi
+              linkPrefix="/messages"
+              data={scheduledPosts?.scheduledPosts ?? []}
+              columns={[
+                {
+                  accessorKey: "title",
+                  header: t("postTitle"),
+                },
+                {
+                  accessorKey: "description",
+                  header: t("Description"),
+                },
+                {
+                  accessorKey: "priority",
+                  header: t("Priority"),
+                },
+                {
+                  accessorKey: "scheduled_at",
+                  header: t("scheduledat"),
+                  cell: ({ row }) => {
+                    const value = row.getValue("scheduled_at");
+                    if (!value) return "-";
+                    const date = new Date(value as string);
+                    // YYYY-MM-DD HH:mm format
+                    const y = date.getFullYear();
+                    const m = String(date.getMonth() + 1).padStart(2, "0");
+                    const d = String(date.getDate()).padStart(2, "0");
+                    const h = String(date.getHours()).padStart(2, "0");
+                    const min = String(date.getMinutes()).padStart(2, "0");
+                    return `${y}-${m}-${d} ${h}:${min}`;
+                  },
+                },
+                {
+                  header: t("action"),
+                  cell: ({ row }) => (
+                    <div className="flex gap-2">
+                      <Link href={`/messages/edit/${(row.original as any).id}`}>
+                        <Edit3 />
+                      </Link>
+                      <Dialog>
+                        <DialogTrigger className="w-full">
+                          <Trash2 className="text-red-500" />
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>{row.getValue("title")}</DialogTitle>
+                            <DialogDescription>{row.getValue("description")}</DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <p>{t("doYouDeleteMessage")}</p>
+                          </div>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant={"secondary"}>{t("cancel")}</Button>
+                            </DialogClose>
+                            <Button
+                              type="submit"
+                              onClick={() => {
+                                setPostId((row.original as any).id);
+                                mutate();
+                              }}
+                            >
+                              {t("delete")}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

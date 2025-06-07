@@ -461,6 +461,8 @@
     "export": "Экспорт"
   },
   "posts": {
+    "messages": "Сообщения",
+    "scheduledat": "Запланировано на",
     "scheduledMessages": "Запланированные сообщения",
     "posts": "Сообщения",
     "postTitle": "Заголовок сообщения",
