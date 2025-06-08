@@ -45,7 +45,6 @@ export default function Info() {
     ["scheduledPosts", page, search]
   );
 
-  console.log("scheduledPosts", scheduledPosts)
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(

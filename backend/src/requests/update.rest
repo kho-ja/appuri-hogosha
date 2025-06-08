@@ -5,6 +5,6 @@ Content-Type: application/json
     "title": "Vaqtni rejalashtirish",
     "description": "to'g'ri urlga boryaptimi sinab ko'rish uchun",
     "priority": "medium",
-    "scheduled_at": "2023-06-08T00:00:00.000Z",
+    "scheduled_at": "2025-06-09T00:00:00.000Z",
     "image": null
 }

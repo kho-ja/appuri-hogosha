@@ -17,6 +17,7 @@ import { Readable } from 'node:stream';
 import csvParser from 'csv-parser';
 import { stringify } from "csv-stringify";
 import cron from "node-cron";
+import { DateTime } from "luxon";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -54,7 +55,7 @@ class PostController implements IController {
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
         this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
-        this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
+        this.router.put('/schedule/:id', this.updateScheduledPost)
 
         cron.schedule("* * * * *", async () => {
             console.log("Checking for scheduled messages...", `${new Date()}`);
@@ -1873,14 +1874,9 @@ class PostController implements IController {
                 scheduled_at: scheduled_at_string
             } = req.body
 
-            const scheduled_at = new Date(scheduled_at_string);
-            const year = scheduled_at.getUTCFullYear();
-            const month = String(scheduled_at.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(scheduled_at.getUTCDate()).padStart(2, '0');
-            const hours = String(scheduled_at.getUTCHours()).padStart(2, '0');
-            const minutes = String(scheduled_at.getUTCMinutes()).padStart(2, '0');
-
-            const formattedUTC = `${year}-${month}-${day} ${hours}:${minutes}:00`;
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const localTime = DateTime.fromISO(scheduled_at_string, { zone: 'utc' }).setZone(userTimezone);
+            const formattedUTC = localTime.toFormat('yyyy-MM-dd HH:mm:ss');
             if (!title || !isValidString(title)) {
                 throw {
                     status: 401,
@@ -2226,11 +2222,13 @@ class PostController implements IController {
                 title,
                 description,
                 priority,
-                scheduled_at_string,
+                scheduled_at: scheduled_at_string,
                 image,
             } = req.body
 
-            const scheduled_at = new Date(scheduled_at_string);
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const localTime = DateTime.fromISO(scheduled_at_string, { zone: 'utc' }).setZone(userTimezone);
+            const formattedUTC = localTime.toFormat('yyyy-MM-dd HH:mm:ss');
 
             if (!title || !isValidString(title)) {
                 throw {
@@ -2261,7 +2259,7 @@ class PostController implements IController {
                                              WHERE school_id = :school_id
                                                AND id = :id`, {
                 id: postId,
-                school_id: req.user.school_id
+                school_id: 1//req.user.school_id
             });
 
             if (postInfo.length <= 0) {
@@ -2315,14 +2313,16 @@ class PostController implements IController {
                  AND school_id = :school_id`,
                 {
                     id: post.id,
-                    school_id: req.user.school_id,
+                    school_id: 1,//req.user.school_id,
                     title,
                     description,
                     priority,
-                    scheduled_at,
+                    scheduled_at: formattedUTC,
                     image: post.image,
                 }
             );
+
+            console.log('formattedUTC', formattedUTC);
 
             return res.status(200).json({
                 message: 'Scheduled Post edited successfully'
