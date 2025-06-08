@@ -1,1 +1,1 @@
-DELETE http://localhost:3001/admin-panel/post/schedule/34
+DELETE http://localhost:3001/admin-panel/post/schedule/36

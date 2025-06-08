@@ -55,7 +55,7 @@ class PostController implements IController {
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
         this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
-        this.router.put('/schedule/:id', this.updateScheduledPost)
+        this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
 
         cron.schedule("* * * * *", async () => {
             console.log("Checking for scheduled messages...", `${new Date()}`);
@@ -2103,7 +2103,7 @@ class PostController implements IController {
                                                     sp.image,
                                                     ad.id                                                                    AS admin_id,
                                                     ad.given_name,
-                                                    ad.family_name,
+                                                    ad.family_name
                                              FROM scheduledPost AS sp
                                                       INNER JOIN Admin AS ad ON sp.admin_id = ad.id
                                              WHERE sp.id = :id
@@ -2259,7 +2259,7 @@ class PostController implements IController {
                                              WHERE school_id = :school_id
                                                AND id = :id`, {
                 id: postId,
-                school_id: 1//req.user.school_id
+                school_id: req.user.school_id
             });
 
             if (postInfo.length <= 0) {
@@ -2313,7 +2313,7 @@ class PostController implements IController {
                  AND school_id = :school_id`,
                 {
                     id: post.id,
-                    school_id: 1,//req.user.school_id,
+                    school_id: req.user.school_id,
                     title,
                     description,
                     priority,

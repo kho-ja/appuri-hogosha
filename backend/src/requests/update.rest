@@ -1,4 +1,4 @@
-PUT http://localhost:3001/admin-panel/post/schedule/35
+PUT http://localhost:3001/admin-panel/post/schedule/33
 Content-Type: application/json
 
 {
