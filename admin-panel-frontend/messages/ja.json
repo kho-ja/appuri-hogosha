@@ -474,7 +474,8 @@
     "confirm": "確認",
     "postDeleted": "投稿が削除されました",
     "confirmDeleteTitle": "この投稿を削除してもよろしいですか？",
-    "confirmDeleteDesc": "この操作は元に戻すことができません。"
+    "confirmDeleteDesc": "この操作は元に戻すことができません。",
+    "postsPerPage": "投稿のページサイズ"
   },
   "ParentTable": {
     "name": "名前",

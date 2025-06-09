@@ -1625,7 +1625,10 @@ class PostController implements IController {
     postList = async (req: ExtendedRequest, res: Response) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(process.env.PER_PAGE + '') || 10;
+            const perPageQuery = parseInt(req.query.perPage as string);
+            const limit = (perPageQuery && [10, 30, 50, 100].includes(perPageQuery))
+                ? perPageQuery
+                : parseInt(process.env.PER_PAGE + '') || 10;
             const offset = (page - 1) * limit;
 
             const priority = req.query.priority as string || '';

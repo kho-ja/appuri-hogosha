@@ -33,10 +33,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
+  const [perPage, setPerPage] = useState(10);
   const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<PostApi>(
-    `post/list?page=${page}&text=${search}`,
-    ["posts", page, search]
+    `post/list?page=${page}&text=${search}&perPage=${perPage}`,
+    ["posts", page, search, perPage]
   );
   const queryClient = useQueryClient();
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
@@ -59,20 +60,34 @@ export default function Info() {
   );
 
   const handleCheckboxChange = (id: number, checked: boolean) => {
-    if (checked) {
-      setSelectedPosts((prev) => [...prev, id]);
-    } else {
-      setSelectedPosts((prev) => prev.filter((pid) => pid !== id));
-    }
+    setSelectedPosts((prev) =>
+      checked ? [...prev, id] : prev.filter((pid) => pid !== id)
+    );
   };
 
   const handleSelectAllChange = (checked: boolean) => {
-    if (checked) {
-      const allIds = data?.posts?.map((post) => post.id) || [];
-      setSelectedPosts(allIds);
-    } else {
-      setSelectedPosts([]);
-    }
+    const allIds = data?.posts?.map((post) => post.id) || [];
+    setSelectedPosts((prev) =>
+      checked
+        ? Array.from(new Set([...prev, ...allIds]))
+        : prev.filter((id) => !allIds.includes(id))
+    );
+  };
+
+  const isAllSelected = () => {
+    const currentPagePosts = data?.posts?.map((post) => post.id) || [];
+    return (
+      currentPagePosts.length > 0 &&
+      currentPagePosts.every((id) => selectedPosts.includes(id))
+    );
+  };
+
+  const isIndeterminate = () => {
+    const currentPagePosts = data?.posts?.map((post) => post.id) || [];
+    const selectedCount = currentPagePosts.filter((id) =>
+      selectedPosts.includes(id)
+    ).length;
+    return selectedCount > 0 && selectedCount < currentPagePosts.length;
   };
 
   const postColumns: ColumnDef<Post>[] = [
@@ -82,25 +97,18 @@ export default function Info() {
         const checkboxRef = useRef<HTMLButtonElement>(null);
 
         useEffect(() => {
-          const total = data?.posts?.length ?? 0;
-          const selected = selectedPosts.length;
-          const indeterminate = selected > 0 && selected < total;
-
           if (checkboxRef.current) {
             const input = checkboxRef.current.querySelector("input");
             if (input) {
-              input.indeterminate = indeterminate;
+              input.indeterminate = isIndeterminate();
             }
           }
-        }, [selectedPosts, data?.posts]);
+        }, [data, selectedPosts, page]);
 
         return (
           <Checkbox
             ref={checkboxRef}
-            checked={
-              selectedPosts.length > 0 &&
-              selectedPosts.length === (data?.posts?.length ?? 0)
-            }
+            checked={isAllSelected()}
             onCheckedChange={(checked) =>
               handleSelectAllChange(Boolean(checked))
             }
@@ -169,6 +177,8 @@ export default function Info() {
     },
   ];
 
+  const allSelectedIds = selectedPosts;
+
   return (
     <div className="w-full space-y-4">
       <PageHeader title={t("posts")} variant="list">
@@ -176,22 +186,20 @@ export default function Info() {
           <Button
             icon={<Trash2 className="h-5 w-5" />}
             variant="destructive"
-            disabled={selectedPosts.length === 0}
+            disabled={allSelectedIds.length === 0}
             onClick={() => setIsDialogOpen(true)}
           >
-            {t("delete")} ({selectedPosts.length})
+            {t("delete")} ({allSelectedIds.length})
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {t("confirmDeleteTitle") || "Confirm Delete"}
-                </DialogTitle>
+                <DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
                 <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
               </DialogHeader>
               <div className="max-h-48 overflow-auto border rounded p-2 my-4">
                 {data?.posts
-                  ?.filter((post) => selectedPosts.includes(post.id))
+                  ?.filter((post) => allSelectedIds.includes(post.id))
                   .map((post) => (
                     <div
                       key={post.id}
@@ -208,7 +216,7 @@ export default function Info() {
                 </DialogClose>
                 <Button
                   variant="destructive"
-                  onClick={() => deleteMultiple.mutate({ ids: selectedPosts })}
+                  onClick={() => deleteMultiple.mutate({ ids: allSelectedIds })}
                 >
                   {t("delete")}
                 </Button>
@@ -245,6 +253,22 @@ export default function Info() {
           columns={postColumns}
         />
       </Card>
+      <div className="flex items-center gap-2 mt-2">
+        <span>{t("postsPerPage") || "Posts per page:"}</span>
+        {[10, 30, 50, 100].map((n) => (
+          <Button
+            key={n}
+            size="sm"
+            variant={perPage === n ? "default" : "outline"}
+            onClick={() => {
+              setPerPage(n);
+              setPage(1);
+            }}
+          >
+            {n}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
