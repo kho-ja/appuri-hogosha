@@ -88,6 +88,8 @@ export default function SettingsScreen() {
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);
+    // @ts-ignore
+    bottomSheetModalRef.current?.dismiss();
   };
   const handlePresentModal = useCallback(() => {
     // @ts-ignore
