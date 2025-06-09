@@ -51,9 +51,9 @@ class PostController implements IController {
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
 
-        this.router.post('/schedule', verifyToken, this.schedulePost)
+        this.router.post('/schedule', this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
-        this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
+        this.router.get('/schedule/each/:id', this.scheduledPostView)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
         this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
 
@@ -1874,9 +1874,9 @@ class PostController implements IController {
                 scheduled_at: scheduled_at_string
             } = req.body
 
-            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const localTime = DateTime.fromISO(scheduled_at_string, { zone: 'utc' }).setZone(userTimezone);
-            const formattedUTC = localTime.toFormat('yyyy-MM-dd HH:mm:ss');
+            const utc = DateTime.fromISO(scheduled_at_string).toUTC();
+            const formattedUTC = utc.toFormat('yyyy-MM-dd HH:mm:ss'); 
+
             if (!title || !isValidString(title)) {
                 throw {
                     status: 401,
@@ -2095,9 +2095,9 @@ class PostController implements IController {
                                                     sp.title,
                                                     sp.description,
                                                     sp.priority,
-                                                    scheduled_at,
-                                                    groups_json,
-                                                    students_json,
+                                                    sp.scheduled_at,
+                                                    sp.groups_json,
+                                                    sp.students_json,
                                                     sp.sent_at,
                                                     sp.edited_at,
                                                     sp.image,
@@ -2121,6 +2121,7 @@ class PostController implements IController {
             }
 
             const post = postInfo[0];
+            const utcDate = DateTime.fromJSDate(post.scheduled_at).toISO();
 
             return res.status(200).json({
                 post: {
@@ -2129,7 +2130,7 @@ class PostController implements IController {
                     description: post.description,
                     image: post.image,
                     priority: post.priority,
-                    scheduled_at: post.scheduled_at,
+                    scheduled_at: utcDate,
                     groups: post.groups,
                     students: post.students,
                     sent_at: post.sent_at,
