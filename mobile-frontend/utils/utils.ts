@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 
 type Style = { [key: string]: any } | undefined | null | false;
 export function cn(...styles: (Style | Style[])[]): Style {
@@ -83,7 +84,14 @@ export async function registerForPushNotificationsAsync() {
       return;
     }
     try {
-      return (await Notifications.getDevicePushTokenAsync()).data;
+      const projectId =
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        Constants.easConfig?.projectId;
+      return (
+        await Notifications.getDevicePushTokenAsync({
+          projectId,
+        })
+      ).data;
     } catch (e: unknown) {
       handleRegistrationError(`${e}`);
     }

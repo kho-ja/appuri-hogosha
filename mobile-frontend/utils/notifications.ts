@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform, Linking } from 'react-native';
 
 export type PushPermission =
@@ -77,8 +78,13 @@ export async function initPushNotifications(): Promise<PushInitResult> {
       return { status };
     }
 
-    // 3️⃣ Get the native device token
-    const { data: token } = await Notifications.getDevicePushTokenAsync();
+    // 3️⃣ Get the FCM registration token
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+    const { data: token } = await Notifications.getDevicePushTokenAsync({
+      projectId,
+    });
 
     return { status: 'granted', token };
   } catch (error) {
