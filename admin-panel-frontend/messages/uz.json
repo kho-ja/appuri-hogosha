@@ -144,6 +144,13 @@
     "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "Rejalashtirilgan xabar",
+      "ScheduledAt": "Rejalashtirilgan vaqt",
+      "Priority.default": "Muhimlik",
+      "Priority.low": "Past",
+      "Priority.medium": "O‘rta",
+      "Priority.high": "Yuqori",
+      "filterGroup": "Guruh nomi bo‘yicha filtrlash",
     "AS_PUBLISHER": "Nashriyot",
     "Ordinary": "Oddiy",
     "Company": "314 Arts OHG",
@@ -482,7 +489,8 @@
     "doYouDeleteMessage": "Xabarni o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "postDeleted": "Xabar muvaffaqiyatli o'chirildi"
+    "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
+    "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi"
   },
   "ParentTable": {
     "name": "Ism",

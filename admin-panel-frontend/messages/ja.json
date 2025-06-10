@@ -141,6 +141,13 @@
     "draftDeleted": "下書きが削除されました"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "予約されたメッセージを見る",
+      "ScheduledAt": "予定日時",
+      "Priority.default": "優先度",
+      "Priority.low": "低",
+      "Priority.medium": "中",
+      "Priority.high": "高",
+      "filterGroup": "グループ名でフィルター",
     "AS_PUBLISHER": "出版社",
     "Ordinary": "普通",
     "Company": "314 アーツ OHG",
@@ -480,7 +487,8 @@
     "doYouDeleteMessage": "このメッセージを削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "postDeleted": "投稿が削除されました"
+    "postDeleted": "投稿が削除されました",
+    "scheduledPostDeleted": "スケジュールされた投稿が削除されました"
   },
   "ParentTable": {
     "name": "名前",

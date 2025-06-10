@@ -1,7 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3, Trash2 } from "lucide-react";
+import { Edit3, Trash2, Plus } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,6 @@ import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
-import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -35,33 +34,30 @@ export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiQuery<PostApi>(
-    `post/list?page=${page}&text=${search}`,
-    ["posts", page, search]
-  );
+  const { data } = useApiQuery<PostApi>(`post/list?page=${page}&text=${search}`, ["posts", page, search]);
+  const { data: scheduledPosts } = useApiQuery<any>(`post/schedule/list?page=${page}&text=${search}`, ["scheduledPosts", page, search]);
 
-  const { data: scheduledPosts } = useApiQuery<any>(
-    `post/schedule/list?page=${page}&text=${search}`,
-    ["scheduledPosts", page, search]
-  );
-
-  console.log("scheduledPosts", scheduledPosts)
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
-  const { mutate } = useApiMutation<{ message: string }>(
-    `post/${postId}`,
-    "DELETE",
-    ["deletePost"],
-    {
-      onSuccess: (data) => {
-        queryClient.invalidateQueries({ queryKey: ["posts"] });
-        toast({
-          title: t("postDeleted"),
-          description: t(data?.message),
-        });
-      },
-    }
-  );
+  const { mutate: deletePost } = useApiMutation<{ message: string }>(`post/${postId}`, "DELETE", ["deletePost"], {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast({
+        title: t("postDeleted"),
+        description: t(data?.message),
+      });
+    },
+  });
+
+  const { mutate: deleteScheduledPost } = useApiMutation<{ message: string }>(`post/schedule/${postId}`, "DELETE", ["deleteScheduledPost"], {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["scheduledPosts"] });
+      toast({
+        title: t("postDeleted"),
+        description: t(data?.message),
+      });
+    },
+  });
 
   const postColumns: ColumnDef<Post>[] = [
     {
@@ -103,9 +99,7 @@ export default function Info() {
     },
     {
       header: t("action"),
-      meta: {
-        notClickable: true,
-      },
+      meta: { notClickable: true },
       cell: ({ row }) => (
         <div className="flex gap-2">
           <Link href={`/messages/edit/${row.original.id}`}>
@@ -118,13 +112,8 @@ export default function Info() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{row.getValue("title")}</DialogTitle>
-                <DialogDescription>
-                  {row.getValue("description")}
-                </DialogDescription>
+                <DialogDescription>{row.getValue("description")}</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <p>{t("doYouDeleteMessage")}</p>
-              </div>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant={"secondary"}>{t("cancel")}</Button>
@@ -133,7 +122,7 @@ export default function Info() {
                   type="submit"
                   onClick={() => {
                     setPostId(row.original.id);
-                    mutate();
+                    deletePost();  
                   }}
                 >
                   {t("delete")}
@@ -191,12 +180,10 @@ export default function Info() {
     },
     {
       header: t("action"),
-      meta: {
-        notClickable: true,
-      },
+      meta: { notClickable: true },
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Link href={`/messages/edit/${row.original.id}`}>
+          <Link href={`/messages/scheduled-message/edit/${row.original.id}`}>
             <Edit3 />
           </Link>
           <Dialog>
@@ -206,13 +193,8 @@ export default function Info() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{row.getValue("title")}</DialogTitle>
-                <DialogDescription>
-                  {row.getValue("description")}
-                </DialogDescription>
+                <DialogDescription>{row.getValue("description")}</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <p>{t("doYouDeleteMessage")}</p>
-              </div>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant={"secondary"}>{t("cancel")}</Button>
@@ -221,7 +203,7 @@ export default function Info() {
                   type="submit"
                   onClick={() => {
                     setPostId(row.original.id);
-                    mutate();
+                    deleteScheduledPost();  
                   }}
                 >
                   {t("delete")}
@@ -286,11 +268,7 @@ export default function Info() {
             </div>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi
-              linkPrefix="/messages"
-              data={data?.posts ?? null}
-              columns={postColumns}
-            />
+            <TableApi linkPrefix="/messages" data={data?.posts ?? null} columns={postColumns} />
           </Card>
         </TabsContent>
 
@@ -312,11 +290,7 @@ export default function Info() {
             </div>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi
-              linkPrefix="/messages"
-              data={scheduledPosts?.scheduledPosts ?? null}
-              columns={schedulesPostColumns}
-            />
+            <TableApi linkPrefix="/messages/scheduled-message/" data={scheduledPosts?.scheduledPosts ?? null} columns={schedulesPostColumns} />
           </Card>
         </TabsContent>
       </Tabs>

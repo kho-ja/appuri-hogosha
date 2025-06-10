@@ -2107,7 +2107,7 @@ class PostController implements IController {
                                                     sp.image,
                                                     ad.id                                                                    AS admin_id,
                                                     ad.given_name,
-                                                    ad.family_name,
+                                                    ad.family_name
                                              FROM scheduledPost AS sp
                                                       INNER JOIN Admin AS ad ON sp.admin_id = ad.id
                                              WHERE sp.id = :id
