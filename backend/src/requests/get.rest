@@ -1,1 +1,1 @@
-GET http://localhost:3001/admin-panel/post/schedule/each/33
+GET http://localhost:3001/admin-panel/post/schedule/each/64
