@@ -81,16 +81,25 @@ export async function initPushNotifications(): Promise<PushInitResult> {
     // 3️⃣ Get the FCM registration token
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ??
-      Constants.easConfig?.projectId;
+      Constants.easConfig?.projectId ??
+      process.env.EAS_PROJECT_ID;
+
+    if (!projectId) {
+      console.warn(
+        '[Push] No projectId found; set EAS_PROJECT_ID to retrieve FCM token'
+      );
+    }
+
     // The current typings for expo-notifications do not accept parameters for
     // `getDevicePushTokenAsync`, but recent versions support providing a
     // project ID to obtain an FCM token. Cast to `any` so compilation succeeds
     // while still passing the projectId at runtime.
-    const { data: token } = await (
+    const tokenResponse = await (
       Notifications.getDevicePushTokenAsync as any
-    )({
-      projectId,
-    });
+    )({ projectId });
+
+    console.log('[Push] Received push token type:', tokenResponse.type);
+    const { data: token } = tokenResponse;
 
     return { status: 'granted', token };
   } catch (error) {
