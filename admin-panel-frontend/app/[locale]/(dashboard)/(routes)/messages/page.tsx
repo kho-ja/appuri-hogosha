@@ -37,14 +37,6 @@ export default function Info() {
   const { data } = useApiQuery<PostApi>(`post/list?page=${page}&text=${search}`, ["posts", page, search]);
   const { data: scheduledPosts } = useApiQuery<any>(`post/schedule/list?page=${page}&text=${search}`, ["scheduledPosts", page, search]);
 
-<<<<<<< HEAD
-=======
-  const { data: scheduledPosts } = useApiQuery<any>(
-    `post/schedule/list?page=${page}&text=${search}`,
-    ["scheduledPosts", page, search]
-  );
-
->>>>>>> 4d24af52bb5f1ed0dcc6d882e4992cb797b204ee
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate: deletePost } = useApiMutation<{ message: string }>(`post/${postId}`, "DELETE", ["deletePost"], {
