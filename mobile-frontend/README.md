@@ -37,7 +37,7 @@ This command will move the starter code to the **app-example** directory and cre
 
 ## Push notifications on iOS
 
-To receive push notifications in a development build you must supply your Firebase project ID. Create a `.env` file with `EAS_PROJECT_ID=<your-project-id>` or set the variable in your build environment. The `GoogleService-Info.plist` file also needs to be included in the `ios` directory.
+To receive push notifications in a development build you must supply your Firebase project ID. Create a `.env` file with `EXPO_PUBLIC_EAS_PROJECT_ID=<your-project-id>` (or set it in your build environment). The `GoogleService-Info.plist` file also needs to be included in the `ios` directory.
 
 If the project ID is missing, `expo-notifications` will only return the APNs token, which Firebase cannot use. The console output from `initPushNotifications` shows the token type so you can verify that an FCM token was received.
 

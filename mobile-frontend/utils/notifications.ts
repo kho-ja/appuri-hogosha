@@ -79,10 +79,15 @@ export async function initPushNotifications(): Promise<PushInitResult> {
     }
 
     // 3️⃣ Get the FCM registration token
+    // `eas.projectId` is exposed via Constants in EAS builds. During development
+    // we also allow an explicit env variable so the dev client can fetch the FCM
+    // token. Environment variables must be prefixed with `EXPO_PUBLIC_` to be
+    // accessible at runtime.
     const projectId =
-      Constants.expoConfig?.extra?.eas?.projectId ??
-      Constants.easConfig?.projectId ??
-      process.env.EAS_PROJECT_ID;
+        Constants.expoConfig?.extra?.eas?.projectId ??
+        (Constants as any).easConfig?.projectId ??
+        process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
+        process.env.EAS_PROJECT_ID;
 
     if (!projectId) {
       console.warn(

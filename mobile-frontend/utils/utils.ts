@@ -84,14 +84,17 @@ export async function registerForPushNotificationsAsync() {
       return;
     }
     try {
+      // `eas.projectId` is available via Constants. During development we also
+      // check an explicit environment variable that is exposed to the client.
       const projectId =
         Constants.expoConfig?.extra?.eas?.projectId ??
-        Constants.easConfig?.projectId ??
+        (Constants as any).easConfig?.projectId ??
+        process.env.EXPO_PUBLIC_EAS_PROJECT_ID ??
         process.env.EAS_PROJECT_ID;
 
       if (!projectId) {
         console.warn(
-          '[Push] No projectId found; set EAS_PROJECT_ID to retrieve FCM token'
+          '[Push] No projectId found; set EXPO_PUBLIC_EAS_PROJECT_ID to retrieve FCM token'
         );
       }
 
