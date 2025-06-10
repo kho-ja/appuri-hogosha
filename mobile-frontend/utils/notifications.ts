@@ -82,7 +82,13 @@ export async function initPushNotifications(): Promise<PushInitResult> {
     const projectId =
       Constants.expoConfig?.extra?.eas?.projectId ??
       Constants.easConfig?.projectId;
-    const { data: token } = await Notifications.getDevicePushTokenAsync({
+    // The current typings for expo-notifications do not accept parameters for
+    // `getDevicePushTokenAsync`, but recent versions support providing a
+    // project ID to obtain an FCM token. Cast to `any` so compilation succeeds
+    // while still passing the projectId at runtime.
+    const { data: token } = await (
+      Notifications.getDevicePushTokenAsync as any
+    )({
       projectId,
     });
 

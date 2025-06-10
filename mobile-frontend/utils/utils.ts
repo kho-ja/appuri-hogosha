@@ -87,8 +87,11 @@ export async function registerForPushNotificationsAsync() {
       const projectId =
         Constants.expoConfig?.extra?.eas?.projectId ??
         Constants.easConfig?.projectId;
+      // Older type definitions for expo-notifications don't include the
+      // `projectId` parameter. Cast to `any` so we can pass it and retrieve the
+      // FCM registration token.
       return (
-        await Notifications.getDevicePushTokenAsync({
+        await (Notifications.getDevicePushTokenAsync as any)({
           projectId,
         })
       ).data;
