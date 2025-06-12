@@ -2,10 +2,11 @@ POST http://localhost:3001/admin-panel/post/schedule
 Content-Type: application/json
 
 {
-    "title": "test4",
+    "title": "test5",
     "description": "test",
     "priority": "low",
-    "scheduled_at": "2025-06-16T10:00:00.000Z",
-    "students": [1],
-    "groups": []
+    "scheduled_at": "2025-07-16T10:00:00.000Z",
+    "students": [1, 7 ],
+    "groups": [1],
+    "image": null
 }

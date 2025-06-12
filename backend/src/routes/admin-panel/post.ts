@@ -51,11 +51,13 @@ class PostController implements IController {
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
 
-        this.router.post('/schedule', this.schedulePost)
+        this.router.post('/schedule', verifyToken, this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
-        this.router.get('/schedule/each/:id', this.scheduledPostView)
+        this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
+        this.router.get('/schedule/:id/recievers', verifyToken, this.scheduledPostRecievers)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
         this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
+        this.router.put('/schedule/:id/recievers', verifyToken, this.updateScheduledPostRecievers)
 
         cron.schedule("* * * * *", async () => {
             console.log("Checking for scheduled messages...", `${new Date()}`);
@@ -1896,6 +1898,7 @@ class PostController implements IController {
                 }
             }
 
+            let postInsert;
             if (image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
                 if (!matches || matches.length !== 3) {
@@ -1918,9 +1921,9 @@ class PostController implements IController {
                 const imagePath = 'images/' + imageName;
                 const uploadResult = await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
-                const postInsert = await DB.execute(`
-                INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at, groups_json, students_json)
-                    VALUE (:title, :description, :priority, :admin_id, :image, :school_id, :scheduled_at, :groups_json, :students_json);`, {
+                postInsert = await DB.execute(`
+                INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at)
+                    VALUE (:title, :description, :priority, :admin_id, :image, :school_id, :scheduled_at);`, {
                     title: title,
                     description: description,
                     priority: priority,
@@ -1928,23 +1931,39 @@ class PostController implements IController {
                     admin_id: req.user.id,
                     school_id: req.user.school_id,
                     scheduled_at: formattedUTC,
-                    groups_json: groups,
-                    students_json: students
                 });
             } else {
-                const postInsert = await DB.execute(`
-                INSERT INTO scheduledPost (title, description, priority, admin_id, school_id, scheduled_at, groups_json, students_json)
-                    VALUE (:title, :description, :priority, :admin_id, :school_id, :scheduled_at, :groups_json, :students_json);`, {
+                postInsert = await DB.execute(`
+                INSERT INTO scheduledPost (title, description, priority, admin_id, school_id, scheduled_at)
+                    VALUE (:title, :description, :priority, :admin_id, :school_id, :scheduled_at);`, {
                     title: title,
                     description: description,
                     priority: priority,
                     admin_id: req.user.id,
                     school_id: req.user.school_id,
                     scheduled_at: formattedUTC,
-                    groups_json: groups,
-                    students_json: students
                 });
             }
+
+            const scheduled_post_id = postInsert.insertId;
+
+            const values = [] as any;
+
+            students.forEach((student_id: any) => {
+                values.push([scheduled_post_id, null, student_id]);
+            });
+
+            groups.forEach((group_id: any) => {
+                values.push([scheduled_post_id, group_id, null]);
+            });
+
+            const updatedValues = values.map((value: any) => `(${value[0]}, ${value[1]}, ${value[2]})`).join(', ');
+
+            const result = await DB.query(`
+                INSERT INTO scheduledPostRecievers (scheduled_post_id, group_id, student_id)
+                VALUES ${updatedValues}
+            `);
+
             return res.status(200).json({
                 post: {
                     title,
@@ -2002,13 +2021,14 @@ class PostController implements IController {
                        ad.id          AS admin_id,
                        ad.given_name  AS admin_given_name,
                        ad.family_name AS admin_family_name,
-                       sp.sent_at,
+                       sp.created_at,
                        sp.edited_at
-                FROM scheduledPost AS sp
+                FROM scheduledPostRecievers AS spr
+                INNER JOIN scheduledPost as sp on sp.id = spr.scheduled_post_id
                 INNER JOIN Admin AS ad ON ad.id = sp.admin_id
                 ${whereClause}
                 GROUP BY sp.id, ad.id, ad.given_name, ad.family_name
-                ORDER BY sp.sent_at DESC
+                ORDER BY sp.created_at DESC
                 LIMIT :limit OFFSET :offset
             `, params);
     
@@ -2096,9 +2116,7 @@ class PostController implements IController {
                                                     sp.description,
                                                     sp.priority,
                                                     sp.scheduled_at,
-                                                    sp.groups_json,
-                                                    sp.students_json,
-                                                    sp.sent_at,
+                                                    sp.created_at,
                                                     sp.edited_at,
                                                     sp.image,
                                                     ad.id                                                                    AS admin_id,
@@ -2131,10 +2149,8 @@ class PostController implements IController {
                     image: post.image,
                     priority: post.priority,
                     scheduled_at: utcDate,
-                    groups: post.groups,
-                    students: post.students,
-                    sent_at: post.sent_at,
-                    edited_at: post.edited_at,
+                    sent_at: post.created_at,
+                    edited_at: post.edited_at ? post.edited_at : post.created_at,
                 },
                 admin: {
                     id: post.admin_id,
@@ -2338,6 +2354,137 @@ class PostController implements IController {
                     error: 'internal_server_error'
                 }).end();
             }
+        }
+    }
+
+    updateScheduledPostRecievers = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const post = await DB.query(`Select 
+                title, description, priority, image, scheduled_at, admin_id, school_id 
+                from scheduledPost where id = :postId and school_id = :school_id`, {
+                    postId: postId,
+                    school_id: req.user.school_id
+                }
+            );
+
+            if (post.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const { students, groups } = req.body
+
+            const deleteOldRecievers = await DB.query(`
+                DELETE FROM scheduledPostRecievers
+                WHERE scheduled_post_id = ${postId}
+            `);
+
+            const values = [] as any;
+
+            students?.forEach((student_id: any) => {
+                values.push([postId, null, student_id]);
+            });
+          
+            groups?.forEach((group_id: any) => {
+                values.push([postId, group_id, null]);
+            });
+            
+            if (values.length === 0) {
+                return res.status(200).json({ message: 'Receivers cleared successfully, nothing new to insert.' });
+            }
+            const updatedValues = values.map((value: any) => `(${value[0]}, ${value[1]}, ${value[2]})`).join(', ');
+
+            const insertNewRecievers = await DB.query(`
+                INSERT INTO scheduledPostRecievers (scheduled_post_id, group_id, student_id)
+                VALUES ${updatedValues}`
+            );
+            
+            return res.status(200).json({
+                message: 'Receivers updated successfully'
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    scheduledPostRecievers = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postId = req.params.id;
+            console.log('postId', postId);
+            if (!postId || !isValidId(postId)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_id'
+                }
+            }
+
+            const postInfo = await DB.query(`SELECT sp.id,
+                                                    sp.title,
+                                                    sp.description,
+                                                    sp.priority,
+                                                    sp.scheduled_at,
+                                                    sp.created_at,
+                                                    sp.edited_at,
+                                                    sp.image,
+                                                    ad.id                                                                    AS admin_id,
+                                                    ad.given_name,
+                                                    ad.family_name
+                                             FROM scheduledPost AS sp
+                                                      INNER JOIN Admin AS ad ON sp.admin_id = ad.id
+                                             WHERE sp.id = :id
+                                               AND sp.school_id = :school_id
+                                             GROUP BY sp.id, ad.id, ad.given_name, ad.family_name`, {
+                id: postId,
+                school_id: req.user.school_id
+            });
+
+            if (postInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'post_not_found'
+                }
+            }
+
+            const post = postInfo[0];
+
+            const recieversObject = await DB.query(`
+                SELECT 
+                    GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
+                    GROUP_CONCAT(DISTINCT student_id) AS students
+                FROM scheduledPostRecievers
+                WHERE scheduled_post_id = ${postId}
+                `);
+
+            const row = recieversObject[0];
+            const groups = row.groupMembers ? row.groupMembers.split(',').map(Number) : [];
+            const students = row.students ? row.students.split(',').map(Number) : [];
+            return res.status(200).json({
+                groups,
+                students
+            }).end();
+        } catch (err: any) {
+            return res.status(500).json({
+                error: 'internal_server_error'
+            }).end();
         }
     }
 
