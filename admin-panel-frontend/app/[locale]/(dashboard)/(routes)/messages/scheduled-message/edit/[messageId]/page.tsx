@@ -2,15 +2,6 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -29,7 +20,6 @@ import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
-import Post from "@/types/post";
 import useApiMutation from "@/lib/useApiMutation";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
 import {
@@ -45,13 +35,14 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ScheduledPost from "@/types/scheduledPost";
+import { DateTimePicker24h } from "@/components/DateTimePicker24h";
 
 const formSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   priority: z.enum(["high", "medium", "low"]),
   image: z.string().optional(),
-  scheduled_at: z.string().min(1), // yangi maydon
+  scheduled_at: z.string().min(1), 
 });
 
 export default function SendMessagePage({
@@ -71,13 +62,13 @@ export default function SendMessagePage({
       description: "",
       priority: "low",
       image: "",
-      scheduled_at: "", // yangi maydon
+      scheduled_at: "", 
     },
   });
   const router = useRouter();
   const { data, isLoading, isError } = useApiQuery<{
     post: ScheduledPost;
-  }>(`post/schedule/each/${messageId}`, ["message", messageId]); // endpointni o'zgartiring
+  }>(`post/schedule/each/${messageId}`, ["message", messageId]);
 
   const { mutate, isPending } = useApiMutation<{ message: string }>(
     `post/schedule/${messageId}`,
@@ -109,7 +100,7 @@ export default function SendMessagePage({
         priority: data.post.priority as "high" | "medium" | "low",
         image: data.post.image || "",
         scheduled_at: data.post.scheduled_at
-          ? new Date(data.post.scheduled_at).toISOString().slice(0, 16)
+          ? new Date(data.post.scheduled_at).toISOString()
           : "",
       });
     }
@@ -140,8 +131,8 @@ export default function SendMessagePage({
               description: values.description,
               priority: values.priority,
               image: values.image,
-              scheduled_at_string: values.scheduled_at,
-            } as any); // <-- agar kerak bo'lsa, 'as any' bilan tip xatolikdan qutulasiz
+              scheduled_at: values.scheduled_at,
+            } as any); 
           })}
           className="space-y-4"
         >
@@ -250,7 +241,7 @@ export default function SendMessagePage({
                           if (file) {
                             const reader = new FileReader();
                             reader.onloadend = () => {
-                              form.setValue("image", reader.result as string); // Base64
+                              form.setValue("image", reader.result as string);
                             };
                             reader.readAsDataURL(file);
                           }
@@ -316,11 +307,12 @@ export default function SendMessagePage({
               <FormItem>
                 <FormLabel>{t("scheduledAt")}</FormLabel>
                 <FormControl>
-                  <Input
-                    type="datetime-local"
-                    {...field}
-                    value={field.value}
-                    onChange={field.onChange}
+                  <DateTimePicker24h
+                    value={field.value ? new Date(field.value) : null}
+                    onChange={(date) => {
+                      // To'liq ISO string saqlang
+                      field.onChange(date ? date.toISOString() : "");
+                    }}
                   />
                 </FormControl>
                 <FormMessage>
