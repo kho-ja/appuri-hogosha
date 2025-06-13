@@ -54,7 +54,7 @@ class PostController implements IController {
         this.router.post('/schedule', verifyToken, this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
         this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
-        this.router.get('/schedule/:id/recievers', this.scheduledPostRecievers)
+        this.router.get('/schedule/:id/recievers', verifyToken, this.scheduledPostRecievers)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
         this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
         this.router.put('/schedule/:id/recievers', verifyToken, this.updateScheduledPostRecievers)
