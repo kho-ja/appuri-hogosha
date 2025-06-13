@@ -51,10 +51,10 @@ class PostController implements IController {
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
 
-        this.router.post('/schedule', verifyToken, this.schedulePost)
+        this.router.post('/schedule', this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
         this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
-        this.router.get('/schedule/:id/recievers', verifyToken, this.scheduledPostRecievers)
+        this.router.get('/schedule/:id/recievers', this.scheduledPostRecievers)
         this.router.delete('/schedule/:id', verifyToken, this.deleteScheduledPost)
         this.router.put('/schedule/:id', verifyToken, this.updateScheduledPost)
         this.router.put('/schedule/:id/recievers', verifyToken, this.updateScheduledPostRecievers)
@@ -1939,8 +1939,8 @@ class PostController implements IController {
                     title: title,
                     description: description,
                     priority: priority,
-                    admin_id: req.user.id,
-                    school_id: req.user.school_id,
+                    admin_id: 1, //req.user.id,
+                    school_id: 1, //req.user.school_id,
                     scheduled_at: formattedUTC,
                 });
             }
@@ -2454,7 +2454,7 @@ class PostController implements IController {
                                                AND sp.school_id = :school_id
                                              GROUP BY sp.id, ad.id, ad.given_name, ad.family_name`, {
                 id: postId,
-                school_id: req.user.school_id
+                school_id: 1, //req.user.school_id
             });
 
             if (postInfo.length <= 0) {
@@ -2491,129 +2491,146 @@ class PostController implements IController {
     createPlannedMessage = async () => {
         const scheduledPostList = await DB.query(`Select * from scheduledPost`)
 
-        if(scheduledPostList.length > 0){
-            scheduledPostList.map(async (post: any) => {
-                const {
-                    title, 
-                    description, 
-                    priority, 
-                    image, 
-                    scheduled_at, 
-                    admin_id, 
-                    school_id, 
-                    groups_json: groups, 
-                    students_json: students
-                } = post
-                
-                if(scheduled_at){
-                    const scheduledAt = new Date(scheduled_at);
-                    const now = new Date();
-                    if(now >= scheduledAt){
-                        const scheduledPostId = post.id;
+        if(scheduledPostList.length <= 0){
+            return console.log('no scheduled post found')
+        }
 
-                        let postInsert;
-                        if (image) {
-                            postInsert = await DB.execute(`
-                            INSERT INTO Post (title, description, priority, admin_id, image, school_id)
-                                VALUE (:title, :description, :priority, :admin_id, :image, :school_id);`, {
-                                title: title,
-                                description: description,
-                                priority: priority,
-                                admin_id: admin_id,
-                                image: image,
-                                school_id: school_id,
-                            });
-                        } else {
-                            postInsert = await DB.execute(`
-                            INSERT INTO Post (title, description, priority, admin_id, school_id)
-                                VALUE (:title, :description, :priority, :admin_id, :school_id);`, {
-                                title: title,
-                                description: description,
-                                priority: priority,
-                                admin_id: admin_id,
-                                school_id: school_id,
-                            });
-                        }
-                    
-                        // deleteing the scheduled post
-                        await DB.execute(`DELETE FROM scheduledPost WHERE id = ${scheduledPostId}`);
+        scheduledPostList.map(async (post: any) => {
+            const {
+                title, 
+                description, 
+                priority, 
+                image, 
+                scheduled_at, 
+                admin_id, 
+                school_id, 
+            } = post
+            
+            if(!scheduled_at){
+                return console.log('scheduled_at is missing')
+            }
 
-                        const postId = postInsert.insertId;
+            const scheduledAt = new Date(scheduled_at);
+            const now = new Date();
+            
+            if(now < scheduledAt){
+                return;
+            }
 
-                        if (students && Array.isArray(students) && isValidStringArrayId(students) && students.length > 0) {
-                            const studentList = await DB.query(
-                                `SELECT st.id
-                                FROM Student AS st
-                                WHERE st.id IN (:students)`,
-                                { students }
+            const scheduledPostId = post.id;
+
+            let postInsert;
+            if (image) {
+                postInsert = await DB.execute(`
+                INSERT INTO Post (title, description, priority, admin_id, image, school_id)
+                    VALUE (:title, :description, :priority, :admin_id, :image, :school_id);`, {
+                    title: title,
+                    description: description,
+                    priority: priority,
+                    admin_id: admin_id,
+                    image: image,
+                    school_id: school_id,
+                });
+            } else {
+                postInsert = await DB.execute(`
+                INSERT INTO Post (title, description, priority, admin_id, school_id)
+                    VALUE (:title, :description, :priority, :admin_id, :school_id);`, {
+                    title: title,
+                    description: description,
+                    priority: priority,
+                    admin_id: admin_id,
+                    school_id: school_id,
+                });
+            }
+        
+            // deleteing the scheduled post
+            await DB.execute(`DELETE FROM scheduledPost WHERE id = ${scheduledPostId}`);
+
+            const postId = postInsert.insertId;
+
+            const recieversObject = await DB.query(`
+                SELECT 
+                    GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
+                    GROUP_CONCAT(DISTINCT student_id) AS students
+                FROM scheduledPostRecievers
+                WHERE scheduled_post_id = ${postId}
+            `);
+
+            const row = recieversObject[0];
+            const groups = row.groupMembers ? row.groupMembers.split(',').map(Number) : [];
+            const students = row.students ? row.students.split(',').map(Number) : [];
+
+            if (students && Array.isArray(students) && isValidStringArrayId(students) && students.length > 0) {
+                const studentList = await DB.query(
+                    `SELECT st.id
+                    FROM Student AS st
+                    WHERE st.id IN (:students)`,
+                    { students }
+                );
+
+                if (studentList.length > 0) {
+                    for (const student of studentList) {
+                        const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id) VALUE (:post_id, :student_id)`, {
+                            post_id: postId,
+                            student_id: student.id,
+                        });
+
+                        const studentAttachList = await DB.query(`SELECT sp.parent_id
+                            FROM StudentParent AS sp
+                            WHERE sp.student_id = :student_id`,
+                        {
+                            student_id: student.id
+                        });
+
+                        if (studentAttachList.length > 0) {
+                            const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
+                            await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
+                                VALUES ${studentValues}`
                             );
-
-                            if (studentList.length > 0) {
-                                for (const student of studentList) {
-                                    const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id) VALUE (:post_id, :student_id)`, {
-                                        post_id: postId,
-                                        student_id: student.id,
-                                    });
-
-                                    const studentAttachList = await DB.query(`SELECT sp.parent_id
-                                                                            FROM StudentParent AS sp
-                                                                            WHERE sp.student_id = :student_id`,
-                                        {
-                                            student_id: student.id
-                                        });
-
-                                    if (studentAttachList.length > 0) {
-                                        const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
-                                        await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
-                                                        VALUES ${studentValues}`);
-                                    }
-                                }
-                            }
-                        }
-                        if (groups && Array.isArray(groups) && isValidArrayId(groups) && groups.length > 0) {
-                            const studentList = await DB.query(
-                                `SELECT gm.student_id, gm.group_id
-                                FROM GroupMember AS gm
-                                        RIGHT JOIN StudentGroup sg on gm.group_id = sg.id
-                                WHERE group_id IN (:groups)
-                                AND sg.school_id = :school_id`, {
-                                groups: groups,
-                                school_id: school_id
-                            }
-                            );
-
-                            if (studentList.length > 0) {
-                                for (const student of studentList) {
-                                    const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id, group_id) VALUE (:post_id, :student_id, :group_id)`, {
-                                        post_id: postId,
-                                        student_id: student.student_id,
-                                        group_id: student.group_id
-                                    });
-
-                                    const studentAttachList = await DB.query(`SELECT sp.parent_id
-                                                                            FROM StudentParent AS sp
-                                                                            WHERE sp.student_id = :student_id`,
-                                        {
-                                            student_id: student.student_id
-                                        });
-
-                                    if (studentAttachList.length > 0) {
-                                        const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
-                                        await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
-                                                        VALUES ${studentValues}`);
-                                    }
-                                }
-                            }
                         }
                     }
                 }
-            })
-        }
+            }
+            if (groups && Array.isArray(groups) && isValidArrayId(groups) && groups.length > 0) {
+                const studentList = await DB.query(
+                    `SELECT gm.student_id, gm.group_id
+                    FROM GroupMember AS gm
+                        RIGHT JOIN StudentGroup sg on gm.group_id = sg.id
+                    WHERE group_id IN (:groups)
+                    AND sg.school_id = :school_id`, 
+                {
+                    groups: groups,
+                    school_id: school_id
+                });
+
+                if (studentList.length > 0) {
+                    for (const student of studentList) {
+                        const post_student = await DB.execute(`INSERT INTO PostStudent (post_id, student_id, group_id) VALUE (:post_id, :student_id, :group_id)`, {
+                            post_id: postId,
+                            student_id: student.student_id,
+                            group_id: student.group_id
+                        });
+
+                        const studentAttachList = await DB.query(`SELECT sp.parent_id
+                            FROM StudentParent AS sp
+                            WHERE sp.student_id = :student_id`,
+                        {
+                            student_id: student.student_id
+                        });
+
+                        if (studentAttachList.length > 0) {
+                            const studentValues = studentAttachList.map((student: any) => `(${post_student.insertId}, ${student.parent_id})`).join(', ');
+                            await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
+                                VALUES ${studentValues}`
+                            );
+                        }
+                    }
+                }
+            }
+
+            console.log('scheduled post posted successfully')
+        })
     }
 }
 
 export default PostController
-
-function addToExistingGroupNamesForPost(arg0: string, groupNamesArray: string[]) {
-    throw new Error('function_not_implemented');
-}

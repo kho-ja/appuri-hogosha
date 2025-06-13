@@ -1,1 +1,1 @@
-GET http://localhost:3001/admin-panel/post/schedule/7/recievers
+GET http://localhost:3001/admin-panel/post/schedule/2/recievers

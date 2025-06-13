@@ -5,8 +5,8 @@ Content-Type: application/json
     "title": "test5",
     "description": "test",
     "priority": "low",
-    "scheduled_at": "2025-07-16T10:00:00.000Z",
-    "students": [1, 7 ],
+    "scheduled_at": "2025-06-13T15:25:00.000Z",
+    "students": [1, 7],
     "groups": [1],
     "image": null
 }
