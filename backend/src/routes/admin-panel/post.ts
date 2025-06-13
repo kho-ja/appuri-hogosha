@@ -51,7 +51,7 @@ class PostController implements IController {
         this.router.post('/:id/students/:student_id', verifyToken, this.studentRetryPush)
         this.router.post('/:id/parents/:parent_id', verifyToken, this.parentRetryPush)
 
-        this.router.post('/schedule', this.schedulePost)
+        this.router.post('/schedule', verifyToken, this.schedulePost)
         this.router.get('/schedule/list', verifyToken, this.scheduledPostList)
         this.router.get('/schedule/each/:id', verifyToken, this.scheduledPostView)
         this.router.get('/schedule/:id/recievers', this.scheduledPostRecievers)
@@ -2512,7 +2512,7 @@ class PostController implements IController {
 
             const scheduledAt = new Date(scheduled_at);
             const now = new Date();
-            
+
             if(now < scheduledAt){
                 return;
             }
