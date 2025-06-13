@@ -29,11 +29,35 @@ import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+} from "@/components/ui/select";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
-  const [perPage, setPerPage] = useState(10);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const perPageFromUrl = Number(searchParams.get("perPage")) || 10;
+  const [perPage, setPerPage] = useState(perPageFromUrl);
+
+  useEffect(() => {
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    if (perPage === 10) {
+      params.delete("perPage");
+    } else {
+      params.set("perPage", perPage.toString());
+    }
+    router.replace(`?${params.toString()}`);
+  }, [router, searchParams, perPage]);
+  
   const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<PostApi>(
     `post/list?page=${page}&text=${search}&perPage=${perPage}`,
@@ -178,6 +202,16 @@ export default function Info() {
   ];
 
   const allSelectedIds = selectedPosts;
+  const handlePerPageChange = (value: number) => {
+    setPerPage(value);
+    const params = new URLSearchParams(Array.from(searchParams.entries()));
+    if (value === 10) {
+      params.delete("perPage");
+    } else {
+      params.set("perPage", value.toString());
+    }
+    router.replace(`?${params.toString()}`);
+  };
 
   return (
     <div className="w-full space-y-4">
@@ -255,19 +289,24 @@ export default function Info() {
       </Card>
       <div className="flex items-center gap-2 mt-2">
         <span>{t("postsPerPage") || "Posts per page:"}</span>
-        {[10, 30, 50, 100].map((n) => (
-          <Button
-            key={n}
-            size="sm"
-            variant={perPage === n ? "default" : "outline"}
-            onClick={() => {
-              setPerPage(n);
-              setPage(1);
-            }}
-          >
-            {n}
-          </Button>
-        ))}
+        <Select
+          onValueChange={(value) => handlePerPageChange(Number(value))}
+          value={perPage.toString()}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder={t("choosePostsPerPage") || "Choose"} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>{t("postsPerPage") || "Posts per page"}</SelectLabel>
+              {[10, 30, 50, 100].map((n) => (
+                <SelectItem key={n} value={n.toString()}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
