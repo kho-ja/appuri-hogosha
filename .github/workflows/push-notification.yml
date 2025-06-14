@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
-      - 185-iphone-push-notification-fix
-    # paths:
-    #   - "push-notification/**"
+    paths:
+      - "push-notification/**"
 
 permissions:
   contents: write
