@@ -47,29 +47,17 @@ export default function ScheduledMessagePage({
   const tName = useTranslations("names");
   const pathname = usePathname();
 
-  // Main scheduled post info
   const { data, isError } = useApiQuery<any>(
     `post/schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
 
-  // Students
-  const [studentPage, setStudentPage] = useState(1);
-  const [studentSearch, setStudentSearch] = useState("");
-  const { data: studentData, isError: isStudentError } = useApiQuery<any>(
-    `post/schedule/each/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
-    ["scheduled-student", messageId, studentPage, studentSearch]
-  );
+  const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
+  `post/schedule/${messageId}/recievers`,
+  ["scheduled-recievers", messageId]
+);
 
-  // Groups
-  const [groupPage, setGroupPage] = useState(1);
-  const [groupSearch, setGroupSearch] = useState("");
-  const { data: groupData, isError: isGroupError } = useApiQuery<any>(
-    `post/schedule/each/${messageId}/groups?page=${groupPage}&name=${groupSearch}`,
-    ["scheduled-group", messageId, groupPage, groupSearch]
-  );
 
-  // Columns for students
   const studentColumns = [
     {
       accessorKey: "name",
@@ -88,40 +76,8 @@ export default function ScheduledMessagePage({
       accessorKey: "phone_number",
       header: t("phoneNumber"),
     },
-    {
-      accessorKey: "parents",
-      header: t("Parents"),
-      meta: { notClickable: true },
-      cell: ({ row }: any) => {
-        const parents = row.original?.parents || [];
-        return (
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <Button variant="ghost" size="icon">
-                👨‍👩‍👧‍👦
-              </Button>
-            </HoverCardTrigger>
-            <HoverCardContent>
-              {parents.length
-                ? parents.map((parent: any) => (
-                    <div key={parent.id}>
-                      <div className="flex justify-between py-2">
-                        <div className="font-bold">
-                          {tName("name", { ...parent })}
-                        </div>
-                      </div>
-                      {parents.at(-1) !== parent && <Separator />}
-                    </div>
-                  ))
-                : t("noParents")}
-            </HoverCardContent>
-          </HoverCard>
-        );
-      },
-    },
   ];
 
-  // Columns for groups
   const groupColumns = [
     {
       accessorKey: "name",
@@ -131,7 +87,7 @@ export default function ScheduledMessagePage({
       header: t("Actions"),
       meta: { notClickable: true },
       cell: ({ row }: any) => (
-        <Link href={`${pathname}/group/${row.original.id}`}>
+        <Link href={`/messages/${messageId}/group/${row.original.id}`}>
           <Edit3Icon />
         </Link>
       ),
@@ -141,7 +97,7 @@ export default function ScheduledMessagePage({
   const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
   const scheduled_atDate = FormatDateTime(data?.post?.scheduled_at ?? "");
 
-  if (isError && isStudentError && isGroupError) return <NotFound />;
+  if (isError) return <NotFound />;
 
   return (
     <div className="flex flex-col gap-2">
@@ -218,58 +174,27 @@ export default function ScheduledMessagePage({
             <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
             <TabsTrigger value="students">{t("Students")}</TabsTrigger>
           </TabsList>
+         <Link href={`/messages/scheduled-message/${messageId}/recievers`} passHref>
+          <Button>{t("editRecivers")}</Button>
+        </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
-          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between w-full gap-2">
-            <Input
-              placeholder={t("filterGroup")}
-              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setGroupSearch(e.target.value);
-                setGroupPage(1);
-              }}
-              className="sm:max-w-xs"
-            />
-            <div className="w-full sm:w-auto flex  justify-center sm:justify-end ">
-              <PaginationApi
-                data={groupData?.pagination ?? null}
-                setPage={setGroupPage}
-              />
-            </div>
-          </div>
-
           <div className="rounded-md border">
             <TableApi
               linkPrefix={`/messages/scheduled-message/${messageId}/group`}
-              data={groupData?.groups ?? null}
+              data={recieverData?.groups ?? null}
               columns={groupColumns}
             />
           </div>
         </TabsContent>
-        <TabsContent value="students" className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between w-full gap-2">
-            <Input
-              placeholder={t("filterEmail")}
-              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setStudentSearch(e.target.value);
-                setStudentPage(1);
-              }}
-              className="sm:max-w-xs"
-            />
-            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-              <PaginationApi
-                data={studentData?.pagination ?? null}
-                setPage={setStudentPage}
-              />
-            </div>
-          </div>
-
+       <TabsContent value="students" className="space-y-4">
           <div className="rounded-md border">
             <TableApi
-              linkPrefix={`/messages/scheduled-message/${messageId}/student`}
-              data={studentData?.students ?? null}
-              columns={studentColumns}
-            />
-          </div>
+                  linkPrefix={`/messages/scheduled-message/${messageId}/student`}
+                  data={recieverData?.students ?? null}
+                  columns={studentColumns}
+                />
+              </div>
         </TabsContent>
       </Tabs>
     </div>

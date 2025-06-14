@@ -2386,6 +2386,7 @@ class PostController implements IController {
             const { students, groups } = req.body
 
             const deleteOldRecievers = await DB.query(`
+
                 DELETE FROM scheduledPostRecievers
                 WHERE scheduled_post_id = ${postId}
             `);
@@ -2429,7 +2430,6 @@ class PostController implements IController {
     scheduledPostRecievers = async (req: ExtendedRequest, res: Response) => {
         try {
             const postId = req.params.id;
-            console.log('postId', postId);
             if (!postId || !isValidId(postId)) {
                 throw {
                     status: 401,
@@ -2437,24 +2437,12 @@ class PostController implements IController {
                 }
             }
 
-            const postInfo = await DB.query(`SELECT sp.id,
-                                                    sp.title,
-                                                    sp.description,
-                                                    sp.priority,
-                                                    sp.scheduled_at,
-                                                    sp.created_at,
-                                                    sp.edited_at,
-                                                    sp.image,
-                                                    ad.id                                                                    AS admin_id,
-                                                    ad.given_name,
-                                                    ad.family_name
-                                             FROM scheduledPost AS sp
-                                                      INNER JOIN Admin AS ad ON sp.admin_id = ad.id
-                                             WHERE sp.id = :id
-                                               AND sp.school_id = :school_id
-                                             GROUP BY sp.id, ad.id, ad.given_name, ad.family_name`, {
+            const postInfo = await DB.query(`SELECT sp.id
+                                         FROM scheduledPost AS sp
+                                         WHERE sp.id = :id
+                                           AND sp.school_id = :school_id`, {
                 id: postId,
-                school_id: 1, //req.user.school_id
+                school_id: req.user.school_id,
             });
 
             if (postInfo.length <= 0) {
@@ -2464,19 +2452,35 @@ class PostController implements IController {
                 }
             }
 
-            const post = postInfo[0];
+            const recievers = await DB.query(`
+            SELECT group_id, student_id
+            FROM scheduledPostRecievers
+            WHERE scheduled_post_id = :postId
+        `, { postId });
 
-            const recieversObject = await DB.query(`
-                SELECT 
-                    GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
-                    GROUP_CONCAT(DISTINCT student_id) AS students
-                FROM scheduledPostRecievers
-                WHERE scheduled_post_id = ${postId}
-                `);
+            const groupIds = recievers.filter((r: any) => r.group_id).map((r: any) => r.group_id);
+            const studentIds = recievers.filter((r: any) => r.student_id).map((r: any) => r.student_id);
 
-            const row = recieversObject[0];
-            const groups = row.groupMembers ? row.groupMembers.split(',').map(Number) : [];
-            const students = row.students ? row.students.split(',').map(Number) : [];
+            let groups = [];
+            if (groupIds.length > 0) {
+                groups = await DB.query(`
+                SELECT id, name
+                FROM StudentGroup
+                WHERE id IN (:groupIds)
+                  AND school_id = :school_id
+            `, { groupIds, school_id: req.user.school_id });
+            }
+
+            let students = [];
+            if (studentIds.length > 0) {
+                students = await DB.query(`
+                SELECT id, given_name, family_name, student_number, email, phone_number
+                FROM Student
+                WHERE id IN (:studentIds)
+                  AND school_id = :school_id
+            `, { studentIds, school_id: req.user.school_id });
+            }
+
             return res.status(200).json({
                 groups,
                 students

@@ -40,7 +40,7 @@ export default function ThisStudent({
     student: Student;
     parents: Parent[];
   }>(
-    `post/schedule/each/${messageId}/student/${studentId}`,
+    `post/${messageId}/student/${studentId}`,
     ["scheduled-student", messageId, studentId]
   );
 

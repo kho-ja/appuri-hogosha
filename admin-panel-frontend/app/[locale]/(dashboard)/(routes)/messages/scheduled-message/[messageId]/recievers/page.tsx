@@ -27,47 +27,44 @@ export default function Recievers({
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const router = useRouter();
-  const { data: studentData } = useApiQuery<StudentApi>(
-    `post/${messageId}/students`,
-    ["student", messageId]
-  );
-  const { data: groupData } = useApiQuery<GroupApi>(
-    `post/${messageId}/groups`,
-    ["group", messageId]
-  );
   const { mutate } = useApiMutation(
-    `post/${messageId}/sender`,
+    `post/schedule/${messageId}/recievers`,
     "PUT",
-    ["editMessageSender", messageId],
+    ["editScheduledReceivers", messageId],
     {
-      onSuccess: (data: any) => {
+      onSuccess: () => {
+        router.push(`/messages/scheduled-message/${messageId}`);
+      },
+      onError: () => {
         toast({
-          title: t("recieversChanged"),
-          description: data?.message,
+          title: t("error"),
+          description: t("updateFailed"),
+          variant: "destructive",
         });
-        router.push(`/messages/${messageId}`);
       },
     }
-  );
+  ) as unknown as {
+    mutate: (data: { students: number[]; groups: number[] }) => void;
+  };
 
   const handleClick = useCallback(() => {
     mutate({
-      students: selectedStudents.map((student) => student.id),
-      groups: selectedGroups.map((group) => group.id),
-    } as any);
+      students: selectedStudents.map((s) => s.id),
+      groups: selectedGroups.map((g) => g.id),
+    });
   }, [selectedStudents, selectedGroups, mutate]);
 
-  useEffect(() => {
-    if (studentData) {
-      setSelectedStudents(studentData.students);
-    }
-  }, [studentData]);
+  const { data } = useApiQuery<{ students: Student[]; groups: Group[] }>(
+    `post/schedule/${messageId}/recievers`,
+    ["scheduled-receivers", messageId]
+  );
 
   useEffect(() => {
-    if (groupData) {
-      setSelectedGroups(groupData.groups);
+    if (data) {
+      setSelectedStudents(data.students || []);
+      setSelectedGroups(data.groups || []);
     }
-  }, [groupData]);
+  }, [data]);
 
   return (
     <div className="flex flex-col gap-2 justify-start items-start">
