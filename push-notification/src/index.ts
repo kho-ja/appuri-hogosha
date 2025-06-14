@@ -1,26 +1,34 @@
-import { PinpointClient, SendMessagesCommand, ChannelType, DirectMessageConfiguration } from '@aws-sdk/client-pinpoint';
+import { PinpointClient, SendMessagesCommand, ChannelType, DirectMessageConfiguration, PinpointClientConfig } from '@aws-sdk/client-pinpoint';
 import { PinpointSMSVoiceV2Client, SendTextMessageCommand } from '@aws-sdk/client-pinpoint-sms-voice-v2';
 import { Telegraf, Markup } from "telegraf";
 import { config } from "dotenv";
 import DatabaseClient from "./db-client";
 config();
 
-// Initialize AWS End User Messaging clients
-const pinpointClient = new PinpointClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-    }
-});
+// Check if running locally or in Lambda
+const isLocal = !process.env.AWS_LAMBDA_FUNCTION_NAME;
 
-const smsClient = new PinpointSMSVoiceV2Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-    }
-});
+console.log(`🏃 Running in ${isLocal ? 'LOCAL' : 'LAMBDA'} environment`);
+
+// AWS Client configuration
+const awsConfig: PinpointClientConfig = {
+    region: process.env.AWS_REGION || 'us-east-1'
+};
+
+// For local development, you can optionally specify custom credentials
+if (isLocal && process.env.LOCAL_AWS_ACCESS_KEY_ID && process.env.LOCAL_AWS_SECRET_ACCESS_KEY) {
+    console.log('🔑 Using custom local AWS credentials');
+    awsConfig.credentials = {
+        accessKeyId: process.env.LOCAL_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.LOCAL_AWS_SECRET_ACCESS_KEY
+    };
+} else if (isLocal) {
+    console.log('🔑 Using AWS CLI credentials or default credential chain');
+}
+
+// Initialize AWS End User Messaging clients
+const pinpointClient = new PinpointClient(awsConfig);
+const smsClient = new PinpointSMSVoiceV2Client(awsConfig);
 
 // Initialize Telegram bot
 const bot = new Telegraf(process.env.BOT_TOKEN!);
@@ -447,3 +455,15 @@ export const handler = async () => {
         };
     }
 };
+
+// For local development - run directly
+if (isLocal) {
+    console.log('🚀 Running locally...');
+    handler().then(result => {
+        console.log('📊 Result:', result);
+        process.exit(0);
+    }).catch(error => {
+        console.error('💥 Error:', error);
+        process.exit(1);
+    });
+}
