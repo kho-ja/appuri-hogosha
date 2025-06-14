@@ -19,15 +19,18 @@
 		"dotenv": "^16.4.7",
 		"express": "^4.19.2",
 		"iconv-lite": "^0.6.3",
+		"luxon": "^3.6.1",
 		"morgan": "^1.10.0",
 		"multer": "^1.4.5-lts.1",
 		"mysql2": "^3.9.6",
+		"node-cron": "^4.0.7",
 		"serverless-http": "^3.2.0"
 	},
 	"devDependencies": {
 		"@types/cors": "^2.8.17",
 		"@types/encoding-japanese": "^2.2.1",
 		"@types/express": "^4.17.21",
+		"@types/luxon": "^3.6.2",
 		"@types/morgan": "^1.9.9",
 		"@types/multer": "^1.4.12",
 		"nodemon": "^3.1.0",

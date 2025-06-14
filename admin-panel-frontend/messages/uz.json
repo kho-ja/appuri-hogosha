@@ -91,6 +91,11 @@
     "accept": "Qabul qilish"
   },
   "sendmessage": {
+    "yes": "Ha",
+    "no": "Yo'q",
+    "doYouWantSchedule": "Rejalashtirishni xohlaysizmi?",
+    "scheduledAt": "Rejalashtirilgan vaqti",
+    "schedule": "rejalashtirish",
     "sendMessage": "Xabar yuboring",
     "makeChanges": "Hisobingizga o'zgarishlar kiriting. Bajarilganda saqlang.",
     "title": "Sarlavha",
@@ -139,6 +144,13 @@
     "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "Rejalashtirilgan xabar",
+      "ScheduledAt": "Rejalashtirilgan vaqt",
+      "Priority.default": "Muhimlik",
+      "Priority.low": "Past",
+      "Priority.medium": "O‘rta",
+      "Priority.high": "Yuqori",
+      "filterGroup": "Guruh nomi bo‘yicha filtrlash",
     "AS_PUBLISHER": "Nashriyot",
     "Ordinary": "Oddiy",
     "Company": "314 Arts OHG",
@@ -459,6 +471,9 @@
     "export": "Yuklab olish"
   },
   "posts": {
+    "messages": "Xabarlar",
+    "scheduledat": "Rejalashtirilgan vaqti",
+    "scheduledMessages": "Rejalashtirilgan xabarlar",
     "posts": "Xabarlar",
     "postTitle": "Xabar sarlavhasi",
     "Description": "Tavsif",
@@ -474,7 +489,8 @@
     "doYouDeleteMessage": "Xabarni o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "postDeleted": "Xabar muvaffaqiyatli o'chirildi"
+    "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
+    "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi"
   },
   "ParentTable": {
     "name": "Ism",
@@ -1109,5 +1125,13 @@
   },
   "BackButton": {
     "back": "Orqaga"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post muvaffaqiyatli rejalashtirildi",
+    "noTitleAvailable": "Sarlavha mavjud emas",
+    "selectDateTime": "Sana va vaqtni tanlang",
+    "error": "Xatolik",
+    "confirmSchedule":"Postni rejalashtirish",
+    "postDeleted": "Post muvaffaqiyatli o'chirildi"
   }
 }
