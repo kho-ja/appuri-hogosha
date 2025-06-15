@@ -680,7 +680,7 @@ class SchedulePostController implements IController {
             } = post
             
             if(!scheduled_at){
-                return console.log('scheduled_at is missing')
+                return console.error('scheduled_at is missing')
             }
 
             const scheduledAt = new Date(scheduled_at);
