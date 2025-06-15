@@ -91,6 +91,11 @@
     "accept": "承認"
   },
   "sendmessage": {
+    "yes": "はい",
+    "no": "いいえ",
+    "doYouWantSchedule": "メッセージをスケジュールしますか？",
+    "scheduledAt": "スケジュール日時",
+    "schedule": "スケジュール",
     "sendMessage": "メッセージを送信する",
     "makeChanges": "ここでアカウントの変更を行います。完了したら保存してください。",
     "title": "タイトル",
@@ -136,6 +141,13 @@
     "draftDeleted": "下書きが削除されました"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "予約されたメッセージを見る",
+      "ScheduledAt": "予定日時",
+      "Priority.default": "優先度",
+      "Priority.low": "低",
+      "Priority.medium": "中",
+      "Priority.high": "高",
+      "filterGroup": "グループ名でフィルター",
     "AS_PUBLISHER": "出版社",
     "Ordinary": "普通",
     "Company": "314 アーツ OHG",
@@ -457,6 +469,9 @@
     "export": "ファイルに書き出す"
   },
   "posts": {
+    "messages": "メッセージ",
+    "scheduledat": "スケジュール日時",
+    "scheduledMessages": "スケジュールされたメッセージ",
     "posts": "投稿",
     "postTitle": "投稿タイトル",
     "Description": "詳細",
@@ -472,7 +487,8 @@
     "doYouDeleteMessage": "このメッセージを削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "postDeleted": "投稿が削除されました"
+    "postDeleted": "投稿が削除されました",
+    "scheduledPostDeleted": "スケジュールされた投稿が削除されました"
   },
   "ParentTable": {
     "name": "名前",
@@ -1107,5 +1123,13 @@
   },
   "BackButton": {
     "back": "戻る"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "投稿が正常にスケジュールされました",
+    "noTitleAvailable": "タイトルがありません",
+    "selectDateTime": "日付と時間を選択",
+    "error": "エラー",
+    "confirmSchedule": "スケジュールを確認",
+    "postDeleted": "投稿が削除されました"
   }
 }
