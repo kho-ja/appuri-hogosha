@@ -477,7 +477,8 @@
     "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
     "confirmDeleteTitle": "Ushbu xabarni o'chirishni istaysizmi?",
     "confirmDeleteDesc": "Bu amalni qayta ishga tushirilmaydi.",
-    "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori"
+    "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori",
+    "choosePostsPerPage": "Sahifada ko'rsatiladigan xabarlar sonini tanlang"
   },
   "ParentTable": {
     "name": "Ism",

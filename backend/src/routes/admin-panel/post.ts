@@ -807,8 +807,9 @@ class PostController implements IController {
 
             await DB.execute(`
             DELETE FROM Post
-            WHERE id IN (${placeholders})
-        `, postIds);
+            WHERE school_id = ?  
+              AND id IN (${placeholders})  
+        `, [req.user.school_id, ...postIds]); 
 
             return res.status(200).json({
                 message: 'postsDeleted',
