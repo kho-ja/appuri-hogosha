@@ -472,7 +472,11 @@
     "doYouDeleteMessage": "このメッセージを削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
-    "postDeleted": "投稿が削除されました"
+    "postDeleted": "投稿が削除されました",
+    "confirmDeleteTitle": "この投稿を削除してもよろしいですか？",
+    "confirmDeleteDesc": "この操作は元に戻すことができません。",
+    "postsPerPage": "投稿のページサイズ",
+    "choosePostsPerPage": "ページに表示する投稿の数を選択"
   },
   "ParentTable": {
     "name": "名前",

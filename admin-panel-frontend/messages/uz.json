@@ -474,7 +474,11 @@
     "doYouDeleteMessage": "Xabarni o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "postDeleted": "Xabar muvaffaqiyatli o'chirildi"
+    "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
+    "confirmDeleteTitle": "Ushbu xabarni o'chirishni istaysizmi?",
+    "confirmDeleteDesc": "Bu amalni qayta ishga tushirilmaydi.",
+    "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori",
+    "choosePostsPerPage": "Sahifada ko'rsatiladigan xabarlar sonini tanlang"
   },
   "ParentTable": {
     "name": "Ism",

@@ -471,7 +471,11 @@
     "doYouDeleteMessage": "Вы хотите удалить это сообщение?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "postDeleted": "Сообщение удалено"
+    "postDeleted": "Сообщение удалено",
+    "confirmDeleteTitle": "Вы уверены, что хотите удалить это сообщение?",
+    "confirmDeleteDesc": "Это действие не может быть отменено.",
+    "postsPerPage": "Количество строк на странице",
+    "choosePostsPerPage": "Выберите количество строк на странице"
   },
   "ParentTable": {
     "name": "Имя",

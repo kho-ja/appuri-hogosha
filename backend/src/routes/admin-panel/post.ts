@@ -37,6 +37,8 @@ class PostController implements IController {
         this.router.put('/:id', verifyToken, this.postUpdate)
         this.router.put('/:id/sender', verifyToken, this.postUpdateSender)
         this.router.delete('/:id', verifyToken, this.postDelete)
+        this.router.post('/delete-multiple', verifyToken, this.deleteMultiplePosts);
+
 
         this.router.get('/:id/students', verifyToken, this.postViewStudents)
         this.router.get('/:id/student/:student_id', verifyToken, this.postStudentParent)
@@ -770,6 +772,63 @@ class PostController implements IController {
         }
     }
 
+    deleteMultiplePosts = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postIds: number[] = req.body.ids;
+
+            if (!Array.isArray(postIds) || postIds.length === 0) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_ids'
+                };
+            }
+
+            const placeholders = postIds.map(() => '?').join(',');
+
+            const postsInfo = await DB.query(`
+            SELECT id, image
+            FROM Post
+            WHERE school_id = ?
+              AND id IN (${placeholders})
+        `, [req.user.school_id, ...postIds]);
+
+            if (postsInfo.length === 0) {
+                throw {
+                    status: 404,
+                    message: 'No posts found'
+                };
+            }
+
+            for (const post of postsInfo) {
+                if (post.image) {
+                    await Images3Client.deleteFile('images/' + post.image);
+                }
+            }
+
+            await DB.execute(`
+            DELETE FROM Post
+            WHERE school_id = ?  
+              AND id IN (${placeholders})  
+        `, [req.user.school_id, ...postIds]); 
+
+            return res.status(200).json({
+                message: 'postsDeleted',
+                deletedCount: postsInfo.length
+            }).end();
+
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    };
+
     postUpdate = async (req: ExtendedRequest, res: Response) => {
         try {
             const postId = req.params.id;
@@ -830,34 +889,34 @@ class PostController implements IController {
 
             if (image && image !== post.image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-                
+
                 if (!matches || matches.length !== 3) {
                     throw {
                         status: 401,
                         message: 'Invalid image format. Make sure it is Base64 encoded.'
                     };
                 }
-            
+
                 const mimeType = matches[1];
                 const base64Data = matches[2];
                 const buffer = Buffer.from(base64Data, 'base64');
-            
+
                 if (buffer.length > 10 * 1024 * 1024) {
                     throw {
                         status: 401,
                         message: 'Image size is too large (max 10MB)'
                     };
                 }
-            
+
                 const imageName = randomImageName() + mimeType.replace('image/', '.');
                 const imagePath = `images/${imageName}`;
                 await Images3Client.uploadFile(buffer, mimeType, imagePath);
-            
+
                 post.image = imageName; // Assign new image to post object
             } else if (!image) {
                 post.image = null; // Set image to null if none is provided
             }
-            
+
             // Update post in DB
             await DB.execute(
                 `UPDATE Post
@@ -1567,19 +1626,22 @@ class PostController implements IController {
     postList = async (req: ExtendedRequest, res: Response) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(process.env.PER_PAGE + '') || 10;
+            const perPageQuery = parseInt(req.query.perPage as string);
+            const limit = (perPageQuery && [10, 30, 50, 100].includes(perPageQuery))
+                ? perPageQuery
+                : parseInt(process.env.PER_PAGE + '') || 10;
             const offset = (page - 1) * limit;
-    
+
             const priority = req.query.priority as string || '';
             const text = req.query.text as string || '';
-    
+
             const filters: string[] = ['po.school_id = :school_id'];
             const params: any = {
                 school_id: req.user.school_id,
                 limit,
                 offset
             };
-    
+
             if (priority && isValidPriority(priority)) {
                 filters.push('po.priority = :priority');
                 params.priority = priority;
@@ -1588,9 +1650,9 @@ class PostController implements IController {
                 filters.push('(po.title LIKE :text OR po.description LIKE :text)');
                 params.text = `%${text}%`;
             }
-    
+
             const whereClause = 'WHERE ' + filters.join(' AND ');
-    
+
             const postList = await DB.query(`
                 SELECT po.id,
                        po.title,
@@ -1614,7 +1676,7 @@ class PostController implements IController {
                 ORDER BY po.sent_at DESC
                 LIMIT :limit OFFSET :offset
             `, params);
-    
+
             const totalPostsResult = await DB.query(`
                 SELECT COUNT(*) AS total FROM (
                     SELECT DISTINCT po.id
@@ -1627,11 +1689,11 @@ class PostController implements IController {
             `, params);
             const totalPosts = totalPostsResult[0].total;
             const totalPages = Math.ceil(totalPosts / limit);
-    
+
             if (page > totalPages && totalPages !== 0) {
                 return res.status(400).json({ error: 'invalid_page' }).end();
             }
-    
+
             const pagination = {
                 current_page: page,
                 per_page: limit,
@@ -1641,7 +1703,7 @@ class PostController implements IController {
                 prev_page: page > 1 ? page - 1 : null,
                 links: generatePaginationLinks(page, totalPages)
             };
-    
+
             const formattedPostList = postList.map(({
                 id,
                 title,
@@ -1667,12 +1729,12 @@ class PostController implements IController {
                     family_name: admin_family_name
                 }
             }));
-    
+
             return res.status(200).json({
                 posts: formattedPostList,
                 pagination
             }).end();
-    
+
         } catch (e: any) {
             if (e.status) {
                 return res.status(e.status).json({ error: e.message }).end();
