@@ -187,7 +187,7 @@ export default function Info() {
         notClickable: true,
       },
       cell: ({ row }) => (
-        <Link href={`/messages/${row.original.id}`}>
+        <Link href={`/messages/edit/${row.original.id}`}>
           <Edit3 />
         </Link>
       ),

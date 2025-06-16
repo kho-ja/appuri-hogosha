@@ -1,4 +1,3 @@
-// components/ThemeSwitcher.tsx
 import React, { useContext } from 'react';
 import { View, Switch, StyleSheet } from 'react-native';
 import { useThemeMode } from '@rneui/themed';
@@ -8,7 +7,7 @@ import { I18nContext } from '@/contexts/i18n-context';
 
 export default function ThemeSwitcher() {
   const { mode, setMode } = useThemeMode();
-  const { language, i18n, setLanguage } = useContext(I18nContext);
+  const { language, i18n } = useContext(I18nContext);
 
   const toggleTheme = () => {
     setMode(mode === 'light' ? 'dark' : 'light');

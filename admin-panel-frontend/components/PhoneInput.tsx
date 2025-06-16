@@ -54,7 +54,7 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
           {...props}
         />
       );
-    },
+    }
   );
 PhoneInput.displayName = "PhoneInput";
 
@@ -101,7 +101,7 @@ const CountrySelect = ({
           <ChevronsUpDown
             className={cn(
               "-mr-2 size-4 opacity-50",
-              disabled ? "hidden" : "opacity-100",
+              disabled ? "hidden" : "opacity-100"
             )}
           />
         </Button>
@@ -122,7 +122,7 @@ const CountrySelect = ({
                       selectedCountry={selectedCountry}
                       onChange={onChange}
                     />
-                  ) : null,
+                  ) : null
                 )}
               </CommandGroup>
             </ScrollArea>
@@ -148,9 +148,13 @@ const CountrySelectOption = ({
     <CommandItem className="gap-2" onSelect={() => onChange(country)}>
       <FlagComponent country={country} countryName={countryName} />
       <span className="flex-1 text-sm">{countryName}</span>
-      <span className="text-sm text-foreground/50">{`+${RPNInput.getCountryCallingCode(country)}`}</span>
+      <span className="text-sm text-foreground/50">{`+${RPNInput.getCountryCallingCode(
+        country
+      )}`}</span>
       <CheckIcon
-        className={`ml-auto size-4 ${country === selectedCountry ? "opacity-100" : "opacity-0"}`}
+        className={`ml-auto size-4 ${
+          country === selectedCountry ? "opacity-100" : "opacity-0"
+        }`}
       />
     </CommandItem>
   );
