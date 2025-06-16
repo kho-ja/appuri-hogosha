@@ -135,7 +135,7 @@ export default function SendMessagePage({
           className="space-y-4"
         >
           <PageHeader title={t("editMessage")}>
-            <BackButton href={`/messages/${messageId}`} />
+            <BackButton href={`/messages/scheduled-message/${messageId}`} />
           </PageHeader>
 
           <FormField

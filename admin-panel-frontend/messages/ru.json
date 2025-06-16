@@ -142,10 +142,6 @@
   "ThisMessage": {
     "ViewScheduledMessage": "Просмотр запланированного сообщения",
     "ScheduledAt": "Запланировано на",
-    "Priority.default": "Приоритет",
-    "Priority.low": "Низкий",
-    "Priority.medium": "Средний",
-    "Priority.high": "Высокий",
     "filterGroup": "Фильтр по названию группы",
     "AS_PUBLISHER": "Издатель",
     "Ordinary": "Обычный",

@@ -143,12 +143,8 @@
     "scheduledSuccessfully":"Post scheduled successfully"
   },
   "ThisMessage": {
-     "ViewScheduledMessage": "View Scheduled Message",
+    "ViewScheduledMessage": "View Scheduled Message",
     "ScheduledAt": "Scheduled At",
-    "Priority.default": "Priority",
-    "Priority.low": "Low",
-    "Priority.medium": "Medium",
-    "Priority.high": "High",
     "filterGroup": "Filter by group name",
     "editStudents": "Edit Students",
     "editGroups": "Edit Groups",
