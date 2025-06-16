@@ -9,10 +9,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
-import StudentApi from "@/types/studentApi";
-import GroupApi from "@/types/groupApi";
 import { toast } from "@/components/ui/use-toast";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BackButton } from "@/components/ui/BackButton";
@@ -27,6 +25,7 @@ export default function Recievers({
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const router = useRouter();
+
   const { mutate } = useApiMutation(
     `post/schedule/${messageId}/recievers`,
     "PUT",
@@ -69,7 +68,7 @@ export default function Recievers({
   return (
     <div className="flex flex-col gap-2 justify-start items-start">
       <PageHeader title={t("ChangeRecievers")}>
-        <BackButton href={`/messages/${messageId}`} />
+        <BackButton href={`/messages/scheduled-message/${messageId}`} />
       </PageHeader>
       <Tabs className="w-full" defaultValue="groups">
         <TabsList className="flex justify-start items-center mb-4 w-fit">

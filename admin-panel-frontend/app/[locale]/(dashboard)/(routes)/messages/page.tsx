@@ -40,24 +40,29 @@ export default function Info() {
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
   const { mutate: deletePost } = useApiMutation<{ message: string }>(`post/${postId}`, "DELETE", ["deletePost"], {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast({
-        title: t("postDeleted"),
-        description: t(data?.message),
-      });
-    },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        toast({
+          title: t("postDeleted"),
+          description: t(data?.message),
+        });
+      },
   });
 
-  const { mutate: deleteScheduledPost } = useApiMutation<{ message: string }>(`post/schedule/${postId}`, "DELETE", ["deleteScheduledPost"], {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["scheduledPosts"] });
-      toast({
-        title: t("postDeleted"),
-        description: t(data?.message),
-      });
-    },
-  });
+  const { mutate: deleteScheduledPost } = useApiMutation<{ message: string }>(
+    `post/schedule/${postId}`,
+    "DELETE",
+    ["deleteScheduledPost"],
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["scheduledPosts"] });
+        toast({
+          title: t("postDeleted"),
+          description: t(data?.message),
+        });
+      },
+    }
+  );
 
   const postColumns: ColumnDef<Post>[] = [
     {
@@ -122,7 +127,7 @@ export default function Info() {
                   type="submit"
                   onClick={() => {
                     setPostId(row.original.id);
-                    deletePost();  
+                    deletePost();
                   }}
                 >
                   {t("delete")}
@@ -203,7 +208,7 @@ export default function Info() {
                   type="submit"
                   onClick={() => {
                     setPostId(row.original.id);
-                    deleteScheduledPost();  
+                    deleteScheduledPost();
                   }}
                 >
                   {t("delete")}

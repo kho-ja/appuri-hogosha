@@ -13,17 +13,8 @@ import {
 import { usePathname, Link } from "@/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import PaginationApi from "@/components/PaginationApi";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Separator } from "@/components/ui/separator";
 import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
-import { useState } from "react";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import ReactLinkify from "react-linkify";
@@ -36,7 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-import { Edit3Icon } from "lucide-react";
 
 export default function ScheduledMessagePage({
   params: { messageId },
@@ -45,7 +35,6 @@ export default function ScheduledMessagePage({
 }) {
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
-  const pathname = usePathname();
 
   const { data, isError } = useApiQuery<any>(
     `post/schedule/each/${messageId}`,
@@ -53,10 +42,9 @@ export default function ScheduledMessagePage({
   );
 
   const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
-  `post/schedule/${messageId}/recievers`,
-  ["scheduled-recievers", messageId]
-);
-
+    `post/schedule/${messageId}/recievers`,
+    ["scheduled-recievers", messageId]
+  );
 
   const studentColumns = [
     {
@@ -82,15 +70,6 @@ export default function ScheduledMessagePage({
     {
       accessorKey: "name",
       header: t("name"),
-    },
-    {
-      header: t("Actions"),
-      meta: { notClickable: true },
-      cell: ({ row }: any) => (
-        <Link href={`/messages/${messageId}/group/${row.original.id}`}>
-          <Edit3Icon />
-        </Link>
-      ),
     },
   ];
 
@@ -174,27 +153,28 @@ export default function ScheduledMessagePage({
             <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
             <TabsTrigger value="students">{t("Students")}</TabsTrigger>
           </TabsList>
-         <Link href={`/messages/scheduled-message/${messageId}/recievers`} passHref>
-          <Button>{t("editRecivers")}</Button>
-        </Link>
+          <Link
+            href={`/messages/scheduled-message/${messageId}/recievers`}
+            passHref
+          >
+            <Button>{t("editRecivers")}</Button>
+          </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
           <div className="rounded-md border">
             <TableApi
-              linkPrefix={`/messages/scheduled-message/${messageId}/group`}
               data={recieverData?.groups ?? null}
               columns={groupColumns}
             />
           </div>
         </TabsContent>
-       <TabsContent value="students" className="space-y-4">
+        <TabsContent value="students" className="space-y-4">
           <div className="rounded-md border">
             <TableApi
-                  linkPrefix={`/messages/scheduled-message/${messageId}/student`}
-                  data={recieverData?.students ?? null}
-                  columns={studentColumns}
-                />
-              </div>
+              data={recieverData?.students ?? null}
+              columns={studentColumns}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -14,7 +14,7 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
@@ -28,7 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BackButton } from "@/components/ui/BackButton";
@@ -85,11 +85,6 @@ export default function SendMessagePage({
       },
     }
   );
-  const priority = form.watch("priority");
-
-  useEffect(() => {
-    form.setValue("priority", priority);
-  }, [priority, form]);
 
   useEffect(() => {
     if (data) {
@@ -115,6 +110,9 @@ export default function SendMessagePage({
         description: data.post.description,
         priority: data.post.priority as "high" | "medium" | "low",
         image: "",
+        scheduled_at: data.post.scheduled_at
+          ? new Date(data.post.scheduled_at).toISOString()
+          : "",
       });
     }
   };
