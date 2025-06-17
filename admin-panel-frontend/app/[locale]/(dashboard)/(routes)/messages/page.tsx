@@ -59,37 +59,43 @@ export default function Info() {
     `post/list?page=${page}&text=${search}&perPage=${perPage}`,
     ["posts", page, search, perPage]
   );
-  const { data: scheduledPosts } = useApiQuery<any>(`schedule/list?page=${page}&text=${search}`, ["scheduledPosts", page, search]);
+  const { data: scheduledPosts } = useApiQuery<any>(
+    `schedule/list?page=${page}&text=${search}`,
+    ["scheduledPosts", page, search]
+  );
 
   const [postId, setPostId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  const { mutate: deletePost } = useApiMutation<{ message: string }>(`post/${postId}`, "DELETE", ["deletePost"], {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast({
-        title: t("postDeleted"),
-        description: t(data?.message || "Post deleted successfully"),
-      });
-    },
-  });
 
-  const deleteMultiple = useApiMutation<{ message: string, deletedCount: number }, { ids: number[] }>(
-    `post/delete-multiple`,
-    "POST",
-    ["posts"],
+  const { mutate: deletePost } = useApiMutation<{ message: string }>(
+    `post/${postId}`,
+    "DELETE",
+    ["deletePost"],
     {
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         toast({
           title: t("postDeleted"),
-          description: `${data.deletedCount} posts deleted`,
+          description: t(data?.message || "Post deleted successfully"),
         });
-        setSelectedPosts([]);
-        setIsDialogOpen(false);
       },
     }
   );
+
+  const deleteMultiple = useApiMutation<
+    { message: string; deletedCount: number },
+    { ids: number[] }
+  >(`post/delete-multiple`, "POST", ["posts"], {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast({
+        title: t("postDeleted"),
+        description: `${data.deletedCount} posts deleted`,
+      });
+      setSelectedPosts([]);
+      setIsDialogOpen(false);
+    },
+  });
 
   const { mutate: deleteScheduledPost } = useApiMutation<{ message: string }>(
     `schedule/${postId}`,
@@ -280,7 +286,9 @@ export default function Info() {
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>{row.getValue("title")}</DialogTitle>
-                <DialogDescription>{row.getValue("description")}</DialogDescription>
+                <DialogDescription>
+                  {row.getValue("description")}
+                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
@@ -318,7 +326,8 @@ export default function Info() {
   };
 
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as "messages" | "scheduled") || "messages";
+  const initialTab =
+    (searchParams.get("tab") as "messages" | "scheduled") || "messages";
   const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   return (
@@ -372,7 +381,10 @@ export default function Info() {
           </Link>
         </div>
       </PageHeader>
-      <Tabs value={tab} onValueChange={(v) => setTab(v as "messages" | "scheduled")}>
+      <Tabs
+        value={tab}
+        onValueChange={(v) => setTab(v as "messages" | "scheduled")}
+      >
         <TabsList className="mx-auto mb-4 w-fit flex justify-center">
           <TabsTrigger value="messages">{t("messages")}</TabsTrigger>
           <TabsTrigger value="scheduled">{t("scheduledMessages")}</TabsTrigger>
@@ -392,11 +404,18 @@ export default function Info() {
               />
             </div>
             <div>
-              <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
+              <PaginationApi
+                data={data?.pagination ?? null}
+                setPage={setPage}
+              />
             </div>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi linkPrefix="/messages" data={data?.posts ?? null} columns={postColumns} />
+            <TableApi
+              linkPrefix="/messages"
+              data={data?.posts ?? null}
+              columns={postColumns}
+            />
           </Card>
           <div className="flex items-center gap-2 mt-2">
             <span>{t("postsPerPage") || "Posts per page:"}</span>
@@ -405,7 +424,9 @@ export default function Info() {
               value={perPage.toString()}
             >
               <SelectTrigger className="w-[70px]">
-                <SelectValue placeholder={t("choosePostsPerPage") || "Choose"} />
+                <SelectValue
+                  placeholder={t("choosePostsPerPage") || "Choose"}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -434,11 +455,18 @@ export default function Info() {
               />
             </div>
             <div>
-              <PaginationApi data={scheduledPosts?.pagination ?? null} setPage={setPage} />
+              <PaginationApi
+                data={scheduledPosts?.pagination ?? null}
+                setPage={setPage}
+              />
             </div>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi linkPrefix="/messages/scheduled-message/" data={scheduledPosts?.scheduledPosts ?? null} columns={schedulesPostColumns} />
+            <TableApi
+              linkPrefix="/messages/scheduled-message/"
+              data={scheduledPosts?.scheduledPosts ?? null}
+              columns={schedulesPostColumns}
+            />
           </Card>
         </TabsContent>
       </Tabs>

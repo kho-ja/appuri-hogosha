@@ -810,7 +810,6 @@
     "export": "Yuklab olish",
     "back": "Orqaga"
   },
-
   "errors": {
     "wentWrong": "Nimadir noto'g'ri ketdi.",
     "pageNotFound": "Sahifa topilmadi",
@@ -835,7 +834,7 @@
     "invalid_given_name_format": "Ism formati noto‘g‘ri",
     "missing_or_empty_family_name": "Familiya maydoni kiritilmagan yoki bo‘sh",
     "invalid_family_name_format": "Familiya formati noto‘g‘ri",
-    "missing_or_empty_email": "Email maydoni kiritilmagan yoki bo‘sh",  
+    "missing_or_empty_email": "Email maydoni kiritilmagan yoki bo‘sh",
     "invalid_email_format": "Email formati noto‘g‘ri",
     "missing_or_empty_phone_number": "Telefon raqami maydoni kiritilmagan yoki bo‘sh",
     "invalid_phone_number_format": "Telefon raqami formati noto‘g‘ri",
@@ -1131,7 +1130,7 @@
     "noTitleAvailable": "Sarlavha mavjud emas",
     "selectDateTime": "Sana va vaqtni tanlang",
     "error": "Xatolik",
-    "confirmSchedule":"Postni rejalashtirish",
+    "confirmSchedule": "Postni rejalashtirish",
     "postDeleted": "Post muvaffaqiyatli o'chirildi"
   }
 }
