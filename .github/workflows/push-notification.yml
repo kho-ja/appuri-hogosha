@@ -34,11 +34,6 @@ jobs:
           cd push-notification
           npm run build
 
-      - name: Add service json
-        run: |
-          cd push-notification
-          echo '${{ secrets.SERVICE_JSON }}' > dist/service.json
-
       - name: Zip the Files
         run: |
           cd push-notification

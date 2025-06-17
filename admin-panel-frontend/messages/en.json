@@ -488,7 +488,11 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "postDeleted": "Post Deleted Successfully",
-    "scheduledPostDeleted": "Scheduled Post Deleted Successfully"
+    "scheduledPostDeleted": "Scheduled Post Deleted Successfully",
+    "confirmDeleteTitle": "Are you sure you want to delete this post?",
+    "confirmDeleteDesc": "This action cannot be undone.",
+    "postsPerPage": "Posts per page",
+    "choosePostsPerPage": "Choose number of posts per page"
   },
   "ParentTable": {
     "name": "Name",

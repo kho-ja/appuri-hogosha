@@ -486,7 +486,11 @@
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
     "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
-    "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi"
+    "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi",
+    "confirmDeleteTitle": "Ushbu xabarni o'chirishni istaysizmi?",
+    "confirmDeleteDesc": "Bu amalni qayta ishga tushirilmaydi.",
+    "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori",
+    "choosePostsPerPage": "Sahifada ko'rsatiladigan xabarlar sonini tanlang"
   },
   "ParentTable": {
     "name": "Ism",
