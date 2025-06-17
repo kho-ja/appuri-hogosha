@@ -729,7 +729,6 @@ class SchedulePostController implements IController {
             const row = recieversObject[0];
             const groups = row.groupMembers ? row.groupMembers.split(',').map(Number) : [];
             const students = row.students ? row.students.split(',').map(Number) : [];
-            console.log('groups and students', groups, students)
             if (students && Array.isArray(students) && isValidStringArrayId(students) && students.length > 0) {
                 const studentList = await DB.query(
                     `SELECT st.id
