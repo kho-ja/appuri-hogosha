@@ -674,19 +674,19 @@ class SchedulePostController implements IController {
                 description, 
                 priority, 
                 image, 
-                scheduled_at, 
+                scheduled_at: scheduled_at_string, 
                 admin_id, 
                 school_id, 
             } = post
-            
+
+            const scheduled_at = DateTime.fromJSDate(scheduled_at_string).toISO();
+            const now = new Date().toISOString()
+
             if(!scheduled_at){
                 return console.error('scheduled_at is missing')
             }
 
-            const scheduledAt = new Date(scheduled_at);
-            const now = new Date();
-
-            if(now < scheduledAt){
+            if(now < scheduled_at){
                 return;
             }
 
@@ -716,9 +716,6 @@ class SchedulePostController implements IController {
                 });
             }
         
-            // deleteing the scheduled post
-            await DB.execute(`DELETE FROM scheduledPost WHERE id = ${scheduledPostId}`);
-
             const postId = postInsert.insertId;
 
             const recieversObject = await DB.query(`
@@ -726,13 +723,13 @@ class SchedulePostController implements IController {
                     GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
                     GROUP_CONCAT(DISTINCT student_id) AS students
                 FROM scheduledPostRecievers
-                WHERE scheduled_post_id = ${postId}
+                WHERE scheduled_post_id = ${scheduledPostId}
             `);
 
             const row = recieversObject[0];
             const groups = row.groupMembers ? row.groupMembers.split(',').map(Number) : [];
             const students = row.students ? row.students.split(',').map(Number) : [];
-
+            console.log('groups and students', groups, students)
             if (students && Array.isArray(students) && isValidStringArrayId(students) && students.length > 0) {
                 const studentList = await DB.query(
                     `SELECT st.id
@@ -800,6 +797,9 @@ class SchedulePostController implements IController {
                     }
                 }
             }
+
+            // deleteing the scheduled post
+            await DB.execute(`DELETE FROM scheduledPost WHERE id = ${scheduledPostId}`);
 
             console.log('scheduled post posted successfully')
         })

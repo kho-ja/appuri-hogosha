@@ -112,7 +112,7 @@ export default function SendMessagePage() {
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
   const scheduleMutation = useApiMutation<{ post: Post }>(
-    `post/schedule`,
+    `schedule`,
     "POST",
     ["scheduledPosts"],
     {

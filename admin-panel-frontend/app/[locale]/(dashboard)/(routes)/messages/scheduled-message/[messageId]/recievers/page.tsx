@@ -27,7 +27,7 @@ export default function Recievers({
   const router = useRouter();
 
   const { mutate } = useApiMutation(
-    `post/schedule/${messageId}/recievers`,
+    `schedule/${messageId}/recievers`,
     "PUT",
     ["editScheduledReceivers", messageId],
     {

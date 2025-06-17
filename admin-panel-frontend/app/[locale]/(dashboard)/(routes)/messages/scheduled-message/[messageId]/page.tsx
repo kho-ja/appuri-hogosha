@@ -37,12 +37,12 @@ export default function ScheduledMessagePage({
   const tName = useTranslations("names");
 
   const { data, isError } = useApiQuery<any>(
-    `post/schedule/each/${messageId}`,
+    `schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
 
   const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
-    `post/schedule/${messageId}/recievers`,
+    `schedule/${messageId}/recievers`,
     ["scheduled-recievers", messageId]
   );
 

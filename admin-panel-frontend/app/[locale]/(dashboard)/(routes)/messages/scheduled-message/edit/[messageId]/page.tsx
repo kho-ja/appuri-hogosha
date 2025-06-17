@@ -68,10 +68,10 @@ export default function SendMessagePage({
   const router = useRouter();
   const { data, isLoading, isError } = useApiQuery<{
     post: ScheduledPost;
-  }>(`post/schedule/each/${messageId}`, ["message", messageId]);
+  }>(`schedule/each/${messageId}`, ["message", messageId]);
 
   const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `post/schedule/${messageId}`,
+    `schedule/${messageId}`,
     "PUT",
     ["editMessage", messageId],
     {

@@ -35,7 +35,7 @@ export default function Info() {
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiQuery<PostApi>(`post/list?page=${page}&text=${search}`, ["posts", page, search]);
-  const { data: scheduledPosts } = useApiQuery<any>(`post/schedule/list?page=${page}&text=${search}`, ["scheduledPosts", page, search]);
+  const { data: scheduledPosts } = useApiQuery<any>(`schedule/list?page=${page}&text=${search}`, ["scheduledPosts", page, search]);
 
   const queryClient = useQueryClient();
   const [postId, setPostId] = useState<number | null>(null);
@@ -50,7 +50,7 @@ export default function Info() {
   });
 
   const { mutate: deleteScheduledPost } = useApiMutation<{ message: string }>(
-    `post/schedule/${postId}`,
+    `schedule/${postId}`,
     "DELETE",
     ["deleteScheduledPost"],
     {
