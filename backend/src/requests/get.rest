@@ -1,1 +1,0 @@
-GET http://localhost:3001/admin-panel/post/schedule/2/recievers
