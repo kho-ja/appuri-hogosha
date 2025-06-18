@@ -17,4 +17,4 @@ dist/
 deno.lock
 bun.lockb
 bun.lock
-src/requests/
+backend/src/requests/
