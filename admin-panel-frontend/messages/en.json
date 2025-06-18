@@ -140,7 +140,7 @@
     "draftDeleted": "Draft Deleted Successfully",
     "selectScheduleTime": "Select Schedule Time",
     "confirmSchedule": "Confirm Schedule",
-    "scheduledSuccessfully":"Post scheduled successfully"
+    "scheduledSuccessfully": "Post scheduled successfully"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "View Scheduled Message",
@@ -286,7 +286,7 @@
     "Delete Student Information": "Delete Students Information",
     "Add Student Information": "Add Students Information"
   },
- "GroupTable": {
+  "GroupTable": {
     "groupName": "Group Name",
     "studentCount": "Student Count",
     "semester": "Semester",
@@ -488,7 +488,11 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "postDeleted": "Post Deleted Successfully",
-    "scheduledPostDeleted": "Scheduled Post Deleted Successfully"
+    "scheduledPostDeleted": "Scheduled Post Deleted Successfully",
+    "confirmDeleteTitle": "Are you sure you want to delete this post?",
+    "confirmDeleteDesc": "This action cannot be undone.",
+    "postsPerPage": "Posts per page",
+    "choosePostsPerPage": "Choose number of posts per page"
   },
   "ParentTable": {
     "name": "Name",
@@ -881,7 +885,7 @@
     "invalid_or_missing_priority": "Invalid or missing priority",
     "invalid_image_format": "Invalid image format. Make sure it is Base64 encoded.",
     "image_size_too_large": "Image size is too large (max 10MB)",
-    "function_not_implemented": "Function not implemented."    
+    "function_not_implemented": "Function not implemented."
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Preparing the document",
@@ -1129,7 +1133,7 @@
     "noTitleAvailable": "No title available",
     "selectDateTime": "Select Date and Time",
     "error": "Error",
-    "confirmSchedule":"Confirm Schedule",
+    "confirmSchedule": "Confirm Schedule",
     "postDeleted": "Post deleted successfully"
   }
 }

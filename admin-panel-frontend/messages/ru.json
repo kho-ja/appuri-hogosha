@@ -483,7 +483,11 @@
     "cancel": "Отмена",
     "confirm": "Подтвердить",
     "postDeleted": "Сообщение удалено",
-    "scheduledPostDeleted": "Запланированное сообщение удалено"
+    "scheduledPostDeleted": "Запланированное сообщение удалено",
+    "confirmDeleteTitle": "Вы уверены, что хотите удалить это сообщение?",
+    "confirmDeleteDesc": "Это действие не может быть отменено.",
+    "postsPerPage": "Количество строк на странице",
+    "choosePostsPerPage": "Выберите количество строк на странице"
   },
   "ParentTable": {
     "name": "Имя",

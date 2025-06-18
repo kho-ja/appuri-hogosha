@@ -110,7 +110,7 @@ class PostController implements IController {
     }
     posts = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { student_id, last_post_id, read_post_ids } = req.body;
+            const { student_id, last_post_id, last_sent_at, read_post_ids } = req.body;
 
             if (read_post_ids && read_post_ids.length > 0) {
                 const viewedPosts = await DB.query(`SELECT pp.id
@@ -156,30 +156,38 @@ class PostController implements IController {
                     limit: parseInt(process.env.PER_PAGE + '')
                 });
             } else {
-                posts = await DB.query(`SELECT pp.id,
-                                               po.title,
-                                               po.description                              AS content,
-                                               po.priority,
-                                               po.image,
-                                               DATE_FORMAT(po.sent_at, '%Y-%m-%d %H:%i')   AS sent_time,
-                                               DATE_FORMAT(pp.viewed_at, '%Y-%m-%d %H:%i') AS viewed_at,
-                                               DATE_FORMAT(po.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
-                                               sg.name                                     AS group_name
-                                        FROM PostParent as pp
-                                                 INNER JOIN PostStudent as ps
-                                                            ON ps.id = pp.post_student_id AND ps.student_id = :student_id
-                                                 INNER JOIN Post AS po ON po.id = ps.post_id
-                                                 LEFT JOIN StudentGroup as sg ON sg.id = ps.group_id
-                                        WHERE pp.parent_id = :parent_id
-                                          AND pp.id < :last_post_id
-                                        ORDER BY po.sent_at DESC LIMIT :limit;`, {
-                    parent_id: req.user.id,
-                    student_id: student_id,
-                    last_post_id: last_post_id,
-                    limit: parseInt(process.env.PER_PAGE + '')
-                });
+                posts = await DB.query(
+                    `SELECT pp.id,
+                            po.title,
+                            po.description                              AS content,
+                            po.priority,
+                            po.image,
+                            DATE_FORMAT(po.sent_at, '%Y-%m-%d %H:%i')   AS sent_time,
+                            DATE_FORMAT(pp.viewed_at, '%Y-%m-%d %H:%i') AS viewed_at,
+                            DATE_FORMAT(po.edited_at, '%Y-%m-%d %H:%i') AS edited_at,
+                            sg.name                                     AS group_name
+                     FROM PostParent AS pp
+                          INNER JOIN PostStudent AS ps
+                                  ON ps.id = pp.post_student_id AND ps.student_id = :student_id
+                          INNER JOIN Post AS po ON po.id = ps.post_id
+                          LEFT JOIN StudentGroup AS sg ON sg.id = ps.group_id
+                     WHERE pp.parent_id = :parent_id
+                       AND (
+                           po.sent_at < :last_sent_at OR 
+                           (po.sent_at = :last_sent_at AND pp.id < :last_post_id)
+                       )
+                     ORDER BY po.sent_at DESC, pp.id DESC
+                     LIMIT :limit;`,
+                    {
+                        parent_id: req.user.id,
+                        student_id: student_id,
+                        last_post_id: last_post_id,
+                        last_sent_at: last_sent_at,
+                        limit: parseInt(process.env.PER_PAGE + '')
+                    }
+                );
+                
             }
-
 
             return res.status(200).json({
                 posts: posts,

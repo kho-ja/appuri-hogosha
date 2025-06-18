@@ -21,8 +21,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jduapp.parentnotification",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "CFBundleAllowMixedLocalizations": true
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -32,10 +34,6 @@
       },
       "package": "com.jduapp.parentnotification",
       "googleServicesFile": "./google-services.json",
-      "statusBar": {
-        "barStyle": "dark-content",
-        "backgroundColor": "#ffffff"
-      },
       "intentFilters": [
         {
           "autoVerify": true,
@@ -78,7 +76,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "692b1cd9-10bf-4a05-8bc8-2704163a2a4b"
+        "projectId": "ea8bc437-0ba7-45c5-acbd-8bdfdc1e390d"
       }
     }
   }

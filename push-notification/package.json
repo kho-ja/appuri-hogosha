@@ -1,22 +1,32 @@
 {
 	"name": "mobile-backend",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Push notification and SMS backend using AWS End User Messaging",
 	"main": "index.js",
 	"scripts": {
 		"dev": "nodemon",
 		"build": "tsc -p .",
-		"prepare-dist": "npm run build && mkdir -p dist && cp package.json dist/ && cp package-lock.json dist/ && cp src/service.json dist/service.json",
+		"prepare-dist": "npm run build && mkdir -p dist && cp package.json dist/ && cp package-lock.json dist/",
 		"test": "npm run prepare-dist && cp -r node_modules dist/node_modules",
 		"install-prod-deps": "cd dist && npm install --only=production",
-		"deploy": "npm run prepare-dist && npm run install-prod-deps"
+		"deploy": "npm run prepare-dist && npm run install-prod-deps",
+		"analyze-db": "npx ts-node src/analyze-db-tokens.ts",
+		"debug-push": "npx ts-node src/debug-push-notifications.ts"
 	},
-	"keywords": [],
+	"keywords": [
+		"aws",
+		"end-user-messaging",
+		"push-notifications",
+		"sms",
+		"telegram",
+		"worldwide"
+	],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@aws-sdk/client-pinpoint": "^3.800.0",
+		"@aws-sdk/client-pinpoint-sms-voice-v2": "^3.800.0",
 		"dotenv": "^16.4.7",
-		"firebase-admin": "^12.5.0",
 		"mysql2": "^3.9.6",
 		"telegraf": "^4.16.3"
 	},
@@ -24,6 +34,7 @@
 		"@types/node": "^22.0.0",
 		"nodemon": "^3.1.0",
 		"rimraf": "^5.0.5",
-		"typescript": "^5.4.5"
+		"typescript": "^5.4.5",
+		"ts-node": "^10.9.1"
 	}
 }
