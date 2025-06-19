@@ -91,6 +91,11 @@
     "accept": "承認"
   },
   "sendmessage": {
+    "yes": "はい",
+    "no": "いいえ",
+    "doYouWantSchedule": "メッセージをスケジュールしますか？",
+    "scheduledAt": "スケジュール日時",
+    "schedule": "スケジュール",
     "sendMessage": "メッセージを送信する",
     "makeChanges": "ここでアカウントの変更を行います。完了したら保存してください。",
     "title": "タイトル",
@@ -133,9 +138,13 @@
     "cancel": "キャンセル",
     "AreYouSureDelete": "この下書きを削除しますか？",
     "saveToDraft": "下書きに保存",
-    "draftDeleted": "下書きが削除されました"
+    "draftDeleted": "下書きが削除されました",
+    "scheduledSuccessfully": "メッセージが正常にスケジュールされました"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "予約されたメッセージを見る",
+    "ScheduledAt": "予定日時",
+    "filterGroup": "グループ名でフィルター",
     "AS_PUBLISHER": "出版社",
     "Ordinary": "普通",
     "Company": "314 アーツ OHG",
@@ -457,6 +466,9 @@
     "export": "ファイルに書き出す"
   },
   "posts": {
+    "messages": "メッセージ",
+    "scheduledat": "スケジュール日時",
+    "scheduledMessages": "スケジュールされたメッセージ",
     "posts": "投稿",
     "postTitle": "投稿タイトル",
     "Description": "詳細",
@@ -473,6 +485,7 @@
     "cancel": "キャンセル",
     "confirm": "確認",
     "postDeleted": "投稿が削除されました",
+    "scheduledPostDeleted": "スケジュールされた投稿が削除されました",
     "confirmDeleteTitle": "この投稿を削除してもよろしいですか？",
     "confirmDeleteDesc": "この操作は元に戻すことができません。",
     "postsPerPage": "投稿のページサイズ",
@@ -868,8 +881,7 @@
     "invalid_or_missing_description": "無効または存在しない説明",
     "invalid_or_missing_priority": "無効または存在しない優先度",
     "invalid_image_format": "無効な画像フォーマットです。Base64エンコードされていることを確認してください。",
-    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）",
-    "function_not_implemented": "機能が実装されていません。"
+    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "ドキュメントの準備",
@@ -1111,5 +1123,13 @@
   },
   "BackButton": {
     "back": "戻る"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "投稿が正常にスケジュールされました",
+    "noTitleAvailable": "タイトルがありません",
+    "selectDateTime": "日付と時間を選択",
+    "error": "エラー",
+    "confirmSchedule": "スケジュールを確認",
+    "postDeleted": "投稿が削除されました"
   }
 }

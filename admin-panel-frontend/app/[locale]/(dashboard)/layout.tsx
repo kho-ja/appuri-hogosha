@@ -36,12 +36,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("app");
   const tName = useTranslations("names");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(() => {
-  const saved = localStorage.getItem("sidebar-open");
-  return saved === null ? true : saved === "true";
-});
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
 
-
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebar-open");
+      setIsMenuOpen(saved === null ? true : saved === "true");
+    }
+  }, []);
+  
   const user = session?.user as User;
 
   if (session?.error === "RefreshAccessTokenError") handleSignOut();
@@ -56,7 +59,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const toggleSidebar = () => {
     setIsMenuOpen((prev) => {
       const newValue = !prev;
-      localStorage.setItem("sidebar-open", String(newValue));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sidebar-open", String(newValue));
+      }
       return newValue;
     });
   };

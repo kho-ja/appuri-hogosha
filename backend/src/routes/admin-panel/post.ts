@@ -809,7 +809,7 @@ class PostController implements IController {
             DELETE FROM Post
             WHERE school_id = ?  
               AND id IN (${placeholders})  
-        `, [req.user.school_id, ...postIds]); 
+        `, [req.user.school_id, ...postIds]);
 
             return res.status(200).json({
                 message: 'postsDeleted',
@@ -1830,7 +1830,6 @@ class PostController implements IController {
                      WHERE st.id IN (:students)`,
                     { students }
                 );
-                console.log(studentList)
 
                 if (studentList.length > 0) {
                     for (const student of studentList) {
@@ -1914,7 +1913,3 @@ class PostController implements IController {
 }
 
 export default PostController
-
-function addToExistingGroupNamesForPost(arg0: string, groupNamesArray: string[]) {
-    throw new Error('function_not_implemented');
-}
