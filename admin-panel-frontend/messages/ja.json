@@ -881,8 +881,7 @@
     "invalid_or_missing_description": "無効または存在しない説明",
     "invalid_or_missing_priority": "無効または存在しない優先度",
     "invalid_image_format": "無効な画像フォーマットです。Base64エンコードされていることを確認してください。",
-    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）",
-    "function_not_implemented": "機能が実装されていません。"
+    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "ドキュメントの準備",

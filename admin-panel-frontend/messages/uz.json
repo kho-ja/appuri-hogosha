@@ -882,8 +882,7 @@
     "invalid_or_missing_description": "Noto‘g‘ri yoki mavjud bo‘lmagan tavsif",
     "invalid_or_missing_priority": "Noto‘g‘ri yoki mavjud bo‘lmagan ustuvorlik",
     "invalid_image_format": "Noto‘g‘ri rasm formati. Base64 kodlanganligiga ishonch hosil qiling.",
-    "image_size_too_large": "Rasm hajmi juda katta (maksimal 10MB)",
-    "function_not_implemented": "Funksiya joriy etilmagan."
+    "image_size_too_large": "Rasm hajmi juda katta (maksimal 10MB)"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Hujjatni tayyorlash",

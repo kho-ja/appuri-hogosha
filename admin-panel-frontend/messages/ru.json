@@ -880,8 +880,7 @@
     "invalid_or_missing_description": "Неверное или отсутствующее описание",
     "invalid_or_missing_priority": "Неверный или отсутствующий приоритет",
     "invalid_image_format": "Неверный формат изображения. Убедитесь, что оно закодировано в Base64.",
-    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)",
-    "function_not_implemented": "Функция не реализована."
+    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Подготовка документа",
