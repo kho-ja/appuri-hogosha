@@ -77,7 +77,7 @@ export default function SettingsScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
   );
-  const bottomSheetModalRef = useRef(null);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
   const languages = ['English', '日本語', "O'zbekcha"];
   const handleLanguageSelect = async (
@@ -88,11 +88,9 @@ export default function SettingsScreen() {
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);
-    // @ts-ignore
     bottomSheetModalRef.current?.dismiss();
   };
   const handlePresentModal = useCallback(() => {
-    // @ts-ignore
     bottomSheetModalRef.current?.present();
     setTimeout(() => {
       setIsOpen(true);
@@ -110,6 +108,11 @@ export default function SettingsScreen() {
     signOut();
   }, [signOut]);
   const backgroundColor = theme.colors.background;
+
+  const handleOutsidePress = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss();
+  }, []);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <BottomSheetModalProvider>
@@ -221,10 +224,7 @@ export default function SettingsScreen() {
                   right: 0,
                   bottom: 0,
                 }}
-                onPress={() => {
-                  // @ts-ignore
-                  bottomSheetModalRef.current?.dismiss();
-                }}
+                onPress={handleOutsidePress}
               />
             )}
           >
