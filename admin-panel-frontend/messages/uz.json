@@ -142,7 +142,8 @@
     "AreYouSureDelete": "Ushbu qoralamani o'chirib tashlamoqchimisiz?",
     "saveToDraft": "Qoralamalarga saqlash",
     "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi",
-    "scheduledSuccessfully": "Xabar rejalashtirildi"
+    "scheduledSuccessfully": "Xabar rejalashtirildi",
+    "loading_is_done": "Yuklash yakunlandi"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Rejalashtirilgan xabar",

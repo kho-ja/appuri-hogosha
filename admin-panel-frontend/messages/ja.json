@@ -139,7 +139,8 @@
     "AreYouSureDelete": "この下書きを削除しますか？",
     "saveToDraft": "下書きに保存",
     "draftDeleted": "下書きが削除されました",
-    "scheduledSuccessfully": "メッセージが正常にスケジュールされました"
+    "scheduledSuccessfully": "メッセージが正常にスケジュールされました",
+    "loading_is_done": "ロードが完了しました"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "予約されたメッセージを見る",

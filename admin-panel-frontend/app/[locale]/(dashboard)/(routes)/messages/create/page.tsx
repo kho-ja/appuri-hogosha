@@ -204,7 +204,10 @@ export default function SendMessagePage() {
         });
         return;
       }
-      scheduleMutation.mutate({ ...payload, scheduled_at: scheduledAt.toISOString() } as any);
+      scheduleMutation.mutate({
+        ...payload,
+        scheduled_at: scheduledAt.toISOString(),
+      } as any);
     } else {
       mutate(payload as any);
     }
@@ -217,13 +220,14 @@ export default function SendMessagePage() {
   const handleSaveDraft = (e: any) => {
     e.preventDefault();
     const data = form.getValues();
+
+    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
     const parsedData = {
+      id: draftsLocal.length || 0,
       ...data,
       groups: selectedGroups,
       students: selectedStudents,
     };
-
-    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
 
     if (parsedData) {
       draftsLocal.push(parsedData);
