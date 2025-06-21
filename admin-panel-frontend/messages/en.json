@@ -140,8 +140,7 @@
     "draftDeleted": "Draft Deleted Successfully",
     "selectScheduleTime": "Select Schedule Time",
     "confirmSchedule": "Confirm Schedule",
-    "scheduledSuccessfully": "Post scheduled successfully",
-    "loading_is_done": "Loading is done"
+    "scheduledSuccessfully": "Post scheduled successfully"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "View Scheduled Message",

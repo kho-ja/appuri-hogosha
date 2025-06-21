@@ -5,15 +5,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -47,8 +38,6 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
@@ -107,7 +96,6 @@ export default function SendMessagePage() {
   );
   const priority = form.watch("priority");
 
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
@@ -135,26 +123,6 @@ export default function SendMessagePage() {
       },
     }
   );
-
-  const handleSchedulePost = () => {
-    if (!scheduledAt) {
-      toast({ title: t("error"), description: t("selectDateTime") });
-      return;
-    }
-
-    const data = form.getValues();
-    const payload = {
-      title: data.title,
-      description: data.description,
-      priority: data.priority,
-      students: selectedStudents.map((s) => s.id),
-      groups: selectedGroups.map((g) => g.id),
-      image: data.image,
-      scheduled_at: scheduledAt.toISOString(),
-    };
-
-    scheduleMutation.mutate(payload as any);
-  };
 
   useEffect(() => {
     form.setValue("priority", priority);

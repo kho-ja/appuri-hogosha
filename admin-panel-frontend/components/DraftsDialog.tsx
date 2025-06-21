@@ -254,7 +254,7 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
                 {isGroupsLoading ? (
-                  <div className="text-white">loading...</div>
+                  <div className="text-white dark:text-black">loading...</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {groupsFromBackend.map((group: any) => (
@@ -266,7 +266,7 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
                 {isStudentsLoading ? (
-                  <div className="text-white">loading...</div>
+                  <div className="text-white dark:text-black">loading...</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {studentsFromBackend.map((e: any) => (
