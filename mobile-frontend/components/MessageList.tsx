@@ -156,12 +156,16 @@ const NoMessagesState: React.FC<{
       <Button
         title={i18n[language].refresh}
         onPress={onRefresh}
-        buttonStyle={[
+        buttonStyle={[styles.refreshButton, { backgroundColor: '#005678' }]}
+        disabledStyle={[
           styles.refreshButton,
-          { backgroundColor: theme.colors.primary || '#005678' },
+          { backgroundColor: '#003d56' }, // Style when disabled
         ]}
         loading={isRefreshing}
         disabled={isRefreshing}
+        loadingProps={{
+          color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
+        }}
         icon={
           !isRefreshing ? (
             <Ionicons
@@ -431,10 +435,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         <Button
           title={i18n[language].tryAgain}
           onPress={() => refetch()}
-          buttonStyle={[
-            styles.refreshButton,
-            { backgroundColor: theme.colors.primary || '#005678' },
-          ]}
+          buttonStyle={[styles.refreshButton, { backgroundColor: '#005678' }]}
+          disabledStyle={[styles.refreshButton, { backgroundColor: '#003d56' }]}
+          loadingProps={{
+            color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
+          }}
         />
       </View>
     );
@@ -477,7 +482,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
             onPress={handleLoadMore}
             buttonStyle={[
               styles.loadMoreButton,
-              { backgroundColor: theme.colors.primary || '#005678' },
+              { backgroundColor: '#005678' },
+            ]}
+            disabledStyle={[
+              styles.loadMoreButton,
+              { backgroundColor: '#003d56' },
             ]}
             disabled={
               isOnline
@@ -485,6 +494,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
                 : isLoadingMoreOffline
             }
             loading={isOnline ? isFetchingNextPage : isLoadingMoreOffline}
+            loadingProps={{
+              color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
+            }}
           />
         )}
 
@@ -493,7 +505,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
           <View style={styles.loadingSpinner}>
             <ActivityIndicator
               size='small'
-              color={theme.colors.primary || '#005678'}
+              color={theme.mode === 'dark' ? '#4a90a4' : '#005678'}
             />
           </View>
         )}
