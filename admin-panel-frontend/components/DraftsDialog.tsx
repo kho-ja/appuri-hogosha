@@ -16,7 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import useApiMutation from "@/lib/useApiMutation";
+import { useQuery } from "@tanstack/react-query";
+import HttpError from "@/lib/HttpError";
+import { useSession } from "next-auth/react";
 
 type DraftsDialogProps = {
   handleSelectedDraft: (data: any) => void;
@@ -34,50 +36,73 @@ export default function DraftsDialog({
   const [studentsFromBackend, setStudentsFromBackend] = useState<any[]>([]);
   const [groupsFromBackend, setGroupsFromBackend] = useState<any[]>([]);
   const tName = useTranslations("names");
+  const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
 
-  const { mutate: studentsMutate, isPending: isStudentsPending } =
-    useApiMutation<{ studentList: number[] }>(
-      `student/ids`,
-      "Post",
-      ["sendMessage"],
+  const { data: session } = useSession();
+
+  const queryFunction = async (queryUrl: string, body: any) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/${queryUrl}`,
       {
-        onSuccess: (data) => {
-          const drafts = localStorage.getItem("DraftsData");
-          const parsedDrafts = drafts ? JSON.parse(drafts) : [];
-          const updatedDrafts = parsedDrafts.map((draft: any) => {
-            if (draft.id === selectedDraft.id) {
-              draft.students = data.studentList;
-            }
-            return draft;
-          });
-          localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
-          setStudentsFromBackend(data.studentList as number[]);
-          toast({
-            title: t("loading_is_done"),
-          });
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.sessionToken}`,
         },
+        body: JSON.stringify(body),
       }
     );
 
-  const { mutate: groupsMutate, isPending: isGroupsPending } = useApiMutation<{
-    groupList: number[];
-  }>(`group/ids`, "Post", ["sendMessage"], {
-    onSuccess: (data) => {
+    if (!res.ok) {
+      const data = await res.json();
+      throw new HttpError(data.error, res.status, data);
+    }
+
+    return (await res.json()) as number[];
+  };
+
+  const {
+    data: groupList,
+    isLoading: isGroupsLoading,
+    error,
+  } = useQuery<any, HttpError, any, [string, { selectedGroups: any }]>({
+    queryKey: ["groups", { selectedGroups }],
+    queryFn: async () =>
+      queryFunction("group/ids", { groupIds: selectedGroups }),
+    enabled: !!session?.sessionToken && selectedGroups.length > 0,
+    retry: 1,
+  });
+
+  const {
+    data: studentList,
+    isLoading: isStudentsLoading,
+    error: studentsError,
+  } = useQuery<any, HttpError, any, [string, { selectedStudents: any }]>({
+    queryKey: ["students", { selectedStudents }],
+    queryFn: async () =>
+      queryFunction("student/ids", { studentIds: selectedStudents }),
+    enabled: !!session?.sessionToken && selectedStudents.length > 0,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (studentList || groupList) {
+      setStudentsFromBackend(studentList?.studentList || []);
+      setGroupsFromBackend(groupList?.groupList || []);
+
       const drafts = localStorage.getItem("DraftsData");
       const parsedDrafts = drafts ? JSON.parse(drafts) : [];
       const updatedDrafts = parsedDrafts.map((draft: any) => {
         if (draft.id === selectedDraft.id) {
-          draft.groups = data.groupList;
+          draft.students = studentList?.studentList || [];
+          draft.groups = groupList?.groupList || [];
         }
         return draft;
       });
       localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
-      setGroupsFromBackend(data.groupList as number[]);
-      toast({
-        title: t("loading_is_done"),
-      });
-    },
-  });
+    }
+  }, [studentList, groupList]);
 
   useEffect(() => {
     let draftsLocal = localStorage.getItem("DraftsData");
@@ -129,42 +154,18 @@ export default function DraftsDialog({
   };
 
   const handleSelectDraft = (draft: any) => {
+    setSelectedGroups(draft.groups.map((g: any) => g.id));
+    setSelectedStudents(draft.students.map((s: any) => s.id));
     setIsDialogOpen(true);
     setSelectedDraft(draft);
     let studentsToMutate = draft.students.map((s: any) => s.id);
     let groupsToMutate = draft.groups.map((g: any) => g.id);
 
-    // update the students
-    if (studentsToMutate.length > 0) {
-      studentsMutate({
-        studentIds: studentsToMutate,
-      } as any);
-    } else {
-      const drafts = localStorage.getItem("DraftsData");
-      const parsedDrafts = drafts ? JSON.parse(drafts) : [];
-      const updatedDrafts = parsedDrafts.map((draft: any) => {
-        if (draft.id === selectedDraft?.id) {
-          draft.students = [];
-        }
-        return draft;
-      });
-      localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
+    if (studentsToMutate.length <= 0) {
       setStudentsFromBackend([]);
     }
 
-    // update the groups
-    if (groupsToMutate.length > 0) {
-      groupsMutate({ groupIds: groupsToMutate } as any);
-    } else {
-      const drafts = localStorage.getItem("DraftsData");
-      const parsedDrafts = drafts ? JSON.parse(drafts) : [];
-      const updatedDrafts = parsedDrafts.map((draft: any) => {
-        if (draft.id === selectedDraft?.id) {
-          draft.groups = [];
-        }
-        return draft;
-      });
-      localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
+    if (groupsToMutate.length <= 0) {
       setGroupsFromBackend([]);
     }
   };
@@ -252,7 +253,7 @@ export default function DraftsDialog({
             <div className="w-[40%] sm:max-w-[40%] flex flex-col gap-2">
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
-                {isGroupsPending ? (
+                {isGroupsLoading ? (
                   <div className="text-white">loading...</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
@@ -264,7 +265,7 @@ export default function DraftsDialog({
               </div>
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
-                {isStudentsPending ? (
+                {isStudentsLoading ? (
                   <div className="text-white">loading...</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
