@@ -190,39 +190,94 @@ export default function DetailsScreen() {
         if (localMessage) {
           fullMessage = localMessage;
         } else if (isOnline) {
-          const response = await fetch(`${apiUrl}/posts/${id}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session}`,
-            },
-          });
+          // The message ID from notification is a PostParent ID
+          // Use the /post/:id endpoint to fetch the message
+          let messageData: any = null;
+          let activeStudent: Student | null = null;
 
-          if (!response.ok) {
+          try {
+            // Add timeout to prevent infinite loading
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+              controller.abort();
+            }, 10000);
+
+            const response = await fetch(`${apiUrl}/post/${id}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session}`,
+              },
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+              const responseData = await response.json();
+              messageData = responseData.post;
+            } else {
+              const errorText = await response.text();
+              console.error(
+                `Failed to fetch message: ${response.status} - ${errorText}`
+              );
+              throw new Error(
+                `Failed to fetch message from server: ${response.status}`
+              );
+            }
+          } catch (fetchError) {
+            if (
+              fetchError instanceof Error &&
+              fetchError.name === 'AbortError'
+            ) {
+              throw new Error(
+                'Request timed out. Please check your connection.'
+              );
+            }
             throw new Error('Failed to fetch message from server');
           }
 
-          const messageData = await response.json();
-          const activeStudent =
-            (await db.getFirstAsync<Student>(
-              'SELECT * FROM student WHERE id = (SELECT student_id FROM message WHERE id = ?)',
-              [Number(id)]
-            )) ||
-            (await db.getFirstAsync<Student>('SELECT * FROM student LIMIT 1'));
+          // Get any available student to save the message
+          activeStudent = await db.getFirstAsync<Student>(
+            'SELECT * FROM student LIMIT 1'
+          );
 
           if (!activeStudent) {
-            throw new Error('No student found for this message');
+            throw new Error(
+              'No students found in database. Please sync students first.'
+            );
           }
+
+          // Adapt the message data to match the expected Message interface
+          const adaptedMessage = {
+            id: messageData.id,
+            title: messageData.title,
+            content: messageData.content,
+            priority: messageData.priority,
+            group_name: messageData.group_name,
+            edited_at: messageData.edited_at,
+            images: messageData.image ? [messageData.image] : null,
+            sent_time: messageData.sent_time,
+            viewed_at: messageData.viewed_at,
+            read_status: (messageData.viewed_at ? 1 : 0) as 0 | 1,
+          };
 
           await saveMessageToDB(
             db,
-            messageData,
+            adaptedMessage,
             activeStudent.student_number,
             activeStudent.id
           );
+
+          // Retrieve the saved message
           fullMessage = await fetchMessageFromDB(db, Number(id));
           if (!fullMessage) {
-            throw new Error('Failed to save message to database');
+            // Fallback: try to find by the actual post ID
+            fullMessage = await fetchMessageFromDB(db, messageData.id);
+          }
+
+          if (!fullMessage) {
+            throw new Error('Failed to save or retrieve message from database');
           }
         } else {
           setError('Message not found and offline');

@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   container: {
     flex: 1,
@@ -161,6 +160,7 @@ const NoMessagesState: React.FC<{
           styles.refreshButton,
           { backgroundColor: '#003d56' }, // Style when disabled
         ]}
+        disabledStyle={[styles.refreshButton, { backgroundColor: '#003d56' }]}
         loading={isRefreshing}
         disabled={isRefreshing}
         loadingProps={{
@@ -471,7 +471,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       >
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
-            <Card messageGroup={group.messages} studentId={student.id} />
+            <Card messageGroup={group.messages} studentId={student?.id || 0} />
           </React.Fragment>
         ))}
 

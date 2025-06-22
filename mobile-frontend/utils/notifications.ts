@@ -92,11 +92,11 @@ export function setupNotificationHandler() {
   Notifications.setNotificationHandler({
     handleNotification: async notification => {
       return {
-        shouldShowAlert: true,
+        shouldShowAlert: false, // Deprecated but kept for compatibility
+        shouldShowBanner: true, // New property for banner notifications
+        shouldShowList: true, // New property for notification list
         shouldPlaySound: true,
         shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
       };
     },
   });
