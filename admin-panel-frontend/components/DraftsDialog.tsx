@@ -254,26 +254,38 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
                 {isGroupsLoading ? (
-                  <div className="dark:text-white text-black">loading...</div>
+                  <div className="dark:text-white text-black">{t("loading")}</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
-                    {groupsFromBackend.map((group: any) => (
-                      <Badge key={group.id}>{group?.name}</Badge>
-                    ))}
+                    {groupsFromBackend.length > 0 ? (
+                      groupsFromBackend.map((group: any) => (
+                        <Badge key={group.id}>{group?.name}</Badge>
+                      ))
+                    ) : (
+                      <div className="dark:text-white text-black">
+                        {t("notSelected")}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
                 {isStudentsLoading ? (
-                  <div className="dark:text-white text-black">loading...</div>
+                  <div className="dark:text-white text-black">{t("loading")}</div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
-                    {studentsFromBackend.map((e: any) => (
-                      <Badge key={e.id}>
-                        {tName("name", { ...e, parents: "" })}
-                      </Badge>
-                    ))}
+                    {studentsFromBackend.length > 0 ? (
+                      studentsFromBackend.map((e: any) => (
+                        <Badge key={e.id}>
+                          {tName("name", { ...e, parents: "" })}
+                        </Badge>
+                      ))
+                    ) : (
+                      <div className="dark:text-white text-black">
+                        {t("notSelected")}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
