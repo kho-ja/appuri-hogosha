@@ -124,6 +124,10 @@ export type TranslationKeys = {
   medium: string;
   strong: string;
   createNewPassword: string;
+
+  /*Logout alert*/
+  confirmLogout: string;
+  logoutMessage: string;
 };
 
 export type Language = 'en' | 'ja' | 'uz';

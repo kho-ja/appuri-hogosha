@@ -146,6 +146,11 @@ export default {
     strong: 'Strong',
     createNewPassword: 'Create New Password',
     /*password requirements*/
+
+    /*Logout alert*/
+    confirmLogout: 'Confirm Logout',
+    logoutMessage: 'Are you sure you want to logout?',
+    /*Logout alert*/
   },
   ja: {
     /*sign in page*/
@@ -293,6 +298,11 @@ export default {
     strong: '強い',
     createNewPassword: '新しいパスワードを作成',
     /*password requirements*/
+
+    /*Logout alert*/
+    confirmLogout: 'ログアウトの確認',
+    logoutMessage: '本当にログアウトしますか？',
+    /*Logout alert*/
   },
   uz: {
     /*sign in page*/
@@ -440,6 +450,11 @@ export default {
     strong: 'Kuchli',
     createNewPassword: 'Yangi parol yaratish',
     /*password requirements*/
+
+    /*Logout alert*/
+    confirmLogout: 'Chiqishni tasdiqlash',
+    logoutMessage: 'Haqiqatan ham chiqmoqchimisiz?',
+    /*Logout alert*/
   },
 };
 

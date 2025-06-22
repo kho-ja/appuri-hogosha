@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -105,8 +106,23 @@ export default function SettingsScreen() {
     fetchUser();
   }, [db]);
   const handlePress = useCallback(() => {
-    signOut();
-  }, [signOut]);
+    Alert.alert(
+      i18n[language].confirmLogout || 'Confirm Logout',
+      i18n[language].logoutMessage || 'Are you sure you want to log out?',
+      [
+        {
+          text: i18n[language].cancel || 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: i18n[language].logout || 'Logout',
+          style: 'destructive',
+          onPress: () => signOut(),
+        },
+      ]
+    );
+  }, [signOut, i18n, language]);
+
   const backgroundColor = theme.colors.background;
 
   const handleOutsidePress = useCallback(() => {
