@@ -138,7 +138,9 @@
     "AreYouSureDelete": "Вы уверены, что хотите удалить этот черновик?",
     "saveToDraft": "Сохранить в черновиках",
     "draftDeleted": "Черновик успешно удален",
-    "scheduledSuccessfully": "Сообщение успешно запланировано"
+    "scheduledSuccessfully": "Сообщение успешно запланировано",
+    "loading": "загрузка...",
+    "notSelected": "Не выбрано"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Просмотр запланированного сообщения",

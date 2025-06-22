@@ -14,14 +14,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import Group from "@/types/group";
-import Student from "@/types/student";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "@/navigation";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import HttpError from "@/lib/HttpError";
+import { useSession } from "next-auth/react";
 
 type DraftsDialogProps = {
   handleSelectedDraft: (data: any) => void;
@@ -35,11 +32,77 @@ export default function DraftsDialog({
   const t = useTranslations("sendmessage");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedDraft, setSelectedDraft] = useState<any>(null);
-  const [fileKey, setFileKey] = useState(0);
   const [draftsData, setDraftsData] = useState<any[]>([]);
-  const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
-  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+  const [studentsFromBackend, setStudentsFromBackend] = useState<any[]>([]);
+  const [groupsFromBackend, setGroupsFromBackend] = useState<any[]>([]);
   const tName = useTranslations("names");
+  const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+
+  const { data: session } = useSession();
+
+  const queryFunction = async (queryUrl: string, body: any) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/${queryUrl}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.sessionToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new HttpError(data.error, res.status, data);
+    }
+
+    return (await res.json()) as number[];
+  };
+
+  const {
+    data: groupList,
+    isLoading: isGroupsLoading,
+    error,
+  } = useQuery<any, HttpError, any, [string, { selectedGroups: any }]>({
+    queryKey: ["groups", { selectedGroups }],
+    queryFn: async () =>
+      queryFunction("group/ids", { groupIds: selectedGroups }),
+    enabled: !!session?.sessionToken && selectedGroups.length > 0,
+    retry: 1,
+  });
+
+  const {
+    data: studentList,
+    isLoading: isStudentsLoading,
+    error: studentsError,
+  } = useQuery<any, HttpError, any, [string, { selectedStudents: any }]>({
+    queryKey: ["students", { selectedStudents }],
+    queryFn: async () =>
+      queryFunction("student/ids", { studentIds: selectedStudents }),
+    enabled: !!session?.sessionToken && selectedStudents.length > 0,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (studentList || groupList) {
+      setStudentsFromBackend(studentList?.studentList || []);
+      setGroupsFromBackend(groupList?.groupList || []);
+
+      const drafts = localStorage.getItem("DraftsData");
+      const parsedDrafts = drafts ? JSON.parse(drafts) : [];
+      const updatedDrafts = parsedDrafts.map((draft: any) => {
+        if (draft.id === selectedDraft.id) {
+          draft.students = studentList?.studentList || [];
+          draft.groups = groupList?.groupList || [];
+        }
+        return draft;
+      });
+      localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
+    }
+  }, [studentList, groupList]);
 
   useEffect(() => {
     let draftsLocal = localStorage.getItem("DraftsData");
@@ -87,18 +150,31 @@ export default function DraftsDialog({
     };
 
     handleSelectedDraft(draft as any);
-    setSelectedGroups(data?.groups || []);
-    setSelectedStudents(data?.students || []);
     setIsDialogOpen(false);
+  };
+
+  const handleSelectDraft = (draft: any) => {
+    setSelectedGroups(draft.groups.map((g: any) => g.id));
+    setSelectedStudents(draft.students.map((s: any) => s.id));
+    setIsDialogOpen(true);
+    setSelectedDraft(draft);
+    let studentsToMutate = draft.students.map((s: any) => s.id);
+    let groupsToMutate = draft.groups.map((g: any) => g.id);
+
+    if (studentsToMutate.length <= 0) {
+      setStudentsFromBackend([]);
+    }
+
+    if (groupsToMutate.length <= 0) {
+      setGroupsFromBackend([]);
+    }
   };
 
   return (
     <div className="inline-block">
       <Dialog>
         <DialogTrigger asChild>
-          <Button onClick={() => {}}>
-            {t("drafts")}
-          </Button>
+          <Button>{t("drafts")}</Button>
         </DialogTrigger>
         <DialogContent
           className="sm:max-w-[60%] max-h-max"
@@ -111,10 +187,7 @@ export default function DraftsDialog({
                 {draftsData.map((draft, index) => (
                   <div key={index}>
                     <Card
-                      onClick={() => {
-                        setIsDialogOpen(true);
-                        setSelectedDraft(draft);
-                      }}
+                      onClick={() => handleSelectDraft(draft)}
                       className="p-2 cursor-pointer hover:bg-muted/40 flex flex-col gap-1"
                     >
                       <CardTitle className="text-md w-full font-bold overflow-hidden text-ellipsis line-clamp-1">
@@ -180,21 +253,41 @@ export default function DraftsDialog({
             <div className="w-[40%] sm:max-w-[40%] flex flex-col gap-2">
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
-                <div className="flex flex-wrap gap-2 items-start content-start ">
-                  {selectedDraft?.groups.map((group: any) => (
-                    <Badge key={group.id}>{group?.name}</Badge>
-                  ))}
-                </div>
+                {isGroupsLoading ? (
+                  <div className="dark:text-white text-black">{t("loading")}</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 items-start content-start ">
+                    {groupsFromBackend.length > 0 ? (
+                      groupsFromBackend.map((group: any) => (
+                        <Badge key={group.id}>{group?.name}</Badge>
+                      ))
+                    ) : (
+                      <div className="dark:text-white text-black">
+                        {t("notSelected")}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
-                <div className="flex flex-wrap gap-2 items-start content-start ">
-                  {selectedDraft?.students.map((e: any) => (
-                    <Badge key={e.id}>
-                      {tName("name", { ...e, parents: "" })}
-                    </Badge>
-                  ))}
-                </div>
+                {isStudentsLoading ? (
+                  <div className="dark:text-white text-black">{t("loading")}</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 items-start content-start ">
+                    {studentsFromBackend.length > 0 ? (
+                      studentsFromBackend.map((e: any) => (
+                        <Badge key={e.id}>
+                          {tName("name", { ...e, parents: "" })}
+                        </Badge>
+                      ))
+                    ) : (
+                      <div className="dark:text-white text-black">
+                        {t("notSelected")}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </DialogHeader>
@@ -209,7 +302,9 @@ export default function DraftsDialog({
             </DialogClose>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-red-500 hover:bg-red-600">{t("delete")}</Button>
+                <Button className="bg-red-500 hover:bg-red-600">
+                  {t("delete")}
+                </Button>
               </DialogTrigger>
               <DialogContent
                 className="sm:max-w-[40%] max-h-max"
