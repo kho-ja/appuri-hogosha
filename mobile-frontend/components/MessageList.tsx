@@ -39,7 +39,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   container: {
     flex: 1,
@@ -160,8 +159,12 @@ const NoMessagesState: React.FC<{
           styles.refreshButton,
           { backgroundColor: theme.colors.primary || '#005678' },
         ]}
+        disabledStyle={[styles.refreshButton, { backgroundColor: '#003d56' }]}
         loading={isRefreshing}
         disabled={isRefreshing}
+        loadingProps={{
+          color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
+        }}
         icon={
           !isRefreshing ? (
             <Ionicons
@@ -466,7 +469,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       >
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
-            <Card messageGroup={group.messages} studentId={student.id} />
+            <Card messageGroup={group.messages} studentId={student?.id || 0} />
           </React.Fragment>
         ))}
 

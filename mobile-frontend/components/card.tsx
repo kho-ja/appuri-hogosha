@@ -128,7 +128,12 @@ const Card = ({
             </View>
           </ThemedView>
           <ThemedView
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: 'transparent',
+            }}
           >
             <ThemedText style={getImportanceBadgeStyle(firstMessage.priority)}>
               {getImportanceLabel(firstMessage.priority)}
