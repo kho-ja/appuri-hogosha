@@ -3,9 +3,11 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMessageContext } from '@/contexts/message-context';
+import { useStudents } from '@/contexts/student-context';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
+  const { students } = useStudents();
 
   return (
     <Stack>
@@ -13,23 +15,33 @@ const Layout = () => {
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {
+          const { isOnlyStudent } = route.params || {};
+          const studentId = route.params?.id;
+
+          // Find the student by ID to get their name
+          const student = students?.find(s => s.id === Number(studentId));
+          const studentName = student?.given_name || 'Student';
+
           return {
-            headerTitle: 'Student',
+            headerTitle: studentName,
             headerTitleAlign: 'center',
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  router.replace('/');
-                }}
-                style={{ marginLeft: 10 }}
-              >
-                <Ionicons
-                  name={'arrow-back-outline'}
-                  size={24}
-                  color='#adb5bd'
-                />
-              </Pressable>
-            ),
+            headerLeft:
+              isOnlyStudent === 'true'
+                ? undefined
+                : () => (
+                    <Pressable
+                      onPress={() => {
+                        router.replace('/');
+                      }}
+                      style={{ marginLeft: 10 }}
+                    >
+                      <Ionicons
+                        name={'arrow-back-outline'}
+                        size={24}
+                        color='#adb5bd'
+                      />
+                    </Pressable>
+                  ),
             headerRight: () => {
               if (unreadCount === 0) {
                 return null;

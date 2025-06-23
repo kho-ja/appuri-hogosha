@@ -6,6 +6,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotificationsAsync } from '@/utils/utils';
 import { ICountry } from 'react-native-international-phone-number';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -41,7 +42,31 @@ export function useSession() {
 export function SessionProvider(props: React.PropsWithChildren) {
   const [[isLoading, session], setSession] = useStorageState('session');
   const db = useSQLiteContext();
+  const queryClient = useQueryClient();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+  const previousSessionRef = React.useRef<string | null>(session);
+
+  // Track session changes and invalidate queries when session becomes available after being null
+  React.useEffect(() => {
+    if (previousSessionRef.current === null && session) {
+      // Session just became available after being null - wait longer to ensure student data is loaded
+      setTimeout(async () => {
+        // Force refetch both messages and students by enabling queries regardless of current state
+        await queryClient.refetchQueries({
+          queryKey: ['messages'],
+          type: 'all', // This forces refetch even for disabled queries
+        });
+        await queryClient.refetchQueries({
+          queryKey: ['students'],
+          type: 'all', // This forces refetch even for disabled queries
+        });
+        console.log(
+          '[Auth] Session restored, force refetched message and student queries'
+        );
+      }, 500); // Increased timeout to allow student data to load
+    }
+    previousSessionRef.current = session;
+  }, [session, queryClient]);
   return (
     <AuthContext.Provider
       value={{
@@ -116,8 +141,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
             });
             if (!response.ok) {
               try {
+                // Clear specific queries instead of all cache
+                queryClient.removeQueries({ queryKey: ['messages'] });
+
                 await db.execAsync('DELETE FROM user');
-                await db.execAsync('DELETE FROM student');
+                // Don't delete student data - keep it for next login
+                // await db.execAsync('DELETE FROM student');
                 await db.execAsync('DELETE FROM message');
               } catch (error) {
                 console.error('Error during sign out:', error);
@@ -134,8 +163,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
         },
         signOut: async () => {
           try {
+            // Clear specific queries instead of all cache
+            queryClient.removeQueries({ queryKey: ['messages'] });
+
             await db.execAsync('DELETE FROM user');
-            await db.execAsync('DELETE FROM student');
+            // Don't delete student data - keep it for next login
+            // await db.execAsync('DELETE FROM student');
             await db.execAsync('DELETE FROM message');
 
             const refreshToken = await AsyncStorage.getItem('refresh_token');
