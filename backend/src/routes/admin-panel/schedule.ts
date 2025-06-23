@@ -311,7 +311,8 @@ class SchedulePostController implements IController {
 
             const post = postInfo[0];
             const utcDate = DateTime.fromJSDate(post.scheduled_at).toISO();
-
+            const utcEditedAt = DateTime.fromJSDate(post.edited_at).toISO();
+            const utcCreatedAt = DateTime.fromJSDate(post.created_at).toISO();
             return res.status(200).json({
                 post: {
                     id: post.id,
@@ -320,8 +321,8 @@ class SchedulePostController implements IController {
                     image: post.image,
                     priority: post.priority,
                     scheduled_at: utcDate,
-                    sent_at: post.created_at,
-                    edited_at: post.edited_at ? post.edited_at : post.created_at,
+                    sent_at: utcCreatedAt,
+                    edited_at: utcEditedAt ? utcEditedAt : utcCreatedAt,
                 },
                 admin: {
                     id: post.admin_id,
@@ -417,6 +418,11 @@ class SchedulePostController implements IController {
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const localTime = DateTime.fromISO(scheduled_at_string, { zone: 'utc' }).setZone(userTimezone);
             const formattedUTC = localTime.toFormat('yyyy-MM-dd HH:mm:ss');
+            const edited_at = DateTime.fromJSDate(new Date())
+                            .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+                            .toFormat('yyyy-MM-dd HH:mm:ss');
+
+
 
             if (!title || !isValidString(title)) {
                 throw {
@@ -496,7 +502,7 @@ class SchedulePostController implements IController {
                      priority    = :priority,
                      scheduled_at = :scheduled_at,
                      image       = :image,
-                     edited_at   = NOW()
+                     edited_at   = :edited_at
                  WHERE id = :id
                  AND school_id = :school_id`,
                 {
@@ -507,6 +513,7 @@ class SchedulePostController implements IController {
                     priority,
                     scheduled_at: formattedUTC,
                     image: post.image,
+                    edited_at,
                 }
             );
 

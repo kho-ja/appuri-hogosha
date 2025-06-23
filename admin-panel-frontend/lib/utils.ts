@@ -18,13 +18,21 @@ export function FormatDate(
 }
 export function FormatDateTime(
   date: string,
-  style: string | DateTimeFormatOptions | undefined = {
+  style: DateTimeFormatOptions = {
     dateStyle: "medium",
     timeStyle: "short",
-  } as DateTimeFormatOptions
+    hour12: false, // AM/PM o‘rniga 24 soatlik format
+  }
 ) {
   const format = useFormatter();
-  return date && format.dateTime(convertTimeToUTC(date), style);
+  const convertedDate = convertTimeToUTC(date);
+
+  const offset = -convertedDate.getTimezoneOffset() / 60;
+  let country = "";
+  if (offset === 5) country = "UZ";
+  else if (offset === 9) country = "JP";
+
+  return `${format.dateTime(convertedDate, style)} ${country}`;
 }
 // changes time to utc
 export function convertTimeToUTC(date: string) {
