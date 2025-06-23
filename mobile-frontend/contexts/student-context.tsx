@@ -114,6 +114,10 @@ export function StudentProvider(props: PropsWithChildren) {
       }
     },
     enabled: !!session,
+    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
+    refetchOnWindowFocus: true, // Refetch when app comes back into focus
+    refetchInterval: 5 * 60 * 1000, // Auto-refetch every 5 minutes when online
+    refetchIntervalInBackground: false, // Don't refetch in background
   });
 
   useEffect(() => {

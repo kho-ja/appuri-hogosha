@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
 import 'react-native-reanimated';
 import { useThemeMode } from '@rneui/themed';
+import { MessageProvider } from '@/contexts/message-context';
 import { StatusBar, useColorScheme } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
@@ -36,9 +37,11 @@ export default function RootLayout() {
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
         backgroundColor={theme === 'dark' ? 'black' : 'white'}
       />
-      <Stack initialRouteName='(tabs)'>
-        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-      </Stack>
+      <MessageProvider>
+        <Stack initialRouteName='(tabs)'>
+          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+        </Stack>
+      </MessageProvider>
     </ThemeProvider>
   );
 }

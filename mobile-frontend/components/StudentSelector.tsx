@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -16,10 +16,42 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
   ({ students }) => {
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
-    const handleStudentSelect = (student: Student) => {
-      router.push(`/(tabs)/(home)/student/${student.id}`);
-    };
+    const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
+
+    const handleStudentSelect = useCallback(
+      (student: Student, autoNavigation = false) => {
+        if (autoNavigation && students?.length === 1) {
+          // Use replace for auto-navigation to prevent back button issues
+          router.replace({
+            pathname: `/(tabs)/(home)/student/${student.id}`,
+            params: {
+              unread_count: student.unread_count as number,
+              isOnlyStudent: 'true',
+            },
+          });
+        } else {
+          router.push({
+            pathname: `/(tabs)/(home)/student/${student.id}`,
+            params: {
+              unread_count: student.unread_count as number,
+              isOnlyStudent: students?.length === 1 ? 'true' : 'false',
+            },
+          });
+        }
+      },
+      [router, students]
+    );
     const { theme } = useTheme();
+
+    // Auto-navigate if there's only one student (only once)
+    React.useEffect(() => {
+      if (students?.length === 1 && !hasAutoNavigated) {
+        setHasAutoNavigated(true);
+        handleStudentSelect(students[0], true);
+      } else if (students?.length !== 1) {
+        setHasAutoNavigated(false);
+      }
+    }, [students, handleStudentSelect, hasAutoNavigated]);
     const backgroundColor = theme.colors.background;
     const borderColor = theme.colors.black;
     const avatarColors = [

@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SQLiteProvider } from 'expo-sqlite';
-import { SessionProvider } from '@/contexts/auth-context';
 import { ThemeProvider } from '@rneui/themed';
 import { NetworkProvider } from '@/contexts/network-context';
 import { I18nProvider } from '@/contexts/i18n-context';
@@ -45,23 +44,17 @@ export default function Root() {
           databaseName='maria.db'
           assetSource={{ assetId: require('../assets/database/maria.db') }}
         >
-          <SessionProvider>
-            <ThemeProvider theme={memoizedTheme}>
-              {/* Global status bar - handles everything automatically */}
-              <StatusBar
-                style='auto'
-                backgroundColor='transparent'
-                translucent
-              />
-              <ScreenWrapper style={{ flex: 1 }}>
-                <NetworkProvider>
-                  <I18nProvider>
-                    <AppWithNotifications />
-                  </I18nProvider>
-                </NetworkProvider>
-              </ScreenWrapper>
-            </ThemeProvider>
-          </SessionProvider>
+          <ThemeProvider theme={memoizedTheme}>
+            {/* Global status bar - handles everything automatically */}
+            <StatusBar style='auto' backgroundColor='transparent' translucent />
+            <ScreenWrapper style={{ flex: 1 }}>
+              <NetworkProvider>
+                <I18nProvider>
+                  <AppWithNotifications />
+                </I18nProvider>
+              </NetworkProvider>
+            </ScreenWrapper>
+          </ThemeProvider>
         </SQLiteProvider>
       </GestureHandlerRootView>
     </RootSiblingParent>
