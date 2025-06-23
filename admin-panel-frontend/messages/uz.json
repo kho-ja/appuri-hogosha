@@ -91,6 +91,11 @@
     "accept": "Qabul qilish"
   },
   "sendmessage": {
+    "yes": "Ha",
+    "no": "Yo'q",
+    "doYouWantSchedule": "Rejalashtirishni xohlaysizmi?",
+    "scheduledAt": "Rejalashtirilgan vaqti",
+    "schedule": "rejalashtirish",
     "sendMessage": "Xabar yuboring",
     "makeChanges": "Hisobingizga o'zgarishlar kiriting. Bajarilganda saqlang.",
     "title": "Sarlavha",
@@ -136,9 +141,15 @@
     "cancel": "Bekor qilish",
     "AreYouSureDelete": "Ushbu qoralamani o'chirib tashlamoqchimisiz?",
     "saveToDraft": "Qoralamalarga saqlash",
-    "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi"
+    "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi",
+    "scheduledSuccessfully": "Xabar rejalashtirildi",
+    "loading": "yuklanmoqda...",
+    "notSelected": "Tanlangan emas"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "Rejalashtirilgan xabar",
+    "ScheduledAt": "Rejalashtirilgan vaqt",
+    "filterGroup": "Guruh nomi bo‘yicha filtrlash",
     "AS_PUBLISHER": "Nashriyot",
     "Ordinary": "Oddiy",
     "Company": "314 Arts OHG",
@@ -459,6 +470,9 @@
     "export": "Yuklab olish"
   },
   "posts": {
+    "messages": "Xabarlar",
+    "scheduledat": "Rejalashtirilgan vaqti",
+    "scheduledMessages": "Rejalashtirilgan xabarlar",
     "posts": "Xabarlar",
     "postTitle": "Xabar sarlavhasi",
     "Description": "Tavsif",
@@ -474,7 +488,12 @@
     "doYouDeleteMessage": "Xabarni o'chirishni istaysizmi?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
-    "postDeleted": "Xabar muvaffaqiyatli o'chirildi"
+    "postDeleted": "Xabar muvaffaqiyatli o'chirildi",
+    "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi",
+    "confirmDeleteTitle": "Ushbu xabarni o'chirishni istaysizmi?",
+    "confirmDeleteDesc": "Bu amalni qayta ishga tushirilmaydi.",
+    "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori",
+    "choosePostsPerPage": "Sahifada ko'rsatiladigan xabarlar sonini tanlang"
   },
   "ParentTable": {
     "name": "Ism",
@@ -794,7 +813,6 @@
     "export": "Yuklab olish",
     "back": "Orqaga"
   },
-
   "errors": {
     "wentWrong": "Nimadir noto'g'ri ketdi.",
     "pageNotFound": "Sahifa topilmadi",
@@ -819,7 +837,7 @@
     "invalid_given_name_format": "Ism formati noto‘g‘ri",
     "missing_or_empty_family_name": "Familiya maydoni kiritilmagan yoki bo‘sh",
     "invalid_family_name_format": "Familiya formati noto‘g‘ri",
-    "missing_or_empty_email": "Email maydoni kiritilmagan yoki bo‘sh",  
+    "missing_or_empty_email": "Email maydoni kiritilmagan yoki bo‘sh",
     "invalid_email_format": "Email formati noto‘g‘ri",
     "missing_or_empty_phone_number": "Telefon raqami maydoni kiritilmagan yoki bo‘sh",
     "invalid_phone_number_format": "Telefon raqami formati noto‘g‘ri",
@@ -866,8 +884,7 @@
     "invalid_or_missing_description": "Noto‘g‘ri yoki mavjud bo‘lmagan tavsif",
     "invalid_or_missing_priority": "Noto‘g‘ri yoki mavjud bo‘lmagan ustuvorlik",
     "invalid_image_format": "Noto‘g‘ri rasm formati. Base64 kodlanganligiga ishonch hosil qiling.",
-    "image_size_too_large": "Rasm hajmi juda katta (maksimal 10MB)",
-    "function_not_implemented": "Funksiya joriy etilmagan."
+    "image_size_too_large": "Rasm hajmi juda katta (maksimal 10MB)"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Hujjatni tayyorlash",
@@ -1109,5 +1126,13 @@
   },
   "BackButton": {
     "back": "Orqaga"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Post muvaffaqiyatli rejalashtirildi",
+    "noTitleAvailable": "Sarlavha mavjud emas",
+    "selectDateTime": "Sana va vaqtni tanlang",
+    "error": "Xatolik",
+    "confirmSchedule": "Postni rejalashtirish",
+    "postDeleted": "Post muvaffaqiyatli o'chirildi"
   }
 }

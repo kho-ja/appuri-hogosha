@@ -5,15 +5,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -47,14 +38,14 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import DraftsDialog from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { DateTimePicker24h } from "@/components/DateTimePicker24h";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -105,6 +96,34 @@ export default function SendMessagePage() {
   );
   const priority = form.watch("priority");
 
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+
+  const scheduleMutation = useApiMutation<{ post: Post }>(
+    `schedule`,
+    "POST",
+    ["scheduledPosts"],
+    {
+      onSuccess: (data) => {
+        if (data?.post?.title) {
+          toast({
+            title: t("scheduledSuccessfully"),
+            description: data.post.title,
+          });
+        } else {
+          toast({
+            title: t("scheduledSuccessfully"),
+            description: t("noTitleAvailable"),
+          });
+        }
+        setSelectedStudents([]);
+        setSelectedGroups([]);
+        form.reset();
+        router.push("/messages?tab=scheduled");
+      },
+    }
+  );
+
   useEffect(() => {
     form.setValue("priority", priority);
   }, [priority, form]);
@@ -145,7 +164,21 @@ export default function SendMessagePage() {
       image: data.image,
     };
 
-    mutate(payload as any);
+    if (scheduleEnabled) {
+      if (!scheduledAt) {
+        toast({
+          title: t("error"),
+          description: t("selectDateTime"),
+        });
+        return;
+      }
+      scheduleMutation.mutate({
+        ...payload,
+        scheduled_at: scheduledAt.toISOString(),
+      } as any);
+    } else {
+      mutate(payload as any);
+    }
   };
 
   const isFormValid = form.formState.isValid;
@@ -155,13 +188,14 @@ export default function SendMessagePage() {
   const handleSaveDraft = (e: any) => {
     e.preventDefault();
     const data = form.getValues();
+
+    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
     const parsedData = {
+      id: draftsLocal.length || 0,
       ...data,
       groups: selectedGroups,
       students: selectedStudents,
     };
-
-    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
 
     if (parsedData) {
       draftsLocal.push(parsedData);
@@ -357,106 +391,147 @@ export default function SendMessagePage() {
               />
             </TabsContent>
           </Tabs>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                type="button"
-                isLoading={isPending}
-                disabled={!isFormValid || !hasRecipients}
-                icon={<Send className="h-4 w-4" />}
-              >
-                {t("sendMessage")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[80%] max-h-max">
-              <div className="sm:flex gap-4">
-                <DialogHeader className="w-full whitespace-pre-wrap">
-                  <DialogTitle className="whitespace-pre-wrap text-center">
-                    {formValues.title}
-                  </DialogTitle>
-                  <DialogDescription className="whitespace-pre-wrap">
-                    <ReactLinkify>{formValues.description}</ReactLinkify>
-                  </DialogDescription>
-                  <div className="flex w-full">
-                    <div className="bg-slate-500 px-4 py-1 rounded ">
-                      {t("priority")}:{" "}
-                      {formValues.priority && t(formValues.priority)}
-                    </div>
-                  </div>
-                  {form.getValues("image") && (
-                    <div className="mt-4">
-                      <Image
-                        src={form.getValues("image") ?? ""}
-                        alt="Selected image"
-                        width={300}
-                        height={200}
-                        className="rounded object-cover"
-                      />
-                    </div>
-                  )}
-                </DialogHeader>
-                <div className="sm:w-1 sm:h-full bg-slate-600"></div>
-                <div className="flex flex-wrap gap-4 items-start content-start sm:max-w-[40%]">
-                  <div className="flex flex-col gap-1">
-                    <b>{t("groups")}</b>
-                    <div className="flex flex-wrap gap-2 items-start content-start ">
-                      {selectedGroups.map((group) => (
-                        <Badge key={group.id}>{group?.name}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <b>{t("students")}</b>
-                    <div className="flex flex-wrap gap-2 items-start content-start ">
-                      {selectedStudents.map((e) => (
-                        <Badge key={e.id}>
-                          {tName("name", { ...e, parents: "" })}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  {!hasRecipients && (
-                    <div className="w-full text-destructive text-center font-semibold">
-                      {t("selectatleastone")}
-                    </div>
-                  )}
-                </div>
+          <div className="flex flex-col gap-4 border p-4 rounded-md bg-muted/40">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">
+                {t("doYouWantSchedule")}
+              </Label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={scheduleEnabled}
+                  onCheckedChange={setScheduleEnabled}
+                  id="schedule-switch"
+                />
+                <Label htmlFor="schedule-switch" className="ml-2">
+                  {scheduleEnabled ? t("yes") : t("no")}
+                </Label>
               </div>
-              <DialogFooter className="flex gap-2 sm:gap-0">
-                <DialogClose asChild>
-                  <Button type="button" variant="secondary">
-                    {t("close")}
-                  </Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || !hasRecipients}
-                    isLoading={isPending}
-                    onClick={() => {
-                      if (formRef.current) {
-                        formRef.current.dispatchEvent(
-                          new Event("submit", { bubbles: true })
-                        );
-                      }
-                    }}
-                  >
-                    {t("confirm")}
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Button
-            className="ml-2"
-            variant={"secondary"}
-            disabled={isPending || !isFormValid || !hasRecipients}
-            onClick={(e) => handleSaveDraft(e)}
-          >
-            {t("saveToDraft")}
-          </Button>
+            </div>
+            {scheduleEnabled && (
+              <div className="mt-2">
+                <DateTimePicker24h
+                  value={scheduledAt}
+                  onChange={setScheduledAt}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  isLoading={isPending}
+                  disabled={!isFormValid || !hasRecipients}
+                  icon={<Send className="h-4 w-4" />}
+                >
+                  {t("sendMessage")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[80%] max-h-max">
+                <div className="sm:flex gap-4">
+                  <DialogHeader className="w-full whitespace-pre-wrap">
+                    <DialogTitle className="whitespace-pre-wrap text-center">
+                      {formValues.title}
+                    </DialogTitle>
+                    <DialogDescription className="whitespace-pre-wrap">
+                      <ReactLinkify>{formValues.description}</ReactLinkify>
+                    </DialogDescription>
+                    <div className="flex w-full">
+                      <div className="bg-slate-500 px-4 py-1 rounded ">
+                        {t("priority")}:{" "}
+                        {formValues.priority && t(formValues.priority)}
+                      </div>
+                    </div>
+                    {form.getValues("image") && (
+                      <div className="mt-4">
+                        <Image
+                          src={form.getValues("image") ?? ""}
+                          alt="Selected image"
+                          width={300}
+                          height={200}
+                          className="rounded object-cover"
+                        />
+                      </div>
+                    )}
+                    {scheduleEnabled && scheduledAt && (
+                      <div className="mt-2 text-left text-sm">
+                        {t("scheduledAt")}:{" "}
+                        {scheduledAt &&
+                          scheduledAt
+                            .toLocaleString("uz-UZ", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
+                            .replace(",", "")}
+                      </div>
+                    )}
+                  </DialogHeader>
+                  <div className="sm:w-1 sm:h-full bg-slate-600"></div>
+                  <div className="flex flex-wrap gap-4 items-start content-start sm:max-w-[40%]">
+                    <div className="flex flex-col gap-1">
+                      <b>{t("groups")}</b>
+                      <div className="flex flex-wrap gap-2 items-start content-start ">
+                        {selectedGroups.map((group) => (
+                          <Badge key={group.id}>{group?.name}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <b>{t("students")}</b>
+                      <div className="flex flex-wrap gap-2 items-start content-start ">
+                        {selectedStudents.map((e) => (
+                          <Badge key={e.id}>
+                            {tName("name", { ...e, parents: "" })}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {!hasRecipients && (
+                      <div className="w-full text-destructive text-center font-semibold">
+                        {t("selectatleastone")}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <DialogFooter className="flex flex-wrap justify-end gap-2">
+                  <DialogClose asChild>
+                    <Button type="button" variant="secondary">
+                      {t("close")}
+                    </Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button
+                      type="submit"
+                      disabled={!isFormValid || !hasRecipients}
+                      isLoading={isPending}
+                      onClick={() => {
+                        if (formRef.current) {
+                          formRef.current.dispatchEvent(
+                            new Event("submit", { bubbles: true })
+                          );
+                        }
+                      }}
+                    >
+                      {t("confirm")}
+                    </Button>
+                  </DialogClose>
+                  <DialogClose asChild></DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Button
+              variant={"secondary"}
+              disabled={isPending || !isFormValid || !hasRecipients}
+              onClick={(e) => handleSaveDraft(e)}
+            >
+              {t("saveToDraft")}
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

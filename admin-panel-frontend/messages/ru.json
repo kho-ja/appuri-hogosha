@@ -90,6 +90,11 @@
     "accept": "Принять"
   },
   "sendmessage": {
+    "yes": "Да",
+    "no": "Нет",
+    "doYouWantSchedule": "Вы хотите запланировать это сообщение?",
+    "scheduledAt": "Запланировано на",
+    "schedule": "запланировано",
     "sendMessage": "Отправить сообщение",
     "makeChanges": "Внесите изменения в свой аккаунт здесь. Нажмите сохранить, когда закончите.",
     "title": "Заголовок",
@@ -132,9 +137,15 @@
     "cancel": "Отмена",
     "AreYouSureDelete": "Вы уверены, что хотите удалить этот черновик?",
     "saveToDraft": "Сохранить в черновиках",
-    "draftDeleted": "Черновик успешно удален"
+    "draftDeleted": "Черновик успешно удален",
+    "scheduledSuccessfully": "Сообщение успешно запланировано",
+    "loading": "загрузка...",
+    "notSelected": "Не выбрано"
   },
   "ThisMessage": {
+    "ViewScheduledMessage": "Просмотр запланированного сообщения",
+    "ScheduledAt": "Запланировано на",
+    "filterGroup": "Фильтр по названию группы",
     "AS_PUBLISHER": "Издатель",
     "Ordinary": "Обычный",
     "Company": "314 Arts OHG",
@@ -456,6 +467,9 @@
     "export": "Экспорт"
   },
   "posts": {
+    "messages": "Сообщения",
+    "scheduledat": "Запланировано на",
+    "scheduledMessages": "Запланированные сообщения",
     "posts": "Сообщения",
     "postTitle": "Заголовок сообщения",
     "Description": "Описание",
@@ -471,7 +485,12 @@
     "doYouDeleteMessage": "Вы хотите удалить это сообщение?",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "postDeleted": "Сообщение удалено"
+    "postDeleted": "Сообщение удалено",
+    "scheduledPostDeleted": "Запланированное сообщение удалено",
+    "confirmDeleteTitle": "Вы уверены, что хотите удалить это сообщение?",
+    "confirmDeleteDesc": "Это действие не может быть отменено.",
+    "postsPerPage": "Количество строк на странице",
+    "choosePostsPerPage": "Выберите количество строк на странице"
   },
   "ParentTable": {
     "name": "Имя",
@@ -863,8 +882,7 @@
     "invalid_or_missing_description": "Неверное или отсутствующее описание",
     "invalid_or_missing_priority": "Неверный или отсутствующий приоритет",
     "invalid_image_format": "Неверный формат изображения. Убедитесь, что оно закодировано в Base64.",
-    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)",
-    "function_not_implemented": "Функция не реализована."
+    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Подготовка документа",
@@ -1106,5 +1124,13 @@
   },
   "BackButton": {
     "back": "Назад"
+  },
+  "scheduledPosts": {
+    "scheduledSuccessfully": "Сообщение успешно запланировано",
+    "noTitleAvailable": "Заголовок не доступен",
+    "selectDateTime": "Выберите дату и время",
+    "error": "Ошибка",
+    "confirmSchedule": "Подтвердить планирование",
+    "postDeleted": "Сообщение удалено"
   }
 }

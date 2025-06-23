@@ -6,6 +6,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -77,7 +78,7 @@ export default function SettingsScreen() {
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
   );
-  const bottomSheetModalRef = useRef(null);
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
   const languages = ['English', '日本語', "O'zbekcha"];
   const handleLanguageSelect = async (
@@ -88,9 +89,9 @@ export default function SettingsScreen() {
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);
+    bottomSheetModalRef.current?.dismiss();
   };
   const handlePresentModal = useCallback(() => {
-    // @ts-ignore
     bottomSheetModalRef.current?.present();
     setTimeout(() => {
       setIsOpen(true);
@@ -105,9 +106,29 @@ export default function SettingsScreen() {
     fetchUser();
   }, [db]);
   const handlePress = useCallback(() => {
-    signOut();
-  }, [signOut]);
+    Alert.alert(
+      i18n[language].confirmLogout || 'Confirm Logout',
+      i18n[language].logoutMessage || 'Are you sure you want to log out?',
+      [
+        {
+          text: i18n[language].cancel || 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: i18n[language].logout || 'Logout',
+          style: 'destructive',
+          onPress: () => signOut(),
+        },
+      ]
+    );
+  }, [signOut, i18n, language]);
+
   const backgroundColor = theme.colors.background;
+
+  const handleOutsidePress = useCallback(() => {
+    bottomSheetModalRef.current?.dismiss();
+  }, []);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <BottomSheetModalProvider>
@@ -210,6 +231,18 @@ export default function SettingsScreen() {
             snapPoints={snapPoints}
             backgroundStyle={{ backgroundColor: '#eee' }}
             onDismiss={() => setIsOpen(false)}
+            backdropComponent={() => (
+              <Pressable
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                onPress={handleOutsidePress}
+              />
+            )}
           >
             <ThemedView style={styles.contentContainer}>
               <ThemedView style={styles.row}></ThemedView>
