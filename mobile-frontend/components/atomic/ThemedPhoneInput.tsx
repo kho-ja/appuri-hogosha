@@ -81,8 +81,15 @@ const ThemedPhoneInput: React.FC<ThemedPhoneInputProps> = ({
               color: theme.mode === 'light' ? 'black' : 'white',
               backgroundColor: 'transparent',
             },
-            flag: {
+            flagContainer: {
               backgroundColor: 'transparent',
+            },
+            callingCode: {
+              backgroundColor: theme.colors.background,
+              color: theme.mode === 'light' ? 'black' : 'white',
+            },
+            caret: {
+              color: theme.mode === 'light' ? 'black' : 'white',
             },
           }}
           modalStyles={{
@@ -103,6 +110,12 @@ const ThemedPhoneInput: React.FC<ThemedPhoneInputProps> = ({
               backgroundColor: theme.colors.background,
               color: theme.mode === 'light' ? 'black' : 'white',
               borderColor: theme.mode === 'light' ? '#D1D5DB' : '#374151',
+            },
+            countryName: {
+              color: theme.mode === 'light' ? 'black' : 'white',
+            },
+            callingCode: {
+              color: theme.mode === 'light' ? 'black' : 'white',
             },
           }}
         />

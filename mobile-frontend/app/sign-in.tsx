@@ -153,7 +153,7 @@ export default function SignIn() {
                 {i18n[language].login}
               </ThemedText>
             </ThemedView>
-            <ThemedView>
+            <ThemedView style={{ zIndex: 10 }}>
               <Select
                 options={menuOptions}
                 selectedValue={
