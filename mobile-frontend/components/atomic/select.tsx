@@ -3,6 +3,7 @@ import { TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+import { useTheme } from '@rneui/themed';
 
 const PopupMenu = ({
   options,
@@ -24,6 +25,8 @@ const PopupMenu = ({
     setSelectedOption(option);
     setShowMenu(false);
   };
+  const { theme } = useTheme();
+  const isDark = theme.mode === 'dark';
   return (
     <ThemedView style={styles.container}>
       <Pressable onPress={handleToggleMenu} style={styles.selectPlaceholder}>
@@ -36,14 +39,29 @@ const PopupMenu = ({
       </Pressable>
 
       {showMenu && (
-        <ThemedView style={styles.menu}>
+        <ThemedView
+          style={[
+            styles.menu,
+            {
+              backgroundColor: theme.colors.background,
+              borderColor: theme.mode === 'light' ? '#D1D5DB' : '#374151',
+            },
+          ]}
+        >
           {options.map((option, index) => (
             <TouchableOpacity
               key={index}
               style={styles.option}
               onPress={() => handleMenuOption(option)}
             >
-              <ThemedText style={styles.optionText}>{option.label}</ThemedText>
+              <ThemedText
+                style={[
+                  styles.optionText,
+                  { color: isDark ? 'white' : '#4A5568' },
+                ]}
+              >
+                {option.label}
+              </ThemedText>
             </TouchableOpacity>
           ))}
         </ThemedView>
