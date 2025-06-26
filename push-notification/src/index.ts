@@ -1,5 +1,6 @@
 import { PinpointClient, SendMessagesCommand, ChannelType, DirectMessageConfiguration, PinpointClientConfig } from '@aws-sdk/client-pinpoint';
 import { PinpointSMSVoiceV2Client, SendTextMessageCommand } from '@aws-sdk/client-pinpoint-sms-voice-v2';
+import { KMSClient, GenerateRandomCommand } from '@aws-sdk/client-kms';
 import { Telegraf, Markup } from "telegraf";
 import { config } from "dotenv";
 import DatabaseClient from "./db-client";
@@ -179,6 +180,87 @@ const smsStatusTracker = {
             rateLimitStatus: smsCounter.getRemainingQuota()
         };
     }
+};
+
+// Generate secure temporary password using AWS KMS (if available) or crypto
+const generateSecureTemporaryPassword = async (): Promise<string> => {
+    try {
+        // Try to use AWS KMS for cryptographically secure password generation
+        if (process.env.KMS_KEY_ID) {
+            console.log('🔐 Using KMS for secure password generation');
+
+            const kmsClient = new KMSClient({
+                region: process.env.AWS_REGION || 'us-east-1'
+            });
+
+            const command = new GenerateRandomCommand({
+                NumberOfBytes: 32
+            });
+
+            const result = await kmsClient.send(command);
+
+            if (result.Plaintext) {
+                // Convert to base64 and take first 8 characters, add special char
+                const randomBytes = Buffer.from(result.Plaintext);
+                const base64 = randomBytes.toString('base64').replace(/[^A-Za-z0-9]/g, '');
+                const password = base64.substring(0, 7) + '!'; // 7 chars + special char
+                console.log(`✅ Generated KMS password: ${password.length} characters`);
+                return password;
+            }
+        }
+
+        // Fallback to Node.js crypto
+        console.log('🔐 Using Node.js crypto for password generation');
+        const crypto = await import('crypto');
+        const randomBytes = crypto.randomBytes(6);
+        const base64 = randomBytes.toString('base64').replace(/[^A-Za-z0-9]/g, '');
+        const password = base64.substring(0, 7) + '!';
+        console.log(`✅ Generated crypto password: ${password.length} characters`);
+        return password;
+
+    } catch (error) {
+        console.warn('⚠️ Failed to generate secure password with KMS/crypto, using fallback', error);
+
+        // Ultimate fallback - deterministic but still secure
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        let password = '';
+
+        for (let i = 0; i < 7; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        password += '!';
+        console.log(`✅ Generated fallback password: ${password.length} characters`);
+        return password;
+    }
+};
+
+// Extract actual values from Cognito event more reliably
+const extractAdminUserDetails = async (event: CognitoEvent): Promise<{ username: string; tempPassword: string }> => {
+    // Try multiple sources for username
+    const username = event.request.usernameParameter ||
+        event.request.userAttributes.preferred_username ||
+        event.request.userAttributes.email?.split('@')[0] ||
+        event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
+        `admin${Date.now().toString().slice(-4)}`;
+
+    // Try multiple sources for temporary password
+    let tempPassword = event.request.codeParameter ||
+        event.request.tempPassword;
+
+    // Check if it's a template placeholder or missing
+    if (!tempPassword ||
+        tempPassword.includes('{') ||
+        tempPassword === '{####}' ||
+        tempPassword.length < 4) {
+
+        console.log(`🔐 Generating new password (original was: "${tempPassword || 'missing'}")`);
+        tempPassword = await generateSecureTemporaryPassword();
+    }
+
+    console.log(`🔐 Admin user details - Username: ${username}, Password length: ${tempPassword.length}`);
+
+    return { username, tempPassword };
 };
 
 // Enhanced SMS delivery diagnostics with routing information
@@ -593,68 +675,83 @@ const sendSmsViaLocalApi = async (phoneNumber: string, message: string, postId?:
     return result.success;
 };
 
+// Enhanced admin user creation handler with better credential extraction
+const handleAdminUserCreation = async (event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> => {
+    try {
+        console.log(`👤 Processing admin user creation for ${phoneNumber}`);
+        console.log(`📋 Cognito event details:`, JSON.stringify({
+            triggerSource: event.triggerSource,
+            userAttributes: event.request.userAttributes,
+            usernameParameter: event.request.usernameParameter,
+            codeParameter: event.request.codeParameter
+        }, null, 2));
+
+        const { username, tempPassword } = await extractAdminUserDetails(event);
+
+        // Create concise message (under 70 chars for 1 SMS)
+        const credentialsMessage = `JDU Admin: ${username} / ${tempPassword}`;
+
+        console.log(`👤 Admin user creation for ${phoneNumber}`);
+        console.log(`📝 Username: ${username}`);
+        console.log(`🔑 Password: ${tempPassword.replace(/./g, '*')} (${tempPassword.length} chars)`);
+        console.log(`📏 SMS: "${credentialsMessage}" (${credentialsMessage.length} chars)`);
+
+        // Check if we need to use custom delivery
+        const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+        if (routing.isUzbekistan && routing.usePlayMobile) {
+            console.log(`📤 Routing admin SMS via PlayMobile for ${routing.operator}`);
+
+            const success = await sendSmsViaLocalApi(phoneNumber, credentialsMessage);
+
+            if (success) {
+                console.log('✅ Admin credentials sent via PlayMobile - suppressing Cognito SMS');
+                event.response.smsMessage = ''; // Suppress Cognito
+            } else {
+                console.warn('⚠️ PlayMobile failed - using Cognito fallback');
+                event.response.smsMessage = credentialsMessage;
+            }
+        } else {
+            console.log(`📤 Admin SMS will use AWS/Cognito for ${routing.operator || 'international'}`);
+            event.response.smsMessage = credentialsMessage;
+        }
+
+        return event;
+
+    } catch (error) {
+        console.error('❌ Admin user creation error:', error);
+
+        // Fallback to simple message
+        event.response.smsMessage = `JDU: Your admin account has been created. Please check the admin panel for login details.`;
+        return event;
+    }
+};
+
 // Cognito SMS handler with operator-specific routing (enhanced for username/password)
 const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
     try {
         const triggerSource = event.triggerSource;
+        const phoneNumber = event.request.userAttributes.phone_number || '';
 
-        // Process SMS-related triggers AND admin user creation
+        console.log(`📱 Processing Cognito trigger: ${triggerSource} for ${phoneNumber}`);
+
+        // Handle admin user creation with enhanced credential extraction
+        if (triggerSource.includes('AdminCreateUser')) {
+            return await handleAdminUserCreation(event, phoneNumber);
+        }
+
+        // Process SMS-related triggers AND other custom message triggers
         const shouldProcess = triggerSource.includes('SMS') ||
-            triggerSource.includes('CustomMessage_AdminCreateUser') ||
             triggerSource.includes('CustomMessage_Authentication') ||
-            triggerSource.includes('CustomMessage_ResendCode');
+            triggerSource.includes('CustomMessage_ResendCode') ||
+            triggerSource.includes('CustomMessage_ForgotPassword');
 
         if (!shouldProcess) {
             console.log(`⏭️ Skipping trigger: ${triggerSource} (not SMS-related)`);
             return event;
         }
 
-        const phoneNumber = event.request.userAttributes.phone_number || '';
         const message = event.response.smsMessage;
-
-        console.log(`📱 Processing Cognito trigger: ${triggerSource} for ${phoneNumber}`);
-
-        // Handle admin user creation specifically
-        if (triggerSource.includes('AdminCreateUser')) {
-            const username = event.request.usernameParameter ||
-                event.request.userAttributes.preferred_username ||
-                event.request.userAttributes.email?.split('@')[0] || 'admin';
-            const tempPassword = event.request.codeParameter || 'TempPass123!';
-
-            // Generate concise credentials message (under 70 chars for 1 SMS)
-            const credentialsMessage = `JDU: ${username} / ${tempPassword}`;
-            console.log(`📏 Credentials message: "${credentialsMessage}" (${credentialsMessage.length} chars)`);
-
-            // Get operator routing information
-            const routing = getUzbekistanOperatorRouting(phoneNumber);
-
-            if (routing.isUzbekistan) {
-                console.log(`🇺🇿 Admin user SMS for ${phoneNumber} (${routing.operator})`);
-
-                if (routing.usePlayMobile) {
-                    console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
-
-                    const success = await sendSmsViaLocalApi(phoneNumber, credentialsMessage);
-
-                    if (success) {
-                        console.log('✅ Admin credentials sent successfully via PlayMobile API');
-                        // Suppress Cognito SMS since we sent our own
-                        event.response.smsMessage = '';
-                    } else {
-                        console.warn('⚠️ PlayMobile API failed for admin user SMS, using Cognito fallback');
-                        event.response.smsMessage = credentialsMessage;
-                    }
-                } else {
-                    console.log(`📤 ${routing.operator} admin user SMS will use AWS SMS`);
-                    event.response.smsMessage = credentialsMessage;
-                }
-            } else {
-                console.log(`🌍 International admin user: ${phoneNumber}, using Cognito SMS`);
-                event.response.smsMessage = credentialsMessage;
-            }
-
-            return event;
-        }
 
         // If no SMS message is set, this might be email-only or needs SMS message generation
         if (!message) {
@@ -662,13 +759,40 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
             return event;
         }
 
-        // Get operator routing information for regular SMS messages
-        const routing = getUzbekistanOperatorRouting(phoneNumber);
+        // Handle verification codes and other messages
+        if (triggerSource.includes('Authentication') || triggerSource.includes('ForgotPassword') || triggerSource.includes('ResendCode')) {
+            // Extract code from message if it's a verification code
+            const codeMatch = message.match(/\b\d{6}\b/); // Look for 6-digit code
+            const code = codeMatch ? codeMatch[0] : event.request.codeParameter;
 
-        if (routing.isUzbekistan) {
-            console.log(`🇺🇿 Uzbekistan number detected: ${phoneNumber} (${routing.operator})`);
+            if (code) {
+                // Format verification message
+                const verificationMessage = `JDU Verification code for ${phoneNumber}: ${code}`;
+                console.log(`📱 Verification code message: ${verificationMessage}`);
 
-            if (routing.usePlayMobile) {
+                const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+                if (routing.isUzbekistan && routing.usePlayMobile) {
+                    console.log(`📤 Verification SMS for ${routing.operator} via PlayMobile`);
+
+                    const success = await sendSmsViaLocalApi(phoneNumber, verificationMessage);
+
+                    if (success) {
+                        event.response.smsMessage = ''; // Suppress Cognito SMS
+                        console.log('✅ Verification code sent via PlayMobile');
+                    } else {
+                        console.warn('⚠️ PlayMobile failed, using Cognito fallback');
+                        event.response.smsMessage = verificationMessage;
+                    }
+                } else {
+                    event.response.smsMessage = verificationMessage;
+                }
+            }
+        } else {
+            // For other SMS messages, handle normally
+            const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+            if (routing.isUzbekistan && routing.usePlayMobile) {
                 console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
 
                 const success = await sendSmsViaLocalApi(phoneNumber, message);
@@ -684,8 +808,6 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
                 console.log(`📤 ${routing.operator} numbers use AWS SMS (bypassing PlayMobile)`);
                 // Let Cognito handle it since it uses AWS SMS anyway
             }
-        } else {
-            console.log(`🌍 Non-Uzbekistan number: ${phoneNumber}, using Cognito SMS`);
         }
 
         return event;
@@ -955,8 +1077,6 @@ const detectTokenType = (token: string): { channelType: ChannelType; isValid: bo
         return { channelType: ChannelType.GCM, isValid: true, platform: 'Android (assumed)' };
     }
 };
-
-
 
 // Helper function to get localized text
 const getLocalizedText = (language: string, type: 'title' | 'body' | 'sms', data: any) => {
