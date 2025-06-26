@@ -1,5 +1,5 @@
 export default interface ScheduledPost {
-  id: string;
+  id: number;
   title: string;
   description: string;
   priority: string;
