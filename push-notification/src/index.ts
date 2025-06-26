@@ -56,6 +56,8 @@ interface CognitoEvent {
         };
         codeParameter?: string;
         tempPassword?: string;
+        usernameParameter?: string;
+        linkParameter?: string;
     };
     response: {
         smsMessage: string;
@@ -614,10 +616,10 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
 
         // Handle admin user creation specifically
         if (triggerSource.includes('AdminCreateUser')) {
-            const username = event.request.userAttributes.preferred_username ||
+            const username = event.request.usernameParameter ||
+                event.request.userAttributes.preferred_username ||
                 event.request.userAttributes.email?.split('@')[0] || 'admin';
-            const tempPassword = event.request.tempPassword ||
-                event.request.userAttributes.temp_password || 'TempPass123!';
+            const tempPassword = event.request.codeParameter || 'TempPass123!';
 
             // Generate concise credentials message (under 70 chars for 1 SMS)
             const credentialsMessage = `JDU: ${username} / ${tempPassword}`;
