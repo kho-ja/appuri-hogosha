@@ -512,16 +512,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
             }}
           />
         )}
-
-        {/* Loading indicator for infinite scroll */}
-        {(isFetchingNextPage || isLoadingMoreOffline) && (
-          <View style={styles.loadingSpinner}>
-            <ActivityIndicator
-              size='small'
-              color={theme.mode === 'dark' ? '#4a90a4' : '#005678'}
-            />
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
