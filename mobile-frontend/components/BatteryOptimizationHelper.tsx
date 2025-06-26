@@ -92,14 +92,16 @@ const BatteryOptimizationHelper: React.FC<
           <Button
             title={i18n[language].openSettings}
             onPress={handleOpenSettings}
-            buttonStyle={[styles.button, styles.primaryButton]}
+            containerStyle={styles.buttonContainerStyle}
+            buttonStyle={[styles.primaryButton]}
             titleStyle={styles.buttonText}
           />
 
           <Button
             title={i18n[language].deviceGuide}
             onPress={openManufacturerGuide}
-            buttonStyle={[styles.button, styles.secondaryButton]}
+            containerStyle={styles.buttonContainerStyle}
+            buttonStyle={[styles.secondaryButton]}
             titleStyle={[styles.buttonText, styles.secondaryButtonText]}
           />
         </View>
@@ -165,11 +167,16 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: '#005678',
+    borderRadius: 8,
+  },
+  buttonContainerStyle: {
+    flex: 1,
   },
   secondaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#005678',
+    borderRadius: 8,
   },
   buttonText: {
     fontSize: 14,
