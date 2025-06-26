@@ -54,9 +54,13 @@ interface CognitoEvent {
             phone_number: string;
             [key: string]: string;
         };
+        codeParameter?: string;
+        tempPassword?: string;
     };
     response: {
         smsMessage: string;
+        emailMessage?: string;
+        emailSubject?: string;
     };
 }
 
@@ -385,7 +389,7 @@ const mapPlayMobilePriority = (priority: 'low' | 'normal' | 'high' | 'realtime')
     return priorityMap[priority] || 'normal';
 };
 
-// Enhanced PlayMobile SMS API with Ucell-specific formatting
+// Enhanced PlayMobile SMS API with character limit protection
 const sendSmsViaLocalApiWithProtection = async (
     phoneNumber: string,
     message: string,
@@ -393,6 +397,17 @@ const sendSmsViaLocalApiWithProtection = async (
     priority: 'low' | 'normal' | 'high' | 'realtime' = 'normal'
 ): Promise<{ success: boolean, reason?: string, messageId?: string }> => {
     try {
+        // 0. Check character limits to prevent unnecessary costs
+        const charCheck = checkSmsCharacterLimit(message);
+        console.log(`📏 Message analysis:`);
+        console.log(`   📝 Length: ${message.length} chars`);
+        console.log(`   🔤 Encoding: ${charCheck.encoding}`);
+        console.log(`   📊 Parts: ${charCheck.parts} (${charCheck.cost})`);
+
+        if (!charCheck.withinLimit) {
+            console.warn(`⚠️ WARNING: Message will cost ${charCheck.cost} - Consider shortening!`);
+        }
+
         // 1. Check rate limits
         if (!smsCounter.canSend()) {
             const quota = smsCounter.getRemainingQuota();
@@ -458,45 +473,27 @@ const sendSmsViaLocalApiWithProtection = async (
 
         console.log(`📶 Detected operator: ${detectedOperator} (${operatorCode}) for ${formattedPhone}`);
 
-        // 5. Special handling for Ucell numbers based on their documentation
-        if (['91', '93', '94'].includes(operatorCode)) {
-            console.log(`🔧 Applying Ucell-specific formatting for ${formattedPhone}`);
-
-            // Ucell documentation shows they expect "9989Yxxxxxxx" format
-            // Let's ensure our number matches this exactly
-            if (!['91', '93', '94'].includes(formattedPhone.substring(3, 5))) {
-                console.error(`❌ Invalid Ucell prefix: ${operatorCode}. Expected: 91, 93, or 94`);
-                return { success: false, reason: `Invalid Ucell prefix: ${operatorCode}` };
-            }
-        }
-
-        // 6. Generate unique message ID (max 40 chars as per API docs)
-        const messageId = postId ? `JDUParent${postId}` : `JDUCognito${Date.now()}`;
+        // 5. Generate unique message ID (max 40 chars as per API docs)
+        const messageId = postId ? `JDU${postId}` : `JDU${Date.now()}`;
         if (messageId.length > 40) {
             console.error(`❌ Message ID too long: ${messageId.length} chars`);
             return { success: false, reason: 'Message ID too long' };
         }
 
-        // 7. Prepare headers
+        // 6. Prepare headers
         const headers = {
             'Content-Type': 'application/json; charset=UTF-8',
             'Authorization': 'Basic ' + Buffer.from(process.env.BROKER_AUTH).toString('base64')
         };
 
-        // 8. Enhanced message structure with correct PlayMobile format (no priority to avoid errors)
+        // 7. Simple message structure (removed priority to avoid errors)
         const requestBody = {
-            "timing": {
-                "send-evenly": 1,                    // Distribute sending evenly
-                "allowed-starttime": "08:00",        // Send only during business hours
-                "allowed-endtime": "22:00"           // Avoid night sending
-            },
             "messages": [{
-                "recipient": formattedPhone,         // Ensure exact format from API docs
+                "recipient": formattedPhone,
                 "message-id": messageId,
-                // Remove priority temporarily to test if this fixes the error
                 "sms": {
-                    "originator": "JDU",             // Keep originator simple for compatibility
-                    "ttl": SMS_RATE_LIMIT.MESSAGE_TTL,   // 1 hour TTL
+                    "originator": "JDU",
+                    "ttl": SMS_RATE_LIMIT.MESSAGE_TTL,
                     "content": {
                         "text": message
                     }
@@ -507,9 +504,9 @@ const sendSmsViaLocalApiWithProtection = async (
         console.log(`📤 Sending SMS via PlayMobile API:`);
         console.log(`   📞 To: ${formattedPhone} (${detectedOperator})`);
         console.log(`   🆔 Message ID: ${messageId}`);
-        console.log(`   ⚡ Priority: ${priority}`);
+        console.log(`   💰 Cost: ${charCheck.cost}`);
 
-        // 9. Enhanced retry logic with better error handling
+        // 8. Enhanced retry logic
         let lastError: string | undefined;
         for (let attempt = 1; attempt <= SMS_RATE_LIMIT.MAX_RETRIES; attempt++) {
             try {
@@ -519,14 +516,13 @@ const sendSmsViaLocalApiWithProtection = async (
                     body: JSON.stringify(requestBody),
                 });
 
-                // Enhanced response handling
                 const responseText = await response.text();
                 console.log(`📥 PlayMobile API Response (attempt ${attempt}):`);
                 console.log(`   🔢 Status: ${response.status}`);
                 console.log(`   📄 Body: ${responseText}`);
 
                 if (response.status === 200) {
-                    console.log(`✅ PlayMobile SMS sent successfully to ${detectedOperator} number`);
+                    console.log(`✅ PlayMobile SMS sent successfully to ${detectedOperator} (${charCheck.cost})`);
 
                     // Increment counter only on success
                     smsCounter.increment();
@@ -545,39 +541,29 @@ const sendSmsViaLocalApiWithProtection = async (
                         };
                     }
 
-                    // PlayMobile uses "error-code" (dash) not "error_code" (underscore)
                     const errorCode = String(errorResponse['error-code'] || errorResponse.error_code || 'unknown');
                     const errorDescription = errorResponse['error-description'] || errorResponse.error_description || 'No description provided';
 
                     console.error(`❌ PlayMobile API Error (${errorCode}): ${errorDescription}`);
 
-                    // Handle specific errors with operator context
-                    if (errorCode === '104') {
-                        return { success: false, reason: 'Invalid priority - check priority values (use: normal, high, realtime)' };
-                    } else if (errorCode === '105') {
+                    // Handle specific errors
+                    if (errorCode === '105') {
                         return { success: false, reason: 'Too many message IDs - reduce batch size' };
                     } else if (errorCode === '102') {
                         return { success: false, reason: 'Account blocked - contact PlayMobile support immediately' };
                     } else if (errorCode === '202') {
                         return { success: false, reason: `Empty recipient - check ${detectedOperator} number format` };
-                    } else if (errorCode === '205') {
-                        return { success: false, reason: 'Empty message-id - system error' };
-                    } else if (errorCode === '401') {
-                        return { success: false, reason: 'Empty originator - check API configuration' };
-                    } else if (errorCode === '404') {
-                        return { success: false, reason: 'Empty content - message text missing' };
                     }
 
                     lastError = `API Error ${errorCode}: ${errorDescription}`;
 
-                    // Don't retry on validation errors (including priority errors)
-                    if (['104', '202', '205', '401', '404'].includes(errorCode)) {
+                    // Don't retry on validation errors
+                    if (['202', '205', '401', '404'].includes(errorCode)) {
                         break;
                     }
                 } else {
                     lastError = `HTTP ${response.status}: ${responseText}`;
                     console.error(`❌ PlayMobile API returned status: ${response.status} (attempt ${attempt})`);
-                    console.error(`   📄 Response: ${responseText}`);
                 }
             } catch (error) {
                 lastError = error instanceof Error ? error.message : String(error);
@@ -605,7 +591,7 @@ const sendSmsViaLocalApi = async (phoneNumber: string, message: string, postId?:
     return result.success;
 };
 
-// Cognito SMS handler with operator-specific routing
+// Cognito SMS handler with operator-specific routing (enhanced for username/password)
 const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
     try {
         const triggerSource = event.triggerSource;
@@ -626,42 +612,51 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
 
         console.log(`📱 Processing Cognito trigger: ${triggerSource} for ${phoneNumber}`);
 
+        // Handle admin user creation specifically
+        if (triggerSource.includes('AdminCreateUser')) {
+            const username = event.request.userAttributes.preferred_username ||
+                event.request.userAttributes.email?.split('@')[0] || 'admin';
+            const tempPassword = event.request.tempPassword ||
+                event.request.userAttributes.temp_password || 'TempPass123!';
+
+            // Generate concise credentials message (under 70 chars for 1 SMS)
+            const credentialsMessage = `JDU: ${username} / ${tempPassword}`;
+            console.log(`📏 Credentials message: "${credentialsMessage}" (${credentialsMessage.length} chars)`);
+
+            // Get operator routing information
+            const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+            if (routing.isUzbekistan) {
+                console.log(`🇺🇿 Admin user SMS for ${phoneNumber} (${routing.operator})`);
+
+                if (routing.usePlayMobile) {
+                    console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
+
+                    const success = await sendSmsViaLocalApi(phoneNumber, credentialsMessage);
+
+                    if (success) {
+                        console.log('✅ Admin credentials sent successfully via PlayMobile API');
+                        // Suppress Cognito SMS since we sent our own
+                        event.response.smsMessage = '';
+                    } else {
+                        console.warn('⚠️ PlayMobile API failed for admin user SMS, using Cognito fallback');
+                        event.response.smsMessage = credentialsMessage;
+                    }
+                } else {
+                    console.log(`📤 ${routing.operator} admin user SMS will use AWS SMS`);
+                    event.response.smsMessage = credentialsMessage;
+                }
+            } else {
+                console.log(`🌍 International admin user: ${phoneNumber}, using Cognito SMS`);
+                event.response.smsMessage = credentialsMessage;
+            }
+
+            return event;
+        }
+
         // If no SMS message is set, this might be email-only or needs SMS message generation
         if (!message) {
             console.log(`ℹ️ No SMS message provided for ${triggerSource}`);
-
-            // For admin user creation, we might need to generate a message
-            if (triggerSource.includes('AdminCreateUser')) {
-                // Generate a temporary password message or welcome message
-                const tempMessage = `Welcome to JDU! Your account has been created. Please check your email for login details.`;
-                console.log(`📝 Generated SMS message for admin user creation`);
-
-                // Get operator routing information
-                const routing = getUzbekistanOperatorRouting(phoneNumber);
-
-                if (routing.isUzbekistan) {
-                    console.log(`🇺🇿 Admin user SMS for ${phoneNumber} (${routing.operator})`);
-
-                    if (routing.usePlayMobile) {
-                        console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
-
-                        const success = await sendSmsViaLocalApi(phoneNumber, tempMessage);
-
-                        if (success) {
-                            console.log('✅ Admin user SMS sent successfully via PlayMobile API');
-                            // Don't suppress Cognito SMS for admin creation, let it handle email
-                        } else {
-                            console.warn('⚠️ PlayMobile API failed for admin user SMS');
-                        }
-                    } else {
-                        console.log(`📤 ${routing.operator} admin user SMS will use AWS SMS`);
-                        // Let Cognito handle it since we're not intercepting admin messages
-                    }
-                }
-
-                return event; // Don't modify the original message for admin creation
-            }
-
             return event;
         }
 
@@ -697,6 +692,57 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
         console.error('❌ Cognito SMS handler error:', error);
         return event;
     }
+};
+
+// Character limit protection function
+const checkSmsCharacterLimit = (message: string): { withinLimit: boolean; encoding: string; parts: number; cost: string } => {
+    // Check if message contains non-GSM characters (will use Unicode encoding)
+    const nonGsmChars = /[''""—`^{}\\[~\]|€]/;
+    const hasUnicode = /[^\x00-\x7F]/.test(message); // Contains non-ASCII characters
+
+    let encoding: string;
+    let singleSmsLimit: number;
+    let twoSmsLimit: number;
+    let threeSmsLimit: number;
+
+    if (hasUnicode || nonGsmChars.test(message)) {
+        // Unicode encoding (Cyrillic, extended characters)
+        encoding = 'Unicode';
+        singleSmsLimit = 70;
+        twoSmsLimit = 134;
+        threeSmsLimit = 201;
+    } else {
+        // GSM encoding (Latin, 7-bit)
+        encoding = 'GSM-7';
+        singleSmsLimit = 160;
+        twoSmsLimit = 306;
+        threeSmsLimit = 459;
+    }
+
+    const length = message.length;
+    let parts: number;
+    let cost: string;
+
+    if (length <= singleSmsLimit) {
+        parts = 1;
+        cost = '1 SMS';
+    } else if (length <= twoSmsLimit) {
+        parts = 2;
+        cost = '2 SMS (Double cost!)';
+    } else if (length <= threeSmsLimit) {
+        parts = 3;
+        cost = '3 SMS (Triple cost!)';
+    } else {
+        parts = Math.ceil(length / (encoding === 'Unicode' ? 67 : 153)); // Multipart limits
+        cost = `${parts} SMS (${parts}x cost!)`;
+    }
+
+    return {
+        withinLimit: parts === 1,
+        encoding,
+        parts,
+        cost
+    };
 };
 
 // AWS SMS sending function (for non-Uzbekistan numbers)
@@ -907,6 +953,8 @@ const detectTokenType = (token: string): { channelType: ChannelType; isValid: bo
         return { channelType: ChannelType.GCM, isValid: true, platform: 'Android (assumed)' };
     }
 };
+
+
 
 // Helper function to get localized text
 const getLocalizedText = (language: string, type: 'title' | 'body' | 'sms', data: any) => {
@@ -1431,6 +1479,7 @@ export const handler = async (event: any, context: any) => {
                                 brokerUrl: process.env.BROKER_URL || 'NOT_SET',
                                 brokerAuthLength: process.env.BROKER_AUTH ? process.env.BROKER_AUTH.length : 0,
                                 brokerAuthSample: process.env.BROKER_AUTH ? process.env.BROKER_AUTH.substring(0, 10) + '...' : 'NOT_SET'
+
                             },
                             timestamp: new Date().toISOString()
                         })
