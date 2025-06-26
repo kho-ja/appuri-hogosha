@@ -610,17 +610,62 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
     try {
         const triggerSource = event.triggerSource;
 
-        // Only process SMS-related triggers
-        if (!triggerSource.includes('SMS')) {
+        // Process SMS-related triggers AND admin user creation
+        const shouldProcess = triggerSource.includes('SMS') ||
+            triggerSource.includes('CustomMessage_AdminCreateUser') ||
+            triggerSource.includes('CustomMessage_Authentication') ||
+            triggerSource.includes('CustomMessage_ResendCode');
+
+        if (!shouldProcess) {
+            console.log(`⏭️ Skipping trigger: ${triggerSource} (not SMS-related)`);
             return event;
         }
 
         const phoneNumber = event.request.userAttributes.phone_number || '';
         const message = event.response.smsMessage;
 
-        console.log(`📱 Processing Cognito SMS for ${phoneNumber}`);
+        console.log(`📱 Processing Cognito trigger: ${triggerSource} for ${phoneNumber}`);
 
-        // Get operator routing information
+        // If no SMS message is set, this might be email-only or needs SMS message generation
+        if (!message) {
+            console.log(`ℹ️ No SMS message provided for ${triggerSource}`);
+
+            // For admin user creation, we might need to generate a message
+            if (triggerSource.includes('AdminCreateUser')) {
+                // Generate a temporary password message or welcome message
+                const tempMessage = `Welcome to JDU! Your account has been created. Please check your email for login details.`;
+                console.log(`📝 Generated SMS message for admin user creation`);
+
+                // Get operator routing information
+                const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+                if (routing.isUzbekistan) {
+                    console.log(`🇺🇿 Admin user SMS for ${phoneNumber} (${routing.operator})`);
+
+                    if (routing.usePlayMobile) {
+                        console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
+
+                        const success = await sendSmsViaLocalApi(phoneNumber, tempMessage);
+
+                        if (success) {
+                            console.log('✅ Admin user SMS sent successfully via PlayMobile API');
+                            // Don't suppress Cognito SMS for admin creation, let it handle email
+                        } else {
+                            console.warn('⚠️ PlayMobile API failed for admin user SMS');
+                        }
+                    } else {
+                        console.log(`📤 ${routing.operator} admin user SMS will use AWS SMS`);
+                        // Let Cognito handle it since we're not intercepting admin messages
+                    }
+                }
+
+                return event; // Don't modify the original message for admin creation
+            }
+
+            return event;
+        }
+
+        // Get operator routing information for regular SMS messages
         const routing = getUzbekistanOperatorRouting(phoneNumber);
 
         if (routing.isUzbekistan) {
