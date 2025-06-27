@@ -66,9 +66,10 @@ interface CognitoEvent {
         usernameParameter?: string;
         linkParameter?: string;
         code?: string; // Added for CustomSMSSender triggers
+        type?: string; // Added for CustomSMSSender triggers
     };
-    response: {
-        smsMessage: string;
+    response?: { // Made optional since CustomSMSSender doesn't have it initially
+        smsMessage?: string;
         emailMessage?: string;
         emailSubject?: string;
     };
@@ -413,28 +414,40 @@ const verifyPlayMobileCredentials = async (): Promise<{ valid: boolean, reason: 
     }
 };
 
-// Event source detection
+// FIXED: Enhanced event source detection with better Cognito handling
 const detectEventSource = (event: any): 'COGNITO' | 'API_GATEWAY' | 'DIRECT_INVOKE' | 'SCHEDULED' | 'UNKNOWN' => {
-    // Cognito trigger
-    if (event.triggerSource && event.request && event.response) {
+    // Enhanced Cognito trigger detection
+    if (event.triggerSource) {
+        // All Cognito events have triggerSource
+        console.log(`🔍 Detected Cognito trigger: ${event.triggerSource}`);
         return 'COGNITO';
     }
 
     // API Gateway
     if (event.httpMethod && event.path) {
+        console.log(`🔍 Detected API Gateway: ${event.httpMethod} ${event.path}`);
         return 'API_GATEWAY';
     }
 
     // Direct Lambda invoke
     if (event.action) {
+        console.log(`🔍 Detected Direct Invoke: ${event.action}`);
         return 'DIRECT_INVOKE';
     }
 
     // Scheduled task (EventBridge)
     if (event.source && event['detail-type']) {
+        console.log(`🔍 Detected Scheduled task: ${event.source}`);
         return 'SCHEDULED';
     }
 
+    // Additional Cognito patterns (backup detection)
+    if (event.request && (event.userPoolId || event.userName || event.region)) {
+        console.log(`🔍 Detected Cognito (backup detection)`);
+        return 'COGNITO';
+    }
+
+    console.log(`🔍 Unknown event type - treating as default notification task`);
     return 'UNKNOWN';
 };
 
@@ -727,13 +740,23 @@ const handleAdminUserCreation = async (event: CognitoEvent, phoneNumber: string)
 
             if (success) {
                 console.log('✅ Admin credentials sent via PlayMobile - suppressing Cognito SMS');
+                // Initialize response if it doesn't exist
+                if (!event.response) {
+                    event.response = {};
+                }
                 event.response.smsMessage = ''; // Suppress Cognito
             } else {
                 console.warn('⚠️ PlayMobile failed - using Cognito fallback');
+                if (!event.response) {
+                    event.response = {};
+                }
                 event.response.smsMessage = credentialsMessage;
             }
         } else {
             console.log(`📤 Admin SMS will use AWS/Cognito for ${routing.operator || 'international'}`);
+            if (!event.response) {
+                event.response = {};
+            }
             event.response.smsMessage = credentialsMessage;
         }
 
@@ -743,6 +766,9 @@ const handleAdminUserCreation = async (event: CognitoEvent, phoneNumber: string)
         console.error('❌ Admin user creation error:', error);
 
         // Fallback to simple message
+        if (!event.response) {
+            event.response = {};
+        }
         event.response.smsMessage = `JDU: Your admin account has been created. Please check the admin panel for login details.`;
         return event;
     }
@@ -821,7 +847,10 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
                     await sendSmsViaAws(phoneNumber, message);
                 }
 
-                // IMPORTANT: Suppress Cognito's fallback SMS since we sent our own
+                // IMPORTANT: Initialize response object and suppress Cognito's fallback SMS since we sent our own
+                if (!event.response) {
+                    event.response = {};
+                }
                 event.response.smsMessage = '';
 
                 return event; // Required for Cognito
@@ -840,7 +869,7 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
             console.log(`👤 Legacy admin user creation trigger detected`);
 
             // Extract from Cognito's generated message
-            const originalMessage = event.response.smsMessage;
+            const originalMessage = event.response?.smsMessage;
             console.log(`📧 Original Cognito message: "${originalMessage}"`);
 
             if (originalMessage && !originalMessage.includes('{')) {
@@ -885,11 +914,20 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
                         const success = await sendSmsViaLocalApi(phoneNumber, credentialsMessage);
 
                         if (success) {
+                            if (!event.response) {
+                                event.response = {};
+                            }
                             event.response.smsMessage = '';
                         } else {
+                            if (!event.response) {
+                                event.response = {};
+                            }
                             event.response.smsMessage = credentialsMessage;
                         }
                     } else {
+                        if (!event.response) {
+                            event.response = {};
+                        }
                         event.response.smsMessage = credentialsMessage;
                     }
                 } else {
@@ -911,7 +949,7 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
             return event;
         }
 
-        const message = event.response.smsMessage;
+        const message = event.response?.smsMessage;
 
         if (!message) {
             console.log(`ℹ️ No SMS message provided for ${triggerSource}`);
@@ -933,13 +971,22 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
                     const success = await sendSmsViaLocalApi(phoneNumber, verificationMessage);
 
                     if (success) {
+                        if (!event.response) {
+                            event.response = {};
+                        }
                         event.response.smsMessage = '';
                         console.log('✅ Verification code sent via PlayMobile');
                     } else {
                         console.warn('⚠️ PlayMobile failed, using Cognito fallback');
+                        if (!event.response) {
+                            event.response = {};
+                        }
                         event.response.smsMessage = verificationMessage;
                     }
                 } else {
+                    if (!event.response) {
+                        event.response = {};
+                    }
                     event.response.smsMessage = verificationMessage;
                 }
             }
@@ -951,6 +998,9 @@ const handleCognitoSms = async (event: CognitoEvent): Promise<CognitoEvent> => {
                 const success = await sendSmsViaLocalApi(phoneNumber, message);
 
                 if (success) {
+                    if (!event.response) {
+                        event.response = {};
+                    }
                     event.response.smsMessage = '';
                     console.log('✅ SMS sent successfully via PlayMobile API');
                 } else {
