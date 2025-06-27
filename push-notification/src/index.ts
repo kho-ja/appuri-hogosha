@@ -1,6 +1,7 @@
 import { PinpointClient, SendMessagesCommand, ChannelType, DirectMessageConfiguration, PinpointClientConfig } from '@aws-sdk/client-pinpoint';
 import { PinpointSMSVoiceV2Client, SendTextMessageCommand } from '@aws-sdk/client-pinpoint-sms-voice-v2';
 import { KMSClient, GenerateRandomCommand, DecryptCommand } from '@aws-sdk/client-kms';
+import { KmsKeyringNode, buildClient, CommitmentPolicy } from '@aws-crypto/client-node';
 import { Telegraf, Markup } from "telegraf";
 import { config } from "dotenv";
 import DatabaseClient from "./db-client";
@@ -46,6 +47,10 @@ const bot = new Telegraf(process.env.BOT_TOKEN!);
 
 // Get DB instance
 const DB = new DatabaseClient();
+
+// Initialise AWS Encryption SDK client + keyring once per container
+const { decrypt } = buildClient(CommitmentPolicy.REQUIRE_ENCRYPT_ALLOW_DECRYPT);
+const keyring = new KmsKeyringNode({ keyIds: [process.env.KMS_KEY_ARN || process.env.KMS_KEY_ID!] });
 
 // Types for different event sources
 interface CognitoEvent {
@@ -187,32 +192,16 @@ const smsStatusTracker = {
 // KMS decrypt function for CustomSMSSender
 const decryptCode = async (encryptedCode: string): Promise<string> => {
     try {
-        const kmsClient = new KMSClient({
-            region: process.env.AWS_REGION || 'us-east-1'
-        });
-
-        const cipher = Buffer.from(encryptedCode, 'base64');
-
-        const command = new DecryptCommand({
-            CiphertextBlob: cipher,
-            KeyId: process.env.KMS_KEY_ARN || process.env.KMS_KEY_ID
-        });
-
-        const result = await kmsClient.send(command);
-
-        if (result.Plaintext) {
-            const plaintext = Buffer.from(result.Plaintext).toString('utf8');
-            console.log(`🔓 KMS decryption successful, code length: ${plaintext.length}`);
-            return plaintext;
-        }
-
-        throw new Error('KMS decryption returned empty plaintext');
-
-    } catch (error) {
-        console.error('❌ KMS decryption failed:', error);
-        throw error;
+        const cipherBytes = Buffer.from(encryptedCode, 'base64');
+        const { plaintext } = await decrypt(keyring, cipherBytes);
+        // Plain‑text returned may include HTML escapes for < and > in passwords
+        return Buffer.from(plaintext).toString('utf8').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    } catch (err) {
+        console.error('❌ KMS/EncryptionSDK decryption failed:', err);
+        throw err;
     }
 };
+
 
 // Generate secure temporary password using AWS KMS (if available) or crypto
 const generateSecureTemporaryPassword = async (): Promise<string> => {

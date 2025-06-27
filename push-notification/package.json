@@ -24,6 +24,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@aws-crypto/client-node": "^4.2.1",
 		"@aws-sdk/client-kms": "^3.800.0",
 		"@aws-sdk/client-pinpoint": "^3.800.0",
 		"@aws-sdk/client-pinpoint-sms-voice-v2": "^3.800.0",
@@ -35,7 +36,7 @@
 		"@types/node": "^22.0.0",
 		"nodemon": "^3.1.0",
 		"rimraf": "^5.0.5",
-		"typescript": "^5.4.5",
-		"ts-node": "^10.9.1"
+		"ts-node": "^10.9.1",
+		"typescript": "^5.4.5"
 	}
 }
