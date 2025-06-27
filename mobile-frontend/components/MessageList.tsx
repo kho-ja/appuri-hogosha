@@ -233,9 +233,26 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   }, [db, studentId]);
 
   // Fetch messages from API (online mode)
-  const fetchMessagesFromAPI = async ({ pageParam = {} }) => {
+  const fetchMessagesFromAPI = async ({
+    pageParam,
+  }: {
+    pageParam: { last_post_id: number; last_sent_at: string | null } | null;
+  }) => {
     if (!student) return [];
-    const { last_post_id = 0, last_sent_at = null }: any = pageParam || {};
+
+    const requestBody: any = {
+      student_id: student.id,
+      read_post_ids: readButNotSentMessageIDs.current,
+    };
+
+    // Add pagination parameters if we have them
+    if (pageParam) {
+      requestBody.last_post_id = pageParam.last_post_id;
+      requestBody.last_sent_at = pageParam.last_sent_at;
+    } else {
+      requestBody.last_post_id = 0;
+    }
+
     try {
       const response = await fetch(`${apiUrl}/posts`, {
         method: 'POST',
@@ -243,12 +260,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session}`,
         },
-        body: JSON.stringify({
-          student_id: student.id,
-          last_post_id,
-          last_sent_at,
-          read_post_ids: readButNotSentMessageIDs.current,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.status === 401) {
@@ -297,10 +309,14 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   } = useInfiniteQuery({
     queryKey: ['messages', student?.id],
     queryFn: fetchMessagesFromAPI,
-    initialPageParam: 0,
+    initialPageParam: null,
     getNextPageParam: lastPage => {
       if (lastPage && lastPage.length > 0) {
-        return lastPage[lastPage.length - 1].id;
+        const lastMessage = lastPage[lastPage.length - 1];
+        return {
+          last_post_id: lastMessage.id,
+          last_sent_at: lastMessage.sent_time,
+        };
       }
       return undefined;
     },
@@ -308,8 +324,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     retry: 2,
     retryDelay: 1000,
   });
-
-  console.log('MessageList data:', data);
 
   // Update refetch ref when it changes
   useEffect(() => {
@@ -511,16 +525,6 @@ const MessageList = ({ studentId }: { studentId: number }) => {
               color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
             }}
           />
-        )}
-
-        {/* Loading indicator for infinite scroll */}
-        {(isFetchingNextPage || isLoadingMoreOffline) && (
-          <View style={styles.loadingSpinner}>
-            <ActivityIndicator
-              size='small'
-              color={theme.mode === 'dark' ? '#4a90a4' : '#005678'}
-            />
-          </View>
         )}
       </ScrollView>
     </SafeAreaView>
