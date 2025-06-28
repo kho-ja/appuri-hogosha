@@ -3,35 +3,6 @@ import { smsCounter, SMS_RATE_LIMIT } from '../../config/rate-limits';
 import { checkSmsCharacterLimit, getUzbekistanOperatorRouting } from '../../utils/validation';
 import { SmsResult } from '../../types/responses';
 
-// Utility function to sanitize sensitive content for logging
-const sanitizeForLogging = (message: string): string => {
-    // Check if message contains sensitive patterns (passwords, OTPs, credentials)
-    const sensitivePatterns = [
-        /\b\d{4,8}\b/,  // Potential OTP codes
-        /password/i,
-        /pass/i,
-        /code/i,
-        /verification/i,
-        /pin\b/i,
-        /admin/i,
-        /login/i,
-        /credential/i
-    ];
-
-    const containsSensitiveData = sensitivePatterns.some(pattern => pattern.test(message));
-
-    if (containsSensitiveData) {
-        return '[SENSITIVE_CONTENT_REDACTED]';
-    }
-
-    // For non-sensitive messages, show partial content for debugging
-    if (message.length > 50) {
-        return `${message.substring(0, 30)}...[truncated]`;
-    }
-
-    return message;
-};
-
 export class PlayMobileService {
     async sendSmsWithProtection(
         phoneNumber: string,
@@ -42,13 +13,9 @@ export class PlayMobileService {
         try {
             // 0. Check character limits to prevent unnecessary costs
             const charCheck = checkSmsCharacterLimit(message);
-            const sanitizedMessage = sanitizeForLogging(message);
-
             console.log(`📏 Message analysis:`);
-            console.log(`   📝 Length: ${message.length} chars`);
             console.log(`   🔤 Encoding: ${charCheck.encoding}`);
             console.log(`   📊 Parts: ${charCheck.parts} (${charCheck.cost})`);
-            console.log(`   💬 Content: ${sanitizedMessage}`);
 
             if (!charCheck.withinLimit) {
                 console.warn(`⚠️ WARNING: Message will cost ${charCheck.cost} - Consider shortening!`);
@@ -118,9 +85,7 @@ export class PlayMobileService {
 
             console.log(`📤 Sending SMS via PlayMobile API:`);
             console.log(`   📞 To: ${formattedPhone} (${routing.operator})`);
-            console.log(`   🆔 Message ID: ${messageId}`);
             console.log(`   💰 Cost: ${charCheck.cost}`);
-            console.log(`   📄 Content: ${sanitizedMessage}`);
 
             // 8. Enhanced retry logic
             let lastError: string | undefined;
