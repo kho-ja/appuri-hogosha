@@ -4,6 +4,13 @@ import { KmsDecryptionService } from '../../services/aws/kms';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
 
+// Utility function to sanitize sensitive content for logging
+const sanitizeCredentialsForLogging = (credentials: string): string => {
+    if (!credentials) return '[EMPTY]';
+    if (credentials.length <= 4) return '[REDACTED]';
+    return `${credentials.substring(0, 2)}***${credentials.substring(credentials.length - 2)}`;
+};
+
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
 
@@ -58,16 +65,19 @@ export class CognitoHandler {
             const username = this.extractUsername(event);
 
             if (event.triggerSource.includes('AdminCreateUser')) {
-                message = `JDU Admin: ${username} / ${decryptedCode}`;
-                console.log(`👤 Admin user creation - Username: ${username}, Password: ${decryptedCode.replace(/./g, '*')}`);
+                message = `JDU Parent: ${username} / ${decryptedCode}`;
+                const sanitizedPassword = sanitizeCredentialsForLogging(decryptedCode);
+                console.log(`👤 Parent user creation - Username: ${username}, Password: ${sanitizedPassword}`);
             } else if (event.triggerSource.includes('Authentication') ||
                 event.triggerSource.includes('ForgotPassword') ||
                 event.triggerSource.includes('ResendCode')) {
                 message = `JDU Verification: ${decryptedCode}`;
-                console.log(`🔢 Verification code: ${decryptedCode}`);
+                const sanitizedCode = sanitizeCredentialsForLogging(decryptedCode);
+                console.log(`🔢 Verification code: ${sanitizedCode}`);
             } else {
                 message = `JDU Code: ${decryptedCode}`;
-                console.log(`📝 Generic code: ${decryptedCode}`);
+                const sanitizedCode = sanitizeCredentialsForLogging(decryptedCode);
+                console.log(`📝 Generic code: ${sanitizedCode}`);
             }
 
             await this.routeMessage(phoneNumber, message);
@@ -91,7 +101,7 @@ export class CognitoHandler {
         console.log(`👤 Legacy admin user creation trigger detected`);
 
         const originalMessage = event.response?.smsMessage;
-        console.log(`📧 Original Cognito message: "${originalMessage}"`);
+        console.log(`📧 Original Cognito message pattern detected (content redacted for security)`);
 
         if (originalMessage && !originalMessage.includes('{')) {
             const username = this.extractUsername(event);
@@ -99,7 +109,8 @@ export class CognitoHandler {
 
             if (extractedPassword) {
                 const credentialsMessage = `JDU Admin: ${username} / ${extractedPassword}`;
-                console.log(`✅ Legacy: Extracted credentials successfully`);
+                const sanitizedPassword = sanitizeCredentialsForLogging(extractedPassword);
+                console.log(`✅ Legacy: Extracted credentials successfully - Username: ${username}, Password: ${sanitizedPassword}`);
 
                 const success = await this.routeMessage(phoneNumber, credentialsMessage);
 
@@ -140,7 +151,8 @@ export class CognitoHandler {
 
             if (code) {
                 const verificationMessage = `JDU Verification: ${code}`;
-                console.log(`📱 Verification code message: ${verificationMessage}`);
+                const sanitizedCode = sanitizeCredentialsForLogging(code);
+                console.log(`📱 Verification code message prepared with code: ${sanitizedCode}`);
 
                 const success = await this.routeMessage(phoneNumber, verificationMessage);
 
@@ -150,7 +162,8 @@ export class CognitoHandler {
                 event.response.smsMessage = success ? '' : verificationMessage;
             }
         } else {
-            // For other SMS messages, handle routing
+            // For other SMS messages, handle routing (avoid logging the full message for security)
+            console.log(`📤 Processing other SMS message type: ${event.triggerSource}`);
             const success = await this.routeMessage(phoneNumber, message);
 
             if (success) {
@@ -180,10 +193,10 @@ export class CognitoHandler {
     }
 
     private extractUsername(event: CognitoEvent): string {
-        return event.request.usernameParameter ||
+        return event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
+            event.request.usernameParameter ||
             event.request.userAttributes.preferred_username ||
             event.request.userAttributes.email?.split('@')[0] ||
-            event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
             `admin${Date.now().toString().slice(-4)}`;
     }
 
