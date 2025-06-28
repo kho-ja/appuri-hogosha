@@ -14,6 +14,9 @@ export const ENVIRONMENT = {
     KMS_KEY_ID: process.env.KMS_KEY_ID!,
     KMS_KEY_ARN: process.env.KMS_KEY_ARN,
 
+    // Cognito Configuration
+    COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID!,
+
     // AWS Credentials (for local development)
     LOCAL_AWS_ACCESS_KEY_ID: process.env.LOCAL_AWS_ACCESS_KEY_ID,
     LOCAL_AWS_SECRET_ACCESS_KEY: process.env.LOCAL_AWS_SECRET_ACCESS_KEY,
@@ -41,4 +44,5 @@ export const getEnvironmentInfo = () => ({
     hasPlayMobileConfig: !!(ENVIRONMENT.BROKER_URL && ENVIRONMENT.BROKER_AUTH),
     hasTelegramConfig: !!ENVIRONMENT.BOT_TOKEN,
     hasLocalAwsCredentials: !!(ENVIRONMENT.LOCAL_AWS_ACCESS_KEY_ID && ENVIRONMENT.LOCAL_AWS_SECRET_ACCESS_KEY),
+    hasCognitoConfig: !!ENVIRONMENT.COGNITO_USER_POOL_ID,
 });

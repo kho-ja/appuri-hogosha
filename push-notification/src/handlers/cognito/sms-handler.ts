@@ -1,17 +1,21 @@
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { KmsDecryptionService } from '../../services/aws/kms';
+import { CognitoTemplateService } from '../../services/cognito/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
 
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
+    private templateService: CognitoTemplateService;
 
     constructor(
         private playMobileService: PlayMobileService,
-        private awsSmsService: AwsSmsService
+        private awsSmsService: AwsSmsService,
+        userPoolId?: string
     ) {
         this.kmsService = new KmsDecryptionService();
+        this.templateService = new CognitoTemplateService(userPoolId);
     }
 
     async handleCognitoSms(event: CognitoEvent): Promise<CognitoEvent> {
@@ -19,20 +23,15 @@ export class CognitoHandler {
             const triggerSource = event.triggerSource;
             const phoneNumber = event.request.userAttributes.phone_number || '';
 
-            console.log(`📱 Processing Cognito trigger: ${triggerSource} for ${phoneNumber}`);
+            console.log(`📱 Processing Cognito trigger: ${triggerSource} for phone ending in ${phoneNumber.slice(-4)}`);
 
-            // Handle CustomSMSSender triggers (modern approach with real OTP/password)
+            // Handle CustomSMSSender triggers (modern approach with encrypted codes)
             if (triggerSource.startsWith('CustomSMSSender_')) {
-                return await this.handleCustomSMSSender(event, phoneNumber);
+                return await this.handleCustomSMSSenderWithTemplates(event, phoneNumber);
             }
 
-            // Handle legacy Custom Message triggers
-            if (triggerSource === 'CustomMessage_AdminCreateUser') {
-                return await this.handleLegacyAdminCreateUser(event, phoneNumber);
-            }
-
-            // Handle other SMS triggers (verification codes, etc.)
-            return await this.handleOtherSMSTriggers(event, phoneNumber);
+            // Handle other triggers using templates
+            return await this.handleTemplateBasedSms(event, phoneNumber);
 
         } catch (error) {
             console.error('❌ Cognito SMS handler error:', error);
@@ -40,7 +39,7 @@ export class CognitoHandler {
         }
     }
 
-    private async handleCustomSMSSender(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
+    private async handleCustomSMSSenderWithTemplates(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
         console.log(`🔐 CustomSMSSender trigger detected: ${event.triggerSource}`);
 
         try {
@@ -51,29 +50,27 @@ export class CognitoHandler {
 
             console.log(`🔓 Decrypting code from Cognito...`);
             const decryptedCode = await this.kmsService.decryptCode(encryptedCode);
-            console.log(`✅ Code decrypted successfully: ${decryptedCode.length} characters`);
+            console.log(`✅ Code decrypted successfully`);
 
-            // Determine message type based on trigger
-            let message = '';
-            const username = this.extractUsername(event);
+            // Fetch the appropriate template from Cognito User Pool
+            console.log(`📋 Fetching template for trigger: ${event.triggerSource}`);
+            const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
 
-            if (event.triggerSource.includes('AdminCreateUser')) {
-                message = `JDU Parent: ${username} / [CREDENTIAL_REDACTED]`;
-            } else if (event.triggerSource.includes('Authentication') ||
-                event.triggerSource.includes('ForgotPassword') ||
-                event.triggerSource.includes('ResendCode')) {
-                message = `JDU Verification: ${decryptedCode}`;
-            } else {
-                message = `JDU Code: ${decryptedCode}`;
+            if (!template) {
+                console.warn(`⚠️ No template found for ${event.triggerSource}, using fallback`);
+                return await this.handleFallbackMessage(event, phoneNumber, decryptedCode);
             }
 
-            // For actual SMS sending, use the real decrypted code but don't log it
-            let actualMessage = message;
-            if (event.triggerSource.includes('AdminCreateUser')) {
-                actualMessage = `JDU Parent: ${username} / ${decryptedCode}`;
-            }
+            // Prepare placeholders for template processing
+            const placeholders = this.buildPlaceholders(event, decryptedCode);
 
-            await this.routeMessage(phoneNumber, actualMessage);
+            // Process the template with actual values
+            const message = this.templateService.processTemplate(template, placeholders);
+
+            console.log(`📤 Using Cognito template: "${template}"`);
+            console.log(`📤 Processed message: [CONTENT_REDACTED]`);
+
+            await this.routeMessage(phoneNumber, message);
 
             // Suppress Cognito's fallback SMS since we sent our own
             if (!event.response) {
@@ -83,89 +80,122 @@ export class CognitoHandler {
 
             return event;
 
-        } catch (decryptError) {
-            console.error('❌ CustomSMSSender decryption failed:', decryptError);
-            console.warn('⚠️ Falling back to Cognito SMS due to decryption failure');
+        } catch (error) {
+            console.error('❌ CustomSMSSender processing failed:', error);
+            console.warn('⚠️ Falling back to Cognito SMS due to error');
             return event;
         }
     }
 
-    private async handleLegacyAdminCreateUser(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
-        console.log(`👤 Legacy admin user creation trigger detected`);
-
-        const originalMessage = event.response?.smsMessage;
-
-        if (originalMessage && !originalMessage.includes('{')) {
-            const username = this.extractUsername(event);
-            const extractedPassword = this.extractPassword(originalMessage, event);
-
-            if (extractedPassword) {
-                const credentialsMessage = `JDU Parent: ${username} / ${extractedPassword}`;
-                console.log(`✅ Legacy: Extracted credentials successfully for Username: ${username}`);
-
-                const success = await this.routeMessage(phoneNumber, credentialsMessage);
-
-                if (!event.response) {
-                    event.response = {};
-                }
-                event.response.smsMessage = success ? '' : credentialsMessage;
-            }
-        }
-
-        return event;
-    }
-
-    private async handleOtherSMSTriggers(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
+    private async handleTemplateBasedSms(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
         const shouldProcess = event.triggerSource.includes('SMS') ||
-            event.triggerSource.includes('CustomMessage_Authentication') ||
-            event.triggerSource.includes('CustomMessage_ResendCode') ||
-            event.triggerSource.includes('CustomMessage_ForgotPassword');
+            event.triggerSource.includes('CustomMessage_');
 
         if (!shouldProcess) {
             console.log(`⏭️ Skipping trigger: ${event.triggerSource} (not SMS-related)`);
             return event;
         }
 
-        const message = event.response?.smsMessage;
-        if (!message) {
-            console.log(`ℹ️ No SMS message provided for ${event.triggerSource}`);
-            return event;
-        }
+        try {
+            // Try to get template from Cognito User Pool first
+            const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
 
-        // Handle verification codes
-        if (event.triggerSource.includes('Authentication') ||
-            event.triggerSource.includes('ForgotPassword') ||
-            event.triggerSource.includes('ResendCode')) {
+            if (template) {
+                // Use Cognito template
+                const placeholders = this.buildPlaceholders(event);
+                const message = this.templateService.processTemplate(template, placeholders);
 
-            const codeMatch = message.match(/\b\d{6}\b/);
-            const code = codeMatch ? codeMatch[0] : event.request.codeParameter;
+                console.log(`📋 Using Cognito User Pool template for ${event.triggerSource}`);
+                const success = await this.routeMessage(phoneNumber, message);
 
-            if (code) {
-                const verificationMessage = `JDU Verification: ${code}`;
-
-                const success = await this.routeMessage(phoneNumber, verificationMessage);
-
-                if (!event.response) {
-                    event.response = {};
+                if (success) {
+                    if (!event.response) {
+                        event.response = {};
+                    }
+                    event.response.smsMessage = '';
+                    console.log('✅ SMS sent successfully using Cognito template');
+                } else {
+                    console.warn('⚠️ Custom routing failed, letting Cognito handle SMS');
                 }
-                event.response.smsMessage = success ? '' : verificationMessage;
-            }
-        } else {
-            // For other SMS messages, handle routing
-            const success = await this.routeMessage(phoneNumber, message);
-
-            if (success) {
-                if (!event.response) {
-                    event.response = {};
-                }
-                event.response.smsMessage = '';
-                console.log('✅ SMS sent successfully via PlayMobile API');
             } else {
-                console.warn('⚠️ PlayMobile API failed, falling back to Cognito SMS');
+                // Fallback to Cognito's prepared message
+                const message = event.response?.smsMessage;
+                if (message) {
+                    console.log(`📱 Using Cognito prepared message for ${event.triggerSource}`);
+                    const success = await this.routeMessage(phoneNumber, message);
+
+                    if (success) {
+                        if (!event.response) {
+                            event.response = {};
+                        }
+                        event.response.smsMessage = '';
+                        console.log('✅ SMS sent successfully via custom routing');
+                    }
+                }
             }
+
+        } catch (templateError) {
+            console.error('❌ Template processing error:', templateError);
+            console.warn('⚠️ Falling back to default Cognito behavior');
         }
 
         return event;
+    }
+
+    private async handleFallbackMessage(event: CognitoEvent, phoneNumber: string, decryptedCode: string): Promise<CognitoEvent> {
+        console.log('🔄 Using fallback message templates');
+
+        let message = '';
+        const username = this.extractUsername(event);
+
+        // Fallback templates (AWS default format)
+        switch (event.triggerSource) {
+            case 'CustomSMSSender_AdminCreateUser':
+                message = `Your username is ${username} and temporary password is ${decryptedCode}`;
+                break;
+            case 'CustomSMSSender_Authentication':
+            case 'CustomSMSSender_ForgotPassword':
+            case 'CustomSMSSender_ResendCode':
+                message = `Your verification code is ${decryptedCode}`;
+                break;
+            default:
+                message = `Your code is ${decryptedCode}`;
+                break;
+        }
+
+        await this.routeMessage(phoneNumber, message);
+
+        if (!event.response) {
+            event.response = {};
+        }
+        event.response.smsMessage = '';
+
+        return event;
+    }
+
+    private buildPlaceholders(event: CognitoEvent, decryptedCode?: string): Record<string, string> {
+        const placeholders: Record<string, string> = {};
+
+        // Add code placeholder
+        if (decryptedCode) {
+            placeholders.code = decryptedCode;
+        } else if (event.request.codeParameter) {
+            placeholders.code = event.request.codeParameter;
+        }
+
+        // Add username placeholder
+        if (event.request.usernameParameter) {
+            placeholders.username = event.request.usernameParameter;
+        } else {
+            placeholders.username = this.extractUsername(event);
+        }
+
+        // Add user attributes
+        Object.entries(event.request.userAttributes || {}).forEach(([key, value]) => {
+            placeholders[key] = value;
+        });
+
+        return placeholders;
     }
 
     private async routeMessage(phoneNumber: string, message: string): Promise<boolean> {
@@ -181,32 +211,28 @@ export class CognitoHandler {
     }
 
     private extractUsername(event: CognitoEvent): string {
-        return event.request.userAttributes.phone_number ||
-            event.request.usernameParameter ||
-            event.request.userAttributes.preferred_username;
+        return event.request.usernameParameter ||
+            event.request.userAttributes.preferred_username ||
+            event.request.userAttributes.email?.split('@')[0] ||
+            event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
+            `user${Date.now().toString().slice(-4)}`;
     }
 
-    private extractPassword(originalMessage: string, event: CognitoEvent): string {
-        const passwordPatterns = [
-            /password is ([^\s]+)/i,
-            /password: ([^\s]+)/i,
-            /Password is ([^\s\n]+)/i,
-            /temporary password is ([^\s]+)/i,
-            /temp password: ([^\s]+)/i
-        ];
+    /**
+     * Validate that required templates are configured
+     */
+    async validateTemplateConfiguration(): Promise<void> {
+        try {
+            const validation = await this.templateService.validateTemplateConfiguration();
 
-        for (const pattern of passwordPatterns) {
-            const match = originalMessage.match(pattern);
-            if (match && match[1] && !match[1].includes('{')) {
-                return match[1].replace(/[.,;]$/, '');
+            if (!validation.valid) {
+                console.warn('⚠️ Missing Cognito message templates:', validation.missing);
+                console.warn('📝 Please configure these templates in AWS Console > Cognito User Pool > Message Templates');
+            } else {
+                console.log('✅ All required Cognito message templates are configured');
             }
+        } catch (error) {
+            console.warn('⚠️ Could not validate template configuration:', error);
         }
-
-        if (event.request.codeParameter && !event.request.codeParameter.includes('{')) {
-            return event.request.codeParameter;
-        }
-
-        // Simple fallback if no password found (rare case)
-        return `Temp${Date.now().toString().slice(-6)}!`;
     }
 }
