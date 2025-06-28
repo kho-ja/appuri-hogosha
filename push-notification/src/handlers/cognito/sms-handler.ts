@@ -58,7 +58,7 @@ export class CognitoHandler {
             const username = this.extractUsername(event);
 
             if (event.triggerSource.includes('AdminCreateUser')) {
-                message = `JDU Admin: ${username} / [CREDENTIAL_REDACTED]`;
+                message = `JDU Parent: ${username} / [CREDENTIAL_REDACTED]`;
             } else if (event.triggerSource.includes('Authentication') ||
                 event.triggerSource.includes('ForgotPassword') ||
                 event.triggerSource.includes('ResendCode')) {
@@ -70,7 +70,7 @@ export class CognitoHandler {
             // For actual SMS sending, use the real decrypted code but don't log it
             let actualMessage = message;
             if (event.triggerSource.includes('AdminCreateUser')) {
-                actualMessage = `JDU Admin: ${username} / ${decryptedCode}`;
+                actualMessage = `JDU Parent: ${username} / ${decryptedCode}`;
             }
 
             await this.routeMessage(phoneNumber, actualMessage);
@@ -100,7 +100,7 @@ export class CognitoHandler {
             const extractedPassword = this.extractPassword(originalMessage, event);
 
             if (extractedPassword) {
-                const credentialsMessage = `JDU Admin: ${username} / ${extractedPassword}`;
+                const credentialsMessage = `JDU Parent: ${username} / ${extractedPassword}`;
                 console.log(`✅ Legacy: Extracted credentials successfully for Username: ${username}`);
 
                 const success = await this.routeMessage(phoneNumber, credentialsMessage);
@@ -181,7 +181,7 @@ export class CognitoHandler {
     }
 
     private extractUsername(event: CognitoEvent): string {
-        return event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
+        return event.request.userAttributes.phone_number ||
             event.request.usernameParameter ||
             event.request.userAttributes.preferred_username;
     }
