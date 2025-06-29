@@ -266,10 +266,10 @@ export class CognitoHandler {
     }
 
     private extractUsername(event: CognitoEvent): string {
-        return event.request.usernameParameter ||
+        return event.request.userAttributes.phone_number ||
+            event.request.usernameParameter ||
             event.request.userAttributes.preferred_username ||
             event.request.userAttributes.email?.split('@')[0] ||
-            event.request.userAttributes.phone_number?.replace(/[^0-9]/g, '').slice(-8) ||
             `user${Date.now().toString().slice(-4)}`;
     }
 
