@@ -25,21 +25,36 @@ export class CognitoHandler {
 
             console.log(`📱 Processing Cognito trigger: ${triggerSource} for phone ending in ${phoneNumber.slice(-4)}`);
 
+            // Check if it's an international number first
+            const routing = getUzbekistanOperatorRouting(phoneNumber);
+
+            if (!routing.isUzbekistan) {
+                console.log(`🌍 International number detected (${phoneNumber.slice(0, 4)}***), letting Cognito handle it`);
+                return event; // Let Cognito handle international numbers
+            }
+
+            console.log(`🇺🇿 Uzbekistan number detected: ${routing.operator}`);
+
             // Handle CustomSMSSender triggers (modern approach with encrypted codes)
             if (triggerSource.startsWith('CustomSMSSender_')) {
-                return await this.handleCustomSMSSenderWithTemplates(event, phoneNumber);
+                return await this.handleCustomSMSSenderWithFallback(event, phoneNumber, routing);
             }
 
             // Handle other triggers using templates
-            return await this.handleTemplateBasedSms(event, phoneNumber);
+            return await this.handleTemplateBasedSmsWithFallback(event, phoneNumber, routing);
 
         } catch (error) {
             console.error('❌ Cognito SMS handler error:', error);
-            return event;
+            console.warn('⚠️ Falling back to Cognito due to handler error');
+            return event; // Let Cognito handle on any error
         }
     }
 
-    private async handleCustomSMSSenderWithTemplates(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
+    private async handleCustomSMSSenderWithFallback(
+        event: CognitoEvent,
+        phoneNumber: string,
+        routing: any
+    ): Promise<CognitoEvent> {
         console.log(`🔐 CustomSMSSender trigger detected: ${event.triggerSource}`);
 
         try {
@@ -56,38 +71,46 @@ export class CognitoHandler {
             console.log(`📋 Fetching template for trigger: ${event.triggerSource}`);
             const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
 
-            if (!template) {
+            let message: string;
+            if (template) {
+                // Prepare placeholders for template processing
+                const placeholders = this.buildPlaceholders(event, decryptedCode);
+                message = this.templateService.processTemplate(template, placeholders);
+                console.log(`📤 Using Cognito template: "${template}"`);
+            } else {
                 console.warn(`⚠️ No template found for ${event.triggerSource}, using fallback`);
-                return await this.handleFallbackMessage(event, phoneNumber, decryptedCode);
+                message = this.buildFallbackMessage(event, decryptedCode);
             }
 
-            // Prepare placeholders for template processing
-            const placeholders = this.buildPlaceholders(event, decryptedCode);
+            // Try to send via local routing with fallback
+            const success = await this.routeMessageWithFallback(phoneNumber, message, routing);
 
-            // Process the template with actual values
-            const message = this.templateService.processTemplate(template, placeholders);
-
-            console.log(`📤 Using Cognito template: "${template}"`);
-            console.log(`📤 Processed message: [CONTENT_REDACTED]`);
-
-            await this.routeMessage(phoneNumber, message);
-
-            // Suppress Cognito's fallback SMS since we sent our own
-            if (!event.response) {
-                event.response = {};
+            if (success) {
+                // Suppress Cognito's fallback SMS since we sent our own
+                if (!event.response) {
+                    event.response = {};
+                }
+                event.response.smsMessage = '';
+                console.log('✅ SMS sent successfully via custom routing');
+            } else {
+                console.warn('⚠️ Custom routing failed completely, letting Cognito handle SMS');
+                // Don't modify event.response - let Cognito send it
             }
-            event.response.smsMessage = '';
 
             return event;
 
         } catch (error) {
             console.error('❌ CustomSMSSender processing failed:', error);
             console.warn('⚠️ Falling back to Cognito SMS due to error');
-            return event;
+            return event; // Let Cognito handle on error
         }
     }
 
-    private async handleTemplateBasedSms(event: CognitoEvent, phoneNumber: string): Promise<CognitoEvent> {
+    private async handleTemplateBasedSmsWithFallback(
+        event: CognitoEvent,
+        phoneNumber: string,
+        routing: any
+    ): Promise<CognitoEvent> {
         const shouldProcess = event.triggerSource.includes('SMS') ||
             event.triggerSource.includes('CustomMessage_');
 
@@ -97,40 +120,37 @@ export class CognitoHandler {
         }
 
         try {
+            let message: string | undefined;
+
             // Try to get template from Cognito User Pool first
             const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
 
             if (template) {
                 // Use Cognito template
                 const placeholders = this.buildPlaceholders(event);
-                const message = this.templateService.processTemplate(template, placeholders);
-
+                message = this.templateService.processTemplate(template, placeholders);
                 console.log(`📋 Using Cognito User Pool template for ${event.triggerSource}`);
-                const success = await this.routeMessage(phoneNumber, message);
+            } else {
+                // Fallback to Cognito's prepared message
+                message = event.response?.smsMessage;
+                if (message) {
+                    console.log(`📱 Using Cognito prepared message for ${event.triggerSource}`);
+                }
+            }
+
+            if (message) {
+                const success = await this.routeMessageWithFallback(phoneNumber, message, routing);
 
                 if (success) {
+                    // Suppress Cognito's SMS since we sent our own
                     if (!event.response) {
                         event.response = {};
                     }
                     event.response.smsMessage = '';
-                    console.log('✅ SMS sent successfully using Cognito template');
+                    console.log('✅ SMS sent successfully via custom routing');
                 } else {
                     console.warn('⚠️ Custom routing failed, letting Cognito handle SMS');
-                }
-            } else {
-                // Fallback to Cognito's prepared message
-                const message = event.response?.smsMessage;
-                if (message) {
-                    console.log(`📱 Using Cognito prepared message for ${event.triggerSource}`);
-                    const success = await this.routeMessage(phoneNumber, message);
-
-                    if (success) {
-                        if (!event.response) {
-                            event.response = {};
-                        }
-                        event.response.smsMessage = '';
-                        console.log('✅ SMS sent successfully via custom routing');
-                    }
+                    // Don't modify event.response - let Cognito send it
                 }
             }
 
@@ -142,35 +162,82 @@ export class CognitoHandler {
         return event;
     }
 
-    private async handleFallbackMessage(event: CognitoEvent, phoneNumber: string, decryptedCode: string): Promise<CognitoEvent> {
-        console.log('🔄 Using fallback message templates');
+    private async routeMessageWithFallback(
+        phoneNumber: string,
+        message: string,
+        routing: any
+    ): Promise<boolean> {
+        try {
+            if (routing.usePlayMobile) {
+                console.log(`📤 Attempting to send via PlayMobile (${routing.operator})`);
+                const success = await this.playMobileService.sendSms(phoneNumber, message);
 
-        let message = '';
+                if (success) {
+                    console.log(`✅ PlayMobile delivery successful for ${routing.operator}`);
+                    return true;
+                } else {
+                    console.warn(`⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`);
+
+                    // Try AWS as fallback for PlayMobile failure
+                    return await this.tryAwsFallback(phoneNumber, message, 'PlayMobile failure');
+                }
+            } else {
+                // Ucell bypass - use AWS directly
+                console.log(`📤 Attempting to send via AWS (${routing.operator} bypass)`);
+                const success = await this.awsSmsService.sendSms(phoneNumber, message);
+
+                if (success) {
+                    console.log(`✅ AWS delivery successful for ${routing.operator}`);
+                    return true;
+                } else {
+                    console.warn(`⚠️ AWS delivery failed for ${routing.operator}`);
+                    return false; // No more fallbacks for AWS failure
+                }
+            }
+        } catch (error) {
+            console.error('❌ Routing error:', error);
+
+            if (routing.usePlayMobile) {
+                console.warn('⚠️ PlayMobile error, trying AWS fallback');
+                return await this.tryAwsFallback(phoneNumber, message, 'PlayMobile error');
+            }
+
+            return false;
+        }
+    }
+
+    private async tryAwsFallback(phoneNumber: string, message: string, reason: string): Promise<boolean> {
+        try {
+            console.log(`🔄 AWS fallback attempt (reason: ${reason})`);
+            const success = await this.awsSmsService.sendSms(phoneNumber, message);
+
+            if (success) {
+                console.log(`✅ AWS fallback successful`);
+                return true;
+            } else {
+                console.warn(`⚠️ AWS fallback also failed`);
+                return false;
+            }
+        } catch (fallbackError) {
+            console.error('❌ AWS fallback error:', fallbackError);
+            return false;
+        }
+    }
+
+    private buildFallbackMessage(event: CognitoEvent, decryptedCode: string): string {
         const username = this.extractUsername(event);
 
         // Fallback templates (AWS default format)
         switch (event.triggerSource) {
             case 'CustomSMSSender_AdminCreateUser':
-                message = `Your username is ${username} and temporary password is ${decryptedCode}`;
-                break;
+                return `Your username is ${username} and temporary password is ${decryptedCode}`;
             case 'CustomSMSSender_Authentication':
             case 'CustomSMSSender_ForgotPassword':
             case 'CustomSMSSender_ResendCode':
-                message = `Your verification code is ${decryptedCode}`;
-                break;
+                return `Your verification code is ${decryptedCode}`;
             default:
-                message = `Your code is ${decryptedCode}`;
-                break;
+                return `Your code is ${decryptedCode}`;
         }
-
-        await this.routeMessage(phoneNumber, message);
-
-        if (!event.response) {
-            event.response = {};
-        }
-        event.response.smsMessage = '';
-
-        return event;
     }
 
     private buildPlaceholders(event: CognitoEvent, decryptedCode?: string): Record<string, string> {
@@ -196,18 +263,6 @@ export class CognitoHandler {
         });
 
         return placeholders;
-    }
-
-    private async routeMessage(phoneNumber: string, message: string): Promise<boolean> {
-        const routing = getUzbekistanOperatorRouting(phoneNumber);
-
-        if (routing.isUzbekistan && routing.usePlayMobile) {
-            console.log(`📤 Routing ${routing.operator} via PlayMobile`);
-            return await this.playMobileService.sendSms(phoneNumber, message);
-        } else {
-            console.log(`📤 Routing ${routing.operator || 'international'} via AWS`);
-            return await this.awsSmsService.sendSms(phoneNumber, message);
-        }
     }
 
     private extractUsername(event: CognitoEvent): string {
