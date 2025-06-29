@@ -46,7 +46,11 @@ export default function Root() {
         >
           <ThemeProvider theme={memoizedTheme}>
             {/* Global status bar - handles everything automatically */}
-            <StatusBar style='auto' backgroundColor='transparent' translucent />
+            <StatusBar
+              style='light'
+              backgroundColor='transparent'
+              translucent
+            />
             <ScreenWrapper style={{ flex: 1 }}>
               <NetworkProvider>
                 <I18nProvider>
