@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 190-cognito-sms-fix
     paths:
       - "push-notification/**"
 
