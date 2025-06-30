@@ -14,6 +14,7 @@ export default function useTableQuery(defaultPerPage = 10) {
     const [search, setSearch] = useState(searchFromUrl);
     const [perPage, setPerPage] = useState(perPageFromUrl);
     const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+    const [selectedScheduledPosts, setSelectedScheduledPosts] = useState<number[]>([]);
     const allSelectedIds = selectedPosts;
     const handlePerPageChange = (value: number) => {
         setPerPage(value);
@@ -60,5 +61,7 @@ export default function useTableQuery(defaultPerPage = 10) {
         setSelectedPosts,
         allSelectedIds,
         handlePerPageChange,
+        selectedScheduledPosts,
+        setSelectedScheduledPosts,
     };
 }

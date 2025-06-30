@@ -1,51 +1,193 @@
-# Firebase Cloud Message Connection Manual
-#### This guide will walk you through setting up Firebase Cloud Messaging (FCM) with clear, step-by-step instructions. By the end, you’ll have an FCM-enabled Firebase project with your private key saved and ready for server authentication.
+# Push Notification Service - Refactored
 
----
-## **1. Firebase Account Setup**
-If you don’t already have a Firebase account, follow these steps to create one:
+This is the refactored version of the push notification service, broken down into modular, maintainable components.
 
-1. Go to Firebase’s official website: Visit Firebase: https://firebase.google.com/ 
-2. Click “Get Started”: This will prompt you to log in with an existing Google account or create a new one if you don’t have one yet.
-3. Sign In or Create a Google Account: Complete the login or account creation process. Once logged in, you’ll be redirected to the Firebase Console.
+## 📁 Project Structure
 
----
+```
+push-notification/
+├── src/
+│   ├── config/                    # Configuration management
+│   │   ├── aws.ts                 # AWS client configuration
+│   │   ├── environment.ts         # Environment variables
+│   │   └── rate-limits.ts         # Rate limiting configuration
+│   │
+│   ├── services/                  # Business logic services
+│   │   ├── aws/
+│   │   │   ├── pinpoint.ts        # AWS Pinpoint push notifications
+│   │   │   ├── sms.ts             # AWS SMS service
+│   │   │   └── kms.ts             # KMS encryption/decryption
+│   │   ├── playmobile/
+│   │   │   ├── api.ts             # PlayMobile SMS API
+│   │   │   └── credentials.ts     # Credential verification
+│   │   ├── telegram/
+│   │   │   └── bot.ts             # Telegram bot service
+│   │   └── database/
+│   │       ├── client.ts          # Database connection
+│   │       └── queries.ts         # Database queries
+│   │
+│   ├── handlers/                  # Event handlers
+│   │   ├── cognito/
+│   │   │   └── sms-handler.ts     # Cognito SMS triggers
+│   │   ├── api/
+│   │   │   └── sms-api.ts         # API Gateway handlers
+│   │   └── notifications/
+│   │       └── push-notifications.ts # Notification processing
+│   │
+│   ├── utils/                     # Utility functions
+│   │   ├── token-detection.ts     # Push token analysis
+│   │   ├── localization.ts        # Multi-language support
+│   │   ├── validation.ts          # Phone number validation
+│   │   ├── event-detection.ts     # Event source detection
+│   │   └── diagnostics.ts         # SMS diagnostics
+│   │
+│   ├── types/                     # TypeScript definitions
+│   │   ├── events.ts              # Event type definitions
+│   │   ├── responses.ts           # Response type definitions
+│   │   └── notifications.ts       # Notification types
+│   │
+│   ├── index.ts                   # Main entry point
+│   ├── debug-push-notifications.ts # Debug utilities
+│   └── analyze-db-tokens.ts       # Token analysis tool
+│
+├── package.json
+├── tsconfig.json
+├── nodemon.json
+└── README.md
+```
 
-## **2. Firebase Project Creation**
-To create a new Firebase project:
-1. Click on `Get started with a Firebase project`.
-2. Name Your Project: Enter a unique name for your project
-3. Enable Google Analytics (Optional): Decide if you want to use Google Analytics. It’s optional but can be helpful for tracking app statistics.
-4. Click “Continue”: Follow the prompts, especially if you’ve enabled Analytics.
-5. Create the Project: Click `Create Project` and wait for the setup to complete.
-6. Wait for the project to be created.
-7. Go to Your Project Dashboard: Once the project is created, click `Continue` to enter your project dashboard
+## 🔧 Key Improvements
 
-## **3. Enabling Firebase Cloud Messaging (FCM)**
-Now, let’s enable FCM in your Firebase project.
+### 1. **Separation of Concerns**
+- Each service has its own module with clear responsibilities
+- Configuration is centralized and environment-aware
+- Business logic is separated from infrastructure concerns
 
-1. Go to the Firebase Console: Visit the Firebase Console: https://console.firebase.google.com/
-2. Click on your project.
-3. Navigate to the Cloud Messaging tab: Click on the Cloud Messaging tab in the left sidebar. `Run > Messaging`
-4. FCM should be enabled automatically. If you see additional setup prompts, follow them to enable FCM.
-5. For FCM to work with Android, you need to add an Android app to your Firebase project to generate the google-services.json configuration file. To do this, click on the Android icon.
-6. Enter the Android package name: Enter the package name. 
-7. Click `Register App` to complete the app registration.
-8. Click on `Next` to download the `google-services.json` file, but you can skip this step for now because you can download it later.
-9. Choose the `Kotlin DSL` option.
-10. Click on `Next` to complete the setup.
-11. Click on `Continue to console` to go back to the Firebase Console.
+### 2. **Type Safety**
+- Comprehensive TypeScript definitions
+- Proper interfaces for all data structures
+- Better IDE support and error catching
 
-## **4. Connecting Firebase to an Existing React Native Project**
+### 3. **Maintainability**
+- Smaller, focused files (each under 200 lines)
+- Clear module boundaries
+- Easy to locate and modify specific functionality
 
-## **5. Downloading the Private Key (Service Account Key)**
-The Firebase private key is needed for server-side authentication with Firebase. Follow these steps to download it:
+### 4. **Testability**
+- Services can be easily mocked and tested in isolation
+- Dependency injection patterns
+- Clear input/output contracts
 
-1. Go to Project Settings: Click on the gear icon in the left sidebar to go to your project settings then click on `Project Settings`.
-2. Navigate to the Service Accounts tab: Click on the `Service Accounts` tab.
-3. Scroll down to the `Firebase Admin SDK` section.
-4. Click on `Generate new private key` to generate a new private key.
-5. Click on `Generate key` to download the private key file.
-6. Save the private key: Save the private key file to your computer. This file is a JSON file that contains your private key. You will need this file to authenticate your server with Firebase.`IMPORTANT: Keep this file secure and do not share it with anyone. If you lose this file, you will need to generate a new private key.`
-7. Rename the private key file to `service.json`.
-8. Place the `service.json` file in the `push-notification/src` folder.
+### 5. **Scalability**
+- Easy to add new notification channels
+- Simple to extend with new features
+- Better error handling and monitoring
+
+## 🚀 Usage
+
+### Development
+```bash
+npm run dev          # Start with nodemon
+npm run build        # Compile TypeScript
+npm run type-check   # Check types without building
+```
+
+### Debugging
+```bash
+npm run debug-push   # Debug push notifications
+npm run analyze-db   # Analyze database tokens
+```
+
+### Deployment
+```bash
+npm run deploy       # Build and prepare for deployment
+```
+
+## 🔌 Service Integration
+
+### AWS Services
+- **Pinpoint**: Push notifications for iOS/Android
+- **SMS Voice V2**: SMS delivery for international numbers
+- **KMS**: Encryption/decryption for Cognito
+
+### Third-party Services
+- **PlayMobile**: Local SMS delivery for Uzbekistan
+- **Telegram**: Bot notifications
+
+### Database
+- **MySQL**: Notification queue and user data
+
+## 📱 Supported Features
+
+### Push Notifications
+- iOS APNS tokens (device tokens)
+- Android FCM tokens
+- Automatic platform detection
+- Rich notification payloads
+
+### SMS Routing
+- **Uzbekistan operators**:
+  - Beeline (90, 99) → PlayMobile
+  - UMS (95) → PlayMobile  
+  - Mobiuz (97, 98) → PlayMobile
+  - Ucell (91, 93, 94) → AWS SMS (bypass)
+- **International** → AWS SMS
+
+### Multi-language Support
+- Japanese (jp)
+- Russian (ru)
+- Uzbek (uz)
+
+## 🛡️ Error Handling & Diagnostics
+
+### Rate Limiting
+- Configurable daily/hourly limits
+- Cost protection for SMS
+- Character limit validation
+
+### Monitoring
+- Message status tracking
+- Delivery diagnostics
+- Performance metrics
+
+### Fallback Strategies
+- PlayMobile → AWS SMS fallback
+- Retry mechanisms with exponential backoff
+- Graceful degradation
+
+## 🔧 Configuration
+
+All configuration is managed through environment variables:
+
+```bash
+# AWS Configuration
+AWS_REGION=us-east-1
+PINPOINT_APP_ID=your-app-id
+KMS_KEY_ID=your-kms-key
+
+# PlayMobile Configuration  
+BROKER_URL=https://api.playmobile.uz
+BROKER_AUTH=username:password
+
+# Database Configuration
+HOST=localhost
+DB_PORT=3306
+USER=username
+PASSWORD=password
+DATABASE=database_name
+
+# Telegram Configuration
+BOT_TOKEN=your-telegram-bot-token
+```
+
+## 📋 Migration Notes
+
+This refactored version maintains full backward compatibility with the original API while providing:
+
+- Better code organization
+- Improved error handling
+- Enhanced debugging capabilities
+- Easier testing and maintenance
+- Clearer separation of concerns
+
+The main entry point (`src/index.ts`) orchestrates all services and maintains the same Lambda handler interface.

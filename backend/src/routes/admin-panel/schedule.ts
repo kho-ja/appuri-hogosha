@@ -28,6 +28,7 @@ class SchedulePostController implements IController {
         this.router.delete('/:id', verifyToken, this.deleteScheduledPost)
         this.router.put('/:id', verifyToken, this.updateScheduledPost)
         this.router.put('/:id/recievers', verifyToken, this.updateScheduledPostRecievers)
+        this.router.post('/delete-multiple', verifyToken, this.deleteMultipleScheduledPosts)
 
         cron.schedule("* * * * *", async () => {
             console.log("Checking for scheduled messages...", `${new Date()}`);
@@ -803,6 +804,64 @@ class SchedulePostController implements IController {
             console.log('scheduled post posted successfully')
         })
     }
+
+    deleteMultipleScheduledPosts = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const postIds: number[] = req.body.ids;
+
+            if (!Array.isArray(postIds) || postIds.length === 0) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_post_ids'
+                };
+            }
+
+            const placeholders = postIds.map(() => '?').join(',');
+
+            const postsInfo = await DB.query(`
+                SELECT id, image
+                FROM scheduledPost
+                WHERE school_id = ?
+                  AND id IN (${placeholders})
+            `, [req.user.school_id, ...postIds]);
+
+            if (postsInfo.length === 0) {
+                throw {
+                    status: 404,
+                    message: 'No scheduled posts found'
+                };
+            }
+
+            for (const post of postsInfo) {
+                if (post.image) {
+                    await Images3Client.deleteFile('images/' + post.image);
+                }
+            }
+
+            await DB.execute(`
+                DELETE FROM scheduledPost
+                WHERE school_id = ?
+                  AND id IN (${placeholders})
+            `, [req.user.school_id, ...postIds]);
+
+            return res.status(200).json({
+                message: 'scheduledPostsDeleted',
+                deletedCount: postsInfo.length
+            }).end();
+
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
 }
 
 export default SchedulePostController

@@ -2,16 +2,19 @@
 	"name": "mobile-backend",
 	"version": "1.0.0",
 	"description": "Push notification and SMS backend using AWS End User Messaging",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"scripts": {
 		"dev": "nodemon",
 		"build": "tsc -p .",
+		"start": "node dist/index.js",
 		"prepare-dist": "npm run build && mkdir -p dist && cp package.json dist/ && cp package-lock.json dist/",
 		"test": "npm run prepare-dist && cp -r node_modules dist/node_modules",
 		"install-prod-deps": "cd dist && npm install --only=production",
 		"deploy": "npm run prepare-dist && npm run install-prod-deps",
 		"analyze-db": "npx ts-node src/analyze-db-tokens.ts",
-		"debug-push": "npx ts-node src/debug-push-notifications.ts"
+		"debug-push": "npx ts-node src/debug-push-notifications.ts",
+		"lint": "echo 'Add linting here if needed'",
+		"type-check": "tsc --noEmit"
 	},
 	"keywords": [
 		"aws",
@@ -19,11 +22,15 @@
 		"push-notifications",
 		"sms",
 		"telegram",
-		"worldwide"
+		"worldwide",
+		"refactored",
+		"modular"
 	],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
+		"@aws-crypto/client-node": "^4.2.1",
+		"@aws-sdk/client-cognito-identity-provider": "^3.839.0",
 		"@aws-sdk/client-pinpoint": "^3.800.0",
 		"@aws-sdk/client-pinpoint-sms-voice-v2": "^3.800.0",
 		"dotenv": "^16.4.7",
@@ -34,7 +41,7 @@
 		"@types/node": "^22.0.0",
 		"nodemon": "^3.1.0",
 		"rimraf": "^5.0.5",
-		"typescript": "^5.4.5",
-		"ts-node": "^10.9.1"
+		"ts-node": "^10.9.1",
+		"typescript": "^5.4.5"
 	}
 }

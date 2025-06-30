@@ -4,14 +4,36 @@ import DatabaseClient from "./db-client";
 
 config();
 
-const pinpointClient = new PinpointClient({
-    region: process.env.AWS_REGION,
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
-    }
-});
+// Check if running locally or in Lambda
+const isLocal = !process.env.AWS_LAMBDA_FUNCTION_NAME;
 
+console.log(`🏃 Running in ${isLocal ? 'LOCAL' : 'LAMBDA'} environment`);
+
+// AWS Client configuration
+const awsConfig: any = {
+    region: process.env.AWS_REGION || 'us-east-1'
+};
+
+// For local development, you can optionally specify custom credentials
+if (isLocal && process.env.LOCAL_AWS_ACCESS_KEY_ID && process.env.LOCAL_AWS_SECRET_ACCESS_KEY) {
+    console.log('🔑 Using custom local AWS credentials');
+    awsConfig.credentials = {
+        accessKeyId: process.env.LOCAL_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.LOCAL_AWS_SECRET_ACCESS_KEY
+    };
+} else if (isLocal && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    console.log('🔑 Using standard AWS credentials');
+    awsConfig.credentials = {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    };
+} else if (isLocal) {
+    console.log('🔑 Using AWS CLI credentials or default credential chain');
+} else {
+    console.log('🔑 Using Lambda execution role');
+}
+
+const pinpointClient = new PinpointClient(awsConfig);
 const DB = new DatabaseClient();
 
 // Enhanced token detection with more details
@@ -238,8 +260,22 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
     }
 };
 
+// Test with specific token (for Lambda invocation)
+const testSpecificToken = async (token: string, customMessage?: any) => {
+    console.log('\n🎯 Testing specific token...');
+
+    const testMessage = customMessage || {
+        title: `Debug Test - ${new Date().toLocaleTimeString()}`,
+        body: `This is a debug notification sent from ${isLocal ? 'local' : 'Lambda'} environment`,
+        url: `jduapp://(tabs)/(home)/message/debug-${Date.now()}`,
+        post_id: `debug-${Date.now()}`
+    };
+
+    return await sendEnhancedPushNotification(token, testMessage);
+};
+
 // Test with real tokens from database
-const testWithDatabaseTokens = async () => {
+const testWithDatabaseTokens = async (limit: number = 5) => {
     console.log('\n🔍 Testing with real tokens from database...');
 
     try {
@@ -252,15 +288,17 @@ const testWithDatabaseTokens = async () => {
             FROM Parent 
             WHERE arn IS NOT NULL 
             AND arn != ''
-            LIMIT 5
+            LIMIT ${limit}
         `);
 
         if (!tokens || tokens.length === 0) {
             console.log('❌ No tokens found in database');
-            return;
+            return { success: false, message: 'No tokens found', results: [] };
         }
 
         console.log(`Found ${tokens.length} tokens to test:\n`);
+
+        const results = [];
 
         for (const [index, row] of tokens.entries()) {
             console.log(`\n${'='.repeat(50)}`);
@@ -271,12 +309,20 @@ const testWithDatabaseTokens = async () => {
 
             const testMessage = {
                 title: `Test ${index + 1} - Debug Notification`,
-                body: `This is a debug test notification sent at ${new Date().toLocaleTimeString()}`,
+                body: `Debug test from ${isLocal ? 'local' : 'Lambda'} at ${new Date().toLocaleTimeString()}`,
                 url: `jduapp://(tabs)/(home)/message/test-${index + 1}`,
                 post_id: `test-${index + 1}`
             };
 
             const success = await sendEnhancedPushNotification(row.token, testMessage);
+
+            results.push({
+                parentId: row.id,
+                phone: row.phone_number,
+                token: row.token.substring(0, 30) + '...',
+                success: success,
+                timestamp: new Date().toISOString()
+            });
 
             if (success) {
                 console.log(`\n⏰ Notification sent! Check your device in the next 30 seconds...`);
@@ -284,15 +330,31 @@ const testWithDatabaseTokens = async () => {
                 console.log(`   💬 Content: "${testMessage.body}"`);
             }
 
-            // Wait between tests to avoid rate limiting
-            if (index < tokens.length - 1) {
+            // Wait between tests to avoid rate limiting (only locally)
+            if (isLocal && index < tokens.length - 1) {
                 console.log(`\n⏳ Waiting 3 seconds before next test...`);
                 await new Promise(resolve => setTimeout(resolve, 3000));
             }
         }
 
+        return {
+            success: true,
+            message: `Tested ${tokens.length} tokens`,
+            results: results,
+            summary: {
+                total: results.length,
+                successful: results.filter(r => r.success).length,
+                failed: results.filter(r => !r.success).length
+            }
+        };
+
     } catch (error) {
         console.error('❌ Database test error:', error);
+        return {
+            success: false,
+            message: `Database error: ${error instanceof Error ? error.message : String(error)}`,
+            results: []
+        };
     }
 };
 
@@ -301,8 +363,11 @@ const checkPinpointConfiguration = async () => {
     console.log('\n🔍 Checking Pinpoint App Configuration...');
 
     try {
-        // This would require additional AWS SDK calls to check app settings
-        // For now, provide manual verification steps
+        console.log(`\n📋 Configuration Details:`);
+        console.log(`   📱 App ID: ${process.env.PINPOINT_APP_ID}`);
+        console.log(`   🌐 Region: ${process.env.AWS_REGION}`);
+        console.log(`   🏃 Environment: ${isLocal ? 'Local' : 'Lambda'}`);
+
         console.log(`\n📋 Manual Verification Checklist:`);
         console.log(`   1. Go to: https://console.aws.amazon.com/pinpoint/`);
         console.log(`   2. Select your app: ${process.env.PINPOINT_APP_ID}`);
@@ -312,52 +377,125 @@ const checkPinpointConfiguration = async () => {
         console.log(`   4. Verify channel status shows "Enabled"`);
         console.log(`   5. Check if certificates are not expired`);
 
+        return { success: true, message: 'Configuration guide provided' };
+
     } catch (error) {
         console.error('❌ Configuration check error:', error);
+        return {
+            success: false,
+            message: `Configuration check error: ${error instanceof Error ? error.message : String(error)}`
+        };
     }
 };
 
 // Main debug function
-const debugPushNotifications = async () => {
+const debugPushNotifications = async (options: { limit?: number, token?: string, message?: any } = {}) => {
     console.log('🔧 AWS End User Messaging Push Notification Debugger');
     console.log('═'.repeat(60));
     console.log(`📱 App ID: ${process.env.PINPOINT_APP_ID}`);
     console.log(`🌐 Region: ${process.env.AWS_REGION}`);
+    console.log(`🏃 Environment: ${isLocal ? 'Local' : 'Lambda'}`);
     console.log('═'.repeat(60));
 
-    // Check configuration
-    await checkPinpointConfiguration();
+    const results: any = {
+        environment: isLocal ? 'local' : 'lambda',
+        timestamp: new Date().toISOString(),
+        appId: process.env.PINPOINT_APP_ID,
+        region: process.env.AWS_REGION
+    };
 
-    // Test with real database tokens
-    await testWithDatabaseTokens();
+    try {
+        // Check configuration
+        results.configuration = await checkPinpointConfiguration();
 
-    console.log('\n📋 Final Troubleshooting Steps:');
-    console.log('═'.repeat(40));
-    console.log('1. 📱 Check device notification permissions');
-    console.log('2. 🔄 Try restarting your mobile app');
-    console.log('3. 🌐 Verify device internet connection');
-    console.log('4. 📲 Test app in both foreground and background');
-    console.log('5. 🔍 Check mobile app logs for notification handling');
-    console.log('6. 🧪 Test with Firebase Console directly (for Android)');
-    console.log('7. 📊 Check AWS CloudWatch logs for delivery receipts');
-    console.log('8. ⚙️  Verify FCM server key and APNS certificates');
+        // Test specific token if provided
+        if (options.token) {
+            console.log('\n🎯 Testing specific token...');
+            results.specificTest = {
+                success: await testSpecificToken(options.token, options.message),
+                token: options.token.substring(0, 30) + '...'
+            };
+        } else {
+            // Test with database tokens
+            results.databaseTest = await testWithDatabaseTokens(options.limit || 5);
+        }
 
-    console.log('\n💡 Common Issues:');
-    console.log('   • App not handling background notifications');
-    console.log('   • Notification permissions denied');
-    console.log('   • FCM server key incorrect or expired');
-    console.log('   • APNS certificate expired or wrong environment');
-    console.log('   • Device in do-not-disturb mode');
-    console.log('   • App killed by system (battery optimization)');
+        console.log('\n📋 Final Troubleshooting Steps:');
+        console.log('═'.repeat(40));
+        console.log('1. 📱 Check device notification permissions');
+        console.log('2. 🔄 Try restarting your mobile app');
+        console.log('3. 🌐 Verify device internet connection');
+        console.log('4. 📲 Test app in both foreground and background');
+        console.log('5. 🔍 Check mobile app logs for notification handling');
+        console.log('6. 🧪 Test with Firebase Console directly (for Android)');
+        console.log('7. 📊 Check AWS CloudWatch logs for delivery receipts');
+        console.log('8. ⚙️  Verify FCM server key and APNS certificates');
 
-    await DB.closeConnection();
+        console.log('\n💡 Common Issues:');
+        console.log('   • App not handling background notifications');
+        console.log('   • Notification permissions denied');
+        console.log('   • FCM server key incorrect or expired');
+        console.log('   • APNS certificate expired or wrong environment');
+        console.log('   • Device in do-not-disturb mode');
+        console.log('   • App killed by system (battery optimization)');
+
+        results.success = true;
+        results.message = 'Debug session completed successfully';
+
+        return results;
+
+    } catch (error) {
+        console.error('❌ Debug session error:', error);
+        results.success = false;
+        results.error = error instanceof Error ? error.message : String(error);
+        return results;
+    } finally {
+        await DB.closeConnection();
+    }
 };
 
-// Run the debugger
-debugPushNotifications().then(() => {
-    console.log('\n✅ Debug session completed!');
-    process.exit(0);
-}).catch((error) => {
-    console.error('❌ Debug session failed:', error);
-    process.exit(1);
-});
+// Lambda handler
+export const handler = async (event: any, context: any) => {
+    console.log("🚀 Starting push notification debugger");
+    console.log("📥 Event:", JSON.stringify(event, null, 2));
+
+    try {
+        // Parse options from event
+        const options = {
+            limit: event.limit || 3, // Default to 3 in Lambda to avoid timeouts
+            token: event.token,
+            message: event.message
+        };
+
+        const result = await debugPushNotifications(options);
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(result, null, 2)
+        };
+
+    } catch (error) {
+        console.error("❌ Handler error:", error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+                timestamp: new Date().toISOString()
+            })
+        };
+    }
+};
+
+// For local development - run directly
+if (isLocal) {
+    console.log('🚀 Running locally...');
+    debugPushNotifications({ limit: 5 }).then(result => {
+        console.log('\n✅ Debug session completed!');
+        console.log('📊 Final Result:', JSON.stringify(result.databaseTest?.summary || result, null, 2));
+        process.exit(0);
+    }).catch(error => {
+        console.error('❌ Debug session failed:', error);
+        process.exit(1);
+    });
+}
