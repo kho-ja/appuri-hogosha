@@ -1001,6 +1001,7 @@ class ParentController implements IController {
                 parent: {
                     id: parent.id,
                     email: email,
+                    phone_number: parent.phone_number,
                     given_name: given_name,
                     family_name: family_name,
                 }
