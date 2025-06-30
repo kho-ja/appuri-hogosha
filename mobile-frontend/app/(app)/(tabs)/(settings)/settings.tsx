@@ -22,13 +22,14 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { I18nContext } from '@/contexts/i18n-context';
-import { Button } from '@rneui/themed';
+import { Button, Text } from '@rneui/themed';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
 import { Href, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontSizeSlider } from '@/components/FontSizeSlider';
+import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
+import translation from '@/translations/translation';
 import { Separator } from '@/components/atomic/separator';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useTheme } from '@rneui/themed';
@@ -79,6 +80,7 @@ export default function SettingsScreen() {
     language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
   );
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
   const languages = ['English', '日本語', "O'zbekcha"];
   const handleLanguageSelect = async (
@@ -97,6 +99,11 @@ export default function SettingsScreen() {
       setIsOpen(true);
     }, 100);
   }, []);
+
+  const handlePresentFontSizeModal = useCallback(() => {
+    fontSizeBottomSheetRef.current?.present();
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       const userData: User | null = await db.getFirstSync('SELECT * FROM user');
@@ -127,6 +134,10 @@ export default function SettingsScreen() {
 
   const handleOutsidePress = useCallback(() => {
     bottomSheetModalRef.current?.dismiss();
+  }, []);
+
+  const handleFontSizeOutsidePress = useCallback(() => {
+    fontSizeBottomSheetRef.current?.dismiss();
   }, []);
 
   return (
@@ -170,9 +181,7 @@ export default function SettingsScreen() {
               {i18n[language].phoneNumber}
             </ThemedText>
             <View style={styles.infoCard}>
-              <ThemedText style={styles.value}>
-                +{user && user.phone_number}
-              </ThemedText>
+              <Text style={styles.value}>+{user && user.phone_number}</Text>
             </View>
           </View>
           <View style={styles.infoContainer}>
@@ -211,7 +220,10 @@ export default function SettingsScreen() {
                 <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
               </Pressable>
               <Separator orientation='horizontal' />
-              <View style={styles.row}>
+              <Pressable
+                style={styles.row}
+                onPress={handlePresentFontSizeModal}
+              >
                 <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
                   <Ionicons color='#fff' name='text' size={20} />
                 </View>
@@ -219,8 +231,8 @@ export default function SettingsScreen() {
                   {i18n[language].textSize}
                 </ThemedText>
                 <View style={styles.rowSpacer} />
-                <FontSizeSlider />
-              </View>
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
               <Separator orientation='horizontal' />
               <ThemeSwitcher />
             </View>
@@ -255,6 +267,62 @@ export default function SettingsScreen() {
                     onSelect={handleLanguageSelect}
                   />
                 ))}
+              </ThemedView>
+            </ThemedView>
+          </BottomSheetModal>
+          <BottomSheetModal
+            ref={fontSizeBottomSheetRef}
+            index={1}
+            snapPoints={snapPoints}
+            backgroundStyle={{ backgroundColor: '#eee' }}
+            onDismiss={() => setIsOpen(false)}
+            backdropComponent={() => (
+              <Pressable
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+                onPress={handleFontSizeOutsidePress}
+              />
+            )}
+          >
+            <ThemedView style={styles.contentContainer}>
+              <ThemedView style={styles.row}></ThemedView>
+              <ThemedView style={styles.fontSizeContainer}>
+                <View style={styles.sliderWithLabels}>
+                  <ThemedText
+                    style={{
+                      fontSize: 14,
+                      color: '#8E8E93',
+                      fontWeight: '500',
+                    }}
+                  >
+                    A
+                  </ThemedText>
+                  <View style={styles.sliderFixedContainer}>
+                    <FontSizeSlider />
+                  </View>
+                  <ThemedText
+                    style={{
+                      fontSize: 24,
+                      color: '#8E8E93',
+                      fontWeight: '600',
+                    }}
+                  >
+                    A
+                  </ThemedText>
+                </View>
+
+                <SampleText
+                  text={
+                    translation[language as keyof typeof translation]
+                      ?.sampleText ||
+                    'Choose the text size that suits you best for a more comfortable reading experience.'
+                  }
+                />
               </ThemedView>
             </ThemedView>
           </BottomSheetModal>
@@ -373,6 +441,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   value: {
+    fontSize: 20,
     fontWeight: 'bold',
     margin: 5,
   },
@@ -401,6 +470,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
+  },
+  rowValue: {
+    fontSize: 17,
+    fontWeight: '400',
+    color: '#8E8E93',
+    marginRight: 8,
   },
   contentContainer: {
     flex: 1,
@@ -438,5 +513,20 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: 'bold',
     color: 'white',
+  },
+  // Font Size Sheet styles
+  fontSizeContainer: {
+    paddingVertical: 20,
+  },
+  sliderWithLabels: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  sliderFixedContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
   },
 });
