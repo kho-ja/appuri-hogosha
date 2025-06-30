@@ -918,15 +918,15 @@ class ParentController implements IController {
     parentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
             const {
-                phone_number,
+                email,
                 given_name,
                 family_name,
             } = req.body
 
-            if (!phone_number || !isValidPhoneNumber(phone_number)) {
+            if (!email || !isValidEmail(email)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_phone'
+                    message: 'invalid_or_missing_email'
                 }
             }
             if (!given_name || !isValidString(given_name)) {
@@ -951,7 +951,7 @@ class ParentController implements IController {
                 }
             }
             const parentInfo = await DB.query(`SELECT id, 
-                       email, phone_number, 
+                       email,
                        given_name, family_name, 
                        created_at 
                 FROM Parent
@@ -969,17 +969,17 @@ class ParentController implements IController {
 
             const parent = parentInfo[0];
 
-            const findDuplicates = await DB.query('SELECT id, phone_number FROM Parent WHERE phone_number = :phone_number', {
-                phone_number: phone_number,
+            const findDuplicates = await DB.query(`SELECT id, email FROM Parent WHERE email = :email`, {
+                email: email,
             })
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
                 if (duplicate.id != parentId) {
-                    if (phone_number == duplicate.phone_number) {
+                    if (email === duplicate.email) {
                         throw {
                             status: 401,
-                            message: 'phone_number_already_exists'
+                            message: 'email_already_exists'
                         }
                     }
                 }
@@ -987,11 +987,11 @@ class ParentController implements IController {
 
             await DB.execute(
                 `UPDATE Parent SET                    
-                        phone_number = :phone_number,
+                        email = :email,
                         family_name = :family_name,
                         given_name = :given_name
                     WHERE id = :id`, {
-                phone_number: phone_number,
+                email: email,
                 given_name: given_name,
                 family_name: family_name,
                 id: parent.id
@@ -1000,8 +1000,8 @@ class ParentController implements IController {
             return res.status(200).json({
                 parent: {
                     id: parent.id,
-                    email: parent.email,
-                    phone_number: phone_number,
+                    email: email,
+                    phone_number: parent.phone_number,
                     given_name: given_name,
                     family_name: family_name,
                 }

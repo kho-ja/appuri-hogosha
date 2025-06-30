@@ -14,17 +14,14 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
-import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
@@ -32,11 +29,7 @@ const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(500)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+    email: z.string().max(0).or(z.string().email()),
   });
 };
 
@@ -56,7 +49,7 @@ export default function EditParent({
     defaultValues: {
       given_name: "",
       family_name: "",
-      phone_number: "",
+      email: "",
     },
   });
   const { data, isLoading, isError } = useApiQuery<{
@@ -82,7 +75,7 @@ export default function EditParent({
     if (data) {
       form.setValue("given_name", data.parent.given_name);
       form.setValue("family_name", data.parent.family_name);
-      form.setValue("phone_number", `+${data.parent.phone_number}`);
+      form.setValue("email", data.parent.email);
     }
   }, [data, form]);
 
@@ -98,7 +91,7 @@ export default function EditParent({
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
-              phone_number: values.phone_number.slice(1),
+              email: values.email.trim(),
             } as any)
           )}
           className="space-y-4"
@@ -151,16 +144,20 @@ export default function EditParent({
 
               <FormField
                 control={form.control}
-                name="phone_number"
+                name="email"
                 render={({ field, formState }) => (
                   <FormItem className="sm:w-1/2">
-                    <FormLabel>{t("ParentPhone")}</FormLabel>
+                    <FormLabel>{t("ParentEmail")}</FormLabel>
                     <FormControl>
-                      <PhoneInput placeholder={t("ParentPhone")} {...field} />
+                      <Input
+                        {...field}
+                        placeholder={t("ParentEmail")}
+                        type="email"
+                      />
                     </FormControl>
                     <FormMessage>
-                      {formState.errors.phone_number &&
-                        "Parent phone number is required. Parent phone number should be more than 10 characters"}
+                      {formState.errors.email &&
+                        "Parent email is required"}
                     </FormMessage>
                   </FormItem>
                 )}
