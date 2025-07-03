@@ -4,10 +4,12 @@ import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
+import { useFontSize } from '@/contexts/FontSizeContext';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
+  const { multiplier } = useFontSize();
 
   return (
     <Stack>
@@ -46,18 +48,31 @@ const Layout = () => {
               if (unreadCount === 0) {
                 return null;
               }
+
+              const fontSize = 12 * multiplier;
+              const containerSize = Math.max(25, fontSize + 16);
+
               return (
                 <View
                   style={{
-                    width: 25,
-                    height: 25,
+                    width: containerSize,
+                    height: containerSize,
                     backgroundColor: '#005678',
-                    borderRadius: '50%',
+                    borderRadius: containerSize / 2,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ color: 'white' }}>{unreadCount}</Text>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: fontSize,
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {unreadCount}
+                  </Text>
                 </View>
               );
             },
