@@ -178,12 +178,16 @@ const Card = ({
             textProps={{ style: autolinkStyles }}
           />
         </View>
-        <TouchableOpacity style={styles.readMoreButton}>
-          <ThemedText style={styles.readMoreText} onPress={handlePress}>
-            {i18n[language].continueReading}
-          </ThemedText>
-        </TouchableOpacity>
-        <View style={styles.dateContainer}>
+        <View style={styles.bottomRow}>
+          <TouchableOpacity style={styles.readMoreButton} onPress={handlePress}>
+            <ThemedText
+              style={styles.readMoreText}
+              numberOfLines={1}
+              ellipsizeMode='tail'
+            >
+              {i18n[language].continueReading}
+            </ThemedText>
+          </TouchableOpacity>
           <ThemedText type='smaller' style={styles.dateText}>
             {formatMessageDate(new Date(formattedTime), language)}
           </ThemedText>
@@ -257,11 +261,19 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   readMoreButton: {
+    flex: 1,
     marginTop: 5,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 5,
+    gap: 10,
   },
   dateContainer: {
     marginTop: 5,
