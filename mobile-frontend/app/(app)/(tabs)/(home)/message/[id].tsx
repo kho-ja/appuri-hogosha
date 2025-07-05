@@ -9,8 +9,9 @@ import {
   Pressable,
   ActivityIndicator,
   ToastAndroid,
+  BackHandler,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useSession } from '@/contexts/auth-context';
@@ -297,6 +298,16 @@ export default function DetailsScreen() {
     };
 
     fetchMessage();
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        router.back();
+        return true; // prevent default behavior
+      }
+    );
+
+    return () => backHandler.remove();
   }, [id, apiUrl, db, isOnline, session, markMessageAsRead]);
 
   if (loading)

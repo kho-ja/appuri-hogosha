@@ -21,6 +21,20 @@ const StudentMessagesScreen = () => {
         router.replace('/');
         return;
       }
+
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        () => {
+          if (studentId) {
+            router.replace(`/`);
+          } else {
+            router.back();
+          }
+          return true; // prevent default behavior
+        }
+      );
+
+      return () => backHandler.remove();
     }
   }, [students, studentId, isLoading]);
 
