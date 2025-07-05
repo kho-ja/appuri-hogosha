@@ -1,13 +1,15 @@
 import { router, Stack } from 'expo-router';
-import React from 'react';
+import React, { useContext } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
+import { I18nContext } from '@/contexts/i18n-context';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
+  const { language, i18n} = useContext(I18nContext);
 
   return (
     <Stack>
@@ -70,7 +72,7 @@ const Layout = () => {
           const { studentId } = route.params as { studentId?: string };
 
           return {
-            headerTitle: 'Detailed view',
+            headerTitle: (i18n as any)[language].detailedView,
             headerTitleAlign: 'center',
             headerLeft: () => (
               <Pressable
