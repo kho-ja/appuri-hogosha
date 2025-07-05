@@ -14,7 +14,6 @@ const Layout = () => {
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {
-          // const { isOnlyStudent } = route.params || {};
           const studentId = route.params?.id;
 
           // Find the student by ID to get their name
@@ -24,23 +23,6 @@ const Layout = () => {
           return {
             headerTitle: studentName,
             headerTitleAlign: 'center',
-            // headerLeft:
-            //   isOnlyStudent === 'true'
-            //     ? undefined
-            //     : () => (
-            //         <Pressable
-            //           onPress={() => {
-            //             router.replace('/');
-            //           }}
-            //           style={{ marginLeft: 10 }}
-            //         >
-            //           <Ionicons
-            //             name={'arrow-back-outline'}
-            //             size={24}
-            //             color='#adb5bd'
-            //           />
-            //         </Pressable>
-            //       ),
             headerRight: () => {
               if (unreadCount === 0) {
                 return null;
@@ -66,29 +48,9 @@ const Layout = () => {
       <Stack.Screen
         name='message/[id]'
         options={({ route }) => {
-          // const { studentId } = route.params as { studentId?: string };
-
           return {
             headerTitle: 'Detailed view',
             headerTitleAlign: 'center',
-            // headerLeft: () => (
-            //   <Pressable
-            //     onPress={() => {
-            //       if (studentId) {
-            //         router.replace(`/student/${studentId}`);
-            //       } else {
-            //         router.back();
-            //       }
-            //     }}
-            //     style={{ marginLeft: 10 }}
-            //   >
-            //     <Ionicons
-            //       name={'arrow-back-outline'}
-            //       size={24}
-            //       color='#adb5bd'
-            //     />
-            //   </Pressable>
-            // ),
           };
         }}
       />
