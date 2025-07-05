@@ -28,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
 import { DateTime } from 'luxon';
+import { useFontSize } from '@/contexts/FontSizeContext';
 
 const styles = StyleSheet.create({
   container: {
@@ -51,7 +52,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   dateText: {
-    fontSize: 16,
     fontWeight: '300',
   },
   descriptionRow: {
@@ -59,22 +59,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 5,
     paddingBottom: 20,
-  },
-  importanceBadge: {
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: 'red',
-    color: 'white',
-    fontSize: 12,
-    paddingTop: 8,
-    height: 35,
-  },
-  groupStyle: {
-    backgroundColor: '#059669',
-    color: 'white',
-    fontSize: 12,
-    padding: 5,
-    borderRadius: 5,
   },
   image: {
     flex: 1,
@@ -92,7 +76,6 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     color: 'white',
-    fontSize: 16,
     fontWeight: 'bold',
   },
   copyButton: {
@@ -122,6 +105,7 @@ export default function DetailsScreen() {
   const textColor = useThemeColor({}, 'text');
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
+  const { multiplier } = useFontSize();
 
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const imageUrl = process.env.EXPO_PUBLIC_S3_BASE_URL;
@@ -319,19 +303,6 @@ export default function DetailsScreen() {
     return mapping[priority] || 'unknown';
   };
 
-  const getImportanceBadgeStyle = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return { ...styles.importanceBadge, backgroundColor: 'red' };
-      case 'medium':
-        return { ...styles.importanceBadge, backgroundColor: 'orange' };
-      case 'low':
-        return { ...styles.importanceBadge, backgroundColor: 'green' };
-      default:
-        return styles.importanceBadge;
-    }
-  };
-
   const imageArray = Array.isArray(message.images)
     ? message.images
     : message.images
@@ -360,27 +331,63 @@ export default function DetailsScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.titleRow}>
-        <ThemedText style={styles.title}>{message.title}</ThemedText>
-        <ThemedText style={getImportanceBadgeStyle(message.priority)}>
-          {getImportanceLabel(message.priority)}
+      <View style={{ alignItems: 'flex-end', marginBottom: 10 }}>
+        <View
+          style={{
+            backgroundColor:
+              message.priority === 'high'
+                ? 'red'
+                : message.priority === 'medium'
+                  ? 'orange'
+                  : 'green',
+            borderRadius: 4,
+            paddingHorizontal: 6 * multiplier,
+            paddingVertical: 4 * multiplier,
+            justifyContent: 'center',
+            alignItems: 'center',
+            maxWidth: '40%',
+          }}
+        >
+          <ThemedText
+            style={{
+              color: 'white',
+              fontSize: 11 * multiplier,
+              textAlign: 'center',
+              fontWeight: '500',
+            }}
+          >
+            {getImportanceLabel(message.priority)}
+          </ThemedText>
+        </View>
+      </View>
+      <View style={[styles.titleRow, { justifyContent: 'center' }]}>
+        <ThemedText
+          style={[styles.title, { fontSize: 18 * multiplier, width: '100%' }]}
+        >
+          {message.title}
         </ThemedText>
       </View>
       <View style={styles.descriptionRow}>
-        <ThemedText>
-          <Autolink
-            email
-            hashtag='instagram'
-            mention='instagram'
-            text={message.content}
-            style={{ color: textColor }}
-          />
-        </ThemedText>
+        <Autolink
+          email
+          hashtag='instagram'
+          mention='instagram'
+          text={message.content}
+          style={{ color: textColor, fontSize: 16 * multiplier }}
+        />
       </View>
       <Pressable style={styles.copyButton} onPress={copyToClipboard}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Ionicons name='copy-outline' size={20} color='white' />
-          <Text style={{ color: 'white', marginLeft: 5 }}>Copy</Text>
+          <Text
+            style={{
+              color: 'white',
+              marginLeft: 5,
+              fontSize: 14 * multiplier,
+            }}
+          >
+            Copy
+          </Text>
         </View>
       </Pressable>
       <View style={{ marginBottom: 25 }}>
@@ -407,9 +414,18 @@ export default function DetailsScreen() {
         </View>
       )}
 
-      <View style={styles.dateRow}>
-        <Ionicons name={'calendar-outline'} size={24} color='#adb5bd' />
-        <ThemedText style={styles.dateText}>
+      <View style={[styles.dateRow, { justifyContent: 'flex-start' }]}>
+        <Ionicons
+          name={'calendar-outline'}
+          size={20 * multiplier}
+          color='#adb5bd'
+        />
+        <ThemedText
+          style={[
+            styles.dateText,
+            { fontSize: 14 * multiplier, color: '#666' },
+          ]}
+        >
           {formatMessageDate(new Date(formattedTime), language)}
         </ThemedText>
       </View>
@@ -423,7 +439,9 @@ export default function DetailsScreen() {
           onPress={() => setZoomVisible(false)}
           hitSlop={20}
         >
-          <Text style={styles.closeButtonText}>✕</Text>
+          <Text style={[styles.closeButtonText, { fontSize: 16 * multiplier }]}>
+            ✕
+          </Text>
         </Pressable>
         <ImageViewer
           imageUrls={imagesForZoomViewer}

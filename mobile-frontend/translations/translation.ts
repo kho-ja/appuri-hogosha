@@ -60,6 +60,8 @@ export default {
     changePassword: 'Change Password',
     savePassword: 'Save Password',
     textSize: 'Text Size',
+    sampleText:
+      'Choose the text size that suits you best for a more comfortable reading experience.',
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
     batteryOptimization: 'Battery Optimization',
@@ -211,6 +213,7 @@ export default {
     changePassword: 'パスワードを変更',
     savePassword: 'パスワードを保存',
     textSize: '文字サイズ',
+    sampleText: '読みやすさのために、自分に合った文字サイズを選んでください。',
     lightMode: 'ライトモード',
     darkMode: 'ダークモード',
     batteryOptimization: 'バッテリー最適化',
@@ -363,6 +366,8 @@ export default {
     changePassword: "Parolni o'zgartirish",
     savePassword: 'Parolni saqlash',
     textSize: "Matn o'lchami",
+    sampleText:
+      "O'zingizga qulay bo'lgan matn hajmini tanlang — o'qish yanada qulay bo'ladi.",
     lightMode: "Yorug' rejim",
     darkMode: "Qorong'u rejim",
     batteryOptimization: 'Batareya optimizatsiyasi',

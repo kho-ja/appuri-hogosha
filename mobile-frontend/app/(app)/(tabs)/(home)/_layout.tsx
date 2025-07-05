@@ -27,18 +27,28 @@ const Layout = () => {
               if (unreadCount === 0) {
                 return null;
               }
+
               return (
                 <View
                   style={{
-                    width: 25,
-                    height: 25,
+                    width: 30,
+                    height: 30,
                     backgroundColor: '#005678',
-                    borderRadius: '50%',
+                    borderRadius: 15,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ color: 'white' }}>{unreadCount}</Text>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: 18,
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {unreadCount}
+                  </Text>
                 </View>
               );
             },
