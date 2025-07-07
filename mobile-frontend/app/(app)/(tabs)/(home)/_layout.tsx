@@ -1,7 +1,6 @@
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import React, { useContext } from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Text, View } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -9,7 +8,7 @@ import { I18nContext } from '@/contexts/i18n-context';
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
-  const { language, i18n} = useContext(I18nContext);
+  const { language, i18n } = useContext(I18nContext);
 
   return (
     <Stack>
