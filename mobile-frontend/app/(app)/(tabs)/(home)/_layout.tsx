@@ -1,12 +1,14 @@
 import { Stack } from 'expo-router';
-import React from 'react';
+import React, { useContext } from 'react';
 import { Text, View } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
+import { I18nContext } from '@/contexts/i18n-context';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
+  const { language, i18n } = useContext(I18nContext);
 
   return (
     <Stack>
@@ -59,7 +61,7 @@ const Layout = () => {
         name='message/[id]'
         options={({ route }) => {
           return {
-            headerTitle: 'Detailed view',
+            headerTitle: i18n[language].detailedView,
             headerTitleAlign: 'center',
           };
         }}

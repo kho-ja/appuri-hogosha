@@ -13,6 +13,7 @@ export type TranslationKeys = {
   justregister: string;
   loginFailed: string;
   loginSuccess: string;
+  detailedView: string;
 
   // Tab bar layout
   home: string;
