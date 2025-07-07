@@ -19,6 +19,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
 import { ThemedView } from '@/components/ThemedView';
 import { DateTime } from 'luxon';
+import { useFontSize } from '@/contexts/FontSizeContext';
 
 const Card = ({
   messageGroup,
@@ -30,6 +31,7 @@ const Card = ({
   const router = useRouter();
   const { language, i18n } = useContext(I18nContext);
   const db = useSQLiteContext();
+  const { multiplier } = useFontSize();
   // const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
   const textColor = useThemeColor({}, 'text');
   const firstMessage = messageGroup[0];
@@ -65,21 +67,30 @@ const Card = ({
   };
 
   const getImportanceBadgeStyle = (priority: string) => {
+    const baseStyle = {
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 5,
+      color: 'white',
+      fontSize: 12 * multiplier,
+      textAlign: 'center' as const,
+    };
+
     switch (priority) {
       case 'high':
-        return { ...styles.importanceBadge, backgroundColor: 'red' };
+        return { ...baseStyle, backgroundColor: 'red' };
       case 'medium':
-        return { ...styles.importanceBadge, backgroundColor: 'orange' };
+        return { ...baseStyle, backgroundColor: 'orange' };
       case 'low':
-        return { ...styles.importanceBadge, backgroundColor: 'green' };
+        return { ...baseStyle, backgroundColor: 'green' };
       default:
-        return styles.importanceBadge;
+        return baseStyle;
     }
   };
 
   const autolinkStyles: StyleProp<TextStyle> = {
     color: textColor,
-    fontSize: 16,
+    fontSize: 16 * multiplier,
   };
 
   const sentTimeString = firstMessage.sent_time;
@@ -97,7 +108,7 @@ const Card = ({
         <View style={styles.titleRow}>
           {!isRead ? (
             <View style={styles.iconContainer}>
-              <ThemedText style={{ fontSize: 10, color: '#fff' }}>
+              <ThemedText type='smaller' style={{ color: '#fff' }}>
                 New
               </ThemedText>
             </View>
@@ -140,14 +151,18 @@ const Card = ({
             </ThemedText>
             {isRead ? (
               <View style={styles.iconReadContainer}>
-                <Ionicons name='checkmark' size={15} color='white' />
+                <Ionicons
+                  name='checkmark'
+                  size={15 * multiplier}
+                  color='white'
+                />
               </View>
             ) : null}
           </ThemedView>
         </View>
         <View style={styles.dateRow}>
           {groupNames.map((groupName, index) => (
-            <ThemedText key={index} style={styles.groupStyle}>
+            <ThemedText key={index} type='smaller' style={styles.groupStyle}>
               {groupName}
             </ThemedText>
           ))}
@@ -163,14 +178,20 @@ const Card = ({
             textProps={{ style: autolinkStyles }}
           />
         </View>
-        <TouchableOpacity style={styles.readMoreButton}>
-          <ThemedText style={styles.readMoreText} onPress={handlePress}>
-            {i18n[language].continueReading}
-          </ThemedText>
-          <ThemedText style={styles.dateText}>
+        <View style={styles.bottomRow}>
+          <TouchableOpacity style={styles.readMoreButton} onPress={handlePress}>
+            <ThemedText
+              style={styles.readMoreText}
+              numberOfLines={1}
+              ellipsizeMode='tail'
+            >
+              {i18n[language].continueReading}
+            </ThemedText>
+          </TouchableOpacity>
+          <ThemedText type='smaller' style={styles.dateText}>
             {formatMessageDate(new Date(formattedTime), language)}
           </ThemedText>
-        </TouchableOpacity>
+        </View>
       </View>
     </Pressable>
   );
@@ -207,17 +228,21 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 8,
     backgroundColor: '#FF0000',
-    borderRadius: 10,
-    height: 25,
-    width: 25,
+    borderRadius: 16,
+    minHeight: 28,
+    minWidth: 40,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconReadContainer: {
     backgroundColor: '#808080',
     borderRadius: 20,
-    height: 25,
-    width: 25,
+    minHeight: 25,
+    minWidth: 25,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -228,7 +253,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   dateText: {
-    fontSize: 12,
     fontWeight: '300',
   },
   descriptionRow: {
@@ -237,27 +261,31 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   readMoreButton: {
+    flex: 1,
     marginTop: 5,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: 5,
+    gap: 10,
+  },
+  dateContainer: {
+    marginTop: 5,
+    alignItems: 'flex-end',
   },
   readMoreText: {
     color: '#2089dc',
     fontWeight: '600',
   },
-  importanceBadge: {
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: 'red',
-    color: 'white',
-    fontSize: 12,
-  },
   groupStyle: {
     backgroundColor: '#059669',
     color: 'white',
-    fontSize: 12,
     padding: 5,
     borderRadius: 5,
   },
