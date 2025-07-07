@@ -72,7 +72,7 @@ const Layout = () => {
           const { studentId } = route.params as { studentId?: string };
 
           return {
-            headerTitle: (i18n as any)[language].detailedView,
+            headerTitle: i18n[language].detailedView,
             headerTitleAlign: 'center',
             headerLeft: () => (
               <Pressable
