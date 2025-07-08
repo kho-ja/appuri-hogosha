@@ -99,6 +99,11 @@ export function StudentProvider(props: PropsWithChildren) {
           }
           if (!res.ok) {
             const data = await res.json();
+            if (data.code === 'TOKEN_VERIFICATION_FAILED') {
+              console.log('Token verification failed, signing out');
+              signOut();
+              throw new Error('401 Unauthorized');
+            }
             throw new Error(data?.message || 'Failed to fetch');
           }
 

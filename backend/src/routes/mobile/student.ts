@@ -31,7 +31,6 @@ class StudentController implements IController {
             WHERE sp.parent_id = :parent_id;`, {
                 parent_id: req.user.id,
             });
-            console.log('unread' , students)
 
             return res.status(200).json(students).end()
         } catch (e: any) {

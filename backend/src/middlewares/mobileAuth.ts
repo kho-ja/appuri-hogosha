@@ -44,7 +44,8 @@ export const verifyToken = async (req: ExtendedRequest, res: Response, next: Nex
     } catch (e: any) {
         if (e.status) {
             return res.status(e.status).json({
-                message: e.message
+                message: e.message,
+                code: "TOKEN_VERIFICATION_FAILED"
             }).end();
         }
         return res.status(500).json({
