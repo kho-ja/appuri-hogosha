@@ -108,9 +108,7 @@ const Card = ({
         <View style={styles.titleRow}>
           {!isRead ? (
             <View style={styles.iconContainer}>
-              <ThemedText type='smaller' style={{ color: '#fff' }}>
-                New
-              </ThemedText>
+              <Ionicons name='mail-unread' size={30} color='#fff' />
             </View>
           ) : null}
           <ThemedView
