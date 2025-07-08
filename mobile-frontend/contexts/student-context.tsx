@@ -102,9 +102,8 @@ export function StudentProvider(props: PropsWithChildren) {
             if (data.code === 'TOKEN_VERIFICATION_FAILED') {
               console.log('Token verification failed, signing out');
               signOut();
-              throw new Error('401 Unauthorized');
-            }
-            throw new Error(data?.message || 'Failed to fetch');
+              throw new Error('401 Uauthorized');
+            } else throw new Error(data?.message || 'Failed to fetch');
           }
 
           const serverStudents = (await res.json()) as Student[];
