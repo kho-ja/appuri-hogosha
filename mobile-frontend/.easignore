@@ -1,0 +1,49 @@
+# Node modules (not needed in EAS builds)
+node_modules
+
+# Logs
+*.log
+
+# macOS system files
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+
+# Git
+.git
+.gitignore
+
+# Expo developer files
+*.expo
+.expo
+.expo-shared
+
+# Android build cache
+android/app/build
+android/.gradle
+android/.idea
+android/local.properties
+
+# iOS build cache
+ios/build
+ios/Pods
+ios/Podfile.lock
+
+# VSCode
+.vscode
+
+# EAS credentials (use secrets/env vars instead)
+*.jks
+*.p8
+*.keystore
+*.pem
+*.mobileprovision
+*.cert
+
+# Misc
+*.bak
+*.swp
