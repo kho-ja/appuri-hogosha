@@ -1,4 +1,5 @@
 require('dotenv').config();
+const packageJson = require('./package.json');
 
 const getVariant = () =>
   process.env.APP_VARIANT || process.env.EAS_BUILD_PROFILE || 'development';
@@ -34,13 +35,17 @@ const configByVariant = {
 
 const variantConfig = configByVariant[variant] || configByVariant.development;
 
-export default ({ config }) => {
+console.log(`Using variant: ${variant}`);
+console.log(`App name: ${variantConfig.name}`);
+console.log(`PackageJson version: ${packageJson.version}`);
+
+module.exports = ({ config }) => {
   return {
     ...config,
-    runtimeVersion: '1.0.0',
+    runtimeVersion: packageJson.version,
     name: variantConfig.name,
     slug: 'parent-notification',
-    version: '1.0.0',
+    version: packageJson.version,
     orientation: 'portrait',
     icon: variantConfig.icon,
     scheme: variantConfig.scheme,
@@ -112,7 +117,7 @@ export default ({ config }) => {
         origin: false,
       },
       eas: {
-        projectId: '61968ac8-e70b-44e4-a5ed-00d5521eec81',
+        projectId: process.env.EAS_PROJECT_ID || '61968ac8-e70b-44e4-a5ed-00d5521eec81',
       },
     },
   };
