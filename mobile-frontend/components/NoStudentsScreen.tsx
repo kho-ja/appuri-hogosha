@@ -2,10 +2,9 @@ import React, { useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Button } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nContext } from '@/contexts/i18n-context';
-import { useTheme } from '@rneui/themed';
 
 interface NoStudentsScreenProps {
   onRefresh?: () => void;

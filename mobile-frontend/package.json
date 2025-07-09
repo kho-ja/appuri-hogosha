@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start via wifi": "expo start",
+    "start": "expo start",
     "start via usb": "expo start --localhost --android",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -76,7 +76,7 @@
     "@types/luxon": "^3.6.2",
     "@types/react": "~19.0.10",
     "@types/react-test-renderer": "^18.0.7",
-    "eslint": "^8.57.1",
+    "eslint": "^9.0.0",
     "eslint-config-expo": "~9.2.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^4.3.4",
@@ -96,7 +96,11 @@
   "expo": {
     "doctor": {
       "reactNativeDirectoryCheck": {
-        "exclude": ["@rneui/base", "@rneui/themed", "react-native-image-zoom-viewer"],
+        "exclude": [
+          "@rneui/base",
+          "@rneui/themed",
+          "react-native-image-zoom-viewer"
+        ],
         "listUnknownPackages": false
       }
     }

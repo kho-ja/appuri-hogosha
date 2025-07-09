@@ -1,6 +1,5 @@
 import React from 'react';
-import { TextInput, View, Text } from 'react-native';
-import { TextInputProps } from 'react-native';
+import { TextInput, View, Text, TextInputProps } from 'react-native';
 import { useTheme } from '@rneui/themed';
 
 export interface AdvancedInputProps extends TextInputProps {

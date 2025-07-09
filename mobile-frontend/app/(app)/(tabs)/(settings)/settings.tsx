@@ -22,7 +22,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { I18nContext } from '@/contexts/i18n-context';
-import { Button } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
@@ -31,7 +31,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider } from '@/components/FontSizeSlider';
 import { Separator } from '@/components/atomic/separator';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import { useTheme } from '@rneui/themed';
 
 interface LanguageSelectionProps {
   language: string;

@@ -112,12 +112,13 @@ export const DeepLinkDebugger: React.FC = () => {
     }
   };
 
+  console.log(__DEV__);
+
   if (!__DEV__) {
     return null; // Only show in development
   }
 
   const testLinks = getTestLinks();
-  const isExpoGo = Constants.appOwnership === 'expo';
 
   return (
     <View
@@ -131,12 +132,12 @@ export const DeepLinkDebugger: React.FC = () => {
       <ThemedText
         style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}
       >
-        🔗 Deep Link Debugger ({isExpoGo ? 'Expo Go' : 'Standalone'})
+        🔗 Deep Link Debugger ({__DEV__ ? 'Expo Go' : 'Standalone'})
       </ThemedText>
 
-      {isExpoGo && (
+      {__DEV__ && (
         <ThemedText style={{ fontSize: 12, marginBottom: 10, color: 'orange' }}>
-          Running in Expo Go. Custom schemes won't work. Use exp:// URLs.
+          Running in Expo Go. Custom schemes won&apos;t work. Use exp:// URLs.
         </ThemedText>
       )}
 
@@ -160,7 +161,7 @@ export const DeepLinkDebugger: React.FC = () => {
       ))}
 
       <ThemedText style={{ fontSize: 12, marginTop: 10, opacity: 0.7 }}>
-        {isExpoGo
+        {__DEV__
           ? 'For Expo Go: Use the exp:// URLs shown in alerts'
           : 'For standalone: Use custom scheme or universal links'}
       </ThemedText>
