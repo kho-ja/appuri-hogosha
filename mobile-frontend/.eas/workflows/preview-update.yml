@@ -1,0 +1,15 @@
+name: Preview Update
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish_preview:
+    name: Publish Preview Update
+    environment: preview
+    type: update
+    params:
+      message: 'Preview update from main branch - ${{ github.sha }}'
+      platform: all
+      branch: main
