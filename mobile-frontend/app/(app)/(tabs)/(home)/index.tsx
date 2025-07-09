@@ -107,9 +107,6 @@ const HomeScreen = () => {
       >
         <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
           <StudentSelector students={students} />
-          <ThemedText style={{ padding: 20 }}>
-            Select a student to view their details and manage their data.
-          </ThemedText>
         </SafeAreaView>
       </ScrollView>
 
