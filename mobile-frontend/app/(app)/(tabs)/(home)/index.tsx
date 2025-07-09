@@ -10,6 +10,7 @@ import { RefreshControl, ScrollView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BatteryOptimizationHelper from '@/components/BatteryOptimizationHelper';
 import NoStudentsScreen from '@/components/NoStudentsScreen';
+import { DeepLinkDebugger } from '@/components/DeepLinkDebugger';
 
 const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
@@ -108,6 +109,8 @@ const HomeScreen = () => {
           <StudentSelector students={students} />
         </SafeAreaView>
       </ScrollView>
+
+      <DeepLinkDebugger />
 
       {/* Battery Optimization Helper */}
       <BatteryOptimizationHelper
