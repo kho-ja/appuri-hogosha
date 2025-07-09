@@ -14,7 +14,7 @@ export default {
     resetPassword: 'reset password',
     noaccount: "Don't have an account?",
     justregister: 'Register',
-    loginFailed: 'Invalid email or password',
+    loginFailed: 'Invalid phone number or password',
     loginSuccess: 'Logged in successfully',
     /*sign in page*/
 
@@ -60,6 +60,8 @@ export default {
     changePassword: 'Change Password',
     savePassword: 'Save Password',
     textSize: 'Text Size',
+    sampleText:
+      'Choose the text size that suits you best for a more comfortable reading experience.',
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
     batteryOptimization: 'Battery Optimization',
@@ -151,6 +153,10 @@ export default {
     confirmLogout: 'Confirm Logout',
     logoutMessage: 'Are you sure you want to logout?',
     /*Logout alert*/
+
+    /*message detail*/
+    detailedView: 'Detailed view',
+    /*message detail*/
   },
   ja: {
     /*sign in page*/
@@ -165,7 +171,7 @@ export default {
     resetPassword: 'パスワードをリセット',
     noaccount: 'アカウントをお持ちでないですか？',
     justregister: '登録',
-    loginFailed: '無効なメールアドレスまたはパスワード',
+    loginFailed: '無効な電話番号またはパスワード',
     loginSuccess: 'ログインに成功しました',
     /*sign in page*/
 
@@ -211,6 +217,7 @@ export default {
     changePassword: 'パスワードを変更',
     savePassword: 'パスワードを保存',
     textSize: '文字サイズ',
+    sampleText: '読みやすさのために、自分に合った文字サイズを選んでください。',
     lightMode: 'ライトモード',
     darkMode: 'ダークモード',
     batteryOptimization: 'バッテリー最適化',
@@ -303,6 +310,10 @@ export default {
     confirmLogout: 'ログアウトの確認',
     logoutMessage: '本当にログアウトしますか？',
     /*Logout alert*/
+
+    /*message detail*/
+    detailedView: '詳細表示',
+    /*message detail*/
   },
   uz: {
     /*sign in page*/
@@ -317,7 +328,7 @@ export default {
     resetPassword: 'parolni tiklash',
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
-    loginFailed: "Noto'g'ri elektron pochta yoki parol",
+    loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
     loginSuccess: 'Muvaffaqiyatli kirdingiz',
     /*sign in page*/
 
@@ -363,6 +374,8 @@ export default {
     changePassword: "Parolni o'zgartirish",
     savePassword: 'Parolni saqlash',
     textSize: "Matn o'lchami",
+    sampleText:
+      "O'zingizga qulay bo'lgan matn hajmini tanlang — o'qish yanada qulay bo'ladi.",
     lightMode: "Yorug' rejim",
     darkMode: "Qorong'u rejim",
     batteryOptimization: 'Batareya optimizatsiyasi',
@@ -455,6 +468,10 @@ export default {
     confirmLogout: 'Chiqishni tasdiqlash',
     logoutMessage: 'Haqiqatan ham chiqmoqchimisiz?',
     /*Logout alert*/
+
+    /*message detail*/
+    detailedView: 'Batafsil ko‘rish',
+    /*message detail*/
   },
 };
 

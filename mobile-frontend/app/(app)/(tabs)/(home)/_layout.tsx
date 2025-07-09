@@ -1,13 +1,14 @@
-import { router, Stack } from 'expo-router';
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import React, { useContext } from 'react';
+import { Text, View } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
+import { I18nContext } from '@/contexts/i18n-context';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
+  const { language, i18n } = useContext(I18nContext);
 
   return (
     <Stack>
@@ -15,7 +16,6 @@ const Layout = () => {
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {
-          const { isOnlyStudent } = route.params || {};
           const studentId = route.params?.id;
 
           // Find the student by ID to get their name
@@ -25,39 +25,32 @@ const Layout = () => {
           return {
             headerTitle: studentName,
             headerTitleAlign: 'center',
-            headerLeft:
-              isOnlyStudent === 'true'
-                ? undefined
-                : () => (
-                    <Pressable
-                      onPress={() => {
-                        router.replace('/');
-                      }}
-                      style={{ marginLeft: 10 }}
-                    >
-                      <Ionicons
-                        name={'arrow-back-outline'}
-                        size={24}
-                        color='#adb5bd'
-                      />
-                    </Pressable>
-                  ),
             headerRight: () => {
               if (unreadCount === 0) {
                 return null;
               }
+
               return (
                 <View
                   style={{
-                    width: 25,
-                    height: 25,
+                    width: 30,
+                    height: 30,
                     backgroundColor: '#005678',
-                    borderRadius: '50%',
+                    borderRadius: 15,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={{ color: 'white' }}>{unreadCount}</Text>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontSize: 18,
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {unreadCount}
+                  </Text>
                 </View>
               );
             },
@@ -67,29 +60,9 @@ const Layout = () => {
       <Stack.Screen
         name='message/[id]'
         options={({ route }) => {
-          const { studentId } = route.params as { studentId?: string };
-
           return {
-            headerTitle: 'Detailed view',
+            headerTitle: i18n[language].detailedView,
             headerTitleAlign: 'center',
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  if (studentId) {
-                    router.replace(`/student/${studentId}`);
-                  } else {
-                    router.back();
-                  }
-                }}
-                style={{ marginLeft: 10 }}
-              >
-                <Ionicons
-                  name={'arrow-back-outline'}
-                  size={24}
-                  color='#adb5bd'
-                />
-              </Pressable>
-            ),
           };
         }}
       />

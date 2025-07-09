@@ -52,7 +52,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
   };
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -79,37 +79,63 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
             selected={value || undefined}
             onSelect={handleDateSelect}
             initialFocus
+            disabled={{ before: new Date() }}
           />
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="w-64 sm:w-auto">
               <div className="flex sm:flex-col p-2">
-                {hours.map((hour) => (
-                  <Button
-                    key={hour}
-                    size="icon"
-                    variant={value && value.getHours() === hour ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("hour", hour.toString())}
-                  >
-                    {hour.toString().padStart(2, "0")}
-                  </Button>
-                ))}
+                {hours.map((hour) => {
+                  const now = new Date();
+                  const isToday =
+                    value &&
+                    value.getFullYear() === now.getFullYear() &&
+                    value.getMonth() === now.getMonth() &&
+                    value.getDate() === now.getDate();
+
+                  const isPastHour = !!(isToday && hour < now.getHours());
+
+                  return (
+                    <Button
+                      key={hour}
+                      size="icon"
+                      variant={value && value.getHours() === hour ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("hour", hour.toString())}
+                      disabled={isPastHour}
+                    >
+                      {hour.toString().padStart(2, "0")}
+                    </Button>
+                  );
+                })}
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>
             <ScrollArea className="w-64 sm:w-auto">
               <div className="flex sm:flex-col p-2">
-                {minutes.map((minute) => (
-                  <Button
-                    key={minute}
-                    size="icon"
-                    variant={value && value.getMinutes() === minute ? "default" : "ghost"}
-                    className="sm:w-full shrink-0 aspect-square"
-                    onClick={() => handleTimeChange("minute", minute.toString())}
-                  >
-                    {minute.toString().padStart(2, "0")}
-                  </Button>
-                ))}
+                {minutes.map((minute) => {
+                  const now = new Date();
+                  const isToday =
+                    value &&
+                    value.getFullYear() === now.getFullYear() &&
+                    value.getMonth() === now.getMonth() &&
+                    value.getDate() === now.getDate();
+
+                  const isSameHour = value && value.getHours() === now.getHours();
+                  const isPastMinute = !!(isToday && isSameHour && minute < now.getMinutes());
+
+                  return (
+                    <Button
+                      key={minute}
+                      size="icon"
+                      variant={value && value.getMinutes() === minute ? "default" : "ghost"}
+                      className="sm:w-full shrink-0 aspect-square"
+                      onClick={() => handleTimeChange("minute", minute.toString())}
+                      disabled={isPastMinute}
+                    >
+                      {minute.toString().padStart(2, "0")}
+                    </Button>
+                  );
+                })}
               </div>
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>

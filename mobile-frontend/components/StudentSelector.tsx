@@ -80,7 +80,9 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
 
     return (
       <View style={[styles.card, { backgroundColor }]}>
-        <ThemedText>{i18n[language].SelectStudent}</ThemedText>
+        <Text style={styles.selectStudentTitle}>
+          {i18n[language].SelectStudent}
+        </Text>
         <View style={styles.studentList}>
           {students?.map(student => (
             <React.Fragment key={student.id}>
@@ -142,6 +144,12 @@ const styles = StyleSheet.create({
     gap: 25,
     padding: 16,
     margin: 16,
+  },
+  selectStudentTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
   },
   studentList: {
     marginBottom: 16,
