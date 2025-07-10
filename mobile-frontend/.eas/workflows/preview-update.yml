@@ -12,4 +12,4 @@ jobs:
     params:
       message: 'Preview update from main branch - ${{ github.sha }}'
       platform: all
-      branch: main
+      branch: preview
