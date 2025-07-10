@@ -18,8 +18,7 @@ import { registerForPushNotificationsAsync } from '@/utils/utils';
 import { ICountry } from 'react-native-international-phone-number';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Button } from '@rneui/themed';
-import { useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import Toast from 'react-native-root-toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 

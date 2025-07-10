@@ -4,6 +4,7 @@ import React, {
   useRef,
   useState,
   useCallback,
+  useMemo,
 } from 'react';
 import {
   ScrollView,
@@ -21,16 +22,14 @@ import { useSession } from '@/contexts/auth-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import Card from '@/components/card';
 import { ThemedText } from '@/components/ThemedText';
-import { Button } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import {
   fetchMessagesFromDB,
   fetchReadButNotSentMessages,
   saveMessagesToDB,
 } from '@/utils/queries';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMemo } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
 
