@@ -22,7 +22,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { I18nContext } from '@/contexts/i18n-context';
-import { Button, Text } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
@@ -32,7 +32,6 @@ import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
 import { Separator } from '@/components/atomic/separator';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
-import { useTheme } from '@rneui/themed';
 
 interface LanguageSelectionProps {
   language: string;
@@ -181,7 +180,7 @@ export default function SettingsScreen() {
               {i18n[language].phoneNumber}
             </ThemedText>
             <View style={styles.infoCard}>
-              <Text style={styles.value}>+{user && user.phone_number}</Text>
+              <ThemedText style={styles.value}>+{user && user.phone_number}</ThemedText>
             </View>
           </View>
           <View style={styles.infoContainer}>

@@ -13,9 +13,8 @@ import React, { useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-root-toast';
 import { ThemedText } from '@/components/ThemedText';
-import { Button } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import { useMutation } from '@tanstack/react-query';
-import { useTheme } from '@rneui/themed';
 
 const styles = StyleSheet.create({
   container: {
