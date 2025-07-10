@@ -13,7 +13,7 @@ import { I18nContext } from '@/contexts/i18n-context';
 import formatMessageDate from '@/utils/format';
 import { Message } from '@/constants/types';
 import { cn } from '@/utils/utils';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, Entypo } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
@@ -108,9 +108,7 @@ const Card = ({
         <View style={styles.titleRow}>
           {!isRead ? (
             <View style={styles.iconContainer}>
-              <ThemedText type='smaller' style={{ color: '#fff' }}>
-                New
-              </ThemedText>
+              <Entypo name='new' size={16} color='#fff' />
             </View>
           ) : null}
           <ThemedView
@@ -228,11 +226,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 8,
     backgroundColor: '#FF0000',
-    borderRadius: 16,
-    minHeight: 28,
-    minWidth: 40,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 1000,
+    padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },
