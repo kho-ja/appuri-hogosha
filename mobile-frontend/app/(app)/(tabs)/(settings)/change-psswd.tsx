@@ -2,19 +2,22 @@ import { router } from 'expo-router';
 import {
   Keyboard,
   StyleSheet,
-  TextInput,
   TouchableWithoutFeedback,
   View,
+  ScrollView,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-root-toast';
 import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
 import { useMutation } from '@tanstack/react-query';
+import { PasswordRequirements } from '@/components/PasswordRequirements';
 
 const styles = StyleSheet.create({
   container: {
@@ -22,38 +25,58 @@ const styles = StyleSheet.create({
     padding: 12,
     alignContent: 'center',
   },
+  scrollContainer: {
+    flexGrow: 1,
+  },
   submitButton: {
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor: '#005678',
-  },
-  title: {
-    fontWeight: 'bold',
-    fontSize: 20,
-  },
-  errorText: {
-    color: 'red',
+    backgroundColor: '#059669',
+    marginTop: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingBottom: 10,
-    marginBottom: 50,
+    marginBottom: 30,
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 2,
-    paddingTop: 10,
+  title: {
+    fontWeight: 'bold',
+    fontSize: 24,
   },
-  textInput: {
-    borderColor: 'grey',
-    borderWidth: 1,
-    borderRadius: 4,
-    padding: 8,
-    textAlignVertical: 'center',
+  subtitle: {
+    color: 'gray',
+    fontSize: 16,
+    marginTop: 5,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 10,
+    fontSize: 14,
+  },
+  strengthContainer: {
+    marginTop: 15,
     marginBottom: 10,
+  },
+  strengthLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  strengthBar: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#e9ecef',
+    overflow: 'hidden',
+  },
+  strengthFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  strengthText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 5,
   },
 });
 
@@ -63,8 +86,54 @@ export default function Index() {
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-  const [password, setPassword] = useState('');
+  
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
+  const [isStrengthIndicatorHidden, setIsStrengthIndicatorHidden] = useState(false);
+
+  // Password strength calculation
+  const calculatePasswordStrength = (
+    password: string
+  ): { score: number; label: string; color: string } => {
+    let score = 0;
+
+    if (password.length >= 8) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ]/.test(password)) score++;
+
+    if (score <= 2) {
+      return {
+        score: score * 20,
+        label: i18n[language].weak,
+        color: '#DC2626',
+      };
+    } else if (score <= 4) {
+      return {
+        score: score * 20,
+        label: i18n[language].medium,
+        color: '#F59E0B',
+      };
+    } else {
+      return {
+        score: score * 20,
+        label: i18n[language].strong,
+        color: '#059669',
+      };
+    }
+  };
+
+  const passwordStrength = calculatePasswordStrength(newPassword);
+
+  const isPasswordValid = () => {
+    const passwordRegex =
+      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
+    return passwordRegex.test(newPassword);
+  };
 
   const changePassword = async () => {
     const response = await fetch(`${apiUrl}/change-password`, {
@@ -74,8 +143,8 @@ export default function Index() {
         Authorization: `Bearer ${session}`,
       },
       body: JSON.stringify({
-        previous_password: await AsyncStorage.getItem('password'),
-        new_password: password,
+        previous_password: oldPassword,
+        new_password: newPassword,
       }),
     });
 
@@ -87,6 +156,7 @@ export default function Index() {
 
     return responseData;
   };
+
   const { mutate, isPending } = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
@@ -109,30 +179,133 @@ export default function Index() {
       console.error(error);
     },
   });
+
   const handlePress = () => {
     setErrorMessage('');
+
+    // Validation
+    if (!oldPassword.trim()) {
+      setErrorMessage(i18n[language].enterOldPassword);
+      return;
+    }
+
+    if (!isPasswordValid()) {
+      setErrorMessage(i18n[language].pleaseEnsurePasswordRequirements);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMessage(i18n[language].passwordsDoNotMatch);
+      return;
+    }
+
+    if (oldPassword === newPassword) {
+      setErrorMessage(i18n[language].newPasswordMustBeDifferent);
+      return;
+    }
     mutate();
   };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <View>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <ThemedView style={styles.header}>
+            <ThemedView>
               <ThemedText style={styles.title}>
-                {i18n[language].newpassword}
+                {i18n[language].changePassword}
               </ThemedText>
-            </View>
-          </View>
-          <TextInput
-            style={[
-              styles.textInput,
-              { color: theme.mode === 'light' ? 'black' : 'white' },
-            ]}
-            placeholder={i18n[language].enterPassword}
-            placeholderTextColor='grey'
-            onChangeText={setPassword}
+              <ThemedText style={styles.subtitle}>
+                {i18n[language].changePasswordText}
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+
+          <SecureInput
+            label={i18n[language].currentPassword}
+            placeholder={i18n[language].enterOldPassword}
+            onChangeText={setOldPassword}
+            value={oldPassword}
+            textContentType='password'
+            autoCapitalize='none'
           />
+
+          <SecureInput
+            label={i18n[language].newPassword}
+            placeholder={i18n[language].enterNewPassword}
+            onChangeText={(text) => {
+              setNewPassword(text);
+              // if the password is empty or weak, show the strength indicator
+              if (text.length === 0 || calculatePasswordStrength(text).score < 100) {
+                setIsStrengthIndicatorHidden(false);
+              }
+            }}
+            value={newPassword}
+            textContentType='newPassword'
+            autoCapitalize='none'
+          />
+
+          {newPassword.length > 0 && !isStrengthIndicatorHidden && (
+            <>
+              <ThemedView style={styles.strengthContainer}>
+                <ThemedText style={styles.strengthLabel}>
+                  {i18n[language].passwordStrength}
+                </ThemedText>
+                <View style={styles.strengthBar}>
+                  <View
+                    style={[
+                      styles.strengthFill,
+                      {
+                        width: `${passwordStrength.score}%`,
+                        backgroundColor: passwordStrength.color,
+                      },
+                    ]}
+                  />
+                </View>
+                <ThemedText
+                  style={[
+                    styles.strengthText,
+                    { color: passwordStrength.color },
+                  ]}
+                >
+                  {passwordStrength.label}
+                </ThemedText>
+              </ThemedView>
+
+              <PasswordRequirements
+                password={newPassword}
+                requirements={{
+                  minLength: i18n[language].minLength,
+                  hasNumber: i18n[language].hasNumber,
+                  hasUppercase: i18n[language].hasUppercase,
+                  hasLowercase: i18n[language].hasLowercase,
+                  hasSpecialChar: i18n[language].hasSpecialChar,
+                }}
+              />
+            </>
+          )}
+
+          <SecureInput
+            label={i18n[language].confirmPassword}
+            placeholder={i18n[language].enterConfirmPassword}
+            onChangeText={setConfirmPassword}
+            value={confirmPassword}
+            textContentType='newPassword'
+            autoCapitalize='none'
+            onFocus={() => {
+              setIsConfirmPasswordFocused(true);
+              // if the password is empty or weak, show the strength indicator
+              if (passwordStrength.score >= 100) {
+                setIsStrengthIndicatorHidden(true);
+              }
+            }}
+            onBlur={() => setIsConfirmPasswordFocused(false)}
+          />
+
           <Button
             onPress={handlePress}
             title={i18n[language].savePassword}
@@ -140,10 +313,11 @@ export default function Index() {
             disabled={isPending}
             loading={isPending}
           />
+
           {errorMessage !== '' && (
             <ThemedText style={styles.errorText}>{errorMessage}</ThemedText>
           )}
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
