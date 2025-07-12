@@ -10,7 +10,7 @@ const Layout = () => {
       <Stack.Screen name='settings' options={{ headerShown: false }} />
       <Stack.Screen
         name='change-psswd'
-        options={{ headerTitle: i18n[language].security, headerTitleAlign: 'center' }}
+        options={{ headerTitle: i18n[language].changePassword, headerTitleAlign: 'center' }}
       />
     </Stack>
   );

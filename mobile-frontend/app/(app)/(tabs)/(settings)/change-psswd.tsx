@@ -56,7 +56,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#DC2626',
-    marginTop: 15,
+    marginTop: 10,
+    marginBottom: 15,
     fontSize: 14,
     textAlign: 'center',
     padding: 12,
@@ -236,6 +237,18 @@ export default function Index() {
             </ThemedView>
           </ThemedView>
 
+          {errorMessage !== '' && (
+            <ThemedText style={[
+              styles.errorText,
+              {
+                backgroundColor: theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
+                borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
+              }
+            ]}>
+              {errorMessage}
+            </ThemedText>
+          )}
+
           <SecureInput
             label={i18n[language].currentPassword}
             placeholder={i18n[language].enterOldPassword}
@@ -322,18 +335,6 @@ export default function Index() {
             disabled={isPending}
             loading={isPending}
           />
-
-          {errorMessage !== '' && (
-            <ThemedText style={[
-              styles.errorText,
-              {
-                backgroundColor: theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
-                borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
-              }
-            ]}>
-              {errorMessage}
-            </ThemedText>
-          )}
         </View>
       </SafeAreaView>
     </ScrollView>

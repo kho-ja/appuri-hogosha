@@ -51,7 +51,6 @@ export type TranslationKeys = {
   language: string;
   logout: string;
   passwordChangedSuccess: string;
-  security: string;
   changePassword: string;
   changePasswordText: string;
   savePassword: string;
