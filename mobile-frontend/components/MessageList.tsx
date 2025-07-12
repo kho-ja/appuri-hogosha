@@ -488,13 +488,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   }
 
   return (
-    <SafeAreaView>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={styles.messageListContainer}
-      >
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      contentContainerStyle={styles.messageListContainer}
+    >
+      <SafeAreaView>
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
             <Card messageGroup={group.messages} studentId={student?.id || 0} />
@@ -525,8 +525,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
             }}
           />
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScrollView>
   );
 };
 
