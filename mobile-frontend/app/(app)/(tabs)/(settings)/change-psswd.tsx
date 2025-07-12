@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import {
   Keyboard,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
   ScrollView,
 } from 'react-native';
@@ -27,6 +26,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    paddingBottom: 30,
   },
   submitButton: {
     padding: 16,
@@ -54,8 +54,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 14,
   },
-  strengthContainer: {
+  strengthAndRequirementsContainer: {
     marginTop: 15,
+    marginBottom: 10,
+  },
+  strengthContainer: {
     marginBottom: 10,
   },
   strengthLabel: {
@@ -91,7 +94,6 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isConfirmPasswordFocused, setIsConfirmPasswordFocused] = useState(false);
   const [isStrengthIndicatorHidden, setIsStrengthIndicatorHidden] = useState(false);
 
   // Password strength calculation
@@ -207,8 +209,7 @@ export default function Index() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.scrollContainer}
@@ -250,7 +251,7 @@ export default function Index() {
           />
 
           {newPassword.length > 0 && !isStrengthIndicatorHidden && (
-            <>
+            <View style={styles.strengthAndRequirementsContainer}>
               <ThemedView style={styles.strengthContainer}>
                 <ThemedText style={styles.strengthLabel}>
                   {i18n[language].passwordStrength}
@@ -286,7 +287,7 @@ export default function Index() {
                   hasSpecialChar: i18n[language].hasSpecialChar,
                 }}
               />
-            </>
+            </View>
           )}
 
           <SecureInput
@@ -297,13 +298,11 @@ export default function Index() {
             textContentType='newPassword'
             autoCapitalize='none'
             onFocus={() => {
-              setIsConfirmPasswordFocused(true);
-              // if the password is empty or weak, show the strength indicator
+              // if the password is strong, hide the strength indicator
               if (passwordStrength.score >= 100) {
                 setIsStrengthIndicatorHidden(true);
               }
             }}
-            onBlur={() => setIsConfirmPasswordFocused(false)}
           />
 
           <Button
@@ -318,7 +317,6 @@ export default function Index() {
             <ThemedText style={styles.errorText}>{errorMessage}</ThemedText>
           )}
         </ScrollView>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 }
