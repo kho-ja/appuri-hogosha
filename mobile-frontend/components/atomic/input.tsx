@@ -33,6 +33,7 @@ const Input: React.FC<AdvancedInputProps> = ({ label, style, ...props }) => {
           borderColor: '#D1D5DB',
           color: theme.mode === 'light' ? 'black' : 'white',
         }}
+        placeholderTextColor={theme.mode === 'light' ? '#6B7280' : '#9CA3AF'}
         {...props}
       />
     </View>
