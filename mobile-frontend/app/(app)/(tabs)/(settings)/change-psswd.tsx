@@ -1,6 +1,5 @@
 import { router } from 'expo-router';
 import {
-  Keyboard,
   StyleSheet,
   View,
   ScrollView,
@@ -21,12 +20,18 @@ import { PasswordRequirements } from '@/components/PasswordRequirements';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 12,
-    alignContent: 'center',
+  },
+  safeAreaContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  contentContainer: {
+    padding: 16,
+    flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 30,
+    minHeight: '100%',
   },
   submitButton: {
     padding: 16,
@@ -50,9 +55,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   errorText: {
-    color: 'red',
-    marginTop: 10,
+    color: '#DC2626',
+    marginTop: 15,
     fontSize: 14,
+    textAlign: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   strengthAndRequirementsContainer: {
     marginTop: 15,
@@ -209,12 +218,13 @@ export default function Index() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-        >
+    <ScrollView
+      style={[styles.container, { backgroundColor }]}
+      contentContainerStyle={styles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+        <View style={[styles.contentContainer, { backgroundColor }]}>
           <ThemedView style={styles.header}>
             <ThemedView>
               <ThemedText style={styles.title}>
@@ -314,9 +324,18 @@ export default function Index() {
           />
 
           {errorMessage !== '' && (
-            <ThemedText style={styles.errorText}>{errorMessage}</ThemedText>
+            <ThemedText style={[
+              styles.errorText,
+              {
+                backgroundColor: theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
+                borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
+              }
+            ]}>
+              {errorMessage}
+            </ThemedText>
           )}
-        </ScrollView>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </ScrollView>
   );
 }

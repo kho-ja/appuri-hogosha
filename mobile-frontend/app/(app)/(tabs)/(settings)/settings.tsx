@@ -211,7 +211,7 @@ export default function SettingsScreen() {
                 </View>
 
                 <ThemedText style={styles.rowLabel}>
-                  {i18n[language].changePassword}
+                  {i18n[language].security}
                 </ThemedText>
 
                 <View style={styles.rowSpacer} />
