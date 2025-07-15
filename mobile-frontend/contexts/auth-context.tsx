@@ -103,8 +103,11 @@ export function SessionProvider(props: React.PropsWithChildren) {
               const data: Session = await response.json();
               setSession(data.access_token);
               await AsyncStorage.setItem('refresh_token', data.refresh_token);
+              
+              // Clear existing user data and insert new
+              await db.execAsync('DELETE FROM user');
               await db.runAsync(
-                'INSERT INTO user (given_name, family_name, phone_number, email) VALUES ($given_name, $family_name, $phone_number, $email)',
+                'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
                 [
                   data.user.given_name,
                   data.user.family_name,
