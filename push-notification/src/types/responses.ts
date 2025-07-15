@@ -20,9 +20,11 @@ export interface BulkSmsResult {
 
 export interface NotificationResult {
     message: string;
-    count?: number;
-    total?: number;
-    error?: string;
+    count: number;
+    total: number;
+    push_count?: number;
+    sms_only_count?: number;
+    error?: string
 }
 
 export interface DiagnosticsResult {
