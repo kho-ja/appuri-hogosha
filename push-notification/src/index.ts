@@ -57,6 +57,17 @@ export const handler = async (event: any, context: any) => {
                 console.log('⏰ Processing scheduled task');
                 const result = await notificationProcessor.processNotifications();
                 await dbClient.closeConnection();
+
+                // Enhanced logging for mixed notifications
+                console.log(`📊 Notification Summary:`);
+                console.log(`   📋 Total processed: ${result.count}/${result.total}`);
+                if (result.push_count !== undefined) {
+                    console.log(`   📱 Push notifications: ${result.push_count}`);
+                }
+                if (result.sms_only_count !== undefined) {
+                    console.log(`   📧 SMS-only notifications: ${result.sms_only_count}`);
+                }
+
                 return {
                     statusCode: 200,
                     body: JSON.stringify(result)
@@ -66,6 +77,16 @@ export const handler = async (event: any, context: any) => {
                 console.log('📱 Processing as default notification task');
                 const defaultResult = await notificationProcessor.processNotifications();
                 await dbClient.closeConnection();
+
+                console.log(`📊 Default Notification Summary:`);
+                console.log(`   📋 Total processed: ${defaultResult.count}/${defaultResult.total}`);
+                if (defaultResult.push_count !== undefined) {
+                    console.log(`   📱 Push notifications: ${defaultResult.push_count}`);
+                }
+                if (defaultResult.sms_only_count !== undefined) {
+                    console.log(`   📧 SMS-only notifications: ${defaultResult.sms_only_count}`);
+                }
+
                 return {
                     statusCode: 200,
                     body: JSON.stringify(defaultResult)
@@ -88,11 +109,29 @@ export const handler = async (event: any, context: any) => {
                 statusCode: 500,
                 body: JSON.stringify({
                     message: "error",
-                    error: error instanceof Error ? error.message : String(error)
+                    error: error instanceof Error ? error.message : String(error),
+                    count: 0,
+                    total: 0
                 })
             };
         }
+    } finally {
+        // Ensure database connection is closed
+        try {
+            await dbClient.closeConnection();
+        } catch (closeError) {
+            console.warn("⚠️ Error closing database connection:", closeError);
+        }
     }
+};
+
+// Export for testing
+export {
+    notificationProcessor,
+    dbQueries,
+    pinpointService,
+    playMobileService,
+    awsSmsService
 };
 
 // For local development - run directly
