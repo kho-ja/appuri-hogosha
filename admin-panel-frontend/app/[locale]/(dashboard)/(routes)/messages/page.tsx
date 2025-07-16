@@ -342,7 +342,7 @@ export default function Info() {
 
   const searchParams = useSearchParams();
   const initialTab =
-    (searchParams.get("tab") as "messages" | "scheduled") || "messages";
+    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
   const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   return (

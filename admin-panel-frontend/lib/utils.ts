@@ -9,6 +9,17 @@ function parseAsUTC(date: string): Date {
   if (!date) return new Date("");
   return new Date(date);
 }
+
+export function FormatDate(
+  date: string,
+  style: Intl.DateTimeFormatOptions = { dateStyle: "long" }
+) {
+  if (!date) return "";
+  const parsedDate = parseAsUTC(date);
+  if (isNaN(parsedDate.getTime())) return "";
+  return parsedDate.toLocaleString(undefined, style);
+}
+
 export function FormatDateTime(
   date: string,
   style: Intl.DateTimeFormatOptions = { dateStyle: "medium", timeStyle: "short" }
@@ -17,6 +28,13 @@ export function FormatDateTime(
   const parsedDate = parseAsUTC(date);
   if (isNaN(parsedDate.getTime())) return "";
   return parsedDate.toLocaleString(undefined, style);
+}
+
+export function convertTimeToUTC(date: string) {
+  const serverDate = new Date(date);
+  const hours = process.env.NEXT_PUBLIC_CALLIBRATE_HOURS ?? 0;
+  serverDate.setHours(serverDate.getHours() + Number(hours));
+  return serverDate;
 }
 
 export async function convertToUtf8IfNeeded(file: File) {
