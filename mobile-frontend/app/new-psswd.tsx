@@ -189,8 +189,10 @@ export default function NewPassword() {
 
       await AsyncStorage.removeItem('temp_password');
 
+      // Clear existing user data and insert new
+      await db.execAsync('DELETE FROM user');
       await db.runAsync(
-        'INSERT INTO user (given_name, family_name, phone_number, email) VALUES ($given_name, $family_name, $phone_number, $email)',
+        'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
         [
           data.user.given_name,
           data.user.family_name,

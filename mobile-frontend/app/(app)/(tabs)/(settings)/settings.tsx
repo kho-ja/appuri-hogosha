@@ -105,8 +105,13 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const userData: User | null = await db.getFirstSync('SELECT * FROM user');
-      setUser(userData);
+      try {
+        const userData: User | null = await db.getFirstSync('SELECT * FROM user');
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        setUser(null);
+      }
     };
 
     fetchUser();
@@ -161,15 +166,15 @@ export default function SettingsScreen() {
                   : ''}
               </ThemedText>
             </View>
-            <View>
+            <View style={styles.userInfoContainer}>
               <View style={styles.namesContainer}>
                 <ThemedText style={styles.profileText}>
                   {user && `${user.given_name} ${user.family_name}`}
                 </ThemedText>
               </View>
               <View>
-                <ThemedText style={styles.email}>
-                  {user && user.email}
+                <ThemedText style={[styles.email, { color: theme.colors.grey1 }]}>
+                  {user?.email}
                 </ThemedText>
               </View>
             </View>
@@ -385,7 +390,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 10,
-    marginBottom: -5,
+    marginBottom: 5,
+  },
+  userInfoContainer: {
+    flex: 1,
+    justifyContent: 'center',
   },
   nameProfile: {
     height: 65,
@@ -399,15 +408,14 @@ const styles = StyleSheet.create({
   },
   profileText: {
     fontSize: 20,
-    fontWeight: 600,
-    width: '80%',
+    fontWeight: '600',
     flexWrap: 'wrap',
-    height: 'auto',
+    flexShrink: 1,
   },
   email: {
-    fontWeight: 400,
-    color: 'grey',
+    fontWeight: '400',
     fontSize: 16,
+    marginTop: 2,
   },
   profileInitial: {
     width: '80%',

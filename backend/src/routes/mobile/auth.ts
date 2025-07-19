@@ -91,7 +91,7 @@ class AuthController implements IController {
             const authData = await this.cognitoClient.login(phone_number, password)
 
             const parents = await DB.query(`SELECT
-                pa.id,pa.phone_number,pa.phone_number,
+                pa.id,pa.email,pa.phone_number,
                 pa.given_name,pa.family_name,
                 sc.name AS school_name
             FROM Parent AS pa
@@ -122,7 +122,7 @@ class AuthController implements IController {
                 access_token: authData.accessToken,
                 refresh_token: authData.refreshToken,
                 user: {
-                    id: parents.id,
+                    id: parent.id,
                     email: parent.email,
                     phone_number: parent.phone_number,
                     given_name: parent.given_name,
