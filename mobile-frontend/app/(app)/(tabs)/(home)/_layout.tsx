@@ -12,7 +12,21 @@ const Layout = () => {
 
   return (
     <Stack>
-      <Stack.Screen name='index' options={{ headerShown: false }} />
+      <Stack.Screen 
+        name='index' 
+        options={{ 
+          headerTitle: i18n[language].SelectStudent,
+          headerTitleAlign: 'center',
+          headerStyle: {
+            backgroundColor: 'rgb(59, 129, 246)'
+          },
+          headerTitleStyle: {
+            color: 'white',
+            fontWeight: 'bold'
+          },
+          headerTintColor: 'white'
+        }} 
+      />
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {

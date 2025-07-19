@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -17,6 +18,8 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
     const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
+    const { theme } = useTheme();
+    const textColor = useThemeColor({}, 'text');
 
     const handleStudentSelect = useCallback(
       (student: Student, autoNavigation = false) => {
@@ -41,7 +44,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       },
       [router, students]
     );
-    const { theme } = useTheme();
 
     // Auto-navigate if there's only one student (only once)
     React.useEffect(() => {
@@ -79,39 +81,49 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     };
 
     return (
-      <View style={[styles.card, { backgroundColor }]}>
-        <Text style={styles.selectStudentTitle}>
-          {i18n[language].SelectStudent}
-        </Text>
-        <View style={styles.studentList}>
-          {students?.map(student => (
-            <React.Fragment key={student.id}>
-              <Separator />
-              <Pressable
-                style={styles.studentEntry}
-                onPress={() => handleStudentSelect(student)}
-              >
+      <View style={styles.studentList}>
+        {students?.map(student => (
+          <React.Fragment key={student.id}>
+            <Pressable
+              style={[
+                styles.studentEntry,
+                {
+                  backgroundColor: theme.mode === 'dark' ? '#1E1E1E' : '#FFFFFF',
+                  borderColor: theme.mode === 'dark' ? '#3a3a3c' : 'rgb(228, 231, 235)',
+                }
+              ]}
+              onPress={() => handleStudentSelect(student)}
+            >
                 <ThemedView
                   style={[
                     styles.studentAvatar,
                     {
                       backgroundColor: getConsistentAvatarColor(student.id),
-                      borderColor: borderColor,
+                      borderColor: 'transparent',
                     },
                   ]}
                 >
-                  <Text style={{ fontWeight: 'bold' }}>
+                  <Text style={{ fontWeight: 'bold', color: '#fff' }}>
                     {student.given_name.charAt(0).toUpperCase()}
                     {student.given_name.charAt(1)}
                   </Text>
                 </ThemedView>
-                <ThemedView style={styles.StudentContainer}>
+                <ThemedView style={[styles.StudentContainer, { backgroundColor: 'transparent' }]}>
                   <View style={{ maxWidth: '85%' }}>
-                    <ThemedText style={styles.studentName}>
+                    <ThemedText style={[styles.studentName, { color: textColor }]}>
                       {student.given_name}
                     </ThemedText>
-                    <ThemedText style={styles.studentEmail} numberOfLines={1}>
-                      {student.email}
+                    <ThemedText style={[styles.studentId, { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' }]}>
+                      {(i18n as any).StudentIdLabel || 
+                       (language === 'ja' ? '学生ID:' : 
+                        language === 'uz' ? 'Talaba ID raqami:' : 
+                        'Student ID:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.student_number}</Text>
+                    </ThemedText>
+                    <ThemedText style={[styles.studentEmail, { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' }]} numberOfLines={1}>
+                      {(i18n as any).EmailLabel || 
+                       (language === 'ja' ? 'メールアドレス:' : 
+                        language === 'uz' ? 'Elektron pochta:' : 
+                        'Email:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.email}</Text>
                     </ThemedText>
                   </View>
                   <ThemedText style={{ width: 25, height: 25 }}>
@@ -127,8 +139,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
               </Pressable>
             </React.Fragment>
           ))}
-          <Separator orientation='horizontal' />
-        </View>
       </View>
     );
   }
@@ -137,52 +147,52 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
 StudentSelector.displayName = 'StudentSelector';
 
 const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 25,
-    padding: 16,
-    margin: 16,
-  },
-  selectStudentTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
   studentList: {
     marginBottom: 16,
   },
   studentEntry: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    marginTop: 12,
+    marginBottom: 16,
+    marginLeft: 16,
+    marginRight: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   studentAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
-    borderStyle: 'solid',
-    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   studentName: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 4,
+  },
+  studentId: {
+    fontSize: 14,
+    marginBottom: 4,
   },
   studentEmail: {
     fontSize: 14,
-    color: 'gray',
   },
   MessageCount: {
     width: '100%',
     height: '100%',
     borderRadius: 15,
-    backgroundColor: '#005678',
+    backgroundColor: '#3B81F6',
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -20,6 +20,7 @@ import Autolink from 'react-native-autolink';
 import { ThemedView } from '@/components/ThemedView';
 import { DateTime } from 'luxon';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import { useTheme } from '@rneui/themed';
 
 const Card = ({
   messageGroup,
@@ -32,6 +33,7 @@ const Card = ({
   const { language, i18n } = useContext(I18nContext);
   const db = useSQLiteContext();
   const { multiplier } = useFontSize();
+  const { theme } = useTheme();
   // const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
   const textColor = useThemeColor({}, 'text');
   const firstMessage = messageGroup[0];
@@ -68,9 +70,9 @@ const Card = ({
 
   const getImportanceBadgeStyle = (priority: string) => {
     const baseStyle = {
-      paddingHorizontal: 8,
+      paddingHorizontal: 12,
       paddingVertical: 4,
-      borderRadius: 5,
+      borderRadius: 15,
       color: 'white',
       fontSize: 12 * multiplier,
       textAlign: 'center' as const,
@@ -89,7 +91,7 @@ const Card = ({
   };
 
   const autolinkStyles: StyleProp<TextStyle> = {
-    color: textColor,
+    color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
     fontSize: 16 * multiplier,
   };
 
@@ -104,7 +106,14 @@ const Card = ({
 
   return (
     <Pressable onPress={handlePress}>
-      <View style={[styles.container, { opacity: isRead ? 0.5 : 1 }]}>
+      <View style={[
+        styles.container, 
+        { 
+          opacity: isRead ? 0.5 : 1,
+          backgroundColor: theme.mode === 'dark' ? '#1C1C1E' : '#FFFFFF',
+          borderColor: theme.mode === 'dark' ? '#2C2C2E' : '#E5E5EA',
+        }
+      ]}>
         <View style={styles.titleRow}>
           {!isRead ? (
             <View style={styles.iconContainer}>
@@ -171,24 +180,30 @@ const Card = ({
             hashtag='instagram'
             mention='instagram'
             text={firstMessage.content}
-            numberOfLines={5}
+            numberOfLines={2}
             style={autolinkStyles}
             textProps={{ style: autolinkStyles }}
           />
         </View>
         <View style={styles.bottomRow}>
+          <ThemedText type='smaller' style={[styles.dateText, { color: theme.mode === 'dark' ? '#8E8E93' : '#666666' }]}>
+            {localDateTime.toFormat('dd.MM.yyyy   HH:mm')}
+          </ThemedText>
           <TouchableOpacity style={styles.readMoreButton} onPress={handlePress}>
             <ThemedText
-              style={styles.readMoreText}
+              style={[styles.readMoreText, { color: theme.mode === 'dark' ? '#0A84FF' : '#2089dc' }]}
               numberOfLines={1}
               ellipsizeMode='tail'
             >
               {i18n[language].continueReading}
             </ThemedText>
+            <Ionicons
+              name='chevron-forward'
+              size={16}
+              color={theme.mode === 'dark' ? '#0A84FF' : '#2089dc'}
+              style={{ marginLeft: 4 }}
+            />
           </TouchableOpacity>
-          <ThemedText type='smaller' style={styles.dateText}>
-            {formatMessageDate(new Date(formattedTime), language)}
-          </ThemedText>
         </View>
       </View>
     </Pressable>
@@ -200,14 +215,21 @@ export default Card;
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
     minHeight: 50,
     zIndex: 1,
     position: 'relative',
     marginHorizontal: 15,
     marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.09,
+    shadowRadius: 1,
+    elevation: 1,
   },
   MessageTitleContainer: {
     flexDirection: 'row',
@@ -256,12 +278,10 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   readMoreButton: {
-    flex: 1,
-    marginTop: 5,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-end',
   },
   bottomRow: {
     flexDirection: 'row',
@@ -275,7 +295,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   readMoreText: {
-    color: '#2089dc',
     fontWeight: '600',
   },
   groupStyle: {

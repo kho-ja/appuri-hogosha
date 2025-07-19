@@ -9,6 +9,8 @@ import {
   Pressable,
   ActivityIndicator,
   ToastAndroid,
+  Linking,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
@@ -21,7 +23,6 @@ import { DatabaseMessage, Student } from '@/constants/types';
 import formatMessageDate from '@/utils/format';
 import { Autolink } from 'react-native-autolink';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Image } from 'expo-image';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { Separator } from '@/components/atomic/separator';
 import { Ionicons } from '@expo/vector-icons';
@@ -87,6 +88,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     display: 'flex',
     alignSelf: 'flex-end',
+  },
+  downloadButton: {
+    marginTop: 10,
+    marginBottom: 10,
+    backgroundColor: 'transparent',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderWidth: 1,
+    alignSelf: 'flex-end',
+    minWidth: 150,
+    maxWidth: 200,
+  },
+  downloadButtonText: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  imageContainer: {
+    marginVertical: 15,
+  },
+  imageWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 });
 
@@ -320,6 +347,23 @@ export default function DetailsScreen() {
     }
   };
 
+  const downloadFile = async (filename: string) => {
+    try {
+      const fileUrl = `${imageUrl}/${filename}`;
+      const supported = await Linking.canOpenURL(fileUrl);
+      
+      if (supported) {
+        await Linking.openURL(fileUrl);
+        ToastAndroid.show('Opening file...', ToastAndroid.SHORT);
+      } else {
+        ToastAndroid.show('Cannot open this file type', ToastAndroid.SHORT);
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      ToastAndroid.show('Error downloading file', ToastAndroid.SHORT);
+    }
+  };
+
   const sentTimeString = message.sent_time;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -327,11 +371,16 @@ export default function DetailsScreen() {
     zone: 'utc',
   });
   const localDateTime = utcDateTime.setZone(userTimeZone);
-  const formattedTime = localDateTime.toFormat('yyyy-MM-dd HH:mm');
+  const formattedTime = localDateTime.toFormat('dd.MM.yyyy   HH:mm');
 
   return (
     <ScrollView style={[styles.container, { backgroundColor }]}>
-      <View style={{ alignItems: 'flex-end', marginBottom: 10 }}>
+      <View style={[styles.titleRow, { justifyContent: 'space-between', alignItems: 'center' }]}>
+        <ThemedText
+          style={[styles.title, { fontSize: 18 * multiplier, width: 'auto', textAlign: 'left', flex: 1 }]}
+        >
+          {message.title}
+        </ThemedText>
         <View
           style={{
             backgroundColor:
@@ -345,7 +394,7 @@ export default function DetailsScreen() {
             paddingVertical: 4 * multiplier,
             justifyContent: 'center',
             alignItems: 'center',
-            maxWidth: '40%',
+            marginLeft: 10,
           }}
         >
           <ThemedText
@@ -360,13 +409,31 @@ export default function DetailsScreen() {
           </ThemedText>
         </View>
       </View>
-      <View style={[styles.titleRow, { justifyContent: 'center' }]}>
-        <ThemedText
-          style={[styles.title, { fontSize: 18 * multiplier, width: '100%' }]}
-        >
-          {message.title}
-        </ThemedText>
-      </View>
+
+      {/* Images section - moved between title and description */}
+      {imageArray.length > 0 && (
+        <View style={styles.imageContainer}>
+          {imageArray.map((filename, idx) => (
+            <View key={idx}>
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrentImageIndex(idx);
+                  setZoomVisible(true);
+                }}
+              >
+                <View style={styles.imageWrapper}>
+                  <Image
+                    style={styles.image}
+                    source={{ uri: `${imageUrl}/${filename}` }}
+                    resizeMode='cover'
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={styles.descriptionRow}>
         <Autolink
           email
@@ -376,58 +443,59 @@ export default function DetailsScreen() {
           style={{ color: textColor, fontSize: 16 * multiplier }}
         />
       </View>
-      <Pressable style={styles.copyButton} onPress={copyToClipboard}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name='copy-outline' size={20} color='white' />
-          <Text
-            style={{
-              color: 'white',
-              marginLeft: 5,
-              fontSize: 14 * multiplier,
-            }}
-          >
-            Copy
-          </Text>
-        </View>
-      </Pressable>
-      <View style={{ marginBottom: 25 }}>
-        <Separator orientation='horizontal' />
-      </View>
       {imageArray.length > 0 && (
-        <View>
-          {imageArray.map((filename, idx) => (
-            <TouchableOpacity
-              key={idx}
-              onPress={() => {
-                setCurrentImageIndex(idx);
-                setZoomVisible(true);
-              }}
-            >
-              <Image
-                style={styles.image}
-                source={{ uri: `${imageUrl}/${filename}` }}
-                contentFit='contain'
-                transition={300}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+        <TouchableOpacity
+          style={[
+            styles.downloadButton,
+            { 
+              borderColor: theme.mode === 'dark' ? '#4A5568' : '#E4E7EB'
+            }
+          ]}
+          onPress={() => {
 
-      <View style={[styles.dateRow, { justifyContent: 'flex-start' }]}>
-        <Ionicons
-          name={'calendar-outline'}
-          size={20 * multiplier}
-          color='#adb5bd'
-        />
+            console.log('Download button pressed - placeholder');
+          }}
+        >
+          <Ionicons 
+            name='download-outline' 
+            size={20} 
+            color='#007AFF'
+          />
+          <Text style={[
+            styles.downloadButtonText, 
+            { 
+              fontSize: 14 * multiplier,
+              color: theme.mode === 'dark' ? 'white' : '#333'
+            }
+          ]}>
+            {i18n[language].contractFile}
+          </Text>
+        </TouchableOpacity>
+      )}
+      <View style={[styles.dateRow, { justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
         <ThemedText
           style={[
             styles.dateText,
             { fontSize: 14 * multiplier, color: '#666' },
           ]}
         >
-          {formatMessageDate(new Date(formattedTime), language)}
+          {formattedTime}
         </ThemedText>
+        
+        <Pressable style={[styles.copyButton, { marginTop: 0, marginBottom: 0, backgroundColor: 'transparent' }]} onPress={copyToClipboard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name='copy-outline' size={20} color='#007AFF' />
+            <Text
+              style={{
+                color: '#007AFF',
+                marginLeft: 5,
+                fontSize: 14 * multiplier,
+              }}
+            >
+              Copy
+            </Text>
+          </View>
+        </Pressable>
       </View>
       <Modal
         visible={zoomVisible}
