@@ -26,12 +26,27 @@ export default function ThemeSwitcher() {
         {mode === 'light' ? i18n[language].lightMode : i18n[language].darkMode}
       </ThemedText>
       <View style={styles.rowSpacer} />
-      <Switch
-        value={mode === 'dark'}
-        onValueChange={toggleTheme}
-        trackColor={{ false: '#767577', true: '#81b0ff' }}
-        thumbColor={mode === 'dark' ? '#f5dd4b' : '#f4f3f4'}
-      />
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View
+          style={[
+            styles.switchWrapper,
+            {
+              backgroundColor: mode === 'dark' ? '#226fc9' : '#D1D5DB',
+            },
+          ]}
+        >
+          <Switch
+            value={mode === 'dark'}
+            onValueChange={toggleTheme}
+            trackColor={{
+              false: mode === 'dark' ? '#226fc9' : '#D1D5DB',
+              true: mode === 'dark' ? '#226fc9' : '#D1D5DB',
+            }}
+            thumbColor={'#fff'}
+            style={{ alignSelf: 'center' }}
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -45,7 +60,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   iconContainer: {
     width: 32,
@@ -61,5 +76,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
+  },
+  switchWrapper: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 8,
+    justifyContent: 'center',
   },
 });
