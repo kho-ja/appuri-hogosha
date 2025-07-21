@@ -382,7 +382,7 @@ export default function SettingsScreen() {
               </ThemedView>
             </ThemedView>
           </BottomSheetModal>
-          <View style={{ marginTop: 20, marginBottom: 20 }}>
+          <View style={{ marginTop: 40, marginBottom: 20 }}>
             <Button
               buttonStyle={[
                 styles.submitButton,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     flexBasis: 0,
   },
   submitButton: {
-    padding: 16,
+    padding: 10,
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
