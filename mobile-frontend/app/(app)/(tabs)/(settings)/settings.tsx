@@ -80,13 +80,9 @@ interface LanguageSelectionProps {
   flag: string;
 }
 
-const LanguageSelection: React.FC<LanguageSelectionProps & { isDark: boolean }> = ({
-  language,
-  selectedLanguage,
-  onSelect,
-  flag,
-  isDark,
-}) => {
+const LanguageSelection: React.FC<
+  LanguageSelectionProps & { isDark: boolean }
+> = ({ language, selectedLanguage, onSelect, flag, isDark }) => {
   const selected = selectedLanguage === language;
   return (
     <TouchableOpacity
@@ -232,7 +228,10 @@ export default function SettingsScreen() {
                 />
                 <View>
                   <ThemedText
-                    style={[styles.profileInitial, { color: theme.colors.grey1 }]}
+                    style={[
+                      styles.profileInitial,
+                      { color: theme.colors.grey1 },
+                    ]}
                   >
                     {i18n[language].phoneNumber}
                   </ThemedText>
@@ -464,7 +463,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     position: 'relative',
   },
-    container1: {
+  container1: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
