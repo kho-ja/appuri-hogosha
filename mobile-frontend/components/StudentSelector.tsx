@@ -118,12 +118,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                         language === 'uz' ? 'Talaba ID raqami:' : 
                         'Student ID:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.student_number}</Text>
                     </ThemedText>
-                    <ThemedText style={[styles.studentEmail, { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' }]} numberOfLines={1}>
-                      {(i18n as any).EmailLabel || 
-                       (language === 'ja' ? 'メールアドレス:' : 
-                        language === 'uz' ? 'Elektron pochta:' : 
-                        'Email:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.email}</Text>
-                    </ThemedText>
                   </View>
                   <ThemedText style={{ width: 25, height: 25 }}>
                     {student.unread_count ? (
@@ -183,9 +177,6 @@ const styles = StyleSheet.create({
   studentId: {
     fontSize: 14,
     marginBottom: 4,
-  },
-  studentEmail: {
-    fontSize: 14,
   },
   MessageCount: {
     width: '100%',

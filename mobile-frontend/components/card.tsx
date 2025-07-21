@@ -75,6 +75,7 @@ const Card = ({
       color: 'white',
       fontSize: 12 * multiplier,
       textAlign: 'center' as const,
+      opacity: isRead ? 0.6 : 1, // apply opacity based on read status icon
     };
 
     switch (priority) {
@@ -92,6 +93,7 @@ const Card = ({
   const autolinkStyles: StyleProp<TextStyle> = {
     color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
     fontSize: 16 * multiplier,
+    opacity: isRead ? 0.6 : 1,
   };
 
   const sentTimeString = firstMessage.sent_time;
@@ -108,7 +110,6 @@ const Card = ({
       <View style={[
         styles.container, 
         { 
-          opacity: isRead ? 0.5 : 1,
           backgroundColor: theme.mode === 'dark' ? '#1C1C1E' : '#FFFFFF',
           borderColor: theme.mode === 'dark' ? '#2C2C2E' : '#E5E5EA',
         }
@@ -130,7 +131,7 @@ const Card = ({
                 numberOfLines={1}
                 style={cn(
                   isRead
-                    ? { fontWeight: 'bold' }
+                    ? { fontWeight: 'bold', opacity: 0.6 }
                     : { marginRight: 20, fontWeight: 'bold' },
                   { color: textColor }
                 )}
@@ -171,12 +172,18 @@ const Card = ({
           />
         </View>
         <View style={styles.bottomRow}>
-          <ThemedText type='smaller' style={[styles.dateText, { color: theme.mode === 'dark' ? '#8E8E93' : '#666666' }]}>
+          <ThemedText type='smaller' style={[styles.dateText, { 
+            color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
+            opacity: isRead ? 0.6 : 1
+          }]}>
             {localDateTime.toFormat('dd.MM.yyyy   HH:mm')}
           </ThemedText>
-          <TouchableOpacity style={styles.readMoreButton} onPress={handlePress}>
+          <TouchableOpacity style={[styles.readMoreButton, { opacity: 1 }]} onPress={handlePress}>
             <ThemedText
-              style={[styles.readMoreText, { color: theme.mode === 'dark' ? '#0A84FF' : '#2089dc' }]}
+              style={[styles.readMoreText, { 
+                color: theme.mode === 'dark' ? '#0A84FF' : '#2089dc',
+                opacity: 1 
+              }]}
               numberOfLines={1}
               ellipsizeMode='tail'
             >
@@ -186,7 +193,7 @@ const Card = ({
               name='chevron-forward'
               size={16}
               color={theme.mode === 'dark' ? '#0A84FF' : '#2089dc'}
-              style={{ marginLeft: 4 }}
+              style={{ marginLeft: 4, opacity: 1 }}
             />
           </TouchableOpacity>
         </View>

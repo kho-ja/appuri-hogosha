@@ -4,11 +4,13 @@ import { Text, View } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
 import { I18nContext } from '@/contexts/i18n-context';
+import { useTheme } from '@rneui/themed';
 
 const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
   const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
 
   return (
     <Stack>
@@ -49,7 +51,7 @@ const Layout = () => {
                   style={{
                     width: 30,
                     height: 30,
-                    backgroundColor: '#005678',
+                    backgroundColor: theme.mode === 'dark' ? 'rgb(59, 129, 246)' : 'rgba(26, 74, 172, 1)',
                     borderRadius: 15,
                     justifyContent: 'center',
                     alignItems: 'center',
