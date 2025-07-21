@@ -9,7 +9,6 @@ import {
   Pressable,
   ActivityIndicator,
   ToastAndroid,
-  Linking,
   Image,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -20,11 +19,9 @@ import { I18nContext } from '@/contexts/i18n-context';
 import { useNetwork } from '@/contexts/network-context';
 import { fetchMessageFromDB, saveMessageToDB } from '@/utils/queries';
 import { DatabaseMessage, Student } from '@/constants/types';
-import formatMessageDate from '@/utils/format';
 import { Autolink } from 'react-native-autolink';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { Separator } from '@/components/atomic/separator';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
@@ -88,25 +85,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     display: 'flex',
     alignSelf: 'flex-end',
-  },
-  downloadButton: {
-    marginTop: 10,
-    marginBottom: 10,
-    backgroundColor: 'transparent',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    borderWidth: 1,
-    alignSelf: 'flex-end',
-    minWidth: 150,
-    maxWidth: 200,
-  },
-  downloadButtonText: {
-    marginLeft: 8,
-    fontSize: 14,
-    fontWeight: '500',
   },
   imageContainer: {
     marginVertical: 15,
@@ -347,23 +325,6 @@ export default function DetailsScreen() {
     }
   };
 
-  const downloadFile = async (filename: string) => {
-    try {
-      const fileUrl = `${imageUrl}/${filename}`;
-      const supported = await Linking.canOpenURL(fileUrl);
-      
-      if (supported) {
-        await Linking.openURL(fileUrl);
-        ToastAndroid.show('Opening file...', ToastAndroid.SHORT);
-      } else {
-        ToastAndroid.show('Cannot open this file type', ToastAndroid.SHORT);
-      }
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      ToastAndroid.show('Error downloading file', ToastAndroid.SHORT);
-    }
-  };
-
   const sentTimeString = message.sent_time;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -443,35 +404,8 @@ export default function DetailsScreen() {
           style={{ color: textColor, fontSize: 16 * multiplier }}
         />
       </View>
-      {imageArray.length > 0 && (
-        <TouchableOpacity
-          style={[
-            styles.downloadButton,
-            { 
-              borderColor: theme.mode === 'dark' ? '#4A5568' : '#E4E7EB'
-            }
-          ]}
-          onPress={() => {
 
-            console.log('Download button pressed - placeholder');
-          }}
-        >
-          <Ionicons 
-            name='download-outline' 
-            size={20} 
-            color='#007AFF'
-          />
-          <Text style={[
-            styles.downloadButtonText, 
-            { 
-              fontSize: 14 * multiplier,
-              color: theme.mode === 'dark' ? 'white' : '#333'
-            }
-          ]}>
-            {i18n[language].contractFile}
-          </Text>
-        </TouchableOpacity>
-      )}
+      {/* Date and Copy button on the same level */}
       <View style={[styles.dateRow, { justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
         <ThemedText
           style={[

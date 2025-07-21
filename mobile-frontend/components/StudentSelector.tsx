@@ -4,7 +4,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Pressable, StyleSheet, View, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Separator } from './atomic/separator';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -105,13 +104,13 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                 >
                   <Text style={{ fontWeight: 'bold', color: '#fff' }}>
                     {student.given_name.charAt(0).toUpperCase()}
-                    {student.given_name.charAt(1)}
+                    {student.family_name?.charAt(0).toUpperCase() || student.given_name.charAt(1)}
                   </Text>
                 </ThemedView>
                 <ThemedView style={[styles.StudentContainer, { backgroundColor: 'transparent' }]}>
                   <View style={{ maxWidth: '85%' }}>
                     <ThemedText style={[styles.studentName, { color: textColor }]}>
-                      {student.given_name}
+                      {student.given_name} {student.family_name}
                     </ThemedText>
                     <ThemedText style={[styles.studentId, { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' }]}>
                       {(i18n as any).StudentIdLabel || 

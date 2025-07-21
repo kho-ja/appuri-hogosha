@@ -10,10 +10,9 @@ import React, { useContext } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
-import formatMessageDate from '@/utils/format';
 import { Message } from '@/constants/types';
 import { cn } from '@/utils/utils';
-import { Ionicons, Entypo } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
@@ -115,11 +114,6 @@ const Card = ({
         }
       ]}>
         <View style={styles.titleRow}>
-          {!isRead ? (
-            <View style={styles.iconContainer}>
-              <Entypo name='new' size={16} color='#fff' />
-            </View>
-          ) : null}
           <ThemedView
             style={{
               flexDirection: 'row',
@@ -156,15 +150,6 @@ const Card = ({
             <ThemedText style={getImportanceBadgeStyle(firstMessage.priority)}>
               {getImportanceLabel(firstMessage.priority)}
             </ThemedText>
-            {isRead ? (
-              <View style={styles.iconReadContainer}>
-                <Ionicons
-                  name='checkmark'
-                  size={15 * multiplier}
-                  color='white'
-                />
-              </View>
-            ) : null}
           </ThemedView>
         </View>
         <View style={styles.dateRow}>
@@ -244,24 +229,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginRight: 15,
     width: '100%',
-  },
-  iconContainer: {
-    marginRight: 8,
-    backgroundColor: '#FF0000',
-    borderRadius: 1000,
-    padding: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconReadContainer: {
-    backgroundColor: '#808080',
-    borderRadius: 20,
-    minHeight: 25,
-    minWidth: 25,
-    paddingHorizontal: 4,
-    paddingVertical: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   dateRow: {
     flexDirection: 'row',

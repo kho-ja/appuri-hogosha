@@ -34,7 +34,7 @@ const Layout = () => {
 
           // Find the student by ID to get their name
           const student = students?.find(s => s.id === Number(studentId));
-          const studentName = student?.given_name || 'Student';
+          const studentName = student ? `${student.given_name} ${student.family_name}` : 'Student';
 
           return {
             headerTitle: studentName,
