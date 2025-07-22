@@ -62,8 +62,9 @@ module.exports = ({ config }) => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: variantConfig.iosBundleId,
-      googleServicesFile:
-        process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
+      ...(process.env.GOOGLE_SERVICES_PLIST && {
+        googleServicesFile: process.env.GOOGLE_SERVICES_PLIST
+      }),
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         ITSAppUsesNonExemptEncryption: false,
