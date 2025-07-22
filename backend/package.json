@@ -21,7 +21,7 @@
 		"iconv-lite": "^0.6.3",
 		"luxon": "^3.6.1",
 		"morgan": "^1.10.0",
-		"multer": "^1.4.5-lts.1",
+		"multer": "^2.0.2",
 		"mysql2": "^3.9.6",
 		"node-cron": "^4.0.7",
 		"serverless-http": "^3.2.0"
@@ -32,7 +32,7 @@
 		"@types/express": "^4.17.21",
 		"@types/luxon": "^3.6.2",
 		"@types/morgan": "^1.9.9",
-		"@types/multer": "^1.4.12",
+		"@types/multer": "^2.0.0",
 		"nodemon": "^3.1.0",
 		"rimraf": "^5.0.5",
 		"typescript": "^5.4.5"
