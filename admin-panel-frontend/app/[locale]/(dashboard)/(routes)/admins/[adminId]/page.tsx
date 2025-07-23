@@ -10,6 +10,7 @@ import { signIn } from "next-auth/react";
 import NotFound from "@/components/NotFound";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import ResendPasswordSection from "@/components/ResendPasswordSection";
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -39,14 +40,23 @@ export default async function ThisAdmin({
   const adminData = await response.json();
 
   const t = await getTranslations("ThisAdmin");
+  const tName = await getTranslations("names");
 
   return (
     <div className="space-y-4">
       <PageHeader title={t("AdminView")}>
-          <BackButton href={`/admins`} />
+        <BackButton href={`/admins`} />
+        <div className="flex gap-2">
+          <ResendPasswordSection
+            id={adminData?.admin?.id}
+            name={tName("name", { ...adminData?.admin })}
+            identifier={adminData?.admin?.email}
+            type="admin"
+          />
           <Link href={`/admins/edit/${adminId}`}>
             <Button>{t("editAdmin")}</Button>
           </Link>
+        </div>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>

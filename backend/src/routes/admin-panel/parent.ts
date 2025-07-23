@@ -45,9 +45,70 @@ class ParentController implements IController {
         this.router.get('/:id', verifyToken, this.parentView)
         this.router.put('/:id', verifyToken, this.parentEdit)
         this.router.delete('/:id', verifyToken, this.parentDelete)
+        this.router.post('/:id/resend-password', verifyToken, this.resendTemporaryPassword);
 
         this.router.get('/:id/students', verifyToken, this.parentStudents)
         this.router.post('/:id/students', verifyToken, this.changeParentStudents)
+    }
+
+    resendTemporaryPassword = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const parentId = req.params.id;
+
+            if (!isValidId(parentId)) {
+                return res.status(400).json({
+                    error: 'Invalid parent ID'
+                }).end();
+            }
+
+            // Get parent from database to get their email
+            const parents = await DB.query(`
+                SELECT 
+                    p.email,
+                    p.phone_number,
+                    p.given_name,
+                    p.family_name
+                FROM Parent p 
+                WHERE p.id = :parentId
+            `, {
+                parentId: parentId
+            });
+
+            if (parents.length === 0) {
+                return res.status(404).json({
+                    error: 'Parent not found'
+                }).end();
+            }
+
+            const parent = parents[0];
+
+            // Format phone number with + prefix for Cognito (if not already present)
+            const phoneNumber = parent.phone_number.startsWith('+') 
+                ? parent.phone_number 
+                : `+${parent.phone_number}`;
+
+            // Use Cognito client to resend temporary password
+            const result = await this.cognitoClient.resendTemporaryPassword(phoneNumber);
+
+            return res.status(200).json({
+                message: result.message,
+                parent_name: `${parent.given_name} ${parent.family_name}`,
+                email: parent.email
+            }).end();
+
+        } catch (e: any) {
+            console.error('Error resending temporary password:', e);
+
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'Internal server error'
+                }).end();
+            }
+        }
     }
 
     uploadParentsFromKintone = async (req: ExtendedRequest, res: Response) => {

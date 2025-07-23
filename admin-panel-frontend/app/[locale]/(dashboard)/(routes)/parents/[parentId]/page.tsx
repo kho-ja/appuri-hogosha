@@ -15,6 +15,7 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import ResendPasswordDialog from "@/components/ResendPasswordDialog";
 
 export default function ThisParent({
   params: { parentId },
@@ -55,10 +56,22 @@ export default function ThisParent({
   return (
     <div className="space-y-4">
       <PageHeader title={t("ParentView")}>
-          <BackButton href={`/parents`} />
+        <BackButton href={`/parents`} />
+        <div className="flex gap-2">
+          {parentData?.parent && (
+            <ResendPasswordDialog
+              id={parentData.parent.id}
+              name={tName("name", { ...parentData.parent } as any)}
+              identifier={parentData.parent.phone_number}
+              type="parent"
+              variant="button"
+              size="default"
+            />
+          )}
           <Link href={`/parents/edit/${parentId}`}>
             <Button>{t("editParent")}</Button>
           </Link>
+        </div>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
