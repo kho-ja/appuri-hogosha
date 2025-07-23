@@ -57,21 +57,19 @@ export default function ThisParent({
     <div className="space-y-4">
       <PageHeader title={t("ParentView")}>
         <BackButton href={`/parents`} />
-        <div className="flex gap-2">
-          {parentData?.parent && (
-            <ResendPasswordDialog
-              id={parentData.parent.id}
-              name={tName("name", { ...parentData.parent } as any)}
-              identifier={parentData.parent.phone_number}
-              type="parent"
-              variant="button"
-              size="default"
-            />
-          )}
-          <Link href={`/parents/edit/${parentId}`}>
-            <Button>{t("editParent")}</Button>
-          </Link>
-        </div>
+        {parentData?.parent && (
+          <ResendPasswordDialog
+            id={parentData.parent.id}
+            name={tName("name", { ...parentData.parent } as any)}
+            identifier={parentData.parent.phone_number}
+            type="parent"
+            variant="button"
+            size="default"
+          />
+        )}
+        <Link href={`/parents/edit/${parentId}`}>
+          <Button>{t("editParent")}</Button>
+        </Link>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
