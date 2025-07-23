@@ -1132,5 +1132,14 @@
     "error": "Ошибка",
     "confirmSchedule": "Подтвердить планирование",
     "postDeleted": "Сообщение удалено"
+  },
+  "ResendPasswordDialog": {
+    "resendPassword": "Переслать пароль",
+    "resendPasswordConfirm": "Вы уверены, что хотите переслать временный пароль?",
+    "resendPasswordSuccess": "Временный пароль успешно переслан",
+    "resendPasswordError": "Не удалось переслать временный пароль",
+    "resendPasswordDescription": "Это отправит новый временный пароль на email адрес пользователя.",
+    "resendPasswordDescriptionPhone": "Это отправит новый временный пароль на номер телефона администратора.",
+    "userAlreadyActive": "Этот пользователь уже активировал свою учетную запись и не нуждается во временном пароле."
   }
 }

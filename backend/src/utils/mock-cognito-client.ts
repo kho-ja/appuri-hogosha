@@ -12,6 +12,7 @@ const sub_id = '1'
 
 const mockDatabase: { [email: string]: User } = {
     'firdavsgaybullayev22@gmail.com': {
+        phone_number: '+998901234567',
         email: 'firdavsgaybullayev22@gmail.com',
         accessToken: 'mockAccessToken',
         refreshToken: 'mockRefreshToken',
@@ -21,6 +22,30 @@ const mockDatabase: { [email: string]: User } = {
 };
 
 export class MockCognitoClient {
+    static async resendTemporaryPassword(identifier: string) {
+        // Try to find user by email first, then by phone number
+        let user: User | undefined = mockDatabase[identifier];
+
+        if (!user) {
+            // Try to find by phone number (for parents)
+            user = Object.values(mockDatabase).find(u => u.phone_number === identifier);
+        }
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Simulate resending temporary password
+        // In mock mode, we just reset the temp password
+        user.tempPassword = 'mockTempPassword123!';
+        user.password = user.tempPassword; // In real Cognito, this would be handled automatically
+
+        console.log(`Mock: Temporary password resent for ${identifier}`);
+
+        return {
+            message: 'Temporary password resent successfully'
+        };
+    }
 
     static async login(email: string, password: string) {
         const user = mockDatabase[email];

@@ -1136,5 +1136,14 @@
     "error": "Error",
     "confirmSchedule": "Confirm Schedule",
     "postDeleted": "Post deleted successfully"
+  },
+  "ResendPasswordDialog": {
+    "resendPassword": "Resend Password",
+    "resendPasswordConfirm": "Are you sure you want to resend the temporary password?",
+    "resendPasswordSuccess": "Temporary password resent successfully",
+    "resendPasswordError": "Failed to resend temporary password",
+    "resendPasswordDescription": "This will send a new temporary password to the admin's email address.",
+    "resendPasswordDescriptionPhone": "This will send a new temporary password to the admin's phone number.",
+    "userAlreadyActive": "This user has already activated their account and doesn't need a temporary password."
   }
 }

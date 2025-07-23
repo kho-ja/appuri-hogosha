@@ -1134,5 +1134,14 @@
     "error": "Xatolik",
     "confirmSchedule": "Postni rejalashtirish",
     "postDeleted": "Post muvaffaqiyatli o'chirildi"
+  },
+  "ResendPasswordDialog": {
+    "resendPassword": "Parolni qayta yuborish",
+    "resendPasswordConfirm": "Vaqtinchalik parolni qayta yuborishni xohlaysizmi?",
+    "resendPasswordSuccess": "Vaqtinchalik parol muvaffaqiyatli qayta yuborildi",
+    "resendPasswordError": "Vaqtinchalik parolni qayta yuborishda xatolik",
+    "resendPasswordDescription": "Bu foydalanuvchi email manziliga yangi vaqtinchalik parol yuboradi.",
+    "resendPasswordDescriptionPhone": "Bu adminning telefon raqamiga yangi vaqtinchalik parol yuboradi.",
+    "userAlreadyActive": "Foydalanuvchi allaqachon faol. Vaqtinchalik parolni qayta yuborish mumkin emas."
   }
 }

@@ -1133,5 +1133,14 @@
     "error": "エラー",
     "confirmSchedule": "スケジュールを確認",
     "postDeleted": "投稿が削除されました"
+  },
+  "ResendPasswordDialog": {
+    "resendPassword": "一時パスワードを再送信",
+    "resendPasswordConfirm": "一時パスワードを再送信しますか？",
+    "resendPasswordSuccess": "一時パスワードが正常に再送信されました",
+    "resendPasswordError": "一時パスワードの再送信中にエラーが発生しました",
+    "resendPasswordDescription": "この管理者のメールアドレスに新しい一時パスワードを送信します。",
+    "resendPasswordDescriptionPhone": "この管理者の電話番号に新しい一時パスワードを送信します。",
+    "userAlreadyActive": "このユーザーはすでにアクティブです。パスワードを再送信する必要はありません。"
   }
 }

@@ -31,6 +31,49 @@ class CognitoClient {
         this.client_id = client_id;
     }
 
+    async resendTemporaryPassword(identifier: string): Promise<resendTemporaryPasswordOutput> {
+        const params: AdminCreateUserCommandInput = {
+            UserPoolId: this.pool_id,
+            Username: identifier,
+            MessageAction: "RESEND"
+        };
+
+        try {
+            const command = new AdminCreateUserCommand(params);
+            const data = await this.client.send(command);
+
+            console.log('Temporary password resent successfully', data);
+
+            return {
+                message: 'Temporary password resent successfully'
+            };
+        } catch (e: any) {
+            console.error('error:', e);
+
+            if (e.name === 'UserNotFoundException') {
+                throw {
+                    status: 404,
+                    message: 'User not found',
+                } as resendTemporaryPasswordThrow;
+            } else if (e.name === 'UnsupportedUserStateException') {
+                throw {
+                    status: 400,
+                    message: 'User has already activated their account. No temporary password needed.',
+                } as resendTemporaryPasswordThrow;
+            } else if (e.name === 'InvalidParameterException') {
+                throw {
+                    status: 400,
+                    message: 'Invalid parameter provided',
+                } as resendTemporaryPasswordThrow;
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error',
+                } as resendTemporaryPasswordThrow;
+            }
+        }
+    }
+
     async delete(identifier: string): Promise<deleteOutput> {
         const params: AdminDeleteUserCommandInput = {
             Username: identifier,
@@ -305,6 +348,16 @@ class CognitoClient {
             }
         }
     }
+}
+
+
+interface resendTemporaryPasswordOutput {
+    message: string;
+}
+
+interface resendTemporaryPasswordThrow {
+    status: 400 | 404 | 500;
+    message: string;
 }
 
 interface accessTokenOutput {

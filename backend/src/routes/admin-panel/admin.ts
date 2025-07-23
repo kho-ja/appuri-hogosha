@@ -33,6 +33,62 @@ class AdminController implements IController {
         this.router.get('/:id', verifyToken, this.adminView)
         this.router.put('/:id', verifyToken, this.adminEdit)
         this.router.delete('/:id', verifyToken, this.adminDelete)
+        this.router.post('/:id/resend-password', verifyToken, this.resendTemporaryPassword);
+    }
+
+    resendTemporaryPassword = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const adminId = req.params.id;
+
+            if (!isValidId(adminId)) {
+                return res.status(400).json({
+                    error: 'Invalid admin ID'
+                }).end();
+            }
+
+            // Get admin from database to get their email
+            const admins = await DB.query(`
+                SELECT 
+                    ad.email,
+                    ad.phone_number,
+                    ad.given_name,
+                    ad.family_name
+                FROM Admin ad 
+                WHERE ad.id = :adminId
+            `, {
+                adminId: adminId
+            });
+
+            if (admins.length === 0) {
+                return res.status(404).json({
+                    error: 'Admin not found'
+                }).end();
+            }
+
+            const admin = admins[0];
+
+            // Use Cognito client to resend temporary password
+            const result = await this.cognitoClient.resendTemporaryPassword(admin.email);
+
+            return res.status(200).json({
+                message: result.message,
+                admin_name: `${admin.given_name} ${admin.family_name}`,
+                email: admin.email
+            }).end();
+
+        } catch (e: any) {
+            console.error('Error resending temporary password:', e);
+            
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'Internal server error'
+                }).end();
+            }
+        }
     }
 
     exportAdminsToCSV = async (req: ExtendedRequest, res: Response) => {
