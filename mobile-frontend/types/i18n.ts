@@ -69,6 +69,8 @@ export type TranslationKeys = {
   lightMode: string;
   darkMode: string;
   batteryOptimization: string;
+  personalInfo: string;
+  name: string;
 
   // Messages
   critical: string;

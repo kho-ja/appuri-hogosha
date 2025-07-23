@@ -22,6 +22,7 @@ export default {
     home: 'Home',
     form: 'Form',
     settings: 'Settings',
+    personalInfo: 'Personal Info',
     /*tab bar layout*/
 
     /*register page*/
@@ -54,7 +55,7 @@ export default {
     emailaddress: 'Email address',
     phoneNumber: 'Phone number',
     preferences: 'Preferences',
-    language: 'Language',
+    language: 'Language Change',
     logout: 'Logout',
     passwordChangedSuccess: 'Password changed successfully',
     changePassword: 'Change Password',
@@ -77,6 +78,7 @@ export default {
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
     batteryOptimization: 'Battery Optimization',
+    name: 'Name',
     /*settings page*/
 
     /*message*/
@@ -191,6 +193,7 @@ export default {
     home: 'ホーム',
     form: 'フォーム',
     settings: '設定',
+    personalInfo: '個人情報',
     /*tab bar layout*/
 
     /*register page*/
@@ -223,7 +226,7 @@ export default {
     emailaddress: 'メールアドレス',
     phoneNumber: '電話番号',
     preferences: '設定',
-    language: '言語',
+    language: '言語の変更',
     logout: 'ログアウト',
     passwordChangedSuccess: 'パスワードが正常に変更されました',
     changePassword: 'パスワードを変更',
@@ -245,6 +248,7 @@ export default {
     lightMode: 'ライトモード',
     darkMode: 'ダークモード',
     batteryOptimization: 'バッテリー最適化',
+    name: '名前',
     /*settings page*/
 
     /*message*/
@@ -360,6 +364,7 @@ export default {
     home: 'Bosh sahifa',
     form: 'Forma',
     settings: 'Sozlamalar',
+    personalInfo: 'Shaxsiy ma\'lumotlar',
     /*tab bar layout*/
 
     /*register page*/
@@ -392,7 +397,7 @@ export default {
     emailaddress: 'Elektron pochta',
     phoneNumber: 'Telefon raqami',
     preferences: 'Sozlamalar',
-    language: 'Til',
+    language: 'Ilova tili',
     logout: 'Chiqish',
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
@@ -415,6 +420,7 @@ export default {
     lightMode: "Yorug' rejim",
     darkMode: "Qorong'u rejim",
     batteryOptimization: 'Batareya optimizatsiyasi',
+    name: 'Ism',
     /*settings page*/
 
     /*message*/
