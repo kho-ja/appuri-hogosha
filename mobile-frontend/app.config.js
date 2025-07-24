@@ -63,12 +63,13 @@ module.exports = ({ config }) => {
       supportsTablet: true,
       bundleIdentifier: variantConfig.iosBundleId,
       ...(process.env.GOOGLE_SERVICES_PLIST && {
-        googleServicesFile: process.env.GOOGLE_SERVICES_PLIST
+        googleServicesFile: process.env.GOOGLE_SERVICES_PLIST,
       }),
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         ITSAppUsesNonExemptEncryption: false,
       },
+      associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
     },
     android: {
       adaptiveIcon: {
@@ -118,7 +119,8 @@ module.exports = ({ config }) => {
         origin: false,
       },
       eas: {
-        projectId: process.env.EAS_PROJECT_ID || '61968ac8-e70b-44e4-a5ed-00d5521eec81',
+        projectId:
+          process.env.EAS_PROJECT_ID || '61968ac8-e70b-44e4-a5ed-00d5521eec81',
       },
     },
   };
