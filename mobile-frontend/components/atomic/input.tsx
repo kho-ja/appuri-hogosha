@@ -17,7 +17,8 @@ const Input: React.FC<AdvancedInputProps> = ({ label, style, ...props }) => {
           style={{
             fontSize: 16,
             marginBottom: 4,
-            color: theme.mode === 'light' ? 'black' : 'white',
+            color: theme.mode === 'light' ? '#4f5259' : 'white',
+            fontWeight: '500',
           }}
         >
           {label}
@@ -25,8 +26,8 @@ const Input: React.FC<AdvancedInputProps> = ({ label, style, ...props }) => {
       )}
       <TextInput
         style={{
-          height: 48,
-          borderRadius: 4,
+          height: 58,
+          borderRadius: 10,
           justifyContent: 'center',
           paddingHorizontal: 10,
           borderWidth: 1,

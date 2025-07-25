@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Select from '@/components/atomic/select';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -28,30 +27,6 @@ export default function SignIn() {
   const { signIn } = useSession();
   const { theme } = useTheme();
   const { language, i18n, setLanguage } = useContext(I18nContext);
-
-  const menuOptions = [
-    {
-      label: 'English',
-      action: async () => {
-        setLanguage('en');
-        await AsyncStorage.setItem('language', 'en');
-      },
-    },
-    {
-      label: '日本語',
-      action: async () => {
-        setLanguage('ja');
-        await AsyncStorage.setItem('language', 'ja');
-      },
-    },
-    {
-      label: "O'zbek",
-      action: async () => {
-        setLanguage('uz');
-        await AsyncStorage.setItem('language', 'uz');
-      },
-    },
-  ];
 
   React.useEffect(() => {
     const loadCredentials = async () => {
@@ -122,6 +97,8 @@ export default function SignIn() {
       });
     },
     onSuccess: async () => {
+      await AsyncStorage.setItem('hasEverLoggedIn', 'true');
+      
       Toast.show(i18n[language].loginSuccess, {
         duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
@@ -144,26 +121,9 @@ export default function SignIn() {
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <ThemedView style={styles.container}>
           <ThemedView style={styles.header}>
-            <ThemedView>
-              <ThemedText style={styles.title}>
-                {i18n[language].welcome}
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>
-                {i18n[language].login}
-              </ThemedText>
-            </ThemedView>
-            <ThemedView style={{ zIndex: 10 }}>
-              <Select
-                options={menuOptions}
-                selectedValue={
-                  language === 'en'
-                    ? menuOptions[0]
-                    : language === 'ja'
-                      ? menuOptions[1]
-                      : menuOptions[2]
-                }
-              />
-            </ThemedView>
+          <ThemedText style={styles.title}>
+            {i18n[language].welcome.replace(', ', ',\n')}
+          </ThemedText>
           </ThemedView>
           <ThemedPhoneInput
             label={i18n[language].phoneNumber}
@@ -190,6 +150,7 @@ export default function SignIn() {
             onPress={() => mutate()}
             title={i18n[language].loginToAccount}
             buttonStyle={styles.submitButton}
+            titleStyle={styles.buttonText}
             disabled={isPending}
             loading={isPending}
           />
@@ -207,22 +168,20 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     padding: 16,
-    borderRadius: 4,
-    alignItems: 'center',
-    backgroundColor: '#059669',
+    borderRadius: 12,
+    marginTop: 40,
+    backgroundColor: '#4285F4',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: 10,
-    marginBottom: 80,
+    marginBottom: 60,
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: 20,
+    fontWeight: '600',
+    fontSize: 40,
   },
-  subtitle: {
-    color: 'gray',
+  buttonText: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

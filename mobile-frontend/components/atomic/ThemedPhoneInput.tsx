@@ -44,14 +44,15 @@ const ThemedPhoneInput: React.FC<ThemedPhoneInputProps> = ({
     label: {
       fontSize: 16,
       marginBottom: 4,
-      color: theme.mode === 'light' ? 'black' : 'white',
+      color: theme.mode === 'light' ? '#4f5259' : 'white',
+      fontWeight: '500',
     },
     phoneInputContainer: {
       backgroundColor: theme.colors.background,
       borderColor: theme.mode === 'light' ? '#D1D5DB' : '#374151',
       borderWidth: 1,
-      borderRadius: 4,
-      height: 48,
+      borderRadius: 10,
+      height: 58,
     },
   });
 
@@ -76,6 +77,7 @@ const ThemedPhoneInput: React.FC<ThemedPhoneInputProps> = ({
             container: {
               backgroundColor: 'transparent',
               borderWidth: 0,
+              height: 58,
             },
             input: {
               color: theme.mode === 'light' ? 'black' : 'white',
