@@ -1,14 +1,50 @@
 import { Stack } from 'expo-router';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
 import { I18nContext } from '@/contexts/i18n-context';
+import BatteryOptimizationHelper from '@/components/BatteryOptimizationHelper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Layout = () => {
+  const [showBatteryHelper, setShowBatteryHelper] = useState(false);
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
   const { language, i18n } = useContext(I18nContext);
+
+  // Check if we should show the battery optimization helper
+  useEffect(() => {
+    const checkBatteryHelper = async () => {
+      try {
+        const hasShown = await AsyncStorage.getItem('battery_helper_shown');
+        const lastShown = await AsyncStorage.getItem(
+          'battery_helper_last_shown'
+        );
+        const now = Date.now();
+        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+        // Show if never shown, or if it's been more than a week
+        if (!hasShown || (lastShown && now - parseInt(lastShown) > oneWeek)) {
+          // Add a small delay so the screen loads first
+          setTimeout(() => setShowBatteryHelper(true), 2000);
+        }
+      } catch (error) {
+        console.error('Error checking battery helper status:', error);
+      }
+    };
+
+    checkBatteryHelper();
+  }, []);
+
+  const handleBatteryHelperDismiss = async () => {
+    setShowBatteryHelper(false);
+    await AsyncStorage.setItem('battery_helper_shown', 'true');
+    await AsyncStorage.setItem(
+      'battery_helper_last_shown',
+      Date.now().toString()
+    );
+  };
 
   return (
     <Stack>
@@ -65,6 +101,12 @@ const Layout = () => {
             headerTitleAlign: 'center',
           };
         }}
+      />
+
+      {/* Battery Optimization Helper */}
+      <BatteryOptimizationHelper
+        visible={showBatteryHelper}
+        onDismiss={handleBatteryHelperDismiss}
       />
     </Stack>
   );

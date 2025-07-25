@@ -81,7 +81,7 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     return (
       <View style={[styles.card, { backgroundColor }]}>
         <Text style={styles.selectStudentTitle}>
-          {i18n[language].SelectStudent}
+          {i18n[language].SelectStudent} test
         </Text>
         <View style={styles.studentList}>
           {students?.map(student => (

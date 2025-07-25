@@ -36,8 +36,6 @@ const configByVariant = {
 const variantConfig = configByVariant[variant] || configByVariant.development;
 
 console.log(`Using variant: ${variant}`);
-console.log(`App name: ${variantConfig.name}`);
-console.log(`PackageJson version: ${packageJson.version}`);
 
 module.exports = ({ config }) => {
   return {
@@ -51,9 +49,11 @@ module.exports = ({ config }) => {
     scheme: variantConfig.scheme,
     platforms: ['ios', 'android', 'web'],
     userInterfaceStyle: 'automatic',
-    updates: {
-      url: 'https://u.expo.dev/61968ac8-e70b-44e4-a5ed-00d5521eec81',
-    },
+    ...(variant === 'production' && {
+      updates: {
+        url: 'https://u.expo.dev/61968ac8-e70b-44e4-a5ed-00d5521eec81',
+      },
+    }),
     splash: {
       image: './assets/images/splash.png',
       resizeMode: 'contain',
