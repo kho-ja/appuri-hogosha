@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-root-toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
