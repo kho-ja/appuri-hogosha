@@ -87,51 +87,66 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
               style={[
                 styles.studentEntry,
                 {
-                  backgroundColor: theme.mode === 'dark' ? '#1E1E1E' : '#FFFFFF',
-                  borderColor: theme.mode === 'dark' ? '#3a3a3c' : 'rgb(228, 231, 235)',
-                }
+                  backgroundColor:
+                    theme.mode === 'dark' ? '#1E1E1E' : '#FFFFFF',
+                  borderColor:
+                    theme.mode === 'dark' ? '#3a3a3c' : 'rgb(228, 231, 235)',
+                },
               ]}
               onPress={() => handleStudentSelect(student)}
             >
-                <ThemedView
-                  style={[
-                    styles.studentAvatar,
-                    {
-                      backgroundColor: getConsistentAvatarColor(student.id),
-                      borderColor: 'transparent',
-                    },
-                  ]}
-                >
-                  <Text style={{ fontWeight: 'bold', color: '#fff' }}>
-                    {student.given_name.charAt(0).toUpperCase()}
-                    {student.family_name?.charAt(0).toUpperCase() || student.given_name.charAt(1)}
-                  </Text>
-                </ThemedView>
-                <ThemedView style={[styles.StudentContainer, { backgroundColor: 'transparent' }]}>
-                  <View style={{ maxWidth: '85%' }}>
-                    <ThemedText style={[styles.studentName, { color: textColor }]}>
-                      {student.given_name} {student.family_name}
-                    </ThemedText>
-                    <ThemedText style={[styles.studentId, { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' }]}>
-                      {(i18n as any).StudentIdLabel || 
-                       (language === 'ja' ? '学生ID:' : 
-                        language === 'uz' ? 'Talaba ID raqami:' : 
-                        'Student ID:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.student_number}</Text>
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={{ width: 25, height: 25 }}>
-                    {student.unread_count ? (
-                      <ThemedView style={styles.MessageCount}>
-                        <ThemedText style={styles.MessageCountText}>
-                          {student.unread_count}
-                        </ThemedText>
-                      </ThemedView>
-                    ) : null}
+              <ThemedView
+                style={[
+                  styles.studentAvatar,
+                  {
+                    backgroundColor: getConsistentAvatarColor(student.id),
+                    borderColor: 'transparent',
+                  },
+                ]}
+              >
+                <Text style={{ fontWeight: 'bold', color: '#fff' }}>
+                  {student.given_name.charAt(0).toUpperCase()}
+                  {student.family_name?.charAt(0).toUpperCase() ||
+                    student.given_name.charAt(1)}
+                </Text>
+              </ThemedView>
+              <ThemedView
+                style={[
+                  styles.StudentContainer,
+                  { backgroundColor: 'transparent' },
+                ]}
+              >
+                <View style={{ maxWidth: '85%' }}>
+                  <ThemedText
+                    style={[styles.studentName, { color: textColor }]}
+                  >
+                    {student.given_name} {student.family_name}
                   </ThemedText>
-                </ThemedView>
-              </Pressable>
-            </React.Fragment>
-          ))}
+                  <ThemedText
+                    style={[
+                      styles.studentId,
+                      { color: theme.mode === 'dark' ? '#8E8E93' : 'gray' },
+                    ]}
+                  >
+                    {(i18n as any).StudentIdLabel ||
+                      (language === 'ja' ? '学生ID:' :
+                        language === 'uz' ? 'Talaba ID raqami:' :
+                        'Student ID:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.student_number}</Text>
+                  </ThemedText>
+                </View>
+                <ThemedText style={{ width: 25, height: 25 }}>
+                  {student.unread_count ? (
+                    <ThemedView style={styles.MessageCount}>
+                      <ThemedText style={styles.MessageCountText}>
+                        {student.unread_count}
+                      </ThemedText>
+                    </ThemedView>
+                  ) : null}
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          </React.Fragment>
+        ))}
       </View>
     );
   }

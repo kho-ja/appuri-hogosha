@@ -126,7 +126,8 @@ module.exports = ({ config }) => {
         origin: false,
       },
       eas: {
-        projectId: process.env.EAS_PROJECT_ID || '61968ac8-e70b-44e4-a5ed-00d5521eec81',
+        projectId:
+          process.env.EAS_PROJECT_ID || '61968ac8-e70b-44e4-a5ed-00d5521eec81',
       },
     },
   };

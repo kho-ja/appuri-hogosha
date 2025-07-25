@@ -145,7 +145,7 @@ const NoMessagesState: React.FC<{
     <View style={styles.noMessagesContainer}>
       {/* Illustration */}
       <View style={styles.noMessagesIllustration}>
-        <Image 
+        <Image
           source={require('@/assets/images/parentandchildren.png')}
           style={styles.illustrationImage}
         />
@@ -163,19 +163,19 @@ const NoMessagesState: React.FC<{
         title={i18n[language].refresh}
         onPress={onRefresh}
         buttonStyle={[
-          styles.refreshButton, 
-          { 
-            backgroundColor: theme.mode === 'dark' ? '#3B81F6' : '#3B81F61A' 
-          }
+          styles.refreshButton,
+          {
+            backgroundColor: theme.mode === 'dark' ? '#3B81F6' : '#3B81F61A',
+          },
         ]}
         disabledStyle={[
-          styles.refreshButton, 
-          { 
-            backgroundColor: theme.mode === 'dark' ? '#2563EB' : '#3B81F60D' 
-          }
+          styles.refreshButton,
+          {
+            backgroundColor: theme.mode === 'dark' ? '#2563EB' : '#3B81F60D',
+          },
         ]}
-        titleStyle={{ 
-          color: theme.mode === 'dark' ? 'white' : '#3B81F6' 
+        titleStyle={{
+          color: theme.mode === 'dark' ? 'white' : '#3B81F6',
         }}
         loading={isRefreshing}
         disabled={isRefreshing}
@@ -494,7 +494,12 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Show no messages state
   if (messageGroups.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' }]}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' },
+        ]}
+      >
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

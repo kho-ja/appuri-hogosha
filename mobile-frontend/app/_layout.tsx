@@ -91,9 +91,9 @@ export default function Root() {
           <ThemeProvider theme={memoizedTheme}>
             <StatusBarBackground>
               {/* Global status bar with blue background */}
-              <StatusBar 
-                style='light' 
-                backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'} 
+              <StatusBar
+                style='light'
+                backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
                 translucent={false}
               />
               <NetworkProvider>

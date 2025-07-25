@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Platform, Dimensions, StatusBar } from 'react-native';
+import { View, Platform, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@rneui/themed';
 
@@ -13,7 +13,8 @@ export function StatusBarBackground({ children }: StatusBarBackgroundProps) {
   const { width } = Dimensions.get('window');
 
   // Status bar background colors
-  const statusBarBackgroundColor = theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6';
+  const statusBarBackgroundColor =
+    theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6';
 
   return (
     <View style={{ flex: 1 }}>

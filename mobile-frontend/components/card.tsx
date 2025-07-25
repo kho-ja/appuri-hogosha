@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { DateTime } from 'luxon';
 import { useFontSize } from '@/contexts/FontSizeContext';
 import { useTheme } from '@rneui/themed';
+import { Colors } from '@/constants/Colors';
 
 const Card = ({
   messageGroup,
@@ -107,13 +108,22 @@ const Card = ({
 
   return (
     <Pressable onPress={handlePress}>
-      <View style={[
-        styles.container, 
-        { 
-          backgroundColor: theme.mode === 'dark' ? '#1C1C1E' : '#FFFFFF',
-          borderColor: theme.mode === 'dark' ? '#2C2C2E' : '#E5E5EA',
-        }
-      ]}>
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.mode === 'dark' ? '#1C1C1E' : '#FFFFFF',
+            borderColor: !isRead
+              ? theme.mode === 'dark'
+                ? Colors.dark.tint
+                : Colors.light.tint
+              : theme.mode === 'dark'
+                ? '#2C2C2E'
+                : '#E5E5EA',
+            borderWidth: !isRead ? 1 : 1,
+          },
+        ]}
+      >
         <View style={styles.titleRow}>
           <ThemedView
             style={{
@@ -172,18 +182,30 @@ const Card = ({
           />
         </View>
         <View style={styles.bottomRow}>
-          <ThemedText type='smaller' style={[styles.dateText, { 
-            color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
-            opacity: isRead ? 0.6 : 1
-          }]}>
+          <ThemedText
+            type='smaller'
+            style={[
+              styles.dateText,
+              {
+                color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
+                opacity: isRead ? 0.6 : 1,
+              },
+            ]}
+          >
             {localDateTime.toFormat('dd.MM.yyyy   HH:mm')}
           </ThemedText>
-          <TouchableOpacity style={[styles.readMoreButton, { opacity: 1 }]} onPress={handlePress}>
+          <TouchableOpacity
+            style={[styles.readMoreButton, { opacity: 1 }]}
+            onPress={handlePress}
+          >
             <ThemedText
-              style={[styles.readMoreText, { 
-                color: theme.mode === 'dark' ? '#0A84FF' : '#2089dc',
-                opacity: 1 
-              }]}
+              style={[
+                styles.readMoreText,
+                {
+                  color: theme.mode === 'dark' ? '#0A84FF' : '#2089dc',
+                  opacity: 1,
+                },
+              ]}
               numberOfLines={1}
               ellipsizeMode='tail'
             >

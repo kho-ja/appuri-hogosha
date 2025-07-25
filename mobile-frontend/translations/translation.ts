@@ -58,7 +58,8 @@ export default {
     logout: 'Logout',
     passwordChangedSuccess: 'Password changed successfully',
     changePassword: 'Change Password',
-    changePasswordText: 'Please enter your current password and create a new secure password',
+    changePasswordText:
+      'Please enter your current password and create a new secure password',
     savePassword: 'Save Password',
     enterOldPassword: 'Enter current password',
     enterNewPassword: 'Enter new password',
@@ -69,8 +70,10 @@ export default {
     newPassword: 'New Password',
     invalidCurrentPassword: 'Invalid current password',
     passwordRequirementsNotMet: 'New password does not meet requirements',
-    newPasswordMustBeDifferent: 'New password must be different from current password',
-    pleaseEnsurePasswordRequirements: 'Please ensure all password requirements are met',
+    newPasswordMustBeDifferent:
+      'New password must be different from current password',
+    pleaseEnsurePasswordRequirements:
+      'Please ensure all password requirements are met',
     textSize: 'Text Size',
     sampleText:
       'Choose the text size that suits you best for a more comfortable reading experience.',
@@ -228,7 +231,8 @@ export default {
     logout: 'ログアウト',
     passwordChangedSuccess: 'パスワードが正常に変更されました',
     changePassword: 'パスワードを変更',
-    changePasswordText: '現在のパスワードを入力し、新しい安全なパスワードを作成してください',
+    changePasswordText:
+      '現在のパスワードを入力し、新しい安全なパスワードを作成してください',
     savePassword: 'パスワードを保存',
     enterOldPassword: '現在のパスワードを入力',
     enterNewPassword: '新しいパスワードを入力してください',
@@ -239,8 +243,10 @@ export default {
     newPassword: '新しいパスワード',
     invalidCurrentPassword: '現在のパスワードが正しくありません',
     passwordRequirementsNotMet: '新しいパスワードが要件を満たしていません',
-    newPasswordMustBeDifferent: '新しいパスワードは現在のパスワードと異なる必要があります',
-    pleaseEnsurePasswordRequirements: 'すべてのパスワード要件が満たされていることを確認してください',
+    newPasswordMustBeDifferent:
+      '新しいパスワードは現在のパスワードと異なる必要があります',
+    pleaseEnsurePasswordRequirements:
+      'すべてのパスワード要件が満たされていることを確認してください',
     textSize: '文字サイズ',
     sampleText: '読みやすさのために、自分に合った文字サイズを選んでください。',
     lightMode: 'ライトモード',
@@ -398,7 +404,8 @@ export default {
     logout: 'Chiqish',
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
-    changePasswordText: 'Joriy parolingizni kiriting va yangi xavfsiz parol yarating',
+    changePasswordText:
+      'Joriy parolingizni kiriting va yangi xavfsiz parol yarating',
     savePassword: 'Parolni saqlash',
     enterOldPassword: 'Joriy parolni kiriting',
     enterNewPassword: 'Yangi parolni kiriting',
@@ -407,10 +414,12 @@ export default {
     passwordsDoNotMatch: 'Parollar mos kelmaydi',
     currentPassword: 'Joriy parol',
     newPassword: 'Yangi parol',
-    invalidCurrentPassword: 'Joriy parol noto\'g\'ri',
+    invalidCurrentPassword: "Joriy parol noto'g'ri",
     passwordRequirementsNotMet: 'Yangi parol talablarga javob bermaydi',
-    newPasswordMustBeDifferent: 'Yangi parol joriy paroldan farqli bo\'lishi kerak',
-    pleaseEnsurePasswordRequirements: 'Barcha parol talablari bajarilganligini tekshiring',
+    newPasswordMustBeDifferent:
+      "Yangi parol joriy paroldan farqli bo'lishi kerak",
+    pleaseEnsurePasswordRequirements:
+      'Barcha parol talablari bajarilganligini tekshiring',
     textSize: "Matn o'lchami",
     sampleText:
       "O'zingizga qulay bo'lgan matn hajmini tanlang — o'qish yanada qulay bo'ladi.",
@@ -428,8 +437,7 @@ export default {
     loadMoreMessages: "Ko'proq xabarlar",
     messageNotFound: 'Xabar topilmadi',
     noMessagesYet: "Hozircha yangi xabar yo'q",
-    noMessagesDescription:
-      "Keyinroq qayta urinib ko'ring.",
+    noMessagesDescription: "Keyinroq qayta urinib ko'ring.",
     errorLoadingMessages:
       "Xabarlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     tryAgain: 'Qayta urinish',
@@ -446,7 +454,7 @@ export default {
     pressBackAgainToExit: 'Chiqish uchun yana bir marta bosing',
 
     /*student select page*/
-    SelectStudent: "Farzandingizni tanlang",
+    SelectStudent: 'Farzandingizni tanlang',
 
     /*no students screen*/
     noStudentsFound: "O'quvchilar topilmadi",

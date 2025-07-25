@@ -336,10 +336,26 @@ export default function DetailsScreen() {
   const formattedTime = localDateTime.toFormat('dd.MM.yyyy   HH:mm');
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor }]} contentContainerStyle={{ paddingTop: 16 }}>
-      <View style={[styles.titleRow, { justifyContent: 'space-between', alignItems: 'center' }]}>
+    <ScrollView
+      style={[styles.container, { backgroundColor }]}
+      contentContainerStyle={{ paddingTop: 16 }}
+    >
+      <View
+        style={[
+          styles.titleRow,
+          { justifyContent: 'space-between', alignItems: 'center' },
+        ]}
+      >
         <ThemedText
-          style={[styles.title, { fontSize: 18 * multiplier, width: 'auto', textAlign: 'left', flex: 1 }]}
+          style={[
+            styles.title,
+            {
+              fontSize: 18 * multiplier,
+              width: 'auto',
+              textAlign: 'left',
+              flex: 1,
+            },
+          ]}
         >
           {message.title}
         </ThemedText>
@@ -407,7 +423,16 @@ export default function DetailsScreen() {
       </View>
 
       {/* Date and Copy button on the same level */}
-      <View style={[styles.dateRow, { justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }]}>
+      <View
+        style={[
+          styles.dateRow,
+          {
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 10,
+          },
+        ]}
+      >
         <ThemedText
           style={[
             styles.dateText,
@@ -416,8 +441,14 @@ export default function DetailsScreen() {
         >
           {formattedTime}
         </ThemedText>
-        
-        <Pressable style={[styles.copyButton, { marginTop: 0, marginBottom: 0, backgroundColor: 'transparent' }]} onPress={copyToClipboard}>
+
+        <Pressable
+          style={[
+            styles.copyButton,
+            { marginTop: 0, marginBottom: 0, backgroundColor: 'transparent' },
+          ]}
+          onPress={copyToClipboard}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name='copy-outline' size={20} color='#007AFF' />
             <Text
