@@ -49,11 +49,9 @@ module.exports = ({ config }) => {
     scheme: variantConfig.scheme,
     platforms: ['ios', 'android', 'web'],
     userInterfaceStyle: 'automatic',
-    ...(variant === 'production' && {
-      updates: {
-        url: 'https://u.expo.dev/61968ac8-e70b-44e4-a5ed-00d5521eec81',
-      },
-    }),
+    updates: {
+      url: 'https://u.expo.dev/61968ac8-e70b-44e4-a5ed-00d5521eec81',
+    },
     splash: {
       image: './assets/images/splash.png',
       resizeMode: 'contain',
