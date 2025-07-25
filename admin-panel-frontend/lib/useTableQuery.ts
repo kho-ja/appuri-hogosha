@@ -7,9 +7,9 @@ export default function useTableQuery(defaultPerPage = 10) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const pageFromUrl = Number(searchParams.get("page")) || 1;
-    const searchFromUrl = searchParams.get("search") || "";
-    const perPageFromUrl = Number(searchParams.get("perPage")) || defaultPerPage;
+    const pageFromUrl = Number(searchParams?.get("page") ?? "") || 1;
+    const searchFromUrl = searchParams?.get("search") ?? "";
+    const perPageFromUrl = Number(searchParams?.get("perPage") ?? "") || defaultPerPage;
     const [page, setPage] = useState(pageFromUrl);
     const [search, setSearch] = useState(searchFromUrl);
     const [perPage, setPerPage] = useState(perPageFromUrl);
@@ -18,7 +18,9 @@ export default function useTableQuery(defaultPerPage = 10) {
     const allSelectedIds = selectedPosts;
     const handlePerPageChange = (value: number) => {
         setPerPage(value);
-        const params = new URLSearchParams(Array.from(searchParams.entries()));
+        const params = new URLSearchParams(
+            Array.from((searchParams ?? new URLSearchParams()).entries())
+        );
         if (value === defaultPerPage) {
             params.delete("perPage");
         } else {
@@ -41,7 +43,7 @@ export default function useTableQuery(defaultPerPage = 10) {
         }
 
         const query = params.toString();
-        const url = query ? `${pathName}?${query}` : pathName;
+        const url = (query ? `${pathName}?${query}` : pathName) ?? "";
 
         router.replace(url, { scroll: false });
     }, [page, search, perPage, pathName, router, defaultPerPage]);
