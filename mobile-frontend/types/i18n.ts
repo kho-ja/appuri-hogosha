@@ -143,6 +143,28 @@ export type TranslationKeys = {
   /*Logout alert*/
   confirmLogout: string;
   logoutMessage: string;
+
+  /*update alerts*/
+  updateAvailable: string;
+  updateAvailableMessage: string;
+  download: string;
+  downloading: string;
+  downloadingMessage: string;
+  updateDownloaded: string;
+  updateDownloadedMessage: string;
+  restartNow: string;
+  restart: string;
+  updateComplete: string;
+  updateCompleteMessage: string;
+  downloadFailed: string;
+  error: string;
+  updateCheckFailed: string;
+  noUpdates: string;
+  latestVersion: string;
+  checkForUpdates: string;
+  checking: string;
+  updateFailed: string;
+  manualUpdateComplete: string;
 };
 
 export type Language = 'en' | 'ja' | 'uz';

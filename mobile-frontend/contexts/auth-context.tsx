@@ -103,7 +103,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
               const data: Session = await response.json();
               setSession(data.access_token);
               await AsyncStorage.setItem('refresh_token', data.refresh_token);
-              
+
               // Clear existing user data and insert new
               await db.execAsync('DELETE FROM user');
               await db.runAsync(
