@@ -36,8 +36,6 @@ const configByVariant = {
 const variantConfig = configByVariant[variant] || configByVariant.development;
 
 console.log(`Using variant: ${variant}`);
-console.log(`App name: ${variantConfig.name}`);
-console.log(`PackageJson version: ${packageJson.version}`);
 
 module.exports = ({ config }) => {
   return {
