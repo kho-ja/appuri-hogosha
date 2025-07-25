@@ -32,7 +32,7 @@ const SecureInput: React.FC<AdvancedInputProps> = props => {
         <MaterialIcons
           name={isPasswordVisible ? 'visibility' : 'visibility-off'}
           size={24}
-          color={theme.mode === 'light' ? 'black' : 'white'}
+          color={theme.mode === 'light' ? 'grey' : 'white'}
         />
       </TouchableOpacity>
     </View>

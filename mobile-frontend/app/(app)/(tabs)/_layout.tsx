@@ -4,23 +4,45 @@ import { Colors } from '@/constants/Colors';
 import { useSession } from '@/contexts/auth-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { Redirect, Tabs } from 'expo-router';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useThemeMode } from '@rneui/themed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TabLayout() {
   const { language, i18n } = useContext(I18nContext);
   const { mode } = useThemeMode();
   const { session, isLoading } = useSession();
-  if (isLoading) {
+  const [hasEverLoggedIn, setHasEverLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkLoginHistory = async () => {
+      try {
+        const hasLoggedIn = await AsyncStorage.getItem('hasEverLoggedIn');
+        setHasEverLoggedIn(hasLoggedIn === 'true');
+      } catch (error) {
+        console.error('Error checking login history:', error);
+        setHasEverLoggedIn(false);
+      }
+    };
+
+    checkLoginHistory();
+  }, []);
+
+  if (isLoading || hasEverLoggedIn === null) {
     return (
       <ThemedText style={{ alignContent: 'center', justifyContent: 'center' }}>
         Loading...
       </ThemedText>
     );
   }
+
   if (!session) {
+    if (!hasEverLoggedIn) {
+      return <Redirect href='/language-select' />;
+    }
     return <Redirect href='/sign-in' />;
   }
+
   return (
     <Tabs
       screenOptions={{
