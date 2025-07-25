@@ -31,7 +31,8 @@ import { useFontSize } from '@/contexts/FontSizeContext';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 25,
+    paddingHorizontal: 25,
+    paddingBottom: 25,
   },
   titleRow: {
     flexDirection: 'row',
@@ -335,7 +336,7 @@ export default function DetailsScreen() {
   const formattedTime = localDateTime.toFormat('dd.MM.yyyy   HH:mm');
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor }]}>
+    <ScrollView style={[styles.container, { backgroundColor }]} contentContainerStyle={{ paddingTop: 16 }}>
       <View style={[styles.titleRow, { justifyContent: 'space-between', alignItems: 'center' }]}>
         <ThemedText
           style={[styles.title, { fontSize: 18 * multiplier, width: 'auto', textAlign: 'left', flex: 1 }]}

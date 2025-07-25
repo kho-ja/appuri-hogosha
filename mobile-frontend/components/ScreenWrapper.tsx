@@ -3,6 +3,7 @@ import { View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@rneui/themed';
 import { useGlobalStatusBar } from '@/hooks/useGlobalStatusBar';
+import { StatusBarBackground } from './StatusBarBackground';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
@@ -34,11 +35,13 @@ export function ScreenWrapper({
   }
 
   return (
-    <SafeAreaView
-      style={[{ flex: 1, backgroundColor: theme.colors.background }, style]}
-      edges={edges}
-    >
-      {children}
-    </SafeAreaView>
+    <StatusBarBackground>
+      <SafeAreaView
+        style={[{ flex: 1, backgroundColor: theme.colors.background }, style]}
+        edges={edges}
+      >
+        {children}
+      </SafeAreaView>
+    </StatusBarBackground>
   );
 }

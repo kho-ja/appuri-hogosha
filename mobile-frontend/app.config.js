@@ -67,6 +67,8 @@ module.exports = ({ config }) => {
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         ITSAppUsesNonExemptEncryption: false,
+        UIStatusBarStyle: 'UIStatusBarStyleLightContent',
+        UIViewControllerBasedStatusBarAppearance: false,
       },
     },
     android: {
@@ -77,6 +79,13 @@ module.exports = ({ config }) => {
       package: variantConfig.androidPackage,
       googleServicesFile:
         process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+      statusBar: {
+        barStyle: 'light-content',
+        backgroundColor: '#3B81F6',
+      },
+      navigationBar: {
+        visible: false,
+      },
       intentFilters: [
         {
           autoVerify: true,

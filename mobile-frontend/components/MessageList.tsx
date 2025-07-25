@@ -29,7 +29,6 @@ import {
   fetchReadButNotSentMessages,
   saveMessagesToDB,
 } from '@/utils/queries';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
@@ -56,7 +55,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 40,
-    paddingTop: 0,
   },
   noMessagesIllustration: {
     marginBottom: 2,
@@ -496,16 +494,16 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Show no messages state
   if (messageGroups.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' }]}>
+      <View style={[styles.container, { backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' }]}>
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          contentContainerStyle={{ flex: 1 }}
+          contentContainerStyle={{ flex: 1, paddingTop: 16 }}
         >
           <NoMessagesState onRefresh={onRefresh} isRefreshing={refreshing} />
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -515,9 +513,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      contentContainerStyle={styles.messageListContainer}
+      contentContainerStyle={[styles.messageListContainer, { paddingTop: 16 }]}
     >
-      <SafeAreaView>
+      <View>
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
             <Card messageGroup={group.messages} studentId={student?.id || 0} />
@@ -548,7 +546,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
             }}
           />
         )}
-      </SafeAreaView>
+      </View>
     </ScrollView>
   );
 };

@@ -79,35 +79,36 @@ const HomeScreen = () => {
     );
   }
 
-  // Show no students screen if no students are available
+    // Show no students screen if no students are available
   if (!isLoading && (!students || students.length === 0)) {
     return (
-      <>
-        <SafeAreaView style={[styles.container, { backgroundColor }]}>
-          <NoStudentsScreen onRefresh={onRefresh} isRefreshing={refreshing} />
-        </SafeAreaView>
-
+      <View style={[styles.container, { backgroundColor }]}>
+        <NoStudentsScreen onRefresh={onRefresh} isRefreshing={refreshing} />
+        
         {/* Battery Optimization Helper */}
         <BatteryOptimizationHelper
           visible={showBatteryHelper}
           onDismiss={handleBatteryHelperDismiss}
         />
-      </>
+      </View>
     );
   }
 
-  // Show main screen with students
+    // Show main screen with students
   return (
-    <>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        style={{ backgroundColor }}
+        contentContainerStyle={{ 
+          paddingTop: 32,
+          paddingHorizontal: 16,
+          paddingBottom: 20,
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
-          <StudentSelector students={students} />
-        </SafeAreaView>
+        <StudentSelector students={students} />
       </ScrollView>
 
       <DeepLinkDebugger />
@@ -117,7 +118,7 @@ const HomeScreen = () => {
         visible={showBatteryHelper}
         onDismiss={handleBatteryHelperDismiss}
       />
-    </>
+    </View>
   );
 };
 

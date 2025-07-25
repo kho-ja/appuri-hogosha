@@ -34,8 +34,8 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
       <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={theme === 'dark' ? 'black' : 'white'}
+        barStyle='light-content'
+        backgroundColor={mode === 'dark' ? '#1A4AAC' : '#3B81F6'}
       />
       <MessageProvider>
         <Stack initialRouteName='(tabs)'>

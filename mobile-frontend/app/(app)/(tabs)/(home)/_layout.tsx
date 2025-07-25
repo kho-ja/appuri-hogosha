@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import React, { useContext } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, Platform } from 'react-native';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -14,21 +14,22 @@ const Layout = () => {
 
   return (
     <Stack>
-      <Stack.Screen 
-        name='index' 
-        options={{ 
-          headerTitle: i18n[language].SelectStudent,
-          headerTitleAlign: 'center',
-          headerStyle: {
-            backgroundColor: 'rgb(59, 129, 246)'
-          },
-          headerTitleStyle: {
-            color: 'white',
-            fontWeight: 'bold'
-          },
-          headerTintColor: 'white'
-        }} 
-      />
+              <Stack.Screen
+          name="index"
+          options={{
+            title: 'Students',
+            headerStyle: {
+              backgroundColor: '#3B81F6',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontSize: Platform.OS === 'android' ? 16 : 17,
+            },
+            headerShadowVisible: false,
+            headerTitleAlign: 'center',
+          }}
+        />
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {
@@ -41,6 +42,18 @@ const Layout = () => {
           return {
             headerTitle: studentName,
             headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6'
+            },
+            headerTitleStyle: {
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: Platform.OS === 'android' ? 18 : 17,
+            },
+            headerTintColor: 'white',
+            ...(Platform.OS === 'android' && {
+              headerStatusBarHeight: 0,
+            }),
             headerRight: () => {
               if (unreadCount === 0) {
                 return null;
@@ -51,7 +64,7 @@ const Layout = () => {
                   style={{
                     width: 30,
                     height: 30,
-                    backgroundColor: theme.mode === 'dark' ? 'rgb(59, 129, 246)' : 'rgba(26, 74, 172, 1)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     borderRadius: 15,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -79,6 +92,18 @@ const Layout = () => {
           return {
             headerTitle: i18n[language].detailedView,
             headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6'
+            },
+            headerTitleStyle: {
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: Platform.OS === 'android' ? 18 : 17,
+            },
+            headerTintColor: 'white',
+            ...(Platform.OS === 'android' && {
+              headerStatusBarHeight: 0,
+            })
           };
         }}
       />
