@@ -110,7 +110,7 @@ export default {
     pressBackAgainToExit: 'Press back again to exit',
 
     /*student select page*/
-    SelectStudent: 'Select Student',
+    SelectStudent: 'Select Your Child',
 
     /*no students screen*/
     noStudentsFound: 'No Students Found',
@@ -173,6 +173,7 @@ export default {
 
     /*message detail*/
     detailedView: 'Detailed view',
+    contractFile: 'Contract.pdf',
     /*message detail*/
 
     /*update alerts*/
@@ -308,7 +309,7 @@ export default {
     pressBackAgainToExit: 'もう一度押して終了',
 
     /*student select page*/
-    SelectStudent: '学生を選びなさい',
+    SelectStudent: 'お子様を選択してください',
 
     /*no students screen*/
     noStudentsFound: '学生が見つかりません',
@@ -371,6 +372,7 @@ export default {
 
     /*message detail*/
     detailedView: '詳細表示',
+    contractFile: '契約書.pdf',
     /*message detail*/
 
     /*update alerts*/
@@ -490,9 +492,8 @@ export default {
     continueReading: 'Davom etish',
     loadMoreMessages: "Ko'proq xabarlar",
     messageNotFound: 'Xabar topilmadi',
-    noMessagesYet: "Hali xabarlar yo'q",
-    noMessagesDescription:
-      "Maktabdan xabar kelganida, ular shu yerda ko'rsatiladi. Yangilash uchun pastga torting.",
+    noMessagesYet: "Hozircha yangi xabar yo'q",
+    noMessagesDescription: "Keyinroq qayta urinib ko'ring.",
     errorLoadingMessages:
       "Xabarlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     tryAgain: 'Qayta urinish',
@@ -509,7 +510,7 @@ export default {
     pressBackAgainToExit: 'Chiqish uchun yana bir marta bosing',
 
     /*student select page*/
-    SelectStudent: "O'quvchini tanlang",
+    SelectStudent: 'Farzandingizni tanlang',
 
     /*no students screen*/
     noStudentsFound: "O'quvchilar topilmadi",
@@ -572,6 +573,7 @@ export default {
 
     /*message detail*/
     detailedView: 'Batafsil ko‘rish',
+    contractFile: 'Shartnoma.pdf',
     /*message detail*/
 
     /*update alerts*/

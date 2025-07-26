@@ -1,8 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+} from 'react-native';
 import { useStudents } from '@/contexts/student-context';
 import { ThemedText } from '@/components/ThemedText';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { StudentSelector } from '@/components/StudentSelector';
 import { useTheme } from '@rneui/themed';
 import { useFocusEffect } from '@react-navigation/native';
@@ -53,18 +57,21 @@ const HomeScreen = () => {
 
   // Show main screen with students
   return (
-    <>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        style={{ backgroundColor }}
+        contentContainerStyle={{
+          paddingTop: 32,
+          paddingHorizontal: 16,
+          paddingBottom: 20,
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
-          <StudentSelector students={students} />
-        </SafeAreaView>
+        <StudentSelector students={students} />
       </ScrollView>
-    </>
+    </View>
   );
 };
 
