@@ -10,6 +10,12 @@ export const useUpdateAlerts = () => {
   useEffect(() => {
     const checkAndAlertUpdates = async () => {
       try {
+        // Skip update checks in development builds
+        if (__DEV__) {
+          console.log('[Updates] Skipping update check in development build');
+          return;
+        }
+
         console.log('[Updates] Checking for updates...');
         console.log('[Updates] Current channel:', Updates.channel);
         console.log('[Updates] Runtime version:', Updates.runtimeVersion);
@@ -109,6 +115,15 @@ export const UpdateButton = ({ title }: { title?: string }) => {
 
   const handleUpdate = async () => {
     if (checking) return;
+
+    // Skip update checks in development builds
+    if (__DEV__) {
+      Alert.alert(
+        i18n[language].updateCheckFailed || 'Update Check Failed',
+        'Updates are not supported in development builds. This feature only works in production builds.'
+      );
+      return;
+    }
 
     setChecking(true);
     console.log('[Updates] Manual check initiated');

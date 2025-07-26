@@ -10,13 +10,12 @@ import React from 'react';
 import 'react-native-reanimated';
 import { useThemeMode } from '@rneui/themed';
 import { MessageProvider } from '@/contexts/message-context';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { mode } = useThemeMode(); // Use @rneui/themed mode
-  const theme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });

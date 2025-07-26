@@ -104,7 +104,6 @@ const Card = ({
     zone: 'utc',
   });
   const localDateTime = utcDateTime.setZone(userTimeZone);
-  const formattedTime = localDateTime.toFormat('yyyy-MM-dd HH:mm');
 
   return (
     <Pressable onPress={handlePress}>

@@ -53,8 +53,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
         setHasAutoNavigated(false);
       }
     }, [students, handleStudentSelect, hasAutoNavigated]);
-    const backgroundColor = theme.colors.background;
-    const borderColor = theme.colors.black;
     const avatarColors = [
       '#fc958d',
       '#fc9abc',
@@ -129,9 +127,14 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                     ]}
                   >
                     {(i18n as any).StudentIdLabel ||
-                      (language === 'ja' ? '学生ID:' :
-                        language === 'uz' ? 'Talaba ID raqami:' :
-                        'Student ID:')} <Text style={{ fontWeight: '600', color: textColor }}>{student.student_number}</Text>
+                      (language === 'ja'
+                        ? '学生ID:'
+                        : language === 'uz'
+                          ? 'Talaba ID raqami:'
+                          : 'Student ID:')}{' '}
+                    <Text style={{ fontWeight: '600', color: textColor }}>
+                      {student.student_number}
+                    </Text>
                   </ThemedText>
                 </View>
                 <ThemedText style={{ width: 25, height: 25 }}>
