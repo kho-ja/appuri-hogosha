@@ -25,7 +25,7 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
   requirements,
 }) => {
   const { theme } = useTheme();
-  
+
   const checkRequirements = (password: string): PasswordRequirement[] => {
     return [
       {
@@ -54,13 +54,15 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
   const requirementsList = checkRequirements(password);
 
   return (
-    <View style={[
-      styles.container,
-      {
-        backgroundColor: theme.mode === 'light' ? '#f8f9fa' : '#374151',
-        borderColor: theme.mode === 'light' ? '#e9ecef' : '#4B5563',
-      }
-    ]}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.mode === 'light' ? '#f8f9fa' : '#374151',
+          borderColor: theme.mode === 'light' ? '#e9ecef' : '#4B5563',
+        },
+      ]}
+    >
       {requirementsList.map((requirement, index) => (
         <View key={index} style={styles.requirementRow}>
           <Ionicons

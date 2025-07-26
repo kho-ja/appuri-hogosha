@@ -36,8 +36,6 @@ const configByVariant = {
 const variantConfig = configByVariant[variant] || configByVariant.development;
 
 console.log(`Using variant: ${variant}`);
-console.log(`App name: ${variantConfig.name}`);
-console.log(`PackageJson version: ${packageJson.version}`);
 
 module.exports = ({ config }) => {
   return {
@@ -62,14 +60,16 @@ module.exports = ({ config }) => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: variantConfig.iosBundleId,
-      googleServicesFile:
-        process.env.GOOGLE_SERVICES_PLIST ?? './GoogleService-Info.plist',
+      ...(process.env.GOOGLE_SERVICES_PLIST && {
+        googleServicesFile: process.env.GOOGLE_SERVICES_PLIST,
+      }),
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         ITSAppUsesNonExemptEncryption: false,
         UIStatusBarStyle: 'UIStatusBarStyleLightContent',
         UIViewControllerBasedStatusBarAppearance: false,
       },
+      associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
     },
     android: {
       adaptiveIcon: {

@@ -10,6 +10,7 @@ import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { initPushNotifications } from '@/utils/notifications';
 import { Platform, Alert, Linking } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
+import { useUpdateAlerts } from '@/hooks/useUpdateAlerts';
 
 // Helper function to guide users for battery optimization
 const showBatteryOptimizationAlert = async (i18n: any, language: string) => {
@@ -104,6 +105,8 @@ const SessionDependentPushTokenHandler: React.FC<{
 const AppWithNotifications: React.FC = () => {
   const { language, i18n } = useContext(I18nContext);
   const [pushToken, setPushToken] = React.useState<string | null>(null);
+
+  useUpdateAlerts();
 
   // Initialize push notifications once
   React.useEffect(() => {

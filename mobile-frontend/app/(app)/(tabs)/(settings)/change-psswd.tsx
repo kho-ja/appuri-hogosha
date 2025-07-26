@@ -1,15 +1,10 @@
 import { router } from 'expo-router';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-root-toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -99,12 +94,13 @@ export default function Index() {
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-  
+
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isStrengthIndicatorHidden, setIsStrengthIndicatorHidden] = useState(false);
+  const [isStrengthIndicatorHidden, setIsStrengthIndicatorHidden] =
+    useState(false);
 
   // Password strength calculation
   const calculatePasswordStrength = (
@@ -238,13 +234,16 @@ export default function Index() {
           </ThemedView>
 
           {errorMessage !== '' && (
-            <ThemedText style={[
-              styles.errorText,
-              {
-                backgroundColor: theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
-                borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
-              }
-            ]}>
+            <ThemedText
+              style={[
+                styles.errorText,
+                {
+                  backgroundColor:
+                    theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
+                  borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
+                },
+              ]}
+            >
               {errorMessage}
             </ThemedText>
           )}
@@ -261,10 +260,13 @@ export default function Index() {
           <SecureInput
             label={i18n[language].newPassword}
             placeholder={i18n[language].enterNewPassword}
-            onChangeText={(text) => {
+            onChangeText={text => {
               setNewPassword(text);
               // if the password is empty or weak, show the strength indicator
-              if (text.length === 0 || calculatePasswordStrength(text).score < 100) {
+              if (
+                text.length === 0 ||
+                calculatePasswordStrength(text).score < 100
+              ) {
                 setIsStrengthIndicatorHidden(false);
               }
             }}

@@ -22,6 +22,7 @@ export default {
     home: 'Home',
     form: 'Form',
     settings: 'Settings',
+    personalInfo: 'Personal Info',
     /*tab bar layout*/
 
     /*register page*/
@@ -54,7 +55,7 @@ export default {
     emailaddress: 'Email address',
     phoneNumber: 'Phone number',
     preferences: 'Preferences',
-    language: 'Language',
+    language: 'Language Change',
     logout: 'Logout',
     passwordChangedSuccess: 'Password changed successfully',
     changePassword: 'Change Password',
@@ -80,6 +81,7 @@ export default {
     lightMode: 'Light Mode',
     darkMode: 'Dark Mode',
     batteryOptimization: 'Battery Optimization',
+    name: 'Name',
     /*settings page*/
 
     /*message*/
@@ -173,6 +175,30 @@ export default {
     detailedView: 'Detailed view',
     contractFile: 'Contract.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'Update Available 🚀',
+    updateAvailableMessage:
+      'A new version of the app is available. Would you like to download it now?',
+    download: 'Download',
+    downloading: 'Downloading...',
+    downloadingMessage: 'Please wait while the update downloads.',
+    updateDownloaded: 'Update Downloaded! ✅',
+    updateDownloadedMessage:
+      'The update has been downloaded successfully. Restart to apply changes?',
+    restartNow: 'Restart Now',
+    restart: 'Restart',
+    updateComplete: 'Update Complete',
+    updateCompleteMessage: 'You already have the latest version.',
+    downloadFailed: 'Download Failed',
+    error: 'Error',
+    updateCheckFailed: 'Update Check Failed',
+    noUpdates: 'No Updates',
+    latestVersion: 'You have the latest version!',
+    checkForUpdates: 'Check for Updates',
+    checking: 'Checking...',
+    updateFailed: 'Update Failed',
+    manualUpdateComplete: 'Manual update complete. Restart to apply?',
   },
   ja: {
     /*sign in page*/
@@ -195,6 +221,7 @@ export default {
     home: 'ホーム',
     form: 'フォーム',
     settings: '設定',
+    personalInfo: '個人情報',
     /*tab bar layout*/
 
     /*register page*/
@@ -227,7 +254,7 @@ export default {
     emailaddress: 'メールアドレス',
     phoneNumber: '電話番号',
     preferences: '設定',
-    language: '言語',
+    language: '言語の変更',
     logout: 'ログアウト',
     passwordChangedSuccess: 'パスワードが正常に変更されました',
     changePassword: 'パスワードを変更',
@@ -252,6 +279,7 @@ export default {
     lightMode: 'ライトモード',
     darkMode: 'ダークモード',
     batteryOptimization: 'バッテリー最適化',
+    name: '名前',
     /*settings page*/
 
     /*message*/
@@ -346,6 +374,32 @@ export default {
     detailedView: '詳細表示',
     contractFile: '契約書.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'アップデート利用可能 🚀',
+    updateAvailableMessage:
+      'アプリの新しいバージョンが利用可能です。今すぐダウンロードしますか？',
+    download: 'ダウンロード',
+    downloading: 'ダウンロード中...',
+    downloadingMessage: 'アップデートのダウンロードをお待ちください。',
+    updateDownloaded: 'アップデート完了！ ✅',
+    updateDownloadedMessage:
+      'アップデートが正常にダウンロードされました。変更を適用するために再起動しますか？',
+    restartNow: '今すぐ再起動',
+    restart: '再起動',
+    updateComplete: 'アップデート完了',
+    updateCompleteMessage: '最新バージョンをお使いです。',
+    downloadFailed: 'ダウンロード失敗',
+    error: 'エラー',
+    updateCheckFailed: 'アップデート確認失敗',
+    noUpdates: 'アップデートなし',
+    latestVersion: '最新バージョンをお使いです！',
+    checkForUpdates: 'アップデート確認',
+    checking: '確認中...',
+    updateFailed: 'アップデート失敗',
+    manualUpdateComplete:
+      '手動アップデート完了。適用するために再起動しますか？',
+    /*update alerts*/
   },
   uz: {
     /*sign in page*/
@@ -368,6 +422,7 @@ export default {
     home: 'Bosh sahifa',
     form: 'Forma',
     settings: 'Sozlamalar',
+    personalInfo: "Shaxsiy ma'lumotlar",
     /*tab bar layout*/
 
     /*register page*/
@@ -400,7 +455,7 @@ export default {
     emailaddress: 'Elektron pochta',
     phoneNumber: 'Telefon raqami',
     preferences: 'Sozlamalar',
-    language: 'Til',
+    language: 'Ilova tili',
     logout: 'Chiqish',
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
@@ -426,6 +481,7 @@ export default {
     lightMode: "Yorug' rejim",
     darkMode: "Qorong'u rejim",
     batteryOptimization: 'Batareya optimizatsiyasi',
+    name: 'Ism',
     /*settings page*/
 
     /*message*/
@@ -519,6 +575,32 @@ export default {
     detailedView: 'Batafsil ko‘rish',
     contractFile: 'Shartnoma.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'Yangilanish mavjud 🚀',
+    updateAvailableMessage:
+      'Ilovaning yangi versiyasi mavjud. Hozir yuklab olasizmi?',
+    download: 'Yuklab olish',
+    downloading: 'Yuklab olinmoqda...',
+    downloadingMessage: 'Yangilanish yuklab olinayotganda kuting.',
+    updateDownloaded: 'Yangilanish yuklandi! ✅',
+    updateDownloadedMessage:
+      "Yangilanish muvaffaqiyatli yuklandi. O'zgarishlarni qo'llash uchun qayta ishga tushirasizmi?",
+    restartNow: 'Hozir qayta ishga tushirish',
+    restart: 'Qayta ishga tushirish',
+    updateComplete: 'Yangilanish tugallandi',
+    updateCompleteMessage: "Sizda eng so'nggi versiya mavjud.",
+    downloadFailed: 'Yuklab olish muvaffaqiyatsiz',
+    error: 'Xato',
+    updateCheckFailed: 'Yangilanishni tekshirish muvaffaqiyatsiz',
+    noUpdates: "Yangilanishlar yo'q",
+    latestVersion: "Sizda eng so'nggi versiya mavjud!",
+    checkForUpdates: 'Yangilanishlarni tekshirish',
+    checking: 'Tekshirilmoqda...',
+    updateFailed: 'Yangilanish muvaffaqiyatsiz',
+    manualUpdateComplete:
+      "Qo'lda yangilanish tugallandi. Qo'llash uchun qayta ishga tushirasizmi?",
+    /*update alerts*/
   },
 };
 

@@ -1,11 +1,25 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.jduapp.parentnotification",
       "sha256_cert_fingerprints": [
-        "06:F6:0A:98:2F:83:5D:E0:ED:C0:49:84:6B:1D:AC:EC:B9:7D:33:28:3D:06:0C:3E:D7:AE:14:CD:91:70:76:5A"
+        "CE:2C:86:D6:A2:AF:1D:63:40:68:8B:43:49:5C:AC:8D:86:6E:E1:C0:99:45:3E:CC:AB:8A:B0:3B:E4:2B:CF:98"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.jduapp.parentnotification.preview",
+      "sha256_cert_fingerprints": [
+        "46:51:EE:78:28:D5:92:C1:A1:A3:A7:7E:4B:7B:7D:3F:27:F3:79:24:E7:59:EA:D7:C5:92:D7:74:0B:33:C8:7F"
       ]
     }
   }

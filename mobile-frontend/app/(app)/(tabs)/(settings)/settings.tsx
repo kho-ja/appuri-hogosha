@@ -30,43 +30,78 @@ import { Href, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
-import { Separator } from '@/components/atomic/separator';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+
+const languageData = [
+  {
+    language: "O'zbekcha",
+    flag: '🇺🇿',
+  },
+  {
+    language: '日本語',
+    flag: '🇯🇵',
+  },
+  {
+    language: 'English',
+    flag: '🇬🇧',
+  },
+];
+
+const RadioCircle = ({ selected }: { selected: boolean }) => (
+  <View
+    style={{
+      height: 22,
+      width: 22,
+      borderRadius: 11,
+      borderWidth: 2,
+      borderColor: selected ? '#3887FE' : '#C6C6C6',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'transparent',
+    }}
+  >
+    {selected ? (
+      <View
+        style={{
+          height: 12,
+          width: 12,
+          borderRadius: 6,
+          backgroundColor: '#3887FE',
+        }}
+      />
+    ) : null}
+  </View>
+);
 
 interface LanguageSelectionProps {
   language: string;
   selectedLanguage: string;
   onSelect: (language: string) => void;
+  flag: string;
 }
 
-const LanguageSelection: React.FC<LanguageSelectionProps> = ({
-  language,
-  selectedLanguage,
-  onSelect,
-}) => (
-  <TouchableOpacity
-    key={language}
-    style={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      borderRadius: 4,
-      width: '100%',
-      backgroundColor:
-        selectedLanguage === language ? '#059669' : 'transparent',
-      padding: 10,
-      marginBottom: 10,
-    }}
-    onPress={() => onSelect(language)}
-  >
-    <ThemedText>{language}</ThemedText>
-    <Ionicons
-      name={'checkmark'}
-      size={20}
-      color={selectedLanguage === language ? '#059669' : 'transparent'}
-    />
-  </TouchableOpacity>
-);
+const LanguageSelection: React.FC<
+  LanguageSelectionProps & { isDark: boolean }
+> = ({ language, selectedLanguage, onSelect, flag, isDark }) => {
+  const selected = selectedLanguage === language;
+  return (
+    <TouchableOpacity
+      key={language}
+      style={[
+        styles.container1,
+        selected && { backgroundColor: isDark ? '#226fc9' : '#EAF2FF' },
+      ]}
+      onPress={() => onSelect(language)}
+      activeOpacity={0.8}
+    >
+      <View style={styles.row}>
+        <ThemedText style={styles.flag}>{flag}</ThemedText>
+        <ThemedText>{language}</ThemedText>
+      </View>
+      <RadioCircle selected={selected} />
+    </TouchableOpacity>
+  );
+};
 
 export default function SettingsScreen() {
   const { language, i18n, setLanguage } = useContext(I18nContext);
@@ -74,6 +109,7 @@ export default function SettingsScreen() {
   const db = useSQLiteContext();
   const [user, setUser] = useState<User | null>(null);
   const { theme } = useTheme();
+  const isDark = theme.mode === 'dark';
   const [, setIsOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
@@ -81,7 +117,6 @@ export default function SettingsScreen() {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
-  const languages = ['English', '日本語', "O'zbekcha"];
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
   ) => {
@@ -106,7 +141,8 @@ export default function SettingsScreen() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userData: User | null = await db.getFirstSync('SELECT * FROM user');
+        const userData: User | null =
+          await db.getFirstSync('SELECT * FROM user');
         setUser(userData);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -156,90 +192,93 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <View style={styles.topContainer}>
-            <View style={styles.nameProfile}>
-              <ThemedText
-                style={[styles.profileInitial, { textAlign: 'center' }]}
-              >
-                {user && user.given_name
-                  ? user.given_name.charAt(0).toUpperCase()
-                  : ''}
-              </ThemedText>
-            </View>
-            <View style={styles.userInfoContainer}>
-              <View style={styles.namesContainer}>
-                <ThemedText style={styles.profileText}>
-                  {user && `${user.given_name} ${user.family_name}`}
-                </ThemedText>
-              </View>
-              <View>
-                <ThemedText style={[styles.email, { color: theme.colors.grey1 }]}>
-                  {user?.email}
-                </ThemedText>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.infoContainer}>
+          <View style={styles.infoCard}>
             <ThemedText style={styles.sectionTitle}>
-              {i18n[language].phoneNumber}
+              {i18n[language].personalInfo}
             </ThemedText>
-            <View style={styles.infoCard}>
-              <ThemedText style={styles.value}>+{user && user.phone_number}</ThemedText>
+            <View style={styles.infoRow}>
+              <View style={styles.row}>
+                <Ionicons
+                  name='person-outline'
+                  size={22}
+                  color={theme.colors.grey1}
+                  style={styles.infoIcon}
+                />
+                <View>
+                  <ThemedText
+                    style={[
+                      styles.profileInitial,
+                      { color: theme.colors.grey1 },
+                    ]}
+                  >
+                    {i18n[language].name}
+                  </ThemedText>
+                  <ThemedText style={styles.profileText}>
+                    {user && `${user.given_name} ${user.family_name}`}
+                  </ThemedText>
+                </View>
+              </View>
+              <View style={styles.row}>
+                <Ionicons
+                  name='call-outline'
+                  size={22}
+                  color={theme.colors.grey1}
+                  style={styles.infoIcon}
+                />
+                <View>
+                  <ThemedText
+                    style={[
+                      styles.profileInitial,
+                      { color: theme.colors.grey1 },
+                    ]}
+                  >
+                    {i18n[language].phoneNumber}
+                  </ThemedText>
+                  <ThemedText style={styles.profileText}>
+                    +{user && user.phone_number}
+                  </ThemedText>
+                </View>
+              </View>
             </View>
           </View>
-          <View style={styles.infoContainer}>
+          <View style={styles.infoCard}>
             <ThemedText style={styles.sectionTitle}>
               {i18n[language].preferences}
             </ThemedText>
-            <View style={styles.infoCard}>
-              <Pressable onPress={handlePresentModal} style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='language-outline' size={20} />
-                </View>
-
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].language}
-                </ThemedText>
-
-                <View style={styles.rowSpacer} />
-
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <Separator orientation='horizontal' />
-              <Pressable
-                onPress={() => router.navigate('change-psswd' as Href)}
-                style={styles.row}
-              >
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='lock-closed-outline' size={20} />
-                </View>
-
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].changePassword}
-                </ThemedText>
-
-                <View style={styles.rowSpacer} />
-
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <Separator orientation='horizontal' />
-              <Pressable
-                style={styles.row}
-                onPress={handlePresentFontSizeModal}
-              >
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='text' size={20} />
-                </View>
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].textSize}
-                </ThemedText>
-                <View style={styles.rowSpacer} />
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <Separator orientation='horizontal' />
-              <ThemeSwitcher />
-            </View>
+            <Pressable onPress={handlePresentModal} style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='language-outline' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].language}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <Pressable
+              onPress={() => router.navigate('change-psswd' as Href)}
+              style={styles.row}
+            >
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].changePassword}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <Pressable style={styles.row} onPress={handlePresentFontSizeModal}>
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='text' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].textSize}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <ThemeSwitcher />
           </View>
           <BottomSheetModal
             ref={bottomSheetModalRef}
@@ -261,14 +300,25 @@ export default function SettingsScreen() {
             )}
           >
             <ThemedView style={styles.contentContainer}>
-              <ThemedView style={styles.row}></ThemedView>
-              <ThemedView>
-                {languages.map(language => (
+              <ThemedText
+                style={{
+                  marginTop: 18,
+                  marginBottom: 18,
+                  fontSize: 16,
+                  alignSelf: 'flex-start',
+                }}
+              >
+                {i18n[language].language}
+              </ThemedText>
+              <ThemedView style={{ width: '100%' }}>
+                {languageData.map(l => (
                   <LanguageSelection
-                    key={language}
-                    language={language}
+                    key={l.language}
+                    language={l.language}
                     selectedLanguage={selectedLanguage}
                     onSelect={handleLanguageSelect}
+                    flag={l.flag}
+                    isDark={isDark}
                   />
                 ))}
               </ThemedView>
@@ -330,12 +380,18 @@ export default function SettingsScreen() {
               </ThemedView>
             </ThemedView>
           </BottomSheetModal>
-          <View style={{ marginTop: 15 }}>
+          <View style={{ marginTop: 40, marginBottom: 20 }}>
             <Button
-              buttonStyle={styles.submitButton}
+              buttonStyle={[
+                styles.submitButton,
+                { backgroundColor: theme.colors.background },
+              ]}
               onPress={handlePress}
               title={i18n[language].logout}
-              color='secondary'
+              titleStyle={styles.text}
+              icon={
+                <Ionicons name='log-out-outline' size={30} color='#FF4444' />
+              }
             />
           </View>
         </ScrollView>
@@ -347,110 +403,81 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
     rowGap: 10,
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
   },
   submitButton: {
-    padding: 16,
-    borderRadius: 4,
+    padding: 10,
+    borderRadius: 15,
     alignItems: 'center',
-    marginHorizontal: 10,
+    justifyContent: 'center',
+    marginTop: 25,
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#FF4444',
   },
   profile: {
+    backgroundColor: '#226fc9',
     padding: 24,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
   },
   profileName: {
-    marginTop: 20,
+    marginTop: 10,
     fontSize: 19,
     fontWeight: '600',
+    color: 'white',
     textAlign: 'center',
   },
   sectionTitle: {
-    paddingBottom: 12,
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1.1,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 20,
   },
-  topContainer: {
-    padding: 10,
-    display: 'flex',
-    flexDirection: 'row',
-    marginBottom: 30,
-    gap: 30,
-    alignItems: 'center',
+  infoRow: {
+    gap: 20,
   },
-  namesContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 5,
-  },
-  userInfoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  nameProfile: {
-    height: 65,
-    width: 65,
-    borderColor: '#005678',
-    borderWidth: 1,
-    borderRadius: 100,
-    backgroundColor: '#005678',
-    justifyContent: 'center', // Center vertically
-    alignItems: 'center',
+  infoIcon: {
+    marginRight: 15,
   },
   profileText: {
-    fontSize: 20,
-    fontWeight: '600',
-    flexWrap: 'wrap',
-    flexShrink: 1,
-  },
-  email: {
-    fontWeight: '400',
     fontSize: 16,
-    marginTop: 2,
+    fontWeight: '400',
   },
   profileInitial: {
-    width: '80%',
-    fontSize: 35,
-    fontWeight: 'bold',
-    color: 'white',
-    marginTop: -5,
-    flexWrap: 'wrap',
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 2,
   },
   infoCard: {
-    width: '100%',
-    padding: 10,
+    marginHorizontal: 20,
+    marginTop: 30,
+    padding: 15,
     borderWidth: 1,
-    borderColor: 'grey',
-    borderRadius: 10,
+    borderColor: '#bec0c2',
+    borderRadius: 20,
     alignItems: 'flex-start',
     position: 'relative',
   },
-  infoContainer: {
-    position: 'relative',
-    alignItems: 'flex-start',
-    padding: 10,
-    marginBottom: 10,
+  container1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 4,
+    width: '100%',
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
-  label: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    color: '#b0b0ba',
-    fontSize: 12,
+  selected: {
+    backgroundColor: '#EAF2FF',
   },
-  value: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    margin: 5,
+  flag: {
+    fontSize: 22,
+    marginRight: 12,
   },
   row: {
     flexDirection: 'row',
@@ -478,12 +505,6 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     flexBasis: 0,
   },
-  rowValue: {
-    fontSize: 17,
-    fontWeight: '400',
-    color: '#8E8E93',
-    marginRight: 8,
-  },
   contentContainer: {
     flex: 1,
     alignItems: 'center',
@@ -494,32 +515,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     fontSize: 16,
   },
-  inputContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 10,
-    paddingHorizontal: 15,
-  },
-  input: {
-    width: '70%',
-    height: 40,
-    marginVertical: 12,
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 4,
-    borderColor: 'grey',
-  },
-  button: {
-    height: 'auto',
-    width: 'auto',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#059669',
-  },
   text: {
+    marginLeft: 12,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#FF4444',
   },
   // Font Size Sheet styles
   fontSizeContainer: {
