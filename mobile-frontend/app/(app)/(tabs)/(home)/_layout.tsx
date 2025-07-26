@@ -12,6 +12,7 @@ const Layout = () => {
   const { unreadCount } = useMessageContext();
   const { students } = useStudents();
   const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
 
   // Check if we should show the battery optimization helper
   useEffect(() => {
@@ -48,7 +49,22 @@ const Layout = () => {
 
   return (
     <Stack>
-      <Stack.Screen name='index' options={{ headerShown: false }} />
+      <Stack.Screen
+        name='index'
+        options={{
+          title: i18n[language].SelectStudent,
+          headerStyle: {
+            backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            fontSize: Platform.OS === 'android' ? 16 : 17,
+          },
+          headerShadowVisible: false,
+          headerTitleAlign: 'center',
+        }}
+      />
       <Stack.Screen
         name='student/[id]'
         options={({ route }: any) => {
@@ -56,11 +72,25 @@ const Layout = () => {
 
           // Find the student by ID to get their name
           const student = students?.find(s => s.id === Number(studentId));
-          const studentName = student?.given_name || 'Student';
+          const studentName = student
+            ? `${student.given_name} ${student.family_name}`
+            : 'Student';
 
           return {
             headerTitle: studentName,
             headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+            },
+            headerTitleStyle: {
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: Platform.OS === 'android' ? 18 : 17,
+            },
+            headerTintColor: 'white',
+            ...(Platform.OS === 'android' && {
+              headerStatusBarHeight: 0,
+            }),
             headerRight: () => {
               if (unreadCount === 0) {
                 return null;
@@ -71,7 +101,7 @@ const Layout = () => {
                   style={{
                     width: 30,
                     height: 30,
-                    backgroundColor: '#005678',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     borderRadius: 15,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -99,6 +129,18 @@ const Layout = () => {
           return {
             headerTitle: i18n[language].detailedView,
             headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+            },
+            headerTitleStyle: {
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: Platform.OS === 'android' ? 18 : 17,
+            },
+            headerTintColor: 'white',
+            ...(Platform.OS === 'android' && {
+              headerStatusBarHeight: 0,
+            }),
           };
         }}
       />

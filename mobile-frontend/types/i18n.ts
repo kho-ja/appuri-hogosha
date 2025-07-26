@@ -14,6 +14,7 @@ export type TranslationKeys = {
   loginFailed: string;
   loginSuccess: string;
   detailedView: string;
+  contractFile: string;
 
   // Tab bar layout
   home: string;
