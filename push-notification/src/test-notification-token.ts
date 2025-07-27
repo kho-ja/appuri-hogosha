@@ -110,11 +110,6 @@ class NotificationTokenTester {
         console.log(`   Operator: ${routing.operator}`);
         console.log(`   Use PlayMobile: ${routing.usePlayMobile ? '✅' : '❌'}`);
 
-        if (!routing.isUzbekistan) {
-            console.log('❌ Phone number validation failed, aborting test');
-            return false;
-        }
-
         // Create test post
         const testPost: NotificationPost = {
             ...TEST_CONFIG.defaultPost,
@@ -128,6 +123,14 @@ class NotificationTokenTester {
             console.log('\n📤 Sending SMS...');
             const text = generateSmsText(testPost);
             console.log(`SMS Text: ${text}`);
+
+            // for International numbers, we send SMS via AWS SMS
+            if (!routing.isUzbekistan) {
+                console.log('🌐 Sending SMS via AWS SMS...');
+                const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+                console.log(`Formatted Phone: ${formattedPhone}`);
+                return await this.awsSmsService.sendSms(formattedPhone, text);
+            }
 
             let success = false;
 
