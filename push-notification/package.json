@@ -13,6 +13,7 @@
 		"deploy": "npm run prepare-dist && npm run install-prod-deps",
 		"analyze-db": "npx ts-node src/analyze-db-tokens.ts",
 		"debug-push": "npx ts-node src/debug-push-notifications.ts",
+		"test-token": "npx ts-node src/test-notification-token.ts",
 		"lint": "echo 'Add linting here if needed'",
 		"type-check": "tsc --noEmit"
 	},
