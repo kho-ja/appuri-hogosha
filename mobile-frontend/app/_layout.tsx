@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { theme } from '@/constants/theme';
 import { setupNotificationHandler } from '@/utils/notifications';
 import AppWithNotifications from './AppWithNotifications';
-import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { redirectSystemPath } from '../+native-intent';
@@ -89,15 +89,19 @@ export default function Root() {
           assetSource={{ assetId: require('../assets/database/maria.db') }}
         >
           <ThemeProvider theme={memoizedTheme}>
-            {/* Global status bar - handles everything automatically */}
-            <StatusBar style='auto' backgroundColor='transparent' translucent />
-            <ScreenWrapper style={{ flex: 1 }}>
+            <StatusBarBackground>
+              {/* Global status bar with blue background */}
+              <StatusBar
+                style='light'
+                backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
+                translucent={false}
+              />
               <NetworkProvider>
                 <I18nProvider>
                   <AppWithNotifications />
                 </I18nProvider>
               </NetworkProvider>
-            </ScreenWrapper>
+            </StatusBarBackground>
           </ThemeProvider>
         </SQLiteProvider>
       </GestureHandlerRootView>

@@ -12,6 +12,7 @@ import {
   StyleSheet,
   View,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -28,7 +29,6 @@ import {
   fetchReadButNotSentMessages,
   saveMessagesToDB,
 } from '@/utils/queries';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
@@ -52,26 +52,36 @@ const styles = StyleSheet.create({
   },
   noMessagesContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     padding: 40,
+  },
+  noMessagesIllustration: {
+    marginBottom: 2,
+    alignItems: 'center',
+    width: '100%',
+  },
+  illustrationImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'contain',
   },
   noMessagesIcon: {
     marginBottom: 20,
     opacity: 0.6,
   },
   noMessagesTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   noMessagesText: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 20,
     opacity: 0.7,
-    marginBottom: 30,
+    marginBottom: 40,
   },
   refreshButton: {
     paddingVertical: 12,
@@ -133,14 +143,11 @@ const NoMessagesState: React.FC<{
 
   return (
     <View style={styles.noMessagesContainer}>
-      <View style={styles.noMessagesIcon}>
-        <Ionicons
-          name='mail-outline'
-          size={80}
-          color={
-            theme.colors.disabled ||
-            (theme.mode === 'dark' ? '#6c757d' : '#adb5bd')
-          }
+      {/* Illustration */}
+      <View style={styles.noMessagesIllustration}>
+        <Image
+          source={require('@/assets/images/parentandchildren.png')}
+          style={styles.illustrationImage}
         />
       </View>
 
@@ -155,19 +162,32 @@ const NoMessagesState: React.FC<{
       <Button
         title={i18n[language].refresh}
         onPress={onRefresh}
-        buttonStyle={[styles.refreshButton, { backgroundColor: '#005678' }]}
-        disabledStyle={[styles.refreshButton, { backgroundColor: '#003d56' }]}
+        buttonStyle={[
+          styles.refreshButton,
+          {
+            backgroundColor: theme.mode === 'dark' ? '#3B81F6' : '#3B81F61A',
+          },
+        ]}
+        disabledStyle={[
+          styles.refreshButton,
+          {
+            backgroundColor: theme.mode === 'dark' ? '#2563EB' : '#3B81F60D',
+          },
+        ]}
+        titleStyle={{
+          color: theme.mode === 'dark' ? 'white' : '#3B81F6',
+        }}
         loading={isRefreshing}
         disabled={isRefreshing}
         loadingProps={{
-          color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
+          color: theme.mode === 'dark' ? 'white' : 'rgb(59, 129, 246)',
         }}
         icon={
           !isRefreshing ? (
             <Ionicons
               name='refresh-outline'
               size={20}
-              color='white'
+              color={theme.mode === 'dark' ? 'white' : 'rgb(59, 129, 246)'}
               style={{ marginRight: 8 }}
             />
           ) : undefined
@@ -474,27 +494,33 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Show no messages state
   if (messageGroups.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' },
+        ]}
+      >
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          contentContainerStyle={{ flex: 1 }}
+          contentContainerStyle={{ flex: 1, paddingTop: 16 }}
         >
           <NoMessagesState onRefresh={onRefresh} isRefreshing={refreshing} />
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
     <ScrollView
+      style={{ backgroundColor: theme.mode === 'dark' ? '#000000' : '#FFFFFF' }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      contentContainerStyle={styles.messageListContainer}
+      contentContainerStyle={[styles.messageListContainer, { paddingTop: 16 }]}
     >
-      <SafeAreaView>
+      <View>
         {messageGroups.map(group => (
           <React.Fragment key={group.key}>
             <Card messageGroup={group.messages} studentId={student?.id || 0} />
@@ -525,7 +551,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
             }}
           />
         )}
-      </SafeAreaView>
+      </View>
     </ScrollView>
   );
 };

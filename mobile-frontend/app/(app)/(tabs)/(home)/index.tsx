@@ -1,20 +1,20 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+} from 'react-native';
 import { useStudents } from '@/contexts/student-context';
 import { ThemedText } from '@/components/ThemedText';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { StudentSelector } from '@/components/StudentSelector';
 import { useTheme } from '@rneui/themed';
 import { useFocusEffect } from '@react-navigation/native';
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import BatteryOptimizationHelper from '@/components/BatteryOptimizationHelper';
 import NoStudentsScreen from '@/components/NoStudentsScreen';
-import { DeepLinkDebugger } from '@/components/DeepLinkDebugger';
 
 const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const [showBatteryHelper, setShowBatteryHelper] = useState(false);
   const { students, refetch, isLoading } = useStudents();
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
@@ -25,30 +25,6 @@ const HomeScreen = () => {
     }, [refetch])
   );
 
-  // Check if we should show the battery optimization helper
-  useEffect(() => {
-    const checkBatteryHelper = async () => {
-      try {
-        const hasShown = await AsyncStorage.getItem('battery_helper_shown');
-        const lastShown = await AsyncStorage.getItem(
-          'battery_helper_last_shown'
-        );
-        const now = Date.now();
-        const oneWeek = 7 * 24 * 60 * 60 * 1000;
-
-        // Show if never shown, or if it's been more than a week
-        if (!hasShown || (lastShown && now - parseInt(lastShown) > oneWeek)) {
-          // Add a small delay so the screen loads first
-          setTimeout(() => setShowBatteryHelper(true), 2000);
-        }
-      } catch (error) {
-        console.error('Error checking battery helper status:', error);
-      }
-    };
-
-    checkBatteryHelper();
-  }, []);
-
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -58,15 +34,6 @@ const HomeScreen = () => {
     } finally {
       setRefreshing(false);
     }
-  };
-
-  const handleBatteryHelperDismiss = async () => {
-    setShowBatteryHelper(false);
-    await AsyncStorage.setItem('battery_helper_shown', 'true');
-    await AsyncStorage.setItem(
-      'battery_helper_last_shown',
-      Date.now().toString()
-    );
   };
 
   // Show loading spinner while initially loading
@@ -82,42 +49,29 @@ const HomeScreen = () => {
   // Show no students screen if no students are available
   if (!isLoading && (!students || students.length === 0)) {
     return (
-      <>
-        <SafeAreaView style={[styles.container, { backgroundColor }]}>
-          <NoStudentsScreen onRefresh={onRefresh} isRefreshing={refreshing} />
-        </SafeAreaView>
-
-        {/* Battery Optimization Helper */}
-        <BatteryOptimizationHelper
-          visible={showBatteryHelper}
-          onDismiss={handleBatteryHelperDismiss}
-        />
-      </>
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+        <NoStudentsScreen onRefresh={onRefresh} isRefreshing={refreshing} />
+      </SafeAreaView>
     );
   }
 
   // Show main screen with students
   return (
-    <>
+    <View style={[styles.container, { backgroundColor }]}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        style={{ backgroundColor }}
+        contentContainerStyle={{
+          paddingTop: 32,
+          paddingHorizontal: 16,
+          paddingBottom: 20,
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
-          <StudentSelector students={students} />
-        </SafeAreaView>
+        <StudentSelector students={students} />
       </ScrollView>
-
-      <DeepLinkDebugger />
-
-      {/* Battery Optimization Helper */}
-      <BatteryOptimizationHelper
-        visible={showBatteryHelper}
-        onDismiss={handleBatteryHelperDismiss}
-      />
-    </>
+    </View>
   );
 };
 

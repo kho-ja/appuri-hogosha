@@ -182,9 +182,15 @@ export class NotificationProcessor {
         try {
             const routing = getUzbekistanOperatorRouting(post.phone_number);
 
+            // Send with AWS SMS for non-Uzbekistan numbers
             if (!routing.isUzbekistan) {
-                console.log(`❌ Invalid phone format for post ${post.id}: ${post.phone_number}`);
-                return false;
+                console.log(`🌍 Non-Uzbekistan number detected: ${post.phone_number}`);
+                let formattedPhoneNumber = post.phone_number;
+                if (!formattedPhoneNumber.startsWith('+')) {
+                    formattedPhoneNumber = `+${formattedPhoneNumber}`;
+                }
+                const text = generateSmsText(post);
+                return await this.awsSmsService.sendSms(formattedPhoneNumber, text);
             }
 
             console.log(`🇺🇿 Uzbekistan number detected: ${post.phone_number} (${routing.operator})`);

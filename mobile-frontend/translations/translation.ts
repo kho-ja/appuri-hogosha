@@ -59,7 +59,8 @@ export default {
     logout: 'Logout',
     passwordChangedSuccess: 'Password changed successfully',
     changePassword: 'Change Password',
-    changePasswordText: 'Please enter your current password and create a new secure password',
+    changePasswordText:
+      'Please enter your current password and create a new secure password',
     savePassword: 'Save Password',
     enterOldPassword: 'Enter current password',
     enterNewPassword: 'Enter new password',
@@ -70,8 +71,10 @@ export default {
     newPassword: 'New Password',
     invalidCurrentPassword: 'Invalid current password',
     passwordRequirementsNotMet: 'New password does not meet requirements',
-    newPasswordMustBeDifferent: 'New password must be different from current password',
-    pleaseEnsurePasswordRequirements: 'Please ensure all password requirements are met',
+    newPasswordMustBeDifferent:
+      'New password must be different from current password',
+    pleaseEnsurePasswordRequirements:
+      'Please ensure all password requirements are met',
     textSize: 'Text Size',
     sampleText:
       'Choose the text size that suits you best for a more comfortable reading experience.',
@@ -107,7 +110,7 @@ export default {
     pressBackAgainToExit: 'Press back again to exit',
 
     /*student select page*/
-    SelectStudent: 'Select Student',
+    SelectStudent: 'Select Your Child',
 
     /*no students screen*/
     noStudentsFound: 'No Students Found',
@@ -170,7 +173,32 @@ export default {
 
     /*message detail*/
     detailedView: 'Detailed view',
+    contractFile: 'Contract.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'Update Available 🚀',
+    updateAvailableMessage:
+      'A new version of the app is available. Would you like to download it now?',
+    download: 'Download',
+    downloading: 'Downloading...',
+    downloadingMessage: 'Please wait while the update downloads.',
+    updateDownloaded: 'Update Downloaded! ✅',
+    updateDownloadedMessage:
+      'The update has been downloaded successfully. Restart to apply changes?',
+    restartNow: 'Restart Now',
+    restart: 'Restart',
+    updateComplete: 'Update Complete',
+    updateCompleteMessage: 'You already have the latest version.',
+    downloadFailed: 'Download Failed',
+    error: 'Error',
+    updateCheckFailed: 'Update Check Failed',
+    noUpdates: 'No Updates',
+    latestVersion: 'You have the latest version!',
+    checkForUpdates: 'Check for Updates',
+    checking: 'Checking...',
+    updateFailed: 'Update Failed',
+    manualUpdateComplete: 'Manual update complete. Restart to apply?',
   },
   ja: {
     /*sign in page*/
@@ -230,7 +258,8 @@ export default {
     logout: 'ログアウト',
     passwordChangedSuccess: 'パスワードが正常に変更されました',
     changePassword: 'パスワードを変更',
-    changePasswordText: '現在のパスワードを入力し、新しい安全なパスワードを作成してください',
+    changePasswordText:
+      '現在のパスワードを入力し、新しい安全なパスワードを作成してください',
     savePassword: 'パスワードを保存',
     enterOldPassword: '現在のパスワードを入力',
     enterNewPassword: '新しいパスワードを入力してください',
@@ -241,8 +270,10 @@ export default {
     newPassword: '新しいパスワード',
     invalidCurrentPassword: '現在のパスワードが正しくありません',
     passwordRequirementsNotMet: '新しいパスワードが要件を満たしていません',
-    newPasswordMustBeDifferent: '新しいパスワードは現在のパスワードと異なる必要があります',
-    pleaseEnsurePasswordRequirements: 'すべてのパスワード要件が満たされていることを確認してください',
+    newPasswordMustBeDifferent:
+      '新しいパスワードは現在のパスワードと異なる必要があります',
+    pleaseEnsurePasswordRequirements:
+      'すべてのパスワード要件が満たされていることを確認してください',
     textSize: '文字サイズ',
     sampleText: '読みやすさのために、自分に合った文字サイズを選んでください。',
     lightMode: 'ライトモード',
@@ -278,7 +309,7 @@ export default {
     pressBackAgainToExit: 'もう一度押して終了',
 
     /*student select page*/
-    SelectStudent: '学生を選びなさい',
+    SelectStudent: 'お子様を選択してください',
 
     /*no students screen*/
     noStudentsFound: '学生が見つかりません',
@@ -341,7 +372,34 @@ export default {
 
     /*message detail*/
     detailedView: '詳細表示',
+    contractFile: '契約書.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'アップデート利用可能 🚀',
+    updateAvailableMessage:
+      'アプリの新しいバージョンが利用可能です。今すぐダウンロードしますか？',
+    download: 'ダウンロード',
+    downloading: 'ダウンロード中...',
+    downloadingMessage: 'アップデートのダウンロードをお待ちください。',
+    updateDownloaded: 'アップデート完了！ ✅',
+    updateDownloadedMessage:
+      'アップデートが正常にダウンロードされました。変更を適用するために再起動しますか？',
+    restartNow: '今すぐ再起動',
+    restart: '再起動',
+    updateComplete: 'アップデート完了',
+    updateCompleteMessage: '最新バージョンをお使いです。',
+    downloadFailed: 'ダウンロード失敗',
+    error: 'エラー',
+    updateCheckFailed: 'アップデート確認失敗',
+    noUpdates: 'アップデートなし',
+    latestVersion: '最新バージョンをお使いです！',
+    checkForUpdates: 'アップデート確認',
+    checking: '確認中...',
+    updateFailed: 'アップデート失敗',
+    manualUpdateComplete:
+      '手動アップデート完了。適用するために再起動しますか？',
+    /*update alerts*/
   },
   uz: {
     /*sign in page*/
@@ -364,7 +422,7 @@ export default {
     home: 'Bosh sahifa',
     form: 'Forma',
     settings: 'Sozlamalar',
-    personalInfo: 'Shaxsiy ma\'lumotlar',
+    personalInfo: "Shaxsiy ma'lumotlar",
     /*tab bar layout*/
 
     /*register page*/
@@ -401,7 +459,8 @@ export default {
     logout: 'Chiqish',
     passwordChangedSuccess: "Parol muvaffaqiyatli o'zgartirildi",
     changePassword: "Parolni o'zgartirish",
-    changePasswordText: 'Joriy parolingizni kiriting va yangi xavfsiz parol yarating',
+    changePasswordText:
+      'Joriy parolingizni kiriting va yangi xavfsiz parol yarating',
     savePassword: 'Parolni saqlash',
     enterOldPassword: 'Joriy parolni kiriting',
     enterNewPassword: 'Yangi parolni kiriting',
@@ -410,10 +469,12 @@ export default {
     passwordsDoNotMatch: 'Parollar mos kelmaydi',
     currentPassword: 'Joriy parol',
     newPassword: 'Yangi parol',
-    invalidCurrentPassword: 'Joriy parol noto\'g\'ri',
+    invalidCurrentPassword: "Joriy parol noto'g'ri",
     passwordRequirementsNotMet: 'Yangi parol talablarga javob bermaydi',
-    newPasswordMustBeDifferent: 'Yangi parol joriy paroldan farqli bo\'lishi kerak',
-    pleaseEnsurePasswordRequirements: 'Barcha parol talablari bajarilganligini tekshiring',
+    newPasswordMustBeDifferent:
+      "Yangi parol joriy paroldan farqli bo'lishi kerak",
+    pleaseEnsurePasswordRequirements:
+      'Barcha parol talablari bajarilganligini tekshiring',
     textSize: "Matn o'lchami",
     sampleText:
       "O'zingizga qulay bo'lgan matn hajmini tanlang — o'qish yanada qulay bo'ladi.",
@@ -431,9 +492,8 @@ export default {
     continueReading: 'Davom etish',
     loadMoreMessages: "Ko'proq xabarlar",
     messageNotFound: 'Xabar topilmadi',
-    noMessagesYet: "Hali xabarlar yo'q",
-    noMessagesDescription:
-      "Maktabdan xabar kelganida, ular shu yerda ko'rsatiladi. Yangilash uchun pastga torting.",
+    noMessagesYet: "Hozircha yangi xabar yo'q",
+    noMessagesDescription: "Keyinroq qayta urinib ko'ring.",
     errorLoadingMessages:
       "Xabarlarni yuklashda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
     tryAgain: 'Qayta urinish',
@@ -450,7 +510,7 @@ export default {
     pressBackAgainToExit: 'Chiqish uchun yana bir marta bosing',
 
     /*student select page*/
-    SelectStudent: "O'quvchini tanlang",
+    SelectStudent: 'Farzandingizni tanlang',
 
     /*no students screen*/
     noStudentsFound: "O'quvchilar topilmadi",
@@ -513,7 +573,34 @@ export default {
 
     /*message detail*/
     detailedView: 'Batafsil ko‘rish',
+    contractFile: 'Shartnoma.pdf',
     /*message detail*/
+
+    /*update alerts*/
+    updateAvailable: 'Yangilanish mavjud 🚀',
+    updateAvailableMessage:
+      'Ilovaning yangi versiyasi mavjud. Hozir yuklab olasizmi?',
+    download: 'Yuklab olish',
+    downloading: 'Yuklab olinmoqda...',
+    downloadingMessage: 'Yangilanish yuklab olinayotganda kuting.',
+    updateDownloaded: 'Yangilanish yuklandi! ✅',
+    updateDownloadedMessage:
+      "Yangilanish muvaffaqiyatli yuklandi. O'zgarishlarni qo'llash uchun qayta ishga tushirasizmi?",
+    restartNow: 'Hozir qayta ishga tushirish',
+    restart: 'Qayta ishga tushirish',
+    updateComplete: 'Yangilanish tugallandi',
+    updateCompleteMessage: "Sizda eng so'nggi versiya mavjud.",
+    downloadFailed: 'Yuklab olish muvaffaqiyatsiz',
+    error: 'Xato',
+    updateCheckFailed: 'Yangilanishni tekshirish muvaffaqiyatsiz',
+    noUpdates: "Yangilanishlar yo'q",
+    latestVersion: "Sizda eng so'nggi versiya mavjud!",
+    checkForUpdates: 'Yangilanishlarni tekshirish',
+    checking: 'Tekshirilmoqda...',
+    updateFailed: 'Yangilanish muvaffaqiyatsiz',
+    manualUpdateComplete:
+      "Qo'lda yangilanish tugallandi. Qo'llash uchun qayta ishga tushirasizmi?",
+    /*update alerts*/
   },
   ru: {
   /*sign in page*/

@@ -36,8 +36,6 @@ const configByVariant = {
 const variantConfig = configByVariant[variant] || configByVariant.development;
 
 console.log(`Using variant: ${variant}`);
-console.log(`App name: ${variantConfig.name}`);
-console.log(`PackageJson version: ${packageJson.version}`);
 
 module.exports = ({ config }) => {
   return {
@@ -68,6 +66,8 @@ module.exports = ({ config }) => {
       infoPlist: {
         CFBundleAllowMixedLocalizations: true,
         ITSAppUsesNonExemptEncryption: false,
+        UIStatusBarStyle: 'UIStatusBarStyleLightContent',
+        UIViewControllerBasedStatusBarAppearance: false,
       },
       associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
     },
@@ -79,6 +79,13 @@ module.exports = ({ config }) => {
       package: variantConfig.androidPackage,
       googleServicesFile:
         process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+      statusBar: {
+        barStyle: 'light-content',
+        backgroundColor: '#3B81F6',
+      },
+      navigationBar: {
+        visible: false,
+      },
       intentFilters: [
         {
           autoVerify: true,

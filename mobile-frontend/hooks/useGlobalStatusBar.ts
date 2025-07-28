@@ -8,17 +8,14 @@ export function useGlobalStatusBar() {
   useFocusEffect(() => {
     // This runs whenever any screen comes into focus
     if (Platform.OS === 'android') {
-      StatusBar.setBarStyle(
-        theme.mode === 'dark' ? 'light-content' : 'dark-content',
+      StatusBar.setBarStyle('light-content', true);
+      StatusBar.setBackgroundColor(
+        theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
         true
       );
-      StatusBar.setBackgroundColor('transparent', true);
-      StatusBar.setTranslucent(true);
+      StatusBar.setTranslucent(false);
     } else if (Platform.OS === 'ios') {
-      StatusBar.setBarStyle(
-        theme.mode === 'dark' ? 'light-content' : 'dark-content',
-        true
-      );
+      StatusBar.setBarStyle('light-content', true);
     }
   });
 }

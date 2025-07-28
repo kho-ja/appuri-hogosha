@@ -9,6 +9,7 @@ import {
   Pressable,
   ActivityIndicator,
   ToastAndroid,
+  Image,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
@@ -18,12 +19,9 @@ import { I18nContext } from '@/contexts/i18n-context';
 import { useNetwork } from '@/contexts/network-context';
 import { fetchMessageFromDB, saveMessageToDB } from '@/utils/queries';
 import { DatabaseMessage, Student } from '@/constants/types';
-import formatMessageDate from '@/utils/format';
 import { Autolink } from 'react-native-autolink';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Image } from 'expo-image';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { Separator } from '@/components/atomic/separator';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
@@ -33,7 +31,8 @@ import { useFontSize } from '@/contexts/FontSizeContext';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 25,
+    paddingHorizontal: 25,
+    paddingBottom: 25,
   },
   titleRow: {
     flexDirection: 'row',
@@ -87,6 +86,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     display: 'flex',
     alignSelf: 'flex-end',
+  },
+  imageContainer: {
+    marginVertical: 15,
+  },
+  imageWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 });
 
@@ -327,11 +333,32 @@ export default function DetailsScreen() {
     zone: 'utc',
   });
   const localDateTime = utcDateTime.setZone(userTimeZone);
-  const formattedTime = localDateTime.toFormat('yyyy-MM-dd HH:mm');
+  const formattedTime = localDateTime.toFormat('dd.MM.yyyy   HH:mm');
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor }]}>
-      <View style={{ alignItems: 'flex-end', marginBottom: 10 }}>
+    <ScrollView
+      style={[styles.container, { backgroundColor }]}
+      contentContainerStyle={{ paddingTop: 16 }}
+    >
+      <View
+        style={[
+          styles.titleRow,
+          { justifyContent: 'space-between', alignItems: 'center' },
+        ]}
+      >
+        <ThemedText
+          style={[
+            styles.title,
+            {
+              fontSize: 18 * multiplier,
+              width: 'auto',
+              textAlign: 'left',
+              flex: 1,
+            },
+          ]}
+        >
+          {message.title}
+        </ThemedText>
         <View
           style={{
             backgroundColor:
@@ -345,7 +372,7 @@ export default function DetailsScreen() {
             paddingVertical: 4 * multiplier,
             justifyContent: 'center',
             alignItems: 'center',
-            maxWidth: '40%',
+            marginLeft: 10,
           }}
         >
           <ThemedText
@@ -360,13 +387,31 @@ export default function DetailsScreen() {
           </ThemedText>
         </View>
       </View>
-      <View style={[styles.titleRow, { justifyContent: 'center' }]}>
-        <ThemedText
-          style={[styles.title, { fontSize: 18 * multiplier, width: '100%' }]}
-        >
-          {message.title}
-        </ThemedText>
-      </View>
+
+      {/* Images section - moved between title and description */}
+      {imageArray.length > 0 && (
+        <View style={styles.imageContainer}>
+          {imageArray.map((filename, idx) => (
+            <View key={idx}>
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrentImageIndex(idx);
+                  setZoomVisible(true);
+                }}
+              >
+                <View style={styles.imageWrapper}>
+                  <Image
+                    style={styles.image}
+                    source={{ uri: `${imageUrl}/${filename}` }}
+                    resizeMode='cover'
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={styles.descriptionRow}>
         <Autolink
           email
@@ -376,58 +421,47 @@ export default function DetailsScreen() {
           style={{ color: textColor, fontSize: 16 * multiplier }}
         />
       </View>
-      <Pressable style={styles.copyButton} onPress={copyToClipboard}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name='copy-outline' size={20} color='white' />
-          <Text
-            style={{
-              color: 'white',
-              marginLeft: 5,
-              fontSize: 14 * multiplier,
-            }}
-          >
-            Copy
-          </Text>
-        </View>
-      </Pressable>
-      <View style={{ marginBottom: 25 }}>
-        <Separator orientation='horizontal' />
-      </View>
-      {imageArray.length > 0 && (
-        <View>
-          {imageArray.map((filename, idx) => (
-            <TouchableOpacity
-              key={idx}
-              onPress={() => {
-                setCurrentImageIndex(idx);
-                setZoomVisible(true);
-              }}
-            >
-              <Image
-                style={styles.image}
-                source={{ uri: `${imageUrl}/${filename}` }}
-                contentFit='contain'
-                transition={300}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
 
-      <View style={[styles.dateRow, { justifyContent: 'flex-start' }]}>
-        <Ionicons
-          name={'calendar-outline'}
-          size={20 * multiplier}
-          color='#adb5bd'
-        />
+      {/* Date and Copy button on the same level */}
+      <View
+        style={[
+          styles.dateRow,
+          {
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: 10,
+          },
+        ]}
+      >
         <ThemedText
           style={[
             styles.dateText,
             { fontSize: 14 * multiplier, color: '#666' },
           ]}
         >
-          {formatMessageDate(new Date(formattedTime), language)}
+          {formattedTime}
         </ThemedText>
+
+        <Pressable
+          style={[
+            styles.copyButton,
+            { marginTop: 0, marginBottom: 0, backgroundColor: 'transparent' },
+          ]}
+          onPress={copyToClipboard}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name='copy-outline' size={20} color='#007AFF' />
+            <Text
+              style={{
+                color: '#007AFF',
+                marginLeft: 5,
+                fontSize: 14 * multiplier,
+              }}
+            >
+              Copy
+            </Text>
+          </View>
+        </Pressable>
       </View>
       <Modal
         visible={zoomVisible}

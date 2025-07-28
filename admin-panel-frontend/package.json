@@ -38,7 +38,7 @@
     "html-react-parser": "^5.2.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.379.0",
-    "next": "14.2.29",
+    "next": "^14.2.30",
     "next-auth": "^5.0.0-beta.19",
     "next-intl": "^3.15.0",
     "next-themes": "^0.3.0",
@@ -50,6 +50,7 @@
     "react-linkify": "^1.0.0-alpha",
     "react-phone-number-input": "^3.4.12",
     "react-quill": "^2.0.0",
+    "sharp": "^0.34.3",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1",
@@ -65,5 +66,10 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "overrides": {
+    "react-quill": {
+      "quill": "^2.0.3"
+    }
   }
 }
