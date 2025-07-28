@@ -27,7 +27,7 @@ interface I18nProviderProps {
 
 const getInitialLanguage = async (): Promise<Language> => {
   const locale = getLocales()[0].languageCode;
-  const allowedLanguages: Language[] = ['en', 'ja', 'uz'];
+  const allowedLanguages: Language[] = ['en', 'ja', 'uz' , 'ru'];
   const storedLanguage = await AsyncStorage.getItem('language');
   if (storedLanguage && allowedLanguages.includes(storedLanguage as Language)) {
     return storedLanguage as Language;

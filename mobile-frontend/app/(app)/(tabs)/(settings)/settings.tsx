@@ -38,6 +38,10 @@ const languageData = [
     flag: '🇺🇿',
   },
   {
+    language: 'Русский',
+    flag: '🇷🇺',
+  },
+  {
     language: '日本語',
     flag: '🇯🇵',
   },
@@ -112,16 +116,31 @@ export default function SettingsScreen() {
   const isDark = theme.mode === 'dark';
   const [, setIsOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
-    language === 'en' ? 'English' : language === 'ja' ? '日本語' : "O'zbekcha"
+    language === 'en'
+      ? 'English'
+      : language === 'ja'
+        ? '日本語'
+        : language === 'ru'
+          ? 'Русский'
+          : "O'zbekcha"
   );
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
+  const languages = ['English', '日本語', "O'zbekcha", 'Русский'];
+
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
   ) => {
     const languageCode =
-      language === 'English' ? 'en' : language === '日本語' ? 'ja' : 'uz';
+      language === 'English'
+        ? 'en'
+        : language === '日本語'
+          ? 'ja'
+          : language === 'Русский'
+            ? 'ru'
+            : 'uz';
+
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);

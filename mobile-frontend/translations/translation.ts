@@ -8,8 +8,8 @@ export default {
     email: 'Email',
     enterEmail: 'Enter email here',
     password: 'Password',
-    enterPassword: 'Enter password here',
-    loginToAccount: 'Login to Account',
+    enterPassword: 'Enter SMS code here',
+    loginToAccount: 'Login',
     forgotPassword: 'Forgot your password?',
     resetPassword: 'reset password',
     noaccount: "Don't have an account?",
@@ -207,8 +207,8 @@ export default {
     email: 'メールアドレス',
     enterEmail: 'メールアドレスを入力',
     password: 'パスワード',
-    enterPassword: 'パスワードを入力',
-    loginToAccount: 'アカウントにログイン',
+    enterPassword: 'SMSコードを入力',
+    loginToAccount: 'ログイン',
     forgotPassword: 'パスワードを忘れましたか？',
     resetPassword: 'パスワードをリセット',
     noaccount: 'アカウントをお持ちでないですか？',
@@ -403,13 +403,13 @@ export default {
   },
   uz: {
     /*sign in page*/
-    welcome: 'Xush kelibsiz',
+    welcome: 'Salom, xush kelibsiz',
     login: 'Hisobingizga kirish',
     email: 'Elektron pochta',
     enterEmail: 'Elektron pochtangizni kiriting',
     password: 'Parol',
-    enterPassword: 'Parolni kiriting',
-    loginToAccount: 'Hisobga kirish',
+    enterPassword: 'SMS codeni kiriting',
+    loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
     noaccount: "Hisobingiz yo'qmi?",
@@ -453,7 +453,7 @@ export default {
     firstName: 'Ism',
     lastName: 'Familiya',
     emailaddress: 'Elektron pochta',
-    phoneNumber: 'Telefon raqami',
+    phoneNumber: 'Telefon raqam',
     preferences: 'Sozlamalar',
     language: 'Ilova tili',
     logout: 'Chiqish',
@@ -602,6 +602,168 @@ export default {
       "Qo'lda yangilanish tugallandi. Qo'llash uchun qayta ishga tushirasizmi?",
     /*update alerts*/
   },
+  ru: {
+  /*sign in page*/
+  welcome: 'Здравствуйте, добро пожаловать',
+  login: 'Вход в аккаунт',
+  email: 'Электронная почта',
+  enterEmail: 'Введите свою электронную почту',
+  password: 'Пароль',
+  enterPassword: 'Введите SMS-код',
+  loginToAccount: 'Войти',
+  forgotPassword: 'Забыли пароль?',
+  resetPassword: 'Восстановить пароль',
+  noaccount: 'Нет аккаунта?',
+  justregister: 'Зарегистрируйтесь',
+  loginFailed: 'Введен неверный номер телефона или пароль',
+  loginSuccess: 'Вы успешно вошли',
+  /*sign in page*/
+
+  /*tab bar layout*/
+  home: 'Главная',
+  form: 'Форма',
+  settings: 'Настройки',
+  personalInfo: 'Личная информация',
+  /*tab bar layout*/
+
+  /*register page*/
+  register: 'Регистрация',
+  alreadyaccount: 'Уже есть аккаунт?',
+  justlogin: 'Войти',
+  enterotp: 'Введите одноразовый пароль, отправленный на вашу электронную почту',
+  otp: 'Одноразовый пароль',
+  newpassword: 'Создать новый пароль',
+  /*register page*/
+
+  /*form page*/
+  form_message: 'Подайте заявки до 8:30 этого дня',
+  reason: 'Причина заявки',
+  absense: 'пропуск занятия',
+  lateness: 'опоздание на занятие',
+  leaving: 'уход пораньше',
+  other: 'другая причина',
+  chooseDate: 'Выбрать дату',
+  additionalMessage: 'Дополнительное сообщение',
+  submitForm: 'Отправить форму',
+  message_placeholder: 'Пожалуйста, введите свое сообщение здесь',
+  choose_student: 'Выберите ученика для отправки формы',
+  /*form page*/
+
+  /*settings page*/
+  information: 'Информация',
+  firstName: 'Имя',
+  lastName: 'Фамилия',
+  emailaddress: 'Электронная почта',
+  phoneNumber: 'Номер телефона',
+  preferences: 'Настройки',
+  language: 'Язык приложения',
+  logout: 'Выйти',
+  passwordChangedSuccess: 'Пароль успешно изменен',
+  changePassword: 'Изменить пароль',
+  changePasswordText: 'Введите текущий пароль и создайте новый безопасный пароль',
+  savePassword: 'Сохранить пароль',
+  enterOldPassword: 'Введите текущий пароль',
+  enterNewPassword: 'Введите новый пароль',
+  confirmPassword: 'Подтвердите пароль',
+  enterConfirmPassword: 'Подтвердите новый пароль',
+  passwordsDoNotMatch: 'Пароли не совпадают',
+  currentPassword: 'Текущий пароль',
+  newPassword: 'Новый пароль',
+  invalidCurrentPassword: 'Неверный текущий пароль',
+  passwordRequirementsNotMet: 'Новый пароль не соответствует требованиям',
+  newPasswordMustBeDifferent: 'Новый пароль должен отличаться от текущего',
+  pleaseEnsurePasswordRequirements: 'Пожалуйста, убедитесь, что все требования к паролю выполнены',
+  textSize: 'Размер текста',
+  sampleText: 'Выберите удобный для себя размер текста — чтение станет проще.',
+  lightMode: 'Светлый режим',
+  darkMode: 'Темный режим',
+  batteryOptimization: 'Оптимизация батареи',
+  name: 'Имя',
+  /*settings page*/
+
+  /*message*/
+  critical: 'обязательно',
+  important: 'важно',
+  ordinary: 'обычно',
+  group: 'Группа',
+  continueReading: 'Продолжить чтение',
+  loadMoreMessages: 'Загрузить больше сообщений',
+  messageNotFound: 'Сообщение не найдено',
+  noMessagesYet: 'Сообщений пока нет',
+  noMessagesDescription: 'Когда придет сообщение из школы, оно отобразится здесь. Потяните вниз, чтобы обновить.',
+  errorLoadingMessages: 'Ошибка при загрузке сообщений. Пожалуйста, попробуйте снова.',
+  tryAgain: 'Попробовать снова',
+  /*message*/
+
+  /*error messages*/
+  chooseCorrectDate: 'Пожалуйста, выберите правильную дату',
+  /*error messages*/
+
+  /*states*/
+  loading: 'Загрузка...',
+  /*states*/
+
+  pressBackAgainToExit: 'Нажмите еще раз, чтобы выйти',
+
+  /*student select page*/
+  SelectStudent: 'Выберите ученика',
+
+  /*no students screen*/
+  noStudentsFound: 'Ученики не найдены',
+  noStudentsDescription: 'Похоже, к вашему аккаунту еще не привязан ни один ученик. Обратитесь к администрации школы или попробуйте обновить.',
+  refresh: 'Обновить',
+  needHelp: 'Нужна помощь?',
+  checkCorrectAccount: 'Проверьте, вошли ли вы под правильным аккаунтом',
+  contactSchool: 'Если проблема сохраняется, свяжитесь с вашей школой',
+  checkInternet: 'Проверьте подключение к интернету',
+  /*no students screen*/
+
+  /*battery optimization*/
+  improveNotificationDelivery: 'Улучшить доставку уведомлений',
+  batteryOptimizationDescription: 'Некоторые Android-устройства могут задерживать или блокировать уведомления для экономии батареи. Для лучшего опыта отключите оптимизацию батареи для этого приложения.',
+  openSettings: 'Открыть настройки',
+  deviceGuide: 'Руководство по устройству',
+  dismiss: 'Закрыть',
+  batteryOptimizationSettings: 'Настройки оптимизации батареи',
+  batteryOptimizationInstructions: 'Чтобы получать все уведомления:\n\n1. Найдите это приложение в списке\n2. Выберите "Не оптимизировать" или "Разрешить"\n3. Перезапустите приложение\n\nПримечание: шаги могут отличаться в зависимости от производителя устройства.',
+  deviceSpecificInstructions: 'Инструкции для конкретных устройств',
+  deviceInstructionsText: 'У разных производителей Android разные настройки:\n\n• Samsung: Настройки → Приложения → [Приложение] → Батарея → Оптимизация использования батареи\n• Xiaomi: Настройки → Приложения → Управление приложениями → [Приложение] → Экономия батареи\n• OnePlus: Настройки → Приложения → [Приложение] → Батарея → Оптимизация батареи\n• Huawei: Настройки → Приложения → [Приложение] → Батарея → Автозапуск',
+  gotIt: 'Понятно',
+  /*battery optimization*/
+
+  /*notification alerts*/
+  notificationsDisabled: 'Уведомления отключены',
+  notificationsDisabledMessage: 'Вы не будете получать важные обновления. Вы можете включить уведомления в настройках.',
+  notificationsNotWorking: 'Уведомления не работают?',
+  batteryOptimizationAlert: 'Для надежных уведомлений отключите оптимизацию батареи для этого приложения в настройках устройства.',
+  later: 'Позже',
+  ok: 'ОК',
+  cancel: 'Отмена',
+  /*notification alerts*/
+
+  /*password requirements*/
+  passwordRequirements: 'Требования к паролю',
+  minLength: 'Минимум 8 символов',
+  hasNumber: 'Минимум 1 цифра',
+  hasUppercase: 'Минимум 1 заглавная буква',
+  hasLowercase: 'Минимум 1 строчная буква',
+  hasSpecialChar: 'Минимум 1 специальный символ (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+  passwordStrength: 'Надежность пароля',
+  weak: 'Слабый',
+  medium: 'Средний',
+  strong: 'Сильный',
+  createNewPassword: 'Создать новый пароль',
+  /*password requirements*/
+
+  /*Logout alert*/
+  confirmLogout: 'Подтвердите выход',
+  logoutMessage: 'Вы действительно хотите выйти?',
+  /*Logout alert*/
+
+  /*message detail*/
+  detailedView: 'Подробный просмотр',
+  /*message detail*/
+},
 };
 
 export const reasonMapping: ReasonMapping = {
@@ -622,5 +784,11 @@ export const reasonMapping: ReasonMapping = {
     lateness: 'darsga kechikish',
     leaving: 'erta ketish',
     other: 'boshqa sabab',
+  },
+  ru: {
+    absense: 'пропуск занятия',
+    lateness: 'опоздание на занятие',
+    leaving: 'уход пораньше',
+    other: 'другая причина',
   },
 };

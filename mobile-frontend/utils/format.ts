@@ -28,12 +28,19 @@ const formatTemplates = {
     thisYear: 'd MMMM',
     other: 'd MMMM yyyy',
   },
+  ru: {
+    today: 'HH:mm',
+    thisWeek: 'eeee',
+    thisYear: 'MMMM d',
+    other: 'MMMM d, yyyy',
+  },
 };
 
 const localeMap: Record<Language, Locale> = {
   en: enUS,
   ja: ja,
   uz: uz,
+  ru: uz,
 };
 
 export default function formatMessageDate(date: Date, language: Language) {
