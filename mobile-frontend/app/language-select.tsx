@@ -17,6 +17,7 @@ const languageData = [
   { language: "O'zbekcha", flag: '🇺🇿', code: 'uz' },
   { language: '日本語', flag: '🇯🇵', code: 'ja' },
   { language: 'English', flag: '🇬🇧', code: 'en' },
+  { language: 'Русский', flag: '🇷🇺', code: 'ru' },
 ];
 
 export default function LanguageSelect() {
@@ -24,23 +25,7 @@ export default function LanguageSelect() {
   const { setLanguage } = useContext(I18nContext);
   const { theme } = useTheme();
 
-  // Agar avval login qilgan bo'lsa, to'g'ridan-to'g'ri sign-in pagega o'tkazish
-  useEffect(() => {
-    const checkLoginHistory = async () => {
-      try {
-        const hasEverLoggedIn = await AsyncStorage.getItem('hasEverLoggedIn');
-        if (hasEverLoggedIn === 'true') {
-          router.replace('/sign-in');
-        }
-      } catch (error) {
-        console.error('Error checking login history:', error);
-      }
-    };
-
-    checkLoginHistory();
-  }, []);
-
-  const handleSelect = async (langCode: 'en' | 'ja' | 'uz') => {
+  const handleSelect = async (langCode: 'en' | 'ja' | 'uz' | 'ru') => {
     await AsyncStorage.setItem('language', langCode);
     await AsyncStorage.setItem('languageSelected', 'true');
     setLanguage(langCode);
@@ -67,7 +52,7 @@ export default function LanguageSelect() {
           <TouchableOpacity
             key={code}
             style={styles.languageItem}
-            onPress={() => handleSelect(code as 'en' | 'ja' | 'uz')}
+            onPress={() => handleSelect(code as 'en' | 'ja' | 'uz' | 'ru')}
             activeOpacity={0.8}
           >
             <View style={styles.row}>

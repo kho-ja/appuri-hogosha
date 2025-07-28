@@ -145,7 +145,7 @@ export type TranslationKeys = {
   logoutMessage: string;
 };
 
-export type Language = 'en' | 'ja' | 'uz';
+export type Language = 'en' | 'ja' | 'uz' | 'ru';
 
 export type Translations = {
   [K in Language]: TranslationKeys;
