@@ -4,6 +4,7 @@ import {
   Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +19,7 @@ import { ThemedView } from '@/components/ThemedView';
 import ThemedPhoneInput from '@/components/atomic/ThemedPhoneInput';
 import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
+import { useRouter } from 'expo-router';
 
 export default function SignIn() {
   const [password, setPassword] = useState('');
@@ -26,7 +28,8 @@ export default function SignIn() {
   const [backPressCount, setBackPressCount] = useState(0);
   const { signIn } = useSession();
   const { theme } = useTheme();
-  const { language, i18n, setLanguage } = useContext(I18nContext);
+  const { language, i18n } = useContext(I18nContext);
+  const router = useRouter();
 
   React.useEffect(() => {
     const loadCredentials = async () => {
@@ -98,7 +101,7 @@ export default function SignIn() {
     },
     onSuccess: async () => {
       await AsyncStorage.setItem('hasEverLoggedIn', 'true');
-      
+
       Toast.show(i18n[language].loginSuccess, {
         duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
@@ -121,9 +124,9 @@ export default function SignIn() {
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <ThemedView style={styles.container}>
           <ThemedView style={styles.header}>
-          <ThemedText style={styles.title}>
-            {i18n[language].welcome.replace(', ', ',\n')}
-          </ThemedText>
+            <ThemedText style={styles.title}>
+              {i18n[language].welcome.replace(', ', ',\n')}
+            </ThemedText>
           </ThemedView>
           <ThemedPhoneInput
             label={i18n[language].phoneNumber}
@@ -146,6 +149,14 @@ export default function SignIn() {
             textContentType='password'
             autoCapitalize='none'
           />
+          <TouchableOpacity
+            style={styles.forgotPasswordContainer}
+            onPress={() => router.push('/forgot-password')}
+          >
+            <ThemedText style={styles.forgotPasswordText}>
+              {i18n[language].forgotPasswordLink}
+            </ThemedText>
+          </TouchableOpacity>
           <Button
             onPress={() => mutate()}
             title={i18n[language].loginToAccount}
@@ -183,5 +194,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  forgotPasswordContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#4285F4',
+    textDecorationLine: 'underline',
   },
 });

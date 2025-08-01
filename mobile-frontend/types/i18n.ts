@@ -9,10 +9,28 @@ export type TranslationKeys = {
   loginToAccount: string;
   forgotPassword: string;
   resetPassword: string;
+  forgotPasswordLink: string;
   noaccount: string;
   justregister: string;
   loginFailed: string;
   loginSuccess: string;
+
+  // Forgot password pages
+  resetPasswordTitle: string;
+  enterPhoneNumberText: string;
+  sendCode: string;
+  verificationCodeSent: string;
+  enterVerificationCode: string;
+  verificationCode: string;
+  continueText: string;
+  codeExpired: string;
+  resendCode: string;
+  codeWillExpire: string;
+  createNewPasswordTitle: string;
+  passwordCreatedSuccessfully: string;
+  enterNewPasswordText: string;
+  confirmNewPassword: string;
+  saveNewPassword: string;
   detailedView: string;
   contractFile: string;
 
