@@ -12,11 +12,33 @@ export default {
     loginToAccount: 'Login',
     forgotPassword: 'Forgot your password?',
     resetPassword: 'reset password',
+    forgotPasswordLink: 'Forgot your password? Reset it.',
     noaccount: "Don't have an account?",
     justregister: 'Register',
     loginFailed: 'Invalid phone number or password',
     loginSuccess: 'Logged in successfully',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: 'Secret Code Recovery',
+    enterPhoneNumberText:
+      'Please enter your phone number. A verification code will be sent to this number.',
+    sendCode: 'Send Code',
+    verificationCodeSent:
+      'Verification code sent to your phone number. Please enter the code.',
+    enterVerificationCode: 'Enter verification code',
+    verificationCode: 'Verification code',
+    continueText: 'Continue',
+    codeWillExpire: 'Code will expire in {seconds} seconds.',
+    codeExpired: 'Code has expired',
+    resendCode: 'Resend Code',
+    createNewPasswordTitle: 'Create New Password',
+    passwordCreatedSuccessfully:
+      'Password created successfully! You can now log in with your new password.',
+    enterNewPasswordText: 'Please create a secure password for your account.',
+    confirmNewPassword: 'Confirm new password',
+    saveNewPassword: 'Save',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'Home',
@@ -211,11 +233,33 @@ export default {
     loginToAccount: 'ログイン',
     forgotPassword: 'パスワードを忘れましたか？',
     resetPassword: 'パスワードをリセット',
+    forgotPasswordLink: 'パスワードを忘れましたか？リセットしてください。',
     noaccount: 'アカウントをお持ちでないですか？',
     justregister: '登録',
     loginFailed: '無効な電話番号またはパスワード',
     loginSuccess: 'ログインに成功しました',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: '秘密コードの復元',
+    enterPhoneNumberText:
+      '電話番号を入力してください。この番号に確認コードが送信されます。',
+    sendCode: 'コードを送信',
+    verificationCodeSent:
+      '確認コードが電話番号に送信されました。コードを入力してください。',
+    enterVerificationCode: '確認コードを入力',
+    verificationCode: '確認コード',
+    continueText: '続ける',
+    codeExpired: 'コードの有効期限が切れました',
+    resendCode: 'コードを再送信',
+    codeWillExpire: 'コードは{seconds}秒で期限切れになります。',
+    createNewPasswordTitle: '新しいパスワードを作成',
+    passwordCreatedSuccessfully:
+      'パスワードが正常に作成されました！新しいパスワードでログインできます。',
+    enterNewPasswordText: 'アカウント用の安全なパスワードを作成してください。',
+    confirmNewPassword: '新しいパスワードを確認',
+    saveNewPassword: '保存',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'ホーム',
@@ -412,11 +456,32 @@ export default {
     loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
+    forgotPasswordLink: 'Kodni unutdingizmi? Parolni tiklang.',
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
     loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
     loginSuccess: 'Muvaffaqiyatli kirdingiz',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: 'Maxfiy kodni tiklash',
+    enterPhoneNumberText:
+      'Iltimos, telefon raqamingizni kiriting. Shu raqam orqali sizga tasdiqlash kodi yuboriladi.',
+    sendCode: 'Davom etish',
+    verificationCodeSent: 'Tasdiqlash kodi yuborildi. Iltimos, kodni kiriting.',
+    enterVerificationCode: 'Kodni kiriting',
+    verificationCode: 'Tasdiqlash kodi',
+    continueText: 'Davom etish',
+    codeExpired: 'Kodning muddati tugadi',
+    resendCode: 'Kodni qayta yuborish',
+    codeWillExpire: 'Kodni qayta yuborish {seconds} soniyadan keyin faollashadi.',
+    createNewPasswordTitle: 'Parol yaratish',
+    passwordCreatedSuccessfully:
+      'Parol muvaffaqiyatli yaratildi! Endi yangi parolingiz bilan kirishingiz mumkin.',
+    enterNewPasswordText: 'Iltimos, hisobingiz uchun xavfsiz parol yarating',
+    confirmNewPassword: 'Parolni takrorlang',
+    saveNewPassword: 'Saqlash',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'Bosh sahifa',
@@ -613,11 +678,33 @@ export default {
   loginToAccount: 'Войти',
   forgotPassword: 'Забыли пароль?',
   resetPassword: 'Восстановить пароль',
+  forgotPasswordLink: 'Забыли пароль? Восстановить.',
   noaccount: 'Нет аккаунта?',
   justregister: 'Зарегистрируйтесь',
   loginFailed: 'Введен неверный номер телефона или пароль',
   loginSuccess: 'Вы успешно вошли',
   /*sign in page*/
+
+  /*forgot password pages*/
+  resetPasswordTitle: 'Восстановление секретного кода',
+  enterPhoneNumberText:
+    'Пожалуйста, введите ваш номер телефона. На этот номер будет отправлен код подтверждения.',
+  sendCode: 'Отправить код',
+  verificationCodeSent:
+    'Код подтверждения отправлен на ваш номер телефона. Пожалуйста, введите код.',
+  enterVerificationCode: 'Введите код подтверждения',
+  verificationCode: 'Код подтверждения',
+  continueText: 'Продолжить',
+  codeExpired: 'Код истек',
+  resendCode: 'Отправить код заново',
+  codeWillExpire: 'Код истечет через {seconds} секунд.',
+  createNewPasswordTitle: 'Создать новый пароль',
+  passwordCreatedSuccessfully:
+    'Пароль успешно создан! Теперь вы можете войти с новым паролем.',
+  enterNewPasswordText: 'Пожалуйста, создайте безопасный пароль для вашего аккаунта.',
+  confirmNewPassword: 'Подтвердите новый пароль',
+  saveNewPassword: 'Сохранить',
+  /*forgot password pages*/
 
   /*tab bar layout*/
   home: 'Главная',
