@@ -10,6 +10,7 @@ import { signIn } from "next-auth/react";
 import NotFound from "@/components/NotFound";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import ClientDateTime from "@/components/ClientDateTime";
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -68,7 +69,7 @@ export default async function ThisAdmin({
           />
           <DisplayProperty
             property={t("adminCreationDate")}
-            value={await FormatDateTime(adminData?.admin?.created_at)}
+            value={<ClientDateTime date={adminData?.admin?.created_at} />}
           />
         </CardHeader>
         <Separator />

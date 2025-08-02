@@ -5,7 +5,7 @@ export default function DisplayProperty({
   value,
 }: {
   property: string | undefined;
-  value: string | undefined;
+  value: React.ReactNode;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
