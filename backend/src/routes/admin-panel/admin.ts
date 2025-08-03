@@ -31,6 +31,7 @@ class AdminController implements IController {
         this.router.post('/upload', verifyToken, upload.single('file'), this.uploadAdminsFromCSV);
         this.router.get('/export', verifyToken, this.exportAdminsToCSV)
         this.router.get('/:id', verifyToken, this.adminView)
+        this.router.post('/get-details', verifyToken, this.adminViewSecure) // Secure POST endpoint for sensitive data
         this.router.put('/:id', verifyToken, this.adminEdit)
         this.router.delete('/:id', verifyToken, this.adminDelete)
         this.router.post('/:id/resend-password', verifyToken, this.resendTemporaryPassword);
@@ -78,7 +79,7 @@ class AdminController implements IController {
 
         } catch (e: any) {
             console.error('Error resending temporary password:', e);
-            
+
             if (e.status) {
                 return res.status(e.status).json({
                     error: e.message
@@ -483,6 +484,56 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
+                    message: 'invalid_or_missing_admin_id'
+                }
+            }
+            const adminInfo = await DB.query(`SELECT id,
+                       email,
+                       phone_number,
+                       given_name,
+                       family_name,
+                       created_at
+                FROM Admin
+                WHERE id = :id
+                AND school_id = :school_id`, {
+                id: adminId,
+                school_id: req.user.school_id
+            });
+
+            if (adminInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'admin_not_found'
+                }
+            }
+
+            const admin = adminInfo[0];
+
+            return res.status(200).json({
+                admin: admin
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    // Secure POST version of adminView for sensitive data
+    adminViewSecure = async (req: ExtendedRequest, res: Response) => {
+        try {
+            // Get ID from request body instead of URL parameters for better security
+            const { adminId } = req.body;
+
+            if (!adminId || !isValidId(adminId)) {
+                throw {
+                    status: 400,
                     message: 'invalid_or_missing_admin_id'
                 }
             }

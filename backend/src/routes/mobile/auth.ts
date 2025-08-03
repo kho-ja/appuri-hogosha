@@ -11,6 +11,28 @@ class AuthController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
 
+    // Add general rate limiting for all auth endpoints
+    private authLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 10, // limit each IP to 10 requests per windowMs
+        message: {
+            error: "Too many authentication requests from this IP, please try again later."
+        },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+
+    // Stricter rate limiting for login attempts
+    private loginLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 5, // limit each IP to 5 login attempts per windowMs
+        message: {
+            error: "Too many login attempts from this IP, please try again later."
+        },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+
     // Rate limiter for forgot password endpoint
     private forgotPasswordLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
@@ -28,15 +50,16 @@ class AuthController implements IController {
     }
 
     initRoutes(): void {
-        this.router.post('/login', this.login)
-        this.router.post('/refresh-token', this.refreshToken)
-        this.router.post('/change-temp-password', this.changeTemporaryPassword)
-        this.router.post('/change-password', verifyToken, this.changePassword)
-        this.router.post('/device-token', verifyToken, this.deviceToken)
+        // Apply rate limiting to login
+        this.router.post('/login', this.loginLimiter, this.login)
+        this.router.post('/refresh-token', this.authLimiter, this.refreshToken)
+        this.router.post('/change-temp-password', this.authLimiter, this.changeTemporaryPassword)
+        this.router.post('/change-password', this.authLimiter, verifyToken, this.changePassword)
+        this.router.post('/device-token', this.authLimiter, verifyToken, this.deviceToken)
 
         // Apply rate limiting to forgot password endpoints
         this.router.post('/forgot-password-initiate', this.forgotPasswordLimiter, this.forgotPasswordInitiate)
-        this.router.post('/forgot-password-confirm', this.forgotPasswordConfirm)
+        this.router.post('/forgot-password-confirm', this.authLimiter, this.forgotPasswordConfirm)
     }
 
     forgotPasswordInitiate = async (req: Request, res: Response) => {

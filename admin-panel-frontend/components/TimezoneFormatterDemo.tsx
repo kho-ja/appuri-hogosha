@@ -1,6 +1,18 @@
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { FormatDate, FormatDateTime, FormatTimeOnly, FormatDateOnly, FormatRelativeTime } from "@/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import {
+  FormatDate,
+  FormatDateTime,
+  FormatTimeOnly,
+  FormatDateOnly,
+  FormatRelativeTime,
+} from "@/lib/utils";
 import DisplayProperty from "./DisplayProperty";
 
 interface TimezoneFormatterDemoProps {
@@ -30,35 +42,32 @@ export function TimezoneFormatterDemo({ form }: TimezoneFormatterDemoProps) {
       <CardContent>
         <div className="grid w-full items-center gap-4">
           <div className="space-y-1.5">
-            <DisplayProperty
-              property="Event"
-              value={form.reason}
-            />
-            
+            <DisplayProperty property="Event" value={form.reason} />
+
             {/* Full date and time with timezone awareness */}
             <DisplayProperty
               property="Sent at (full)"
               value={FormatDateTime(form.sent_at)}
             />
-            
+
             {/* Just the time portion */}
             <DisplayProperty
               property="Time only"
               value={FormatTimeOnly(form.sent_at)}
             />
-            
+
             {/* Just the date portion */}
             <DisplayProperty
               property="Date only"
               value={FormatDateOnly(form.sent_at)}
             />
-            
+
             {/* Relative time formatting */}
             <DisplayProperty
               property="Relative time"
               value={FormatRelativeTime(form.sent_at)}
             />
-            
+
             {/* Long date format */}
             <DisplayProperty
               property="Long date format"

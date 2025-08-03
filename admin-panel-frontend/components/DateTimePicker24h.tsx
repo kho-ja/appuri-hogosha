@@ -1,5 +1,5 @@
 "use client";
- 
+
 import * as React from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { cn, FormatDateTimeForDisplay } from "@/lib/utils";
@@ -33,10 +33,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
     }
   };
 
-  const handleTimeChange = (
-    type: "hour" | "minute",
-    val: string
-  ) => {
+  const handleTimeChange = (type: "hour" | "minute", val: string) => {
     if (value) {
       const newDate = new Date(value);
       if (type === "hour") {
@@ -101,7 +98,9 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
                     <Button
                       key={hour}
                       size="icon"
-                      variant={value && value.getHours() === hour ? "default" : "ghost"}
+                      variant={
+                        value && value.getHours() === hour ? "default" : "ghost"
+                      }
                       className="sm:w-full shrink-0 aspect-square"
                       onClick={() => handleTimeChange("hour", hour.toString())}
                       disabled={isPastHour}
@@ -123,16 +122,27 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
                     value.getMonth() === now.getMonth() &&
                     value.getDate() === now.getDate();
 
-                  const isSameHour = value && value.getHours() === now.getHours();
-                  const isPastMinute = !!(isToday && isSameHour && minute < now.getMinutes());
+                  const isSameHour =
+                    value && value.getHours() === now.getHours();
+                  const isPastMinute = !!(
+                    isToday &&
+                    isSameHour &&
+                    minute < now.getMinutes()
+                  );
 
                   return (
                     <Button
                       key={minute}
                       size="icon"
-                      variant={value && value.getMinutes() === minute ? "default" : "ghost"}
+                      variant={
+                        value && value.getMinutes() === minute
+                          ? "default"
+                          : "ghost"
+                      }
                       className="sm:w-full shrink-0 aspect-square"
-                      onClick={() => handleTimeChange("minute", minute.toString())}
+                      onClick={() =>
+                        handleTimeChange("minute", minute.toString())
+                      }
                       disabled={isPastMinute}
                     >
                       {minute.toString().padStart(2, "0")}

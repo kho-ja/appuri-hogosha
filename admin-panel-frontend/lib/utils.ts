@@ -27,18 +27,18 @@ export function FormatDate(
   }
 ) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
     return dateObject.toLocaleDateString('en-US', {
       dateStyle: 'long' as any,
     });
   }
-  
+
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
@@ -54,11 +54,11 @@ export function FormatDateTime(
   }
 ) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
     return dateObject.toLocaleDateString('en-US', {
@@ -66,7 +66,7 @@ export function FormatDateTime(
       timeStyle: 'short' as any,
     });
   }
-  
+
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
@@ -77,33 +77,33 @@ export function FormatDateTime(
 // NEW: Specialized formatters for common use cases
 export function FormatRelativeTime(date: string | Date) {
   const { format, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isAvailable || !format) {
     // Simple fallback
     return dateObject.toLocaleDateString();
   }
-  
+
   return format.relativeTime(dateObject);
 }
 
 export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
     return dateObject.toLocaleTimeString('en-US', {
       hour12: !use24Hour,
     });
   }
-  
+
   return format.dateTime(dateObject, {
     timeStyle: "short",
     hour12: !use24Hour,
@@ -113,16 +113,16 @@ export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
 
 export function FormatDateOnly(date: string | Date) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
     return dateObject.toLocaleDateString('en-US');
   }
-  
+
   return format.dateTime(dateObject, {
     dateStyle: "medium",
     timeZone,
@@ -132,9 +132,9 @@ export function FormatDateOnly(date: string | Date) {
 // IMPROVED: Better display format for date picker
 export function FormatDateTimeForDisplay(date: Date | null): string {
   const { format, timeZone, isAvailable } = useSafeFormatter();
-  
+
   if (!date) return "";
-  
+
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
     const year = date.getFullYear();
@@ -142,13 +142,13 @@ export function FormatDateTimeForDisplay(date: Date | null): string {
     const day = String(date.getDate()).padStart(2, '0');
     const hour = String(date.getHours()).padStart(2, '0');
     const minute = String(date.getMinutes()).padStart(2, '0');
-    
+
     return `${year}-${month}-${day} ${hour}:${minute}`;
   }
-  
+
   return format.dateTime(date, {
     year: "numeric",
-    month: "2-digit", 
+    month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",

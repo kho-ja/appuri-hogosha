@@ -33,6 +33,23 @@ class DatabaseClient {
     }
 
     public async query(query: string, params?: any): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
+        // Add query validation to prevent dangerous queries
+        const dangerousPatterns = [
+            /;\s*(drop|delete|truncate|alter|create|insert|update)\s+/i,
+            /union\s+select/i,
+            /information_schema/i,
+            /mysql\./i,
+            /--/,
+            /\/\*/
+        ];
+
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(query)) {
+                console.error('Potentially dangerous query detected:', query);
+                throw new Error('Query contains potentially dangerous patterns');
+            }
+        }
+
         const db = await this.getConnection() as Connection;
         // console.log(db.format(query, params))
         try {

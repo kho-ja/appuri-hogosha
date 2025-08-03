@@ -12,6 +12,7 @@ import {
     isValidArrayId,
     isValidId,
     isValidStudentNumber,
+    isValidKintoneUrl,
 } from '../../utils/validate'
 import process from "node:process";
 import { generatePaginationLinks, parseKintoneRow } from "../../utils/helper";
@@ -43,11 +44,13 @@ class ParentController implements IController {
         this.router.get('/export', verifyToken, this.exportParentsToCSV);
 
         this.router.get('/:id', verifyToken, this.parentView)
+        this.router.post('/get-details', verifyToken, this.parentViewSecure) // Secure POST endpoint for sensitive data
         this.router.put('/:id', verifyToken, this.parentEdit)
         this.router.delete('/:id', verifyToken, this.parentDelete)
         this.router.post('/:id/resend-password', verifyToken, this.resendTemporaryPassword);
 
         this.router.get('/:id/students', verifyToken, this.parentStudents)
+        this.router.post('/get-students', verifyToken, this.parentStudentsSecure) // Secure POST endpoint for sensitive data
         this.router.post('/:id/students', verifyToken, this.changeParentStudents)
     }
 
@@ -83,8 +86,8 @@ class ParentController implements IController {
             const parent = parents[0];
 
             // Format phone number with + prefix for Cognito (if not already present)
-            const phoneNumber = parent.phone_number.startsWith('+') 
-                ? parent.phone_number 
+            const phoneNumber = parent.phone_number.startsWith('+')
+                ? parent.phone_number
                 : `+${parent.phone_number}`;
 
             // Use Cognito client to resend temporary password
@@ -118,11 +121,23 @@ class ParentController implements IController {
             if (!kintoneUrl || !kintoneToken || !given_name_field || !family_name_field || !email_field || !phone_number_field || !student_number_field) {
                 throw new Error('kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
             }
+
+            // SSRF Protection: Validate Kintone URL before making request
+            if (!isValidKintoneUrl(kintoneUrl)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_url_provided'
+                };
+            }
+
             const response = await fetch(kintoneUrl, {
                 method: 'GET',
                 headers: {
                     "X-Cybozu-API-Token": kintoneToken,
+                    'User-Agent': 'Appuri-Backend/1.0'
                 },
+                // Add timeout for security
+                signal: AbortSignal.timeout(5000) // 5 second timeout
             })
 
             if (!response.ok) {
@@ -1125,6 +1140,107 @@ class ParentController implements IController {
 
             return res.status(200).json({
                 parent: parent,
+                students: parentStudents,
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    // Secure POST version of parentView for sensitive data
+    parentViewSecure = async (req: ExtendedRequest, res: Response) => {
+        try {
+            // Get ID from request body instead of URL parameters for better security
+            const { parentId } = req.body;
+
+            if (!parentId || !isValidId(parentId)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_or_missing_parent_id'
+                }
+            }
+            const parentInfo = await DB.query(`SELECT id,
+                       email,
+                       phone_number,
+                       given_name,
+                       family_name,
+                       created_at
+                FROM Parent
+                WHERE id = :id
+                AND school_id = :school_id`, {
+                id: parentId,
+                school_id: req.user.school_id
+            });
+
+            if (parentInfo.length <= 0) {
+                throw {
+                    status: 404,
+                    message: 'parent_not_found'
+                }
+            }
+
+            const parent = parentInfo[0];
+
+            const parentStudents = await DB.query(`SELECT
+                    st.id, st.email, st.phone_number,
+                    st.given_name, st.family_name, st.student_number
+                FROM StudentParent AS sp
+                INNER JOIN Student AS st ON sp.student_id = st.id
+                WHERE sp.parent_id = :parent_id;`, {
+                parent_id: parent.id
+            })
+
+            return res.status(200).json({
+                parent: parent,
+                students: parentStudents,
+            }).end()
+        } catch (e: any) {
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'internal_server_error'
+                }).end();
+            }
+        }
+    }
+
+    // Secure POST version of parentStudents for sensitive data
+    parentStudentsSecure = async (req: ExtendedRequest, res: Response) => {
+        try {
+            // Get ID from request body instead of URL parameters for better security
+            const { parentId } = req.body;
+
+            if (!parentId || !isValidId(parentId)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_or_missing_parent_id'
+                }
+            }
+
+            const parentStudents = await DB.query(`SELECT
+                    st.id, st.email, st.phone_number,
+                    st.given_name, st.family_name, st.student_number
+                FROM StudentParent AS sp
+                INNER JOIN Student AS st ON sp.student_id = st.id
+                INNER JOIN Parent AS pa ON sp.parent_id = pa.id
+                WHERE sp.parent_id = :parent_id
+                AND pa.school_id = :school_id;`, {
+                parent_id: parentId,
+                school_id: req.user.school_id
+            })
+
+            return res.status(200).json({
                 students: parentStudents,
             }).end()
         } catch (e: any) {
