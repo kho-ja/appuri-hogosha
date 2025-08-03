@@ -65,7 +65,7 @@ export default function Info() {
   );
   const { data: scheduledPosts } = useApiQuery<any>(
     `schedule/list?page=${page}&text=${search}&perPage=${perPage}`,
-    ["scheduledPosts", page, search,perPage]
+    ["scheduledPosts", page, search, perPage]
   );
 
   const [postId, setPostId] = useState<number | null>(null);
@@ -121,7 +121,9 @@ export default function Info() {
   };
 
   const handleSelectAllChangeScheduled = (checked: boolean) => {
-    const allIds = scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) || [];
+    const allIds =
+      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
+      [];
     setSelectedScheduledPosts((prev) =>
       checked
         ? Array.from(new Set([...prev, ...allIds]))
@@ -139,10 +141,13 @@ export default function Info() {
 
   const isAllSelectedScheduled = () => {
     const currentPagePosts =
-      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) || [];
+      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
+      [];
     return (
       currentPagePosts.length > 0 &&
-      currentPagePosts.every((id: number) => selectedScheduledPosts.includes(id))
+      currentPagePosts.every((id: number) =>
+        selectedScheduledPosts.includes(id)
+      )
     );
   };
 
@@ -156,13 +161,12 @@ export default function Info() {
 
   const isIndeterminateScheduled = () => {
     const currentPagePosts =
-      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) || [];
+      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
+      [];
     const selectedCount = currentPagePosts.filter((id: number) =>
       selectedScheduledPosts.includes(id)
     ).length;
-    return (
-      selectedCount > 0 && selectedCount < currentPagePosts.length
-    );
+    return selectedCount > 0 && selectedCount < currentPagePosts.length;
   };
 
   const postColumns: ColumnDef<Post>[] = [
@@ -349,62 +353,70 @@ export default function Info() {
     <div className="w-full space-y-4">
       <PageHeader title={t("posts")} variant="list">
         <div className="flex gap-2">
-           <Button
-              icon={<Trash2 className="h-5 w-5" />}
-              variant="destructive"
-              disabled={
-                tab === "messages"
-                  ? selectedPosts.length === 0
-                  : selectedScheduledPosts.length === 0
-              }
-              onClick={() => setIsDialogOpen(true)}
-            >
-              {t("delete")} (
-                {tab === "messages"
-                  ? selectedPosts.length
-                  : selectedScheduledPosts.length}
-              )
-            </Button>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
-            <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
-          </DialogHeader>
-          <div className="max-h-48 overflow-auto border rounded p-2 my-4">
-            {(tab === "messages" ? data?.posts : scheduledPosts?.scheduledPosts)
-              ?.filter((post: ScheduledPost) =>
-                (tab === "messages" ? allSelectedIds : selectedScheduledPosts).includes(post.id)
-              )
-              .map((post: ScheduledPost) => (
-                <div
-                  key={post.id}
-                  className="py-1 border-b last:border-b-0 flex justify-between"
+          <Button
+            icon={<Trash2 className="h-5 w-5" />}
+            variant="destructive"
+            disabled={
+              tab === "messages"
+                ? selectedPosts.length === 0
+                : selectedScheduledPosts.length === 0
+            }
+            onClick={() => setIsDialogOpen(true)}
+          >
+            {t("delete")} (
+            {tab === "messages"
+              ? selectedPosts.length
+              : selectedScheduledPosts.length}
+            )
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
+                <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
+              </DialogHeader>
+              <div className="max-h-48 overflow-auto border rounded p-2 my-4">
+                {(tab === "messages"
+                  ? data?.posts
+                  : scheduledPosts?.scheduledPosts
+                )
+                  ?.filter((post: ScheduledPost) =>
+                    (tab === "messages"
+                      ? allSelectedIds
+                      : selectedScheduledPosts
+                    ).includes(post.id)
+                  )
+                  .map((post: ScheduledPost) => (
+                    <div
+                      key={post.id}
+                      className="py-1 border-b last:border-b-0 flex justify-between"
+                    >
+                      <span>{post.title}</span>
+                      <Trash2 className="inline-block mr-2 text-red-600" />
+                    </div>
+                  ))}
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant={"secondary"}>{t("cancel")}</Button>
+                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (tab === "messages") {
+                      deleteMultiple.mutate({ ids: allSelectedIds });
+                    } else {
+                      deleteMultipleScheduled.mutate({
+                        ids: selectedScheduledPosts,
+                      });
+                    }
+                  }}
                 >
-                  <span>{post.title}</span>
-                  <Trash2 className="inline-block mr-2 text-red-600" />
-                </div>
-              ))}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant={"secondary"}>{t("cancel")}</Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (tab === "messages") {
-                  deleteMultiple.mutate({ ids: allSelectedIds });
-                } else {
-                  deleteMultipleScheduled.mutate({ ids: selectedScheduledPosts });
-                }
-              }}
-            >
-              {t("delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                  {t("delete")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Link href={`/messages/create`} passHref>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("createpost")}
@@ -448,28 +460,28 @@ export default function Info() {
               columns={postColumns}
             />
           </Card>
-            <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2">
             <span>{t("postsPerPage") || "Posts per page:"}</span>
             <Select
               onValueChange={(value) => handlePerPageChange(Number(value))}
               value={perPage.toString()}
             >
               <SelectTrigger className="w-[70px]">
-              <SelectValue
-                placeholder={t("choosePostsPerPage") || "Choose"}
-              />
+                <SelectValue
+                  placeholder={t("choosePostsPerPage") || "Choose"}
+                />
               </SelectTrigger>
               <SelectContent>
-              <SelectGroup>
-                {[10, 30, 50, 100].map((n) => (
-                <SelectItem key={n} value={n.toString()}>
-                  {n}
-                </SelectItem>
-                ))}
-              </SelectGroup>
+                <SelectGroup>
+                  {[10, 30, 50, 100].map((n) => (
+                    <SelectItem key={n} value={n.toString()}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
-            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="scheduled">

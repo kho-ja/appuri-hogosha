@@ -9,11 +9,11 @@ export async function FormatDate(
 ) {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
@@ -30,11 +30,11 @@ export async function FormatDateTime(
 ) {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
@@ -46,11 +46,11 @@ export async function FormatDateTime(
 export async function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   return format.dateTime(dateObject, {
     timeStyle: "short",
     hour12: !use24Hour,
@@ -61,11 +61,11 @@ export async function FormatTimeOnly(date: string | Date, use24Hour: boolean = t
 export async function FormatDateOnly(date: string | Date) {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
-  
+
   if (!date) return "";
-  
+
   const dateObject = typeof date === 'string' ? new Date(date) : date;
-  
+
   return format.dateTime(dateObject, {
     dateStyle: "medium",
     timeZone,
@@ -76,12 +76,12 @@ export async function FormatDateOnly(date: string | Date) {
 export async function FormatDateTimeForDisplay(date: Date | null): Promise<string> {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
-  
+
   if (!date) return "";
-  
+
   return format.dateTime(date, {
     year: "numeric",
-    month: "2-digit", 
+    month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
