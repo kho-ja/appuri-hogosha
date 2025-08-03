@@ -12,11 +12,33 @@ export default {
     loginToAccount: 'Login',
     forgotPassword: 'Forgot your password?',
     resetPassword: 'reset password',
+    forgotPasswordLink: 'Forgot your password? Reset it.',
     noaccount: "Don't have an account?",
     justregister: 'Register',
     loginFailed: 'Invalid phone number or password',
     loginSuccess: 'Logged in successfully',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: 'Secret Code Recovery',
+    enterPhoneNumberText:
+      'Please enter your phone number. A verification code will be sent to this number.',
+    sendCode: 'Send Code',
+    verificationCodeSent:
+      'Verification code sent to your phone number. Please enter the code.',
+    enterVerificationCode: 'Enter verification code',
+    verificationCode: 'Verification code',
+    continueText: 'Continue',
+    codeWillExpire: 'Code will expire in {seconds} seconds.',
+    codeExpired: 'Code has expired',
+    resendCode: 'Resend Code',
+    createNewPasswordTitle: 'Create New Password',
+    passwordCreatedSuccessfully:
+      'Password created successfully! You can now log in with your new password.',
+    enterNewPasswordText: 'Please create a secure password for your account.',
+    confirmNewPassword: 'Confirm new password',
+    saveNewPassword: 'Save',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'Home',
@@ -211,11 +233,33 @@ export default {
     loginToAccount: 'ログイン',
     forgotPassword: 'パスワードを忘れましたか？',
     resetPassword: 'パスワードをリセット',
+    forgotPasswordLink: 'パスワードを忘れましたか？リセットしてください。',
     noaccount: 'アカウントをお持ちでないですか？',
     justregister: '登録',
     loginFailed: '無効な電話番号またはパスワード',
     loginSuccess: 'ログインに成功しました',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: '秘密コードの復元',
+    enterPhoneNumberText:
+      '電話番号を入力してください。この番号に確認コードが送信されます。',
+    sendCode: 'コードを送信',
+    verificationCodeSent:
+      '確認コードが電話番号に送信されました。コードを入力してください。',
+    enterVerificationCode: '確認コードを入力',
+    verificationCode: '確認コード',
+    continueText: '続ける',
+    codeExpired: 'コードの有効期限が切れました',
+    resendCode: 'コードを再送信',
+    codeWillExpire: 'コードは{seconds}秒で期限切れになります。',
+    createNewPasswordTitle: '新しいパスワードを作成',
+    passwordCreatedSuccessfully:
+      'パスワードが正常に作成されました！新しいパスワードでログインできます。',
+    enterNewPasswordText: 'アカウント用の安全なパスワードを作成してください。',
+    confirmNewPassword: '新しいパスワードを確認',
+    saveNewPassword: '保存',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'ホーム',
@@ -408,15 +452,37 @@ export default {
     email: 'Elektron pochta',
     enterEmail: 'Elektron pochtangizni kiriting',
     password: 'Parol',
-    enterPassword: 'SMS codeni kiriting',
+    enterPassword: 'SMS kodni kiriting',
     loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
+    forgotPasswordLink: 'Kodni unutdingizmi? Parolni tiklang.',
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
     loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
     loginSuccess: 'Muvaffaqiyatli kirdingiz',
     /*sign in page*/
+
+    /*forgot password pages*/
+    resetPasswordTitle: 'Maxfiy kodni tiklash',
+    enterPhoneNumberText:
+      'Iltimos, telefon raqamingizni kiriting. Shu raqam orqali sizga tasdiqlash kodi yuboriladi.',
+    sendCode: 'Davom etish',
+    verificationCodeSent: 'Tasdiqlash kodi yuborildi. Iltimos, kodni kiriting.',
+    enterVerificationCode: 'Kodni kiriting',
+    verificationCode: 'Tasdiqlash kodi',
+    continueText: 'Davom etish',
+    codeExpired: 'Kodning muddati tugadi',
+    resendCode: 'Kodni qayta yuborish',
+    codeWillExpire:
+      'Kodni qayta yuborish {seconds} soniyadan keyin faollashadi.',
+    createNewPasswordTitle: 'Parol yaratish',
+    passwordCreatedSuccessfully:
+      'Parol muvaffaqiyatli yaratildi! Endi yangi parolingiz bilan kirishingiz mumkin.',
+    enterNewPasswordText: 'Iltimos, hisobingiz uchun xavfsiz parol yarating',
+    confirmNewPassword: 'Parolni takrorlang',
+    saveNewPassword: 'Saqlash',
+    /*forgot password pages*/
 
     /*tab bar layout*/
     home: 'Bosh sahifa',
@@ -603,167 +669,203 @@ export default {
     /*update alerts*/
   },
   ru: {
-  /*sign in page*/
-  welcome: 'Здравствуйте, добро пожаловать',
-  login: 'Вход в аккаунт',
-  email: 'Электронная почта',
-  enterEmail: 'Введите свою электронную почту',
-  password: 'Пароль',
-  enterPassword: 'Введите SMS-код',
-  loginToAccount: 'Войти',
-  forgotPassword: 'Забыли пароль?',
-  resetPassword: 'Восстановить пароль',
-  noaccount: 'Нет аккаунта?',
-  justregister: 'Зарегистрируйтесь',
-  loginFailed: 'Введен неверный номер телефона или пароль',
-  loginSuccess: 'Вы успешно вошли',
-  /*sign in page*/
+    /*sign in page*/
+    welcome: 'Здравствуйте, добро пожаловать',
+    login: 'Вход в аккаунт',
+    email: 'Электронная почта',
+    enterEmail: 'Введите свою электронную почту',
+    password: 'Пароль',
+    enterPassword: 'Введите SMS-код',
+    loginToAccount: 'Войти',
+    forgotPassword: 'Забыли пароль?',
+    resetPassword: 'Восстановить пароль',
+    forgotPasswordLink: 'Забыли пароль? Восстановить.',
+    noaccount: 'Нет аккаунта?',
+    justregister: 'Зарегистрируйтесь',
+    loginFailed: 'Введен неверный номер телефона или пароль',
+    loginSuccess: 'Вы успешно вошли',
+    /*sign in page*/
 
-  /*tab bar layout*/
-  home: 'Главная',
-  form: 'Форма',
-  settings: 'Настройки',
-  personalInfo: 'Личная информация',
-  /*tab bar layout*/
+    /*forgot password pages*/
+    resetPasswordTitle: 'Восстановление секретного кода',
+    enterPhoneNumberText:
+      'Пожалуйста, введите ваш номер телефона. На этот номер будет отправлен код подтверждения.',
+    sendCode: 'Отправить код',
+    verificationCodeSent:
+      'Код подтверждения отправлен на ваш номер телефона. Пожалуйста, введите код.',
+    enterVerificationCode: 'Введите код подтверждения',
+    verificationCode: 'Код подтверждения',
+    continueText: 'Продолжить',
+    codeExpired: 'Код истек',
+    resendCode: 'Отправить код заново',
+    codeWillExpire: 'Код истечет через {seconds} секунд.',
+    createNewPasswordTitle: 'Создать новый пароль',
+    passwordCreatedSuccessfully:
+      'Пароль успешно создан! Теперь вы можете войти с новым паролем.',
+    enterNewPasswordText:
+      'Пожалуйста, создайте безопасный пароль для вашего аккаунта.',
+    confirmNewPassword: 'Подтвердите новый пароль',
+    saveNewPassword: 'Сохранить',
+    /*forgot password pages*/
 
-  /*register page*/
-  register: 'Регистрация',
-  alreadyaccount: 'Уже есть аккаунт?',
-  justlogin: 'Войти',
-  enterotp: 'Введите одноразовый пароль, отправленный на вашу электронную почту',
-  otp: 'Одноразовый пароль',
-  newpassword: 'Создать новый пароль',
-  /*register page*/
+    /*tab bar layout*/
+    home: 'Главная',
+    form: 'Форма',
+    settings: 'Настройки',
+    personalInfo: 'Личная информация',
+    /*tab bar layout*/
 
-  /*form page*/
-  form_message: 'Подайте заявки до 8:30 этого дня',
-  reason: 'Причина заявки',
-  absense: 'пропуск занятия',
-  lateness: 'опоздание на занятие',
-  leaving: 'уход пораньше',
-  other: 'другая причина',
-  chooseDate: 'Выбрать дату',
-  additionalMessage: 'Дополнительное сообщение',
-  submitForm: 'Отправить форму',
-  message_placeholder: 'Пожалуйста, введите свое сообщение здесь',
-  choose_student: 'Выберите ученика для отправки формы',
-  /*form page*/
+    /*register page*/
+    register: 'Регистрация',
+    alreadyaccount: 'Уже есть аккаунт?',
+    justlogin: 'Войти',
+    enterotp:
+      'Введите одноразовый пароль, отправленный на вашу электронную почту',
+    otp: 'Одноразовый пароль',
+    newpassword: 'Создать новый пароль',
+    /*register page*/
 
-  /*settings page*/
-  information: 'Информация',
-  firstName: 'Имя',
-  lastName: 'Фамилия',
-  emailaddress: 'Электронная почта',
-  phoneNumber: 'Номер телефона',
-  preferences: 'Настройки',
-  language: 'Язык приложения',
-  logout: 'Выйти',
-  passwordChangedSuccess: 'Пароль успешно изменен',
-  changePassword: 'Изменить пароль',
-  changePasswordText: 'Введите текущий пароль и создайте новый безопасный пароль',
-  savePassword: 'Сохранить пароль',
-  enterOldPassword: 'Введите текущий пароль',
-  enterNewPassword: 'Введите новый пароль',
-  confirmPassword: 'Подтвердите пароль',
-  enterConfirmPassword: 'Подтвердите новый пароль',
-  passwordsDoNotMatch: 'Пароли не совпадают',
-  currentPassword: 'Текущий пароль',
-  newPassword: 'Новый пароль',
-  invalidCurrentPassword: 'Неверный текущий пароль',
-  passwordRequirementsNotMet: 'Новый пароль не соответствует требованиям',
-  newPasswordMustBeDifferent: 'Новый пароль должен отличаться от текущего',
-  pleaseEnsurePasswordRequirements: 'Пожалуйста, убедитесь, что все требования к паролю выполнены',
-  textSize: 'Размер текста',
-  sampleText: 'Выберите удобный для себя размер текста — чтение станет проще.',
-  lightMode: 'Светлый режим',
-  darkMode: 'Темный режим',
-  batteryOptimization: 'Оптимизация батареи',
-  name: 'Имя',
-  /*settings page*/
+    /*form page*/
+    form_message: 'Подайте заявки до 8:30 этого дня',
+    reason: 'Причина заявки',
+    absense: 'пропуск занятия',
+    lateness: 'опоздание на занятие',
+    leaving: 'уход пораньше',
+    other: 'другая причина',
+    chooseDate: 'Выбрать дату',
+    additionalMessage: 'Дополнительное сообщение',
+    submitForm: 'Отправить форму',
+    message_placeholder: 'Пожалуйста, введите свое сообщение здесь',
+    choose_student: 'Выберите ученика для отправки формы',
+    /*form page*/
 
-  /*message*/
-  critical: 'обязательно',
-  important: 'важно',
-  ordinary: 'обычно',
-  group: 'Группа',
-  continueReading: 'Продолжить чтение',
-  loadMoreMessages: 'Загрузить больше сообщений',
-  messageNotFound: 'Сообщение не найдено',
-  noMessagesYet: 'Сообщений пока нет',
-  noMessagesDescription: 'Когда придет сообщение из школы, оно отобразится здесь. Потяните вниз, чтобы обновить.',
-  errorLoadingMessages: 'Ошибка при загрузке сообщений. Пожалуйста, попробуйте снова.',
-  tryAgain: 'Попробовать снова',
-  /*message*/
+    /*settings page*/
+    information: 'Информация',
+    firstName: 'Имя',
+    lastName: 'Фамилия',
+    emailaddress: 'Электронная почта',
+    phoneNumber: 'Номер телефона',
+    preferences: 'Настройки',
+    language: 'Язык приложения',
+    logout: 'Выйти',
+    passwordChangedSuccess: 'Пароль успешно изменен',
+    changePassword: 'Изменить пароль',
+    changePasswordText:
+      'Введите текущий пароль и создайте новый безопасный пароль',
+    savePassword: 'Сохранить пароль',
+    enterOldPassword: 'Введите текущий пароль',
+    enterNewPassword: 'Введите новый пароль',
+    confirmPassword: 'Подтвердите пароль',
+    enterConfirmPassword: 'Подтвердите новый пароль',
+    passwordsDoNotMatch: 'Пароли не совпадают',
+    currentPassword: 'Текущий пароль',
+    newPassword: 'Новый пароль',
+    invalidCurrentPassword: 'Неверный текущий пароль',
+    passwordRequirementsNotMet: 'Новый пароль не соответствует требованиям',
+    newPasswordMustBeDifferent: 'Новый пароль должен отличаться от текущего',
+    pleaseEnsurePasswordRequirements:
+      'Пожалуйста, убедитесь, что все требования к паролю выполнены',
+    textSize: 'Размер текста',
+    sampleText:
+      'Выберите удобный для себя размер текста — чтение станет проще.',
+    lightMode: 'Светлый режим',
+    darkMode: 'Темный режим',
+    batteryOptimization: 'Оптимизация батареи',
+    name: 'Имя',
+    /*settings page*/
 
-  /*error messages*/
-  chooseCorrectDate: 'Пожалуйста, выберите правильную дату',
-  /*error messages*/
+    /*message*/
+    critical: 'обязательно',
+    important: 'важно',
+    ordinary: 'обычно',
+    group: 'Группа',
+    continueReading: 'Продолжить чтение',
+    loadMoreMessages: 'Загрузить больше сообщений',
+    messageNotFound: 'Сообщение не найдено',
+    noMessagesYet: 'Сообщений пока нет',
+    noMessagesDescription:
+      'Когда придет сообщение из школы, оно отобразится здесь. Потяните вниз, чтобы обновить.',
+    errorLoadingMessages:
+      'Ошибка при загрузке сообщений. Пожалуйста, попробуйте снова.',
+    tryAgain: 'Попробовать снова',
+    /*message*/
 
-  /*states*/
-  loading: 'Загрузка...',
-  /*states*/
+    /*error messages*/
+    chooseCorrectDate: 'Пожалуйста, выберите правильную дату',
+    /*error messages*/
 
-  pressBackAgainToExit: 'Нажмите еще раз, чтобы выйти',
+    /*states*/
+    loading: 'Загрузка...',
+    /*states*/
 
-  /*student select page*/
-  SelectStudent: 'Выберите ученика',
+    pressBackAgainToExit: 'Нажмите еще раз, чтобы выйти',
 
-  /*no students screen*/
-  noStudentsFound: 'Ученики не найдены',
-  noStudentsDescription: 'Похоже, к вашему аккаунту еще не привязан ни один ученик. Обратитесь к администрации школы или попробуйте обновить.',
-  refresh: 'Обновить',
-  needHelp: 'Нужна помощь?',
-  checkCorrectAccount: 'Проверьте, вошли ли вы под правильным аккаунтом',
-  contactSchool: 'Если проблема сохраняется, свяжитесь с вашей школой',
-  checkInternet: 'Проверьте подключение к интернету',
-  /*no students screen*/
+    /*student select page*/
+    SelectStudent: 'Выберите ученика',
 
-  /*battery optimization*/
-  improveNotificationDelivery: 'Улучшить доставку уведомлений',
-  batteryOptimizationDescription: 'Некоторые Android-устройства могут задерживать или блокировать уведомления для экономии батареи. Для лучшего опыта отключите оптимизацию батареи для этого приложения.',
-  openSettings: 'Открыть настройки',
-  deviceGuide: 'Руководство по устройству',
-  dismiss: 'Закрыть',
-  batteryOptimizationSettings: 'Настройки оптимизации батареи',
-  batteryOptimizationInstructions: 'Чтобы получать все уведомления:\n\n1. Найдите это приложение в списке\n2. Выберите "Не оптимизировать" или "Разрешить"\n3. Перезапустите приложение\n\nПримечание: шаги могут отличаться в зависимости от производителя устройства.',
-  deviceSpecificInstructions: 'Инструкции для конкретных устройств',
-  deviceInstructionsText: 'У разных производителей Android разные настройки:\n\n• Samsung: Настройки → Приложения → [Приложение] → Батарея → Оптимизация использования батареи\n• Xiaomi: Настройки → Приложения → Управление приложениями → [Приложение] → Экономия батареи\n• OnePlus: Настройки → Приложения → [Приложение] → Батарея → Оптимизация батареи\n• Huawei: Настройки → Приложения → [Приложение] → Батарея → Автозапуск',
-  gotIt: 'Понятно',
-  /*battery optimization*/
+    /*no students screen*/
+    noStudentsFound: 'Ученики не найдены',
+    noStudentsDescription:
+      'Похоже, к вашему аккаунту еще не привязан ни один ученик. Обратитесь к администрации школы или попробуйте обновить.',
+    refresh: 'Обновить',
+    needHelp: 'Нужна помощь?',
+    checkCorrectAccount: 'Проверьте, вошли ли вы под правильным аккаунтом',
+    contactSchool: 'Если проблема сохраняется, свяжитесь с вашей школой',
+    checkInternet: 'Проверьте подключение к интернету',
+    /*no students screen*/
 
-  /*notification alerts*/
-  notificationsDisabled: 'Уведомления отключены',
-  notificationsDisabledMessage: 'Вы не будете получать важные обновления. Вы можете включить уведомления в настройках.',
-  notificationsNotWorking: 'Уведомления не работают?',
-  batteryOptimizationAlert: 'Для надежных уведомлений отключите оптимизацию батареи для этого приложения в настройках устройства.',
-  later: 'Позже',
-  ok: 'ОК',
-  cancel: 'Отмена',
-  /*notification alerts*/
+    /*battery optimization*/
+    improveNotificationDelivery: 'Улучшить доставку уведомлений',
+    batteryOptimizationDescription:
+      'Некоторые Android-устройства могут задерживать или блокировать уведомления для экономии батареи. Для лучшего опыта отключите оптимизацию батареи для этого приложения.',
+    openSettings: 'Открыть настройки',
+    deviceGuide: 'Руководство по устройству',
+    dismiss: 'Закрыть',
+    batteryOptimizationSettings: 'Настройки оптимизации батареи',
+    batteryOptimizationInstructions:
+      'Чтобы получать все уведомления:\n\n1. Найдите это приложение в списке\n2. Выберите "Не оптимизировать" или "Разрешить"\n3. Перезапустите приложение\n\nПримечание: шаги могут отличаться в зависимости от производителя устройства.',
+    deviceSpecificInstructions: 'Инструкции для конкретных устройств',
+    deviceInstructionsText:
+      'У разных производителей Android разные настройки:\n\n• Samsung: Настройки → Приложения → [Приложение] → Батарея → Оптимизация использования батареи\n• Xiaomi: Настройки → Приложения → Управление приложениями → [Приложение] → Экономия батареи\n• OnePlus: Настройки → Приложения → [Приложение] → Батарея → Оптимизация батареи\n• Huawei: Настройки → Приложения → [Приложение] → Батарея → Автозапуск',
+    gotIt: 'Понятно',
+    /*battery optimization*/
 
-  /*password requirements*/
-  passwordRequirements: 'Требования к паролю',
-  minLength: 'Минимум 8 символов',
-  hasNumber: 'Минимум 1 цифра',
-  hasUppercase: 'Минимум 1 заглавная буква',
-  hasLowercase: 'Минимум 1 строчная буква',
-  hasSpecialChar: 'Минимум 1 специальный символ (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
-  passwordStrength: 'Надежность пароля',
-  weak: 'Слабый',
-  medium: 'Средний',
-  strong: 'Сильный',
-  createNewPassword: 'Создать новый пароль',
-  /*password requirements*/
+    /*notification alerts*/
+    notificationsDisabled: 'Уведомления отключены',
+    notificationsDisabledMessage:
+      'Вы не будете получать важные обновления. Вы можете включить уведомления в настройках.',
+    notificationsNotWorking: 'Уведомления не работают?',
+    batteryOptimizationAlert:
+      'Для надежных уведомлений отключите оптимизацию батареи для этого приложения в настройках устройства.',
+    later: 'Позже',
+    ok: 'ОК',
+    cancel: 'Отмена',
+    /*notification alerts*/
 
-  /*Logout alert*/
-  confirmLogout: 'Подтвердите выход',
-  logoutMessage: 'Вы действительно хотите выйти?',
-  /*Logout alert*/
+    /*password requirements*/
+    passwordRequirements: 'Требования к паролю',
+    minLength: 'Минимум 8 символов',
+    hasNumber: 'Минимум 1 цифра',
+    hasUppercase: 'Минимум 1 заглавная буква',
+    hasLowercase: 'Минимум 1 строчная буква',
+    hasSpecialChar:
+      'Минимум 1 специальный символ (!@#%&/\\,><\':;|_~`+=^$.()[]{}?" )',
+    passwordStrength: 'Надежность пароля',
+    weak: 'Слабый',
+    medium: 'Средний',
+    strong: 'Сильный',
+    createNewPassword: 'Создать новый пароль',
+    /*password requirements*/
 
-  /*message detail*/
-  detailedView: 'Подробный просмотр',
-  /*message detail*/
-},
+    /*Logout alert*/
+    confirmLogout: 'Подтвердите выход',
+    logoutMessage: 'Вы действительно хотите выйти?',
+    /*Logout alert*/
+
+    /*message detail*/
+    detailedView: 'Подробный просмотр',
+    /*message detail*/
+  },
 };
 
 export const reasonMapping: ReasonMapping = {
