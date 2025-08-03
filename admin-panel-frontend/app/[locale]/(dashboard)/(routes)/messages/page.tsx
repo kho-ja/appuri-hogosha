@@ -39,6 +39,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import ScheduledPost from "@/types/scheduledPost";
+import { FormatDateTime } from "@/lib/utils";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -325,7 +326,7 @@ export default function Info() {
       cell: ({ row }) => {
         const value = row.getValue("scheduled_at");
         if (!value) return "-";
-        return handleDate(value as string);
+        return FormatDateTime(value as string);
       },
     },
     {
@@ -338,20 +339,6 @@ export default function Info() {
       ),
     },
   ];
-
-  const handleDate = (date: string) => {
-    const localDate = new Date(date);
-    const offset = localDate.getTimezoneOffset() * 60000;
-    const localTime = new Date(localDate.getTime() - offset);
-
-    const y = localTime.getFullYear();
-    const m = String(localTime.getMonth() + 1).padStart(2, "0");
-    const d = String(localTime.getDate()).padStart(2, "0");
-    const h = String(localTime.getHours()).padStart(2, "0");
-    const min = String(localTime.getMinutes()).padStart(2, "0");
-
-    return `${y}-${m}-${d} ${h}:${min}`;
-  };
 
   const searchParams = useSearchParams();
   const initialTab =
