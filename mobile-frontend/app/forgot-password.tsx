@@ -1,11 +1,5 @@
-import React, { useContext, useState, useEffect, useRef } from 'react';
-import {
-  StyleSheet,
-  Keyboard,
-  TouchableWithoutFeedback,
-  View,
-  TextInput,
-} from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { StyleSheet, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { Button, useTheme } from '@rneui/themed';
@@ -18,6 +12,15 @@ import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 import { useRouter } from 'expo-router';
+import {
+  sendVerificationCode,
+  verifyResetCode,
+  resetPassword,
+} from '@/services/auth-service';
+import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
+
+// Import the OTP input package
+import { OtpInput } from 'react-native-otp-entry';
 
 type Step = 'phone' | 'verify' | 'newPassword';
 
@@ -41,7 +44,7 @@ const validatePassword = (password: string) => {
   const hasNumber = /\d/.test(password);
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
-  const hasSpecialChar = /[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ]/.test(password);
+  const hasSpecialChar = /[!@#%&/\\,><':;|_~`+=^$.()[\]{}?"*-]/.test(password);
 
   return {
     minLength,
@@ -54,57 +57,46 @@ const validatePassword = (password: string) => {
   };
 };
 
-export default function ForgotPassword() {
-  const [currentStep, setCurrentStep] = useState<Step>('phone');
-
-  // Phone step state
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
-
-  // Verification step state
-  const [verificationCode, setVerificationCode] = useState([
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]);
-  const [countdown, setCountdown] = useState(60); // 60 seconds
-  const codeInputRefs = useRef<(TextInput | null)[]>([]);
-
-  // New password step state
-  const [newPassword, setNewPassword] = useState('');
-
-  const [isLoading, setIsLoading] = useState(false);
-  const { theme } = useTheme();
+export default function ForgotPasswordScreen() {
   const { language, i18n } = useContext(I18nContext);
+  const { theme } = useTheme();
   const router = useRouter();
 
-  // Timer for verification step
+  // State variables
+  const [currentStep, setCurrentStep] = useState<Step>('phone');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<ICountry>({
+    callingCode: '+998',
+    cca2: 'UZ' as ICountryCca2,
+    flag: '🇺🇿',
+    name: { en: 'Uzbekistan' } as ICountryName,
+  });
+  // Changed: Use string instead of array for OTP
+  const [verificationCode, setVerificationCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [canResend, setCanResend] = useState(false);
+  const [resendCount, setResendCount] = useState(0);
+
+  // No ref needed for react-native-otp-entry
+
+  // Countdown effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (currentStep === 'verify') {
-      timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 0) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      setCanResend(false);
+    } else {
+      setCanResend(true);
     }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [currentStep]);
-
-  // Page 1: Phone number
+  // Page 1: Phone number input
   const handleSendCode = async () => {
-    if (!phoneNumber.trim() || !selectedCountry) {
-      Toast.show('Please enter a valid phone number', {
+    if (!phoneNumber.trim()) {
+      Toast.show('Please enter your phone number', {
         duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
         shadow: true,
@@ -121,17 +113,46 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement API call to send verification code
-      // await sendVerificationCode(selectedCountry, phoneNumber.replaceAll(' ', ''));
+      await sendVerificationCode(
+        selectedCountry?.callingCode || '+1',
+        phoneNumber.replaceAll(' ', '')
+      );
 
-      setTimeout(() => {
-        setIsLoading(false);
-        setCurrentStep('verify');
-        setCountdown(60);
-      }, 1000);
-    } catch {
       setIsLoading(false);
-      Toast.show('Failed to send verification code', {
+      setCurrentStep('verify');
+
+      // Set countdown with increasing delay for multiple attempts
+      const delay = Math.min(60 + resendCount * 30, 300); // 60s, 90s, 120s... max 5min
+      setCountdown(delay);
+      setCanResend(false);
+
+      // Clear OTP
+      setVerificationCode('');
+
+      Toast.show(
+        resendCount === 0
+          ? 'Verification code sent successfully'
+          : `Verification code resent successfully (Attempt ${resendCount + 1})`,
+        {
+          duration: Toast.durations.LONG,
+          position: Toast.positions.BOTTOM,
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+          textColor: 'white',
+          containerStyle: {
+            backgroundColor: 'green',
+            borderRadius: 5,
+          },
+        }
+      );
+    } catch (error) {
+      setIsLoading(false);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to send verification code';
+      Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
         position: Toast.positions.BOTTOM,
         shadow: true,
@@ -146,35 +167,30 @@ export default function ForgotPassword() {
     }
   };
 
-  // Page 2: Verification code
-  const handleCodeChange = (text: string, index: number) => {
-    const newCode = [...verificationCode];
+  // Handle resend code
+  const handleResendCode = async () => {
+    if (!canResend || isLoading) return;
 
-    // If there's already a digit and user types a new one, replace it
-    if (text.length > 0) {
-      newCode[index] = text.slice(-1); // Take only the last character
-    } else {
-      newCode[index] = text;
-    }
+    setResendCount(prev => prev + 1);
 
-    setVerificationCode(newCode);
+    // Clear previous code
+    setVerificationCode('');
 
-    // Auto focus next input when digit is entered
-    if (text && index < 5) {
-      codeInputRefs.current[index + 1]?.focus();
-    }
+    // Call the same send code function
+    await handleSendCode();
+  };
+  const handleOTPComplete = (code: string) => {
+    setVerificationCode(code);
+    // Auto verify when code is complete
+    setTimeout(() => {
+      handleVerifyCode(code);
+    }, 500);
   };
 
-  const handleKeyPress = (key: string, index: number) => {
-    // Move to previous input on backspace if current input is empty
-    if (key === 'Backspace' && !verificationCode[index] && index > 0) {
-      codeInputRefs.current[index - 1]?.focus();
-    }
-  };
+  const handleVerifyCode = async (code?: string) => {
+    const finalCode = code || verificationCode;
 
-  const handleVerifyCode = async () => {
-    const code = verificationCode.join('');
-    if (code.length !== 6) {
+    if (finalCode.length !== 6) {
       Toast.show('Please enter all 6 digits', {
         duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
@@ -192,16 +208,29 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement API call to verify code
-      // await verifyResetCode(phoneNumber, code);
+      // Verify the code format (basic validation)
+      await verifyResetCode(phoneNumber, finalCode);
 
-      setTimeout(() => {
-        setIsLoading(false);
-        setCurrentStep('newPassword');
-      }, 1000);
-    } catch {
       setIsLoading(false);
-      Toast.show('Invalid verification code', {
+      setCurrentStep('newPassword');
+
+      Toast.show('Code verified successfully', {
+        duration: Toast.durations.SHORT,
+        position: Toast.positions.BOTTOM,
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+        textColor: 'white',
+        containerStyle: {
+          backgroundColor: 'green',
+          borderRadius: 5,
+        },
+      });
+    } catch (error) {
+      setIsLoading(false);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Invalid verification code';
+      Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
         position: Toast.positions.BOTTOM,
         shadow: true,
@@ -213,6 +242,9 @@ export default function ForgotPassword() {
           borderRadius: 5,
         },
       });
+
+      // Clear OTP on error
+      setVerificationCode('');
     }
   };
 
@@ -238,29 +270,36 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      // TODO: Implement API call to reset password
-      // await resetPassword(phoneNumber, verificationCode.join(''), newPassword);
+      // Build full phone number with country code
+      const fullPhoneNumber = `${selectedCountry?.callingCode || '+1'}${phoneNumber.replaceAll(' ', '')}`;
 
-      setTimeout(() => {
-        setIsLoading(false);
-        Toast.show(i18n[language].passwordCreatedSuccessfully, {
-          duration: Toast.durations.LONG,
-          position: Toast.positions.BOTTOM,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'green',
-            borderRadius: 5,
-          },
-        });
+      await resetPassword(
+        fullPhoneNumber,
+        verificationCode, // Now it's a string
+        newPassword
+      );
 
-        router.push('/sign-in');
-      }, 1000);
-    } catch {
       setIsLoading(false);
-      Toast.show('Failed to reset password', {
+      Toast.show(i18n[language].passwordCreatedSuccessfully, {
+        duration: Toast.durations.LONG,
+        position: Toast.positions.BOTTOM,
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+        textColor: 'white',
+        containerStyle: {
+          backgroundColor: 'green',
+          borderRadius: 5,
+        },
+      });
+
+      // Navigate back to sign-in after successful password reset
+      router.push('/sign-in');
+    } catch (error) {
+      setIsLoading(false);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to reset password';
+      Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
         position: Toast.positions.BOTTOM,
         shadow: true,
@@ -342,37 +381,34 @@ export default function ForgotPassword() {
               {i18n[language].enterVerificationCode}
             </ThemedText>
 
-            <View style={styles.codeContainer}>
-              {verificationCode.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  ref={ref => {
-                    codeInputRefs.current[index] = ref;
-                  }}
-                  style={[
-                    styles.codeInput,
-                    {
-                      borderColor: digit ? theme.colors.primary : '#D1D5DB',
-                      color: theme.colors.black,
-                    },
-                  ]}
-                  value={digit}
-                  onChangeText={text => {
-                    // Only allow single digit
-                    const cleanText = text.replace(/[^0-9]/g, '').slice(0, 1);
-                    handleCodeChange(cleanText, index);
-                  }}
-                  onKeyPress={({ nativeEvent }) => {
-                    handleKeyPress(nativeEvent.key, index);
-                  }}
-                  keyboardType='numeric'
-                  maxLength={1}
-                  textAlign='center'
-                  selectTextOnFocus
-                  autoFocus={index === 0}
-                />
-              ))}
-            </View>
+            {/* Use react-native-otp-entry with correct props */}
+            <OtpInput
+              numberOfDigits={6}
+              onTextChange={setVerificationCode}
+              onFilled={handleOTPComplete}
+              autoFocus
+              focusColor={theme.colors.primary}
+              focusStickBlinkingDuration={500}
+              theme={{
+                containerStyle: styles.codeContainer,
+                pinCodeContainerStyle: {
+                  ...styles.codeInput,
+                  backgroundColor: theme.colors.background,
+                },
+                pinCodeTextStyle: {
+                  ...styles.otpText,
+                  color: theme.colors.black,
+                },
+                focusedPinCodeContainerStyle: {
+                  borderColor: theme.colors.primary,
+                  borderWidth: 2,
+                },
+              }}
+              textInputProps={{
+                textContentType: 'oneTimeCode', // iOS SMS auto-fill
+                autoComplete: 'sms-otp', // Android SMS auto-fill
+              }}
+            />
 
             {countdown > 0 ? (
               <ThemedText style={styles.countdown}>
@@ -382,20 +418,32 @@ export default function ForgotPassword() {
                 )}
               </ThemedText>
             ) : (
-              <ThemedText style={styles.expiredText}>
-                {i18n[language].codeExpired || 'code expired'}
-              </ThemedText>
+              <ThemedView style={styles.resendContainer}>
+                <Button
+                  onPress={handleResendCode}
+                  title={`${i18n[language].resendCode}${resendCount > 0 ? ` (${resendCount + 1})` : ''}`}
+                  type='clear'
+                  disabled={!canResend || isLoading}
+                  loading={isLoading}
+                  titleStyle={[
+                    styles.resendText,
+                    {
+                      color: canResend && !isLoading ? '#4285F4' : '#9CA3AF',
+                    },
+                  ]}
+                />
+              </ThemedView>
             )}
 
             <Button
-              onPress={handleVerifyCode}
+              onPress={() => handleVerifyCode()}
               title={i18n[language].continueText}
               buttonStyle={[
                 styles.submitButton,
-                verificationCode.join('').length !== 6 && styles.disabledButton,
+                verificationCode.length !== 6 && styles.disabledButton,
               ]}
               titleStyle={styles.buttonText}
-              disabled={isLoading || verificationCode.join('').length !== 6}
+              disabled={isLoading || verificationCode.length !== 6}
               loading={isLoading}
             />
           </ThemedView>
@@ -517,6 +565,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 18,
     fontWeight: '600',
+    borderColor: '#D1D5DB',
+  },
+  // New styles for OTP input to match your design
+  otpContainer: {
+    width: '100%',
+  },
+  otpInputsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  otpText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   countdown: {
     textAlign: 'center',
@@ -533,5 +594,20 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#4285F4',
     opacity: 0.6,
+  },
+  // Resend functionality styles
+  resendContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  resendHelpText: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  resendText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

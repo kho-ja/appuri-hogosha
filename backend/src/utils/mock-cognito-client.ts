@@ -6,6 +6,8 @@ interface User {
     accessToken?: string;
     refreshToken?: string;
     sub_id?: string;
+    resetCode?: string;
+    resetCodeExpiry?: number;
 }
 
 const sub_id = '1'
@@ -22,6 +24,65 @@ const mockDatabase: { [email: string]: User } = {
 };
 
 export class MockCognitoClient {
+    static async forgotPassword(identifier: string) {
+        console.log(`Mock: Forgot password initiated for ${identifier}`);
+
+        // In mock mode, we simulate the behavior
+        const user = mockDatabase[identifier];
+        if (!user) {
+            // For security, we don't reveal if user exists or not
+            console.log(`Mock: User ${identifier} not found, but returning success message`);
+        } else {
+            // Simulate sending verification code
+            user.resetCode = '123456'; // Mock verification code
+            user.resetCodeExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+            console.log(`Mock: Reset code set for ${identifier}: ${user.resetCode}`);
+        }
+
+        return {
+            message: 'If this phone number is registered, you will receive a verification code'
+        };
+    }
+
+    static async confirmForgotPassword(identifier: string, confirmationCode: string, newPassword: string) {
+        console.log(`Mock: Confirming forgot password for ${identifier} with code ${confirmationCode}`);
+
+        const user = mockDatabase[identifier];
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Check if reset code exists and is valid
+        if (!user.resetCode) {
+            throw new Error('No reset code found. Please initiate forgot password first');
+        }
+
+        if (user.resetCode !== confirmationCode) {
+            throw new Error('Invalid verification code');
+        }
+
+        if (user.resetCodeExpiry && Date.now() > user.resetCodeExpiry) {
+            throw new Error('Verification code has expired');
+        }
+
+        // Validate password (basic validation for mock)
+        if (newPassword.length < 8) {
+            throw new Error('Password must contain at least 8 characters, 1 number, 1 special character, 1 uppercase, 1 lowercase');
+        }
+
+        // Update password and clear reset code
+        user.password = newPassword;
+        delete user.resetCode;
+        delete user.resetCodeExpiry;
+
+        console.log(`Mock: Password reset successfully for ${identifier}`);
+
+        return {
+            message: 'Password reset successfully'
+        };
+    }
+
+
     static async resendTemporaryPassword(identifier: string) {
         // Try to find user by email first, then by phone number
         let user: User | undefined = mockDatabase[identifier];

@@ -127,7 +127,6 @@ export default function SettingsScreen() {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
-  const languages = ['English', '日本語', "O'zbekcha", 'Русский'];
 
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>

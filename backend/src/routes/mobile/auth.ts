@@ -21,6 +21,131 @@ class AuthController implements IController {
         this.router.post('/change-temp-password', this.changeTemporaryPassword)
         this.router.post('/change-password', verifyToken, this.changePassword)
         this.router.post('/device-token', verifyToken, this.deviceToken)
+
+        this.router.post('/forgot-password-initiate', this.forgotPasswordInitiate)
+        this.router.post('/forgot-password-confirm', this.forgotPasswordConfirm)
+    }
+
+    forgotPasswordInitiate = async (req: Request, res: Response) => {
+        try {
+            const { phone_number } = req.body;
+
+            // Validate phone number
+            if (!phone_number) {
+                return res.status(400).json({
+                    error: 'Phone number is required'
+                }).end();
+            }
+
+            // Clean phone number for database lookup (remove + and any spaces)
+            let cleanPhoneNumber = phone_number.replace(/\s+/g, ''); // Remove spaces
+            if (cleanPhoneNumber.startsWith('+')) {
+                cleanPhoneNumber = cleanPhoneNumber.slice(1); // Remove + for database
+            }
+
+            // Check if user exists in database first
+            const parents = await DB.query(`SELECT phone_number, email FROM Parent WHERE phone_number = :phone_number`, {
+                phone_number: cleanPhoneNumber
+            });
+
+            if (parents.length === 0) {
+                // For security, we still return success message even if user doesn't exist
+                return res.status(200).json({
+                    message: 'If this phone number is registered, you will receive a verification code'
+                }).end();
+            }
+
+            // Format phone number for Cognito (must have + prefix)
+            const cognitoPhoneNumber = phone_number.startsWith('+') ? phone_number : `+${phone_number}`;
+
+            try {
+                // First, try to verify the user's phone number if it's not verified
+                const verificationStatus = await this.cognitoClient.checkUserVerificationStatus(cognitoPhoneNumber);
+
+                if (!verificationStatus.phoneVerified) {
+                    await this.cognitoClient.verifyPhoneNumber(cognitoPhoneNumber);
+                } else {
+                    console.log('Phone already verified');
+                }
+            } catch (verifyError) {
+                console.error('Phone verification failed:', verifyError);
+                return res.status(400).json({
+                    error: 'Phone number verification failed. Please contact support.'
+                }).end();
+            }
+
+            // Call Cognito forgot password (this will send SMS)
+            const result = await this.cognitoClient.forgotPassword(cognitoPhoneNumber);
+
+            return res.status(200).json({
+                message: result.message
+            }).end();
+
+        } catch (e: any) {
+            console.error('Forgot password initiate error:', e);
+
+            // Handle specific Cognito errors
+            if (e.name === 'InvalidParameterException') {
+                if (e.message && e.message.includes('no registered/verified')) {
+                    return res.status(400).json({
+                        error: 'Phone number verification failed. Please contact support.'
+                    }).end();
+                } else {
+                    return res.status(400).json({
+                        error: 'Invalid phone number format'
+                    }).end();
+                }
+            }
+
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'Internal server error'
+                }).end();
+            }
+        }
+    }
+
+    forgotPasswordConfirm = async (req: Request, res: Response) => {
+        try {
+            const { phone_number, verification_code, new_password } = req.body;
+
+            // Validate required fields
+            if (!phone_number || !verification_code || !new_password) {
+                return res.status(400).json({
+                    error: 'Phone number, verification code, and new password are required'
+                }).end();
+            }
+
+            // Format phone number for Cognito
+            const fullPhoneNumber = phone_number.startsWith('+') ? phone_number : `+${phone_number}`;
+
+            // Confirm forgot password with Cognito
+            const result = await this.cognitoClient.confirmForgotPassword(
+                fullPhoneNumber,
+                verification_code,
+                new_password
+            );
+
+            return res.status(200).json({
+                message: result.message
+            }).end();
+
+        } catch (e: any) {
+            console.error('Forgot password confirm error:', e);
+            if (e.status) {
+                return res.status(e.status).json({
+                    error: e.message
+                }).end();
+            } else {
+                return res.status(500).json({
+                    error: 'Internal server error'
+                }).end();
+            }
+        }
     }
 
     private normalizeToken(raw: any): string | null {
