@@ -1,5 +1,6 @@
 import { IController } from '../../utils/icontroller';
 import express, { Request, Response, Router } from "express";
+import rateLimit from "express-rate-limit";
 import { Parent } from '../../utils/cognito-client'
 import DB from '../../utils/db-client'
 // import {ParentsSNS} from '../../utils/sns-client'
@@ -9,6 +10,17 @@ import { MockCognitoClient } from "../../utils/mock-cognito-client";
 class AuthController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
+
+    // Rate limiter for forgot password endpoint
+    private forgotPasswordLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 5, // limit each IP to 5 requests per windowMs
+        message: {
+            error: "Too many password reset requests from this IP, please try again later."
+        },
+        standardHeaders: true, // Return rate limit info in headers
+        legacyHeaders: false, // Disable X-RateLimit-* headers
+    });
 
     constructor() {
         this.cognitoClient = process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Parent;
@@ -22,7 +34,8 @@ class AuthController implements IController {
         this.router.post('/change-password', verifyToken, this.changePassword)
         this.router.post('/device-token', verifyToken, this.deviceToken)
 
-        this.router.post('/forgot-password-initiate', this.forgotPasswordInitiate)
+        // Apply rate limiting to forgot password endpoints
+        this.router.post('/forgot-password-initiate', this.forgotPasswordLimiter, this.forgotPasswordInitiate)
         this.router.post('/forgot-password-confirm', this.forgotPasswordConfirm)
     }
 

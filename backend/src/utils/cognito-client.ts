@@ -168,7 +168,7 @@ class CognitoClient {
     // Add this new method to your CognitoClient class
     async verifyPhoneNumber(username: string): Promise<void> {
         try {
-            console.log(`Verifying phone number for user: ${username}`);
+            console.log('Verifying phone number for user: %s', username); // Fixed: Use %s placeholder
 
             const updateParams: AdminUpdateUserAttributesCommandInput = {
                 UserPoolId: this.pool_id,
@@ -184,14 +184,13 @@ class CognitoClient {
             const updateCommand = new AdminUpdateUserAttributesCommand(updateParams);
             await this.client.send(updateCommand);
 
-            console.log(`✅ Phone number verified for user: ${username}`);
+            console.log('✅ Phone number verified for user: %s', username); // Fixed: Use %s placeholder
         } catch (error: any) {
-            console.error(`❌ Failed to verify phone number for ${username}:`, error);
+            console.error('❌ Failed to verify phone number for %s:', username, error); // Fixed: Use %s placeholder
             throw error;
         }
     }
 
-    // Add this new method to check user verification status
     async checkUserVerificationStatus(username: string): Promise<{ phoneVerified: boolean, emailVerified: boolean }> {
         try {
             const getUserParams: AdminGetUserCommandInput = {
@@ -212,7 +211,7 @@ class CognitoClient {
 
             return { phoneVerified, emailVerified };
         } catch (error: any) {
-            console.error(`Failed to check verification status for ${username}:`, error);
+            console.error('Failed to check verification status for %s:', username, error); // Fixed: Use %s placeholder
             return { phoneVerified: false, emailVerified: false };
         }
     }
