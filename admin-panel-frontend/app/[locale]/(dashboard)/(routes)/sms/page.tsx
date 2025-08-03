@@ -30,6 +30,7 @@ import { toast } from "@/components/ui/use-toast";
 import useSMSQuery from "@/lib/useSMSQuery";
 import useSMSMutation from "@/lib/useSMSMutation";
 import SMS from "@/types/sms";
+import { FormatDateTime } from "@/lib/utils";
 
 // Test data
 const testSMSData: SMS[] = [
@@ -121,6 +122,11 @@ export default function SMSPage() {
     {
       accessorKey: "sent_at",
       header: t("Sent_at"),
+      cell: ({ row }) => {
+        const value = row.getValue("sent_at");
+        if (!value) return "-";
+        return FormatDateTime(value as string);
+      },
     },
     {
       id: "actions",

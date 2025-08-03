@@ -2,8 +2,7 @@
  
 import * as React from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, FormatDateTimeForDisplay } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -12,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useTimeZone } from "next-intl";
 
 type DateTimePicker24hProps = {
   value: Date | null;
@@ -20,11 +20,10 @@ type DateTimePicker24hProps = {
 
 export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const timeZone = useTimeZone();
 
-  // Sana tanlanganda
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      // Eski vaqtni saqlab qolish uchun
       const prev = value || new Date();
       const newDate = new Date(selectedDate);
       newDate.setHours(prev.getHours());
@@ -34,7 +33,6 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
     }
   };
 
-  // Soat yoki minut tanlanganda
   const handleTimeChange = (
     type: "hour" | "minute",
     val: string
@@ -66,9 +64,14 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? (
-            format(value, "MM/dd/yyyy HH:mm")
+            <span>
+              {FormatDateTimeForDisplay(value)}
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({timeZone})
+              </span>
+            </span>
           ) : (
-            <span>MM/DD/YYYY HH:mm</span>
+            <span>Select date and time</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -140,6 +143,10 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
               <ScrollBar orientation="horizontal" className="sm:hidden" />
             </ScrollArea>
           </div>
+        </div>
+        {/* Show current timezone info */}
+        <div className="p-3 border-t text-xs text-muted-foreground text-center">
+          Times shown in {timeZone}
         </div>
       </PopoverContent>
     </Popover>

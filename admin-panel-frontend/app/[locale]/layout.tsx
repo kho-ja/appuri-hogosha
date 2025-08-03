@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import ReactQueryProvider from "@/contexts/ReactQueryProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
+import TimezoneDetector from "@/components/TimezoneDetector";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -45,7 +46,10 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <SessionProvider>
-              <ReactQueryProvider>{children}</ReactQueryProvider>
+              <ReactQueryProvider>
+                <TimezoneDetector />
+                {children}
+              </ReactQueryProvider>
             </SessionProvider>
           </ThemeProvider>
           <Toaster />

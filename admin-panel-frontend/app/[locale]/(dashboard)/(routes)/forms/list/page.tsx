@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import useApiQuery from "@/lib/useApiQuery";
+import { FormatDateOnly, FormatDateTime } from "@/lib/utils";
 
 export default function Forms() {
   const t = useTranslations("forms");
@@ -63,10 +64,20 @@ export default function Forms() {
     {
       accessorKey: "date",
       header: t("date"),
+      cell: ({ row }) => {
+        const value = row.getValue("date");
+        if (!value) return "-";
+        return FormatDateOnly(value as string);
+      },
     },
     {
       accessorKey: "sent_at",
       header: t("sent_at"),
+      cell: ({ row }) => {
+        const value = row.getValue("sent_at");
+        if (!value) return "-";
+        return FormatDateTime(value as string);
+      },
     },
     {
       header: t("action"),
