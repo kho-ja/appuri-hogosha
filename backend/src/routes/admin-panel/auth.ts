@@ -1,5 +1,6 @@
 import { IController } from '../../utils/icontroller';
 import { Request, Response, Router } from "express";
+import rateLimit from "express-rate-limit";
 import { Admin } from '../../utils/cognito-client';
 import { MockCognitoClient } from '../../utils/mock-cognito-client';
 import DB from '../../utils/db-client';
@@ -9,16 +10,38 @@ class AuthController implements IController {
     public router: Router = Router();
     public cognitoClient: any;
 
+    // Add rate limiting for admin auth
+    private adminLoginLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 5, // limit each IP to 5 admin login attempts per windowMs
+        message: {
+            error: "Too many admin login attempts from this IP, please try again later."
+        },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+
+    private adminAuthLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 20, // limit each IP to 20 admin requests per windowMs
+        message: {
+            error: "Too many admin requests from this IP, please try again later."
+        },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
+
     constructor() {
         this.cognitoClient = process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
         this.initRoutes()
     }
 
     initRoutes(): void {
-        this.router.post('/login', this.login)
-        this.router.post('/refresh-token', this.refreshToken)
-        this.router.post('/change-temp-password', this.changeTemporaryPassword)
-        this.router.get('/protected-route', verifyToken, this.protectedRoute);
+        // Apply rate limiting to admin routes
+        this.router.post('/login', this.adminLoginLimiter, this.login)
+        this.router.post('/refresh-token', this.adminAuthLimiter, this.refreshToken)
+        this.router.post('/change-temp-password', this.adminAuthLimiter, this.changeTemporaryPassword)
+        this.router.get('/protected-route', this.adminAuthLimiter, verifyToken, this.protectedRoute);
     }
 
     login = async (req: Request, res: Response) => {

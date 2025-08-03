@@ -14,7 +14,8 @@ import {
     isValidStudentNumber,
     isValidEmail,
     isValidArrayId,
-    isValidId
+    isValidId,
+    isValidKintoneUrl
 } from '../../utils/validate'
 import process from "node:process";
 import { stringify } from 'csv-stringify/sync';
@@ -53,11 +54,23 @@ class StudentController implements IController {
             if (!kintoneUrl || !kintoneToken || !given_name_field || !family_name_field || !email_field || !phone_number_field || !student_number_field) {
                 throw new Error('kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
             }
+
+            // SSRF Protection: Validate Kintone URL before making request
+            if (!isValidKintoneUrl(kintoneUrl)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_url_provided'
+                };
+            }
+
             const response = await fetch(kintoneUrl, {
                 method: 'GET',
                 headers: {
                     "X-Cybozu-API-Token": kintoneToken,
+                    'User-Agent': 'Appuri-Backend/1.0'
                 },
+                // Add timeout for security
+                signal: AbortSignal.timeout(5000) // 5 second timeout
             })
 
             if (!response.ok) {
@@ -962,7 +975,7 @@ class StudentController implements IController {
                 }
             }
             if (!family_name || !isValidString(family_name)) {
-            throw { 
+                throw {
                     status: 401,
                     message: 'invalid_or_missing_family_name'
                 }
