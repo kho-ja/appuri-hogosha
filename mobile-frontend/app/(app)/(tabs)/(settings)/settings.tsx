@@ -201,15 +201,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <BottomSheetModalProvider>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.profile}>
-            <View>
-              <ThemedText style={styles.profileName}>
-                {i18n[language].settings}
-              </ThemedText>
-            </View>
-          </View>
-
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingTop: 16 }}
+        >
           <View style={styles.infoCard}>
             <ThemedText style={styles.sectionTitle}>
               {i18n[language].personalInfo}
@@ -436,20 +431,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FF4444',
   },
-  profile: {
-    backgroundColor: '#226fc9',
-    padding: 24,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileName: {
-    marginTop: 10,
-    fontSize: 19,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
-  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '500',
@@ -472,7 +453,7 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     marginHorizontal: 20,
-    marginTop: 30,
+    marginTop: 20,
     padding: 15,
     borderWidth: 1,
     borderColor: '#bec0c2',
