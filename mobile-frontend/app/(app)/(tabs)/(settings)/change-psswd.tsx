@@ -63,29 +63,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
   },
-  strengthContainer: {
-    marginBottom: 10,
-  },
-  strengthLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  strengthBar: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e9ecef',
-    overflow: 'hidden',
-  },
-  strengthFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  strengthText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: 5,
-  },
 });
 
 export default function Index() {
@@ -99,43 +76,6 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isStrengthIndicatorHidden, setIsStrengthIndicatorHidden] =
-    useState(false);
-
-  // Password strength calculation
-  const calculatePasswordStrength = (
-    password: string
-  ): { score: number; label: string; color: string } => {
-    let score = 0;
-
-    if (password.length >= 8) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ]/.test(password)) score++;
-
-    if (score <= 2) {
-      return {
-        score: score * 20,
-        label: i18n[language].weak,
-        color: '#DC2626',
-      };
-    } else if (score <= 4) {
-      return {
-        score: score * 20,
-        label: i18n[language].medium,
-        color: '#F59E0B',
-      };
-    } else {
-      return {
-        score: score * 20,
-        label: i18n[language].strong,
-        color: '#059669',
-      };
-    }
-  };
-
-  const passwordStrength = calculatePasswordStrength(newPassword);
 
   const isPasswordValid = () => {
     const passwordRegex =
@@ -260,48 +200,14 @@ export default function Index() {
           <SecureInput
             label={i18n[language].newPassword}
             placeholder={i18n[language].enterNewPassword}
-            onChangeText={text => {
-              setNewPassword(text);
-              // if the password is empty or weak, show the strength indicator
-              if (
-                text.length === 0 ||
-                calculatePasswordStrength(text).score < 100
-              ) {
-                setIsStrengthIndicatorHidden(false);
-              }
-            }}
+            onChangeText={setNewPassword}
             value={newPassword}
             textContentType='newPassword'
             autoCapitalize='none'
           />
 
-          {newPassword.length > 0 && !isStrengthIndicatorHidden && (
+          {newPassword.length > 0 && (
             <View style={styles.strengthAndRequirementsContainer}>
-              <ThemedView style={styles.strengthContainer}>
-                <ThemedText style={styles.strengthLabel}>
-                  {i18n[language].passwordStrength}
-                </ThemedText>
-                <View style={styles.strengthBar}>
-                  <View
-                    style={[
-                      styles.strengthFill,
-                      {
-                        width: `${passwordStrength.score}%`,
-                        backgroundColor: passwordStrength.color,
-                      },
-                    ]}
-                  />
-                </View>
-                <ThemedText
-                  style={[
-                    styles.strengthText,
-                    { color: passwordStrength.color },
-                  ]}
-                >
-                  {passwordStrength.label}
-                </ThemedText>
-              </ThemedView>
-
               <PasswordRequirements
                 password={newPassword}
                 requirements={{
@@ -310,6 +216,10 @@ export default function Index() {
                   hasUppercase: i18n[language].hasUppercase,
                   hasLowercase: i18n[language].hasLowercase,
                   hasSpecialChar: i18n[language].hasSpecialChar,
+                  passwordStrength: i18n[language].passwordStrength,
+                  weak: i18n[language].weak,
+                  medium: i18n[language].medium,
+                  strong: i18n[language].strong,
                 }}
               />
             </View>
@@ -322,12 +232,6 @@ export default function Index() {
             value={confirmPassword}
             textContentType='newPassword'
             autoCapitalize='none'
-            onFocus={() => {
-              // if the password is strong, hide the strength indicator
-              if (passwordStrength.score >= 100) {
-                setIsStrengthIndicatorHidden(true);
-              }
-            }}
           />
 
           <Button
