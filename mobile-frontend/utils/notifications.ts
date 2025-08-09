@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform, Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type PushPermission =
   | 'granted'
@@ -78,7 +79,8 @@ export async function initPushNotifications(): Promise<PushInitResult> {
     }
 
     // 3️⃣ Get the native device token
-    const { data: token } = await Notifications.getDevicePushTokenAsync();
+    const { data: token } = await Notifications.getExpoPushTokenAsync();
+    console.log('[Push] Device token →', token);
 
     return { status: 'granted', token };
   } catch (error) {
@@ -161,4 +163,64 @@ export async function openNotificationSettings() {
   } catch (error) {
     console.error('Failed to open settings:', error);
   }
+}
+
+/**
+ * Upload the push‑token to your backend.
+ * Returns `true` when the request was accepted (2xx),
+ * `false` on any other outcome — but never *throws*.
+ */
+export async function sendPushTokenToBackend(token: string): Promise<boolean> {
+  try {
+    const session = await AsyncStorage.getItem('session');
+    if (!session) {
+      console.log('[Push] No session yet - will retry when user logs in');
+      return false;
+    }
+
+    const res = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/device-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session}`,
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      console.warn('[Push] Upload failed →', detail);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Push] Network error while uploading token →', err);
+    return false;
+  }
+}
+
+/**
+ * Legacy function for backward compatibility.
+ * Use initPushNotifications() instead for better error handling and features.
+ */
+export async function registerForPushNotificationsAsync() {
+  const result = await initPushNotifications();
+
+  if (result.status === 'granted' && result.token) {
+    return result.token;
+  }
+
+  // Handle different error cases like the original function
+  if (result.status === 'device_unsupported') {
+    throw new Error('Must use physical device for push notifications');
+  } else if (result.status === 'denied') {
+    throw new Error(
+      'Permission not granted to get push token for push notification!'
+    );
+  } else if (result.error) {
+    throw new Error(`${result.error}`);
+  }
+
+  return undefined;
 }

@@ -8,11 +8,22 @@ export interface TokenAnalysis {
     format?: string;
     length?: number;
     issues?: string[];
+    isExpoToken?: boolean;
 }
 
 export const detectTokenType = (token: string): TokenAnalysis => {
     if (!token) {
         return { channelType: ChannelType.GCM, isValid: false, platform: 'unknown' };
+    }
+
+    // Check if it's an Expo push token first
+    if (isExpoPushToken(token)) {
+        return {
+            channelType: ChannelType.GCM, // Expo uses FCM under the hood
+            isValid: true,
+            platform: 'Expo',
+            isExpoToken: true
+        };
     }
 
     // iOS APNS tokens are typically 64 characters of hexadecimal (device tokens)
@@ -30,6 +41,14 @@ export const detectTokenType = (token: string): TokenAnalysis => {
     }
 };
 
+/**
+ * Check if a token is a valid Expo push token
+ * Expo push tokens start with ExponentPushToken[...] or ExpoPushToken[...]
+ */
+export const isExpoPushToken = (token: string): boolean => {
+    return token.startsWith('ExponentPushToken[') || token.startsWith('ExpoPushToken[');
+};
+
 export const analyzeToken = (token: string): TokenAnalysis => {
     if (!token) {
         return {
@@ -41,6 +60,20 @@ export const analyzeToken = (token: string): TokenAnalysis => {
     }
 
     const issues: string[] = [];
+
+    // Check for Expo token first
+    if (isExpoPushToken(token)) {
+        return {
+            type: 'expo',
+            platform: 'Expo',
+            channelType: ChannelType.GCM, // Expo uses FCM under the hood
+            length: token.length,
+            format: 'Expo Push Token',
+            isValid: true,
+            isExpoToken: true,
+            issues: []
+        };
+    }
 
     // iOS APNS token patterns
     const iosDeviceTokenPattern = /^[a-fA-F0-9]{64}$/; // 64 hex chars (legacy)

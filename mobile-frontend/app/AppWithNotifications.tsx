@@ -2,12 +2,14 @@ import React, { useContext } from 'react';
 import * as Notifications from 'expo-notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider, useSession } from '@/contexts/auth-context';
-import { sendPushTokenToBackend } from '@/utils/utils';
+import {
+  sendPushTokenToBackend,
+  initPushNotifications,
+} from '@/utils/notifications';
 import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
-import { initPushNotifications } from '@/utils/notifications';
 import { Platform, Alert, Linking } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useUpdateAlerts } from '@/hooks/useUpdateAlerts';

@@ -3,7 +3,7 @@ import { ENVIRONMENT } from './config/environment';
 import { DatabaseClient } from './services/database/client';
 import { DatabaseQueries } from './services/database/queries';
 import { AwsSmsService } from './services/aws/sms';
-import { PinpointService } from './services/aws/pinpoint';
+import { UnifiedPushService } from './services/unified/push';
 import { PlayMobileService } from './services/playmobile/api';
 import { CognitoHandler } from './handlers/cognito/sms-handler';
 import { ApiHandler } from './handlers/api/sms-api';
@@ -17,7 +17,7 @@ console.log(`🏃 Running in ${ENVIRONMENT.IS_LOCAL ? 'LOCAL' : 'LAMBDA'} enviro
 const dbClient = new DatabaseClient();
 const dbQueries = new DatabaseQueries(dbClient);
 const awsSmsService = new AwsSmsService();
-const pinpointService = new PinpointService();
+const unifiedPushService = new UnifiedPushService();
 const playMobileService = new PlayMobileService();
 
 // Initialize handlers
@@ -25,7 +25,7 @@ const cognitoHandler = new CognitoHandler(playMobileService, awsSmsService);
 const apiHandler = new ApiHandler(playMobileService, awsSmsService);
 const notificationProcessor = new NotificationProcessor(
     dbQueries,
-    pinpointService,
+    unifiedPushService,
     playMobileService,
     awsSmsService
 );
@@ -129,7 +129,7 @@ export const handler = async (event: any, context: any) => {
 export {
     notificationProcessor,
     dbQueries,
-    pinpointService,
+    unifiedPushService,
     playMobileService,
     awsSmsService
 };

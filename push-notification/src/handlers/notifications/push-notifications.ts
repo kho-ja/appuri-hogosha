@@ -1,5 +1,5 @@
 import { DatabaseQueries } from '../../services/database/queries';
-import { PinpointService } from '../../services/aws/pinpoint';
+import { UnifiedPushService } from '../../services/unified/push';
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { TelegramService } from '../../services/telegram/bot';
@@ -13,7 +13,7 @@ export class NotificationProcessor {
 
     constructor(
         private dbQueries: DatabaseQueries,
-        private pinpointService: PinpointService,
+        private unifiedPushService: UnifiedPushService,
         private playMobileService: PlayMobileService,
         private awsSmsService: AwsSmsService
     ) {
@@ -104,8 +104,8 @@ export class NotificationProcessor {
                         hasSuccessfulNotification = true;
                     }
 
-                    // Send push notification (these have ARN)
-                    const pushSuccess = await this.pinpointService.sendPushNotification(post);
+                    // Send push notification (these have ARN) using unified service
+                    const pushSuccess = await this.unifiedPushService.sendPushNotification(post);
                     if (pushSuccess) {
                         hasSuccessfulNotification = true;
                         results.pushCount++;
