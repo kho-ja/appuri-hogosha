@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { ParentTable } from "@/components/ParentTable";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Parent from "@/types/parent";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { toast } from "@/components/ui/use-toast";
@@ -30,7 +30,10 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
-    email: z.string().email(),
+    email: z
+      .string()
+      .email()
+      .max(64, { message: t("Email is too long") }),
     phone_number: z
       .string()
       .min(10)
@@ -77,6 +80,38 @@ export default function CreateStudent() {
       },
     }
   );
+  const handleSetParents = useCallback<
+    React.Dispatch<React.SetStateAction<Parent[]>>
+  >(
+    (value) => {
+      if (typeof value === "function") {
+        setSelectedParents((prev) => {
+          const newValue = (value as (prevState: Parent[]) => Parent[])(prev);
+          if (newValue.length <= 2) {
+            return newValue;
+          } else {
+            toast({
+              title: t("Too many parents"),
+              description: t("You can select up to 2 parents only"),
+              variant: "destructive",
+            });
+            return prev;
+          }
+        });
+      } else {
+        if (value.length <= 2) {
+          setSelectedParents(value);
+        } else {
+          toast({
+            title: t("Too many parents"),
+            description: t("You can select up to 2 parents only"),
+            variant: "destructive",
+          });
+        }
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formStudentCreateData");
@@ -98,24 +133,24 @@ export default function CreateStudent() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("CreateStudent")} variant="create">
-          <Link href="/fromKintone/student">
-            <Button variant={"secondary"}>{t("createFromKintone")}</Button>
-          </Link>
-          <Link href="/fromcsv/student">
-            <Button variant={"secondary"}>
-              <div className="bg-gray-200 p-1 rounded-sm mr-2">
-                <svg
-                  className="w-4 h-4 text-gray-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
-                </svg>
-              </div>
-              {t("createFromCSV")}
-            </Button>
-          </Link>
-          <BackButton href={`/students`} />
+        <Link href="/fromKintone/student">
+          <Button variant={"secondary"}>{t("createFromKintone")}</Button>
+        </Link>
+        <Link href="/fromcsv/student">
+          <Button variant={"secondary"}>
+            <div className="bg-gray-200 p-1 rounded-sm mr-2">
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
+              </svg>
+            </div>
+            {t("createFromCSV")}
+          </Button>
+        </Link>
+        <BackButton href={`/students`} />
       </PageHeader>
       <Form {...form}>
         <form
@@ -213,12 +248,14 @@ export default function CreateStudent() {
             <FormControl>
               <ParentTable
                 selectedParents={selectedParents}
-                setSelectedParents={setSelectedParents}
+                setSelectedParents={handleSetParents}
               />
             </FormControl>
           </FormItem>
 
-          <Button icon={<Save className="h-5 w-5" />}>{t("CreateStudent")}</Button>
+          <Button icon={<Save className="h-5 w-5" />}>
+            {t("CreateStudent")}
+          </Button>
         </form>
       </Form>
     </div>

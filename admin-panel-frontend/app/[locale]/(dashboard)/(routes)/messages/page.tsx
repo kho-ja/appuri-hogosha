@@ -221,14 +221,24 @@ export default function Info() {
     {
       accessorKey: "description",
       header: t("Description"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.description}
-          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
-        >
-          {row.getValue("description")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const desc = row.original?.description
+          ? String(row.original.description)
+          : "";
+        const maxLength = 20; 
+
+        const displayText =
+          desc.length > maxLength ? desc.substring(0, maxLength) + "..." : desc;
+
+        return (
+          <div
+            title={desc}
+            className="max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
+          >
+            {displayText}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "admin_name",
@@ -306,14 +316,24 @@ export default function Info() {
     {
       accessorKey: "description",
       header: t("Description"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.description}
-          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
-        >
-          {row.getValue("description")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const desc = row.original?.description
+          ? String(row.original.description)
+          : "";
+        const maxLength = 20; // maksimal belgilar soni
+
+        const displayText =
+          desc.length > maxLength ? desc.substring(0, maxLength) + "..." : desc;
+
+        return (
+          <div
+            title={desc}
+            className="max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
+          >
+            {displayText}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "admin_name",

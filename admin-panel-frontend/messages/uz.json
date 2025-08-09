@@ -385,7 +385,10 @@
     "StudentEdited": "Talaba muvaffaqiyatli tahrirlandi",
     "createFromCSV": "CSV dan yaratish",
     "createFromKintone": "Kintone orqali yaratish",
-    "Invalid phone number": "Noto'g'ri telefon raqami"
+    "Invalid phone number": "Noto'g'ri telefon raqami",
+    "Too many parents": "Ota-onalar soni juda ko‘p",
+    "You can select up to 2 parents only": "Faqat 2 ta ota-onani tanlashingiz mumkin",
+       "Email is too long": "Email juda uzun"
   },
   "EditParent": {
     "EditParent": "Vasiy tahrirlash",
