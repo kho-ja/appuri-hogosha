@@ -14,7 +14,7 @@ import React, { useContext, useState } from 'react';
 import { Session } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { registerForPushNotificationsAsync } from '@/utils/utils';
+import { registerForPushNotificationsAsync } from '@/utils/notifications';
 import { ICountry } from 'react-native-international-phone-number';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -149,7 +149,7 @@ export default function NewPassword() {
     try {
       let token = await AsyncStorage.getItem('expoPushToken');
       if (!token) {
-        token = await registerForPushNotificationsAsync();
+        token = (await registerForPushNotificationsAsync()) || null;
         if (!token) {
           setErrorMessage('Failed to retrieve push token');
           return;
@@ -289,6 +289,10 @@ export default function NewPassword() {
                   hasUppercase: i18n[language].hasUppercase,
                   hasLowercase: i18n[language].hasLowercase,
                   hasSpecialChar: i18n[language].hasSpecialChar,
+                  passwordStrength: i18n[language].passwordStrength,
+                  weak: i18n[language].weak,
+                  medium: i18n[language].medium,
+                  strong: i18n[language].strong,
                 }}
               />
             </>
