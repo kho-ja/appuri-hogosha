@@ -17,6 +17,10 @@ push-notification/
 │   │   │   ├── pinpoint.ts        # AWS Pinpoint push notifications
 │   │   │   ├── sms.ts             # AWS SMS service
 │   │   │   └── kms.ts             # KMS encryption/decryption
+│   │   ├── expo/
+│   │   │   └── push.ts            # Expo Push Notifications
+│   │   ├── unified/
+│   │   │   └── push.ts            # Unified push service (Expo + AWS)
 │   │   ├── playmobile/
 │   │   │   ├── api.ts             # PlayMobile SMS API
 │   │   │   └── credentials.ts     # Credential verification
@@ -59,26 +63,31 @@ push-notification/
 ## 🔧 Key Improvements
 
 ### 1. **Separation of Concerns**
+
 - Each service has its own module with clear responsibilities
 - Configuration is centralized and environment-aware
 - Business logic is separated from infrastructure concerns
 
 ### 2. **Type Safety**
+
 - Comprehensive TypeScript definitions
 - Proper interfaces for all data structures
 - Better IDE support and error catching
 
 ### 3. **Maintainability**
+
 - Smaller, focused files (each under 200 lines)
 - Clear module boundaries
 - Easy to locate and modify specific functionality
 
 ### 4. **Testability**
+
 - Services can be easily mocked and tested in isolation
 - Dependency injection patterns
 - Clear input/output contracts
 
 ### 5. **Scalability**
+
 - Easy to add new notification channels
 - Simple to extend with new features
 - Better error handling and monitoring
@@ -86,6 +95,7 @@ push-notification/
 ## 🚀 Usage
 
 ### Development
+
 ```bash
 npm run dev          # Start with nodemon
 npm run build        # Compile TypeScript
@@ -93,12 +103,17 @@ npm run type-check   # Check types without building
 ```
 
 ### Debugging
+
+### Debugging
+
 ```bash
 npm run debug-push   # Debug push notifications
 npm run analyze-db   # Analyze database tokens
+npm run test-token   # Unified testing (includes Expo integration)
 ```
 
 ### Deployment
+
 ```bash
 npm run deploy       # Build and prepare for deployment
 ```
@@ -106,34 +121,46 @@ npm run deploy       # Build and prepare for deployment
 ## 🔌 Service Integration
 
 ### AWS Services
+
 - **Pinpoint**: Push notifications for iOS/Android
 - **SMS Voice V2**: SMS delivery for international numbers
 - **KMS**: Encryption/decryption for Cognito
 
+### Expo Services
+
+- **Expo Push API**: Cross-platform push notifications with automatic FCM/APNS routing
+
 ### Third-party Services
+
 - **PlayMobile**: Local SMS delivery for Uzbekistan
 - **Telegram**: Bot notifications
 
 ### Database
+
 - **MySQL**: Notification queue and user data
 
 ## 📱 Supported Features
 
 ### Push Notifications
+
+- **Expo Push Notifications**: Cross-platform support via Expo Push API
 - iOS APNS tokens (device tokens)
 - Android FCM tokens
-- Automatic platform detection
+- Automatic platform detection and routing
 - Rich notification payloads
+- Bulk notification sending
 
 ### SMS Routing
+
 - **Uzbekistan operators**:
   - Beeline (90, 99) → PlayMobile
-  - UMS (95) → PlayMobile  
+  - UMS (95) → PlayMobile
   - Mobiuz (97, 98) → PlayMobile
   - Ucell (91, 93, 94) → AWS SMS (bypass)
 - **International** → AWS SMS
 
 ### Multi-language Support
+
 - Japanese (jp)
 - Russian (ru)
 - Uzbek (uz)
@@ -141,16 +168,19 @@ npm run deploy       # Build and prepare for deployment
 ## 🛡️ Error Handling & Diagnostics
 
 ### Rate Limiting
+
 - Configurable daily/hourly limits
 - Cost protection for SMS
 - Character limit validation
 
 ### Monitoring
+
 - Message status tracking
 - Delivery diagnostics
 - Performance metrics
 
 ### Fallback Strategies
+
 - PlayMobile → AWS SMS fallback
 - Retry mechanisms with exponential backoff
 - Graceful degradation
@@ -165,7 +195,7 @@ AWS_REGION=us-east-1
 PINPOINT_APP_ID=your-app-id
 KMS_KEY_ID=your-kms-key
 
-# PlayMobile Configuration  
+# PlayMobile Configuration
 BROKER_URL=https://api.playmobile.uz
 BROKER_AUTH=username:password
 
