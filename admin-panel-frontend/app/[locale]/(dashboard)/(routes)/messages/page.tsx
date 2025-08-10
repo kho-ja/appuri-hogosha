@@ -224,7 +224,8 @@ export default function Info() {
       cell: ({ row }) => (
         <div
           title={row.original.description}
-          className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] lg:max-w-[240px] xl:max-w-[240px] 2xl:max-w-[320px] block">
+          className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] lg:max-w-[240px] xl:max-w-[280px] 2xl:max-w-[320px] block"
+        >
           {row.getValue("description")}
         </div>
       ),
@@ -308,7 +309,7 @@ export default function Info() {
       cell: ({ row }) => (
         <div
           title={row.original.description}
-          className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] lg:max-w-[240px] xl:max-w-[240px] 2xl:max-w-[320px] block"
+          className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] lg:max-w-[240px] xl:max-w-[280px] 2xl:max-w-[320px] block"
         >
           {row.getValue("description")}
         </div>
