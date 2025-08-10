@@ -33,7 +33,7 @@ const GetFormSchema = (t: (key: string) => string) => {
      email: z
       .string()
       .email()
-      .max(64, { message: t("Email is too long") }),
+      .max(254, { message: t("Email is too long") }),
     phone_number: z
       .string()
       .min(10)
