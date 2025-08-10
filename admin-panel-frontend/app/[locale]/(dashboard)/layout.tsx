@@ -66,12 +66,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <>
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
       <div className="flex min-h-screen w-full">
         {isMenuOpen !== undefined && (
           <div
@@ -201,6 +195,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
         </div>
       </div>
-    </>
   );
 }
