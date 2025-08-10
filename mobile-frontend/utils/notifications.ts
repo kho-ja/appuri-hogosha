@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 export type PushPermission =
   | 'granted'
@@ -61,25 +62,42 @@ export async function initPushNotifications(): Promise<PushInitResult> {
       });
     }
 
-    // 2️⃣ Request permissions with all options
-    const { status } = await Notifications.requestPermissionsAsync({
-      ios: {
-        allowAlert: true,
-        allowBadge: true,
-        allowSound: true,
-        allowDisplayInCarPlay: true,
-        allowCriticalAlerts: false, // Set to true if you need critical alerts
-        provideAppNotificationSettings: true,
-        allowProvisional: false,
-      },
-    });
+    // 2️⃣ Request permissions with proper iOS handling
+    const settings = await Notifications.getPermissionsAsync();
+    let status = settings.status;
 
     if (status !== 'granted') {
+      const request = await Notifications.requestPermissionsAsync({
+        ios: {
+          allowAlert: true,
+          allowBadge: true,
+          allowSound: true,
+          allowDisplayInCarPlay: true,
+          allowCriticalAlerts: false,
+          provideAppNotificationSettings: true,
+          allowProvisional: false,
+        },
+      });
+      status = request.status;
+    }
+
+    if (status !== 'granted') {
+      console.log('[Push] Notification permission not granted');
       return { status };
     }
 
-    // 3️⃣ Get the native device token
-    const { data: token } = await Notifications.getExpoPushTokenAsync();
+    // iOS: Reset badge count (recommended)
+    if (Platform.OS === 'ios') {
+      await Notifications.setBadgeCountAsync(0);
+    }
+
+    // 3️⃣ Get Expo push token with EAS project ID (CRITICAL for preview builds)
+    const projectId = Constants.easConfig?.projectId;
+    console.log('[Push] Using project ID:', projectId);
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync({
+      projectId,
+    });
     console.log('[Push] Device token →', token);
 
     return { status: 'granted', token };
@@ -89,18 +107,39 @@ export async function initPushNotifications(): Promise<PushInitResult> {
   }
 }
 
-// Enhanced notification handler with better Android support
+// Enhanced notification handler for iOS preview builds
 export function setupNotificationHandler() {
   Notifications.setNotificationHandler({
     handleNotification: async notification => {
+      console.log(
+        '[Push] Handling notification:',
+        notification.request.content.title
+      );
       return {
-        shouldShowAlert: false, // Deprecated but kept for compatibility
-        shouldShowBanner: true, // New property for banner notifications
-        shouldShowList: true, // New property for notification list
+        shouldShowAlert: true, // CRITICAL: Show alerts even when app is in foreground
+        shouldShowBanner: true,
+        shouldShowList: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
       };
     },
+  });
+
+  // Add listener to log received notifications for debugging
+  Notifications.addNotificationReceivedListener(notification => {
+    console.log('[Push] ✅ Notification received:', {
+      title: notification.request.content.title,
+      body: notification.request.content.body,
+      data: notification.request.content.data,
+    });
+  });
+
+  // Add listener for notification response (when user taps)
+  Notifications.addNotificationResponseReceivedListener(response => {
+    console.log('[Push] 👆 Notification tapped:', {
+      title: response.notification.request.content.title,
+      data: response.notification.request.content.data,
+    });
   });
 }
 

@@ -70,6 +70,11 @@ module.exports = ({ config }) => {
         UIViewControllerBasedStatusBarAppearance: false,
       },
       associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
+      // CRITICAL: Add push notification entitlements for iOS preview builds
+      entitlements: {
+        'aps-environment':
+          variant === 'production' ? 'production' : 'development',
+      },
     },
     android: {
       adaptiveIcon: {

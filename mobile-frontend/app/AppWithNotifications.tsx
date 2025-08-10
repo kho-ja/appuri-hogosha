@@ -5,6 +5,7 @@ import { SessionProvider, useSession } from '@/contexts/auth-context';
 import {
   sendPushTokenToBackend,
   initPushNotifications,
+  setupNotificationHandler,
 } from '@/utils/notifications';
 import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
@@ -112,6 +113,9 @@ const AppWithNotifications: React.FC = () => {
 
   // Initialize push notifications once
   React.useEffect(() => {
+    // Set up notification handler FIRST (critical for iOS foreground notifications)
+    setupNotificationHandler();
+
     (async () => {
       const result = await initPushNotifications();
 
