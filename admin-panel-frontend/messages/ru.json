@@ -382,7 +382,8 @@
     "adminDeleted": "Администратор удален",
     "createFromCSV": "Создать из CSV",
     "createFromKintone": "Создать из Kintone",
-    "Invalid phone number": "Неверный номер телефона"
+    "Invalid phone number": "Неверный номер телефона",
+    "Email is too long": "Email слишком длинный"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",

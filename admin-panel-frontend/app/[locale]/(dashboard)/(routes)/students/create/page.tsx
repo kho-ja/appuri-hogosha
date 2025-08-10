@@ -30,7 +30,10 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
-    email: z.string().email(),
+     email: z
+      .string()
+      .email()
+      .max(64, { message: t("Email is too long") }),
     phone_number: z
       .string()
       .min(10)
