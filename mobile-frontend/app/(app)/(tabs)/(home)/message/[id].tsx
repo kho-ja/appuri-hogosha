@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   ToastAndroid,
   Image,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
@@ -27,6 +29,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
 import { DateTime } from 'luxon';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 
 const styles = StyleSheet.create({
   container: {
@@ -90,9 +94,26 @@ const styles = StyleSheet.create({
   imageContainer: {
     marginVertical: 15,
   },
+  imageItem: {
+    position: 'relative',
+  },
   imageWrapper: {
     borderRadius: 12,
     overflow: 'hidden',
+    position: 'relative',
+  },
+  downloadButton: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1.3,
+    backgroundColor: '#007AFF',
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -102,6 +123,7 @@ export default function DetailsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [zoomVisible, setZoomVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [downloading, setDownloading] = useState<Record<number, boolean>>({});
 
   const { id } = useLocalSearchParams();
   const { language, i18n } = useContext(I18nContext);
@@ -115,6 +137,58 @@ export default function DetailsScreen() {
 
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const imageUrl = process.env.EXPO_PUBLIC_S3_BASE_URL;
+
+  // Define hooks before any early returns
+  const handleDownload = useCallback(
+    async (idx: number, filename: string) => {
+      try {
+        setDownloading(prev => ({ ...prev, [idx]: true }));
+
+        // Permissions
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+          const msg =
+            'Permission to access media library is required to save images.';
+          if (Platform.OS === 'android') {
+            ToastAndroid.show(msg, ToastAndroid.SHORT);
+          } else {
+            Alert.alert('Permission required', msg);
+          }
+          return;
+        }
+
+        const url = `${imageUrl}/${filename}`;
+        const fileNamePart =
+          filename.split('/').pop() || `image_${Date.now()}.jpg`;
+        const fileUri = FileSystem.cacheDirectory + fileNamePart;
+
+        const downloadRes = await FileSystem.downloadAsync(url, fileUri);
+        if (downloadRes.status !== 200) {
+          throw new Error(`Download failed with status ${downloadRes.status}`);
+        }
+
+        await MediaLibrary.saveToLibraryAsync(downloadRes.uri);
+
+        const successMsg = 'Image saved to gallery.';
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(successMsg, ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Saved', successMsg);
+        }
+      } catch (e) {
+        console.error('Download error:', e);
+        const errMsg = 'Failed to save image.';
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(errMsg, ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Error', errMsg);
+        }
+      } finally {
+        setDownloading(prev => ({ ...prev, [idx]: false }));
+      }
+    },
+    [imageUrl]
+  );
 
   const markMessageAsRead = useCallback(
     async (messageId: number, studentId: number) => {
@@ -392,7 +466,7 @@ export default function DetailsScreen() {
       {imageArray.length > 0 && (
         <View style={styles.imageContainer}>
           {imageArray.map((filename, idx) => (
-            <View key={idx}>
+            <View key={idx} style={styles.imageItem}>
               <TouchableOpacity
                 onPress={() => {
                   setCurrentImageIndex(idx);
@@ -407,6 +481,20 @@ export default function DetailsScreen() {
                   />
                 </View>
               </TouchableOpacity>
+
+              <Pressable
+                style={styles.downloadButton}
+                onPress={() => handleDownload(idx, filename)}
+                disabled={!!downloading[idx]}
+                accessibilityLabel='Download image'
+                hitSlop={10}
+              >
+                {downloading[idx] ? (
+                  <ActivityIndicator color='#fff' size='small' />
+                ) : (
+                  <Ionicons name='download-outline' size={24} color='#fff' />
+                )}
+              </Pressable>
             </View>
           ))}
         </View>

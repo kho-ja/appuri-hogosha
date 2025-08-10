@@ -68,6 +68,8 @@ module.exports = ({ config }) => {
         ITSAppUsesNonExemptEncryption: false,
         UIStatusBarStyle: 'UIStatusBarStyleLightContent',
         UIViewControllerBasedStatusBarAppearance: false,
+        NSPhotoLibraryAddUsageDescription:
+          'We need access to your photo library to save images to your gallery.',
       },
       associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
     },
@@ -119,6 +121,7 @@ module.exports = ({ config }) => {
       'expo-localization',
       'expo-sqlite',
       'expo-web-browser',
+      'expo-media-library',
     ],
     experiments: {},
     extra: {
