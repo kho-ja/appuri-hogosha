@@ -317,7 +317,7 @@ export default function SettingsScreen() {
                 style={{
                   marginTop: 18,
                   marginBottom: 18,
-                  fontSize: 16,
+                  fontSize: 18,
                   alignSelf: 'flex-start',
                 }}
               >
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     width: '100%',
     backgroundColor: 'transparent',
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 16,
   },
   selected: {
