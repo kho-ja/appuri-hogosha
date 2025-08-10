@@ -1,7 +1,7 @@
 "use client";
 
 import Parent from "@/types/parent";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ParentTable } from "@/components/ParentTable";
 import { useTranslations } from "next-intl";
@@ -46,11 +46,44 @@ export default function EditParents({
 
   if (isError) return <NotFound />;
 
+  const handleSetParents = useCallback<
+    React.Dispatch<React.SetStateAction<Parent[]>>
+  >(
+    (value) => {
+      if (typeof value === "function") {
+        setSelectedParents((prev) => {
+          const newValue = (value as (prevState: Parent[]) => Parent[])(prev);
+          if (newValue.length <= 2) {
+            return newValue;
+          } else {
+            toast({
+              title: t("Too many parents"),
+              description: t("You can select up to 2 parents only."),
+              variant: "destructive",
+            });
+            return prev;
+          }
+        });
+      } else {
+        if (value.length <= 2) {
+          setSelectedParents(value);
+        } else {
+          toast({
+            title: t("Too many parents"),
+            description: t("You can select up to 2 parents only."),
+            variant: "destructive",
+          });
+        }
+      }
+    },
+    [t]
+  );
+
   return (
     <div>
       <PageHeader title={t("editStudentParents")}>
         <BackButton href={`/students/${studentId}`} />
-      </PageHeader> 
+      </PageHeader>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -62,7 +95,7 @@ export default function EditParents({
       >
         <ParentTable
           selectedParents={selectedParents}
-          setSelectedParents={setSelectedParents}
+          setSelectedParents={handleSetParents}
         />
         <Button isLoading={isPending || isLoading}>{t("Submit")}</Button>
       </form>

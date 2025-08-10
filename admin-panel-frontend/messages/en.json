@@ -386,7 +386,9 @@
     "How to create from CSV": "How to create from CSV",
     "createFromCSV": "Create students from CSV",
     "createFromKintone": "Create students from Kintone",
-    "Invalid phone number": "Invalid phone number"
+    "Invalid phone number": "Invalid phone number",
+    "Too many parents": "Too many parents",
+    "You can select up to 2 parents only": "You can select up to 2 parents only"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
