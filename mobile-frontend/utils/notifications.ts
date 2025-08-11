@@ -92,7 +92,9 @@ export async function initPushNotifications(): Promise<PushInitResult> {
     }
 
     // 3️⃣ Get Expo push token with EAS project ID (CRITICAL for preview builds)
-    const projectId = Constants.easConfig?.projectId;
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ??
+      Constants?.easConfig?.projectId;
     console.log('[Push] Using project ID:', projectId);
 
     const { data: token } = await Notifications.getExpoPushTokenAsync({
