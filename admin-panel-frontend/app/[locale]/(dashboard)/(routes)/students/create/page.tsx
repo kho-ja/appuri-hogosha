@@ -33,7 +33,7 @@ const GetFormSchema = (t: (key: string) => string) => {
      email: z
       .string()
       .email()
-      .max(254, { message: t("Email is too long") }),
+      .max(254, { message: t("Email is too long") }), // RFC 5321 specifies a maximum email address length of 254 characters.
     phone_number: z
       .string()
       .min(10)
