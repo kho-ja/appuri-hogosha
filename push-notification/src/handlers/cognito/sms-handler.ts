@@ -29,8 +29,8 @@ export class CognitoHandler {
             const routing = getUzbekistanOperatorRouting(phoneNumber);
 
             if (!routing.isUzbekistan) {
-                console.log(`🌍 International number detected (${phoneNumber.slice(0, 4)}***), letting Cognito handle it`);
-                return event; // Let Cognito handle international numbers
+                console.log(`🌍 International number detected (${phoneNumber.slice(0, 4)}***), routing via AWS`);
+                return await this.handleInternationalNumber(event, phoneNumber);
             }
 
             console.log(`🇺🇿 Uzbekistan number detected: ${routing.operator}`);
@@ -47,6 +47,78 @@ export class CognitoHandler {
             console.error('❌ Cognito SMS handler error:', error);
             console.warn('⚠️ Falling back to Cognito due to handler error');
             return event; // Let Cognito handle on any error
+        }
+    }
+
+    private async handleInternationalNumber(
+        event: CognitoEvent,
+        phoneNumber: string
+    ): Promise<CognitoEvent> {
+        console.log(`🌍 Processing international number via AWS SMS`);
+
+        try {
+            let message: string;
+
+            // Handle CustomSMSSender triggers (with encrypted codes)
+            if (event.triggerSource.startsWith('CustomSMSSender_')) {
+                const encryptedCode = event.request.code;
+                if (!encryptedCode) {
+                    throw new Error('No encrypted code provided in CustomSMSSender event');
+                }
+
+                console.log(`🔓 Decrypting code for international SMS...`);
+                const decryptedCode = await this.kmsService.decryptCode(encryptedCode);
+
+                // Try to get template from Cognito User Pool
+                const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
+
+                if (template) {
+                    const placeholders = this.buildPlaceholders(event, decryptedCode);
+                    message = this.templateService.processTemplate(template, placeholders);
+                    console.log(`📋 Using Cognito template for international SMS`);
+                } else {
+                    message = this.buildFallbackMessage(event, decryptedCode);
+                    console.log(`📱 Using fallback message for international SMS`);
+                }
+            } else {
+                // Handle other triggers using templates or prepared messages
+                const template = await this.templateService.getTemplate(event.triggerSource, 'sms');
+
+                if (template) {
+                    const placeholders = this.buildPlaceholders(event);
+                    message = this.templateService.processTemplate(template, placeholders);
+                    console.log(`📋 Using Cognito template for international SMS`);
+                } else if (event.response?.smsMessage) {
+                    message = event.response.smsMessage;
+                    console.log(`📱 Using Cognito prepared message for international SMS`);
+                } else {
+                    console.warn('⚠️ No message template or prepared message found for international SMS');
+                    return event; // Let Cognito handle if no message available
+                }
+            }
+
+            // Send via AWS SMS
+            console.log(`📤 Sending international SMS via AWS to ${phoneNumber.slice(0, 4)}***`);
+            const success = await this.awsSmsService.sendSms(phoneNumber, message);
+
+            if (success) {
+                // Suppress Cognito's SMS since we sent our own
+                if (!event.response) {
+                    event.response = {};
+                }
+                event.response.smsMessage = '';
+                console.log('✅ International SMS sent successfully via AWS');
+            } else {
+                console.warn('⚠️ AWS international SMS failed, letting Cognito handle SMS');
+                // Don't modify event.response - let Cognito send it as fallback
+            }
+
+            return event;
+
+        } catch (error) {
+            console.error('❌ International SMS processing failed:', error);
+            console.warn('⚠️ Falling back to Cognito for international SMS');
+            return event; // Let Cognito handle on error
         }
     }
 
