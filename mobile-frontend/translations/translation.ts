@@ -865,6 +865,10 @@ export default {
     /*message detail*/
     detailedView: 'Подробный просмотр',
     /*message detail*/
+
+    /*download*/
+    download: 'Скачать',
+    /*download*/
   },
 };
 
