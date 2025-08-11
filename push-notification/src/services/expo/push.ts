@@ -39,13 +39,13 @@ export class ExpoPushService {
             const title = getLocalizedText(post.language, 'title', post);
             const body = getLocalizedText(post.language, 'body', post);
 
-            // Construct the push message
+            // Construct the push message (iOS-compatible, no Android-only fields)
             const message: ExpoPushMessage = {
                 to: post.arn,
                 title: title,
                 body: body,
                 data: {
-                    url: `jduapp://(tabs)/(home)/message/${post.id}`, // TODO: Implement deep linking for every other variant of app
+                    url: `jduapp://(tabs)/(home)/message/${post.id}`,
                     post_id: post.id.toString(),
                     priority: post.priority,
                     student_name: `${post.given_name} ${post.family_name}`,
@@ -54,11 +54,12 @@ export class ExpoPushService {
                 priority: 'high',
                 sound: 'default',
                 badge: 1,
-                channelId: 'default', // For Android notification channels
+                // Remove channelId - Android-only field that can cause iOS issues
+                // channelId: 'default', 
                 categoryId: 'message', // For iOS notification categories
                 ttl: 86400, // Time to live in seconds (24 hours)
                 mutableContent: true, // Allow content modifications on iOS
-                _contentAvailable: true, // Wake up the app in background on iOS
+                // _contentAvailable: true, // Can cause issues with visible notifications
             };
 
             console.log(`📱 Sending Expo push notification for post ${post.id}`);
