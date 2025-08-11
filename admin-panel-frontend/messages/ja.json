@@ -382,7 +382,8 @@
     "StudentEdited": "学生が正常に編集されました",
     "createFromCSV": "CSVから作成する ",
     "createFromKintone": "Kintoneから作成する ",
-    "Invalid phone number": "無効な電話番号"
+    "Invalid phone number": "無効な電話番号",
+    "Email is too long": "メールアドレスが長すぎます"
   },
   "EditParent": {
     "EditParent": "保護者を編集",

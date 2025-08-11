@@ -385,7 +385,8 @@
     "StudentEdited": "Talaba muvaffaqiyatli tahrirlandi",
     "createFromCSV": "CSV dan yaratish",
     "createFromKintone": "Kintone orqali yaratish",
-    "Invalid phone number": "Noto'g'ri telefon raqami"
+    "Invalid phone number": "Noto'g'ri telefon raqami",
+    "Email is too long": "Email juda uzun"
   },
   "EditParent": {
     "EditParent": "Vasiy tahrirlash",
