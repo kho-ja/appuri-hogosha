@@ -12,12 +12,6 @@ type CardData = {
 };
 
 const cardData: CardData[] = [
-  // {
-  //   id: 6,
-  //   title: "Forms",
-  //   description: "click here to view forms",
-  //   href: "/forms",
-  // },
   {
     id: 1,
     title: "Messages",
@@ -59,9 +53,12 @@ export default function DashboardPage() {
         <h1 className="text-3xl w-2/4 font-bold">{t("Dashboard")}</h1>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 2xl:grid-cols-6">
-        {cardData.map((data, index) => (
-          <Link key={index} href={data.href} passHref>
-            <Card className="w-full h-full">
+        {cardData.map((data) => (
+          <Card key={data.id} className="w-full h-full rounded">
+            <Link
+              href={data.href}
+              className="block w-full h-full transition-colors duration-300 hover:shadow-lg hover:bg-muted rounded focus:shadow-lg focus:bg-muted focus:ring-2 focus:ring-primary outline-none"
+            >
               <CardHeader className="p-3">
                 <CardTitle className="text-3xl font-medium break-words">
                   {t(data.title)}
@@ -72,8 +69,8 @@ export default function DashboardPage() {
                   {t(data.description)}
                 </p>
               </CardFooter>
-            </Card>
-          </Link>
+            </Link>
+          </Card>
         ))}
       </div>
     </div>
