@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/navigation";
 
@@ -12,12 +13,6 @@ type CardData = {
 };
 
 const cardData: CardData[] = [
-  // {
-  //   id: 6,
-  //   title: "Forms",
-  //   description: "click here to view forms",
-  //   href: "/forms",
-  // },
   {
     id: 1,
     title: "Messages",
@@ -52,6 +47,7 @@ const cardData: CardData[] = [
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
+  const [focusedCard, setFocusedCard] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -60,9 +56,19 @@ export default function DashboardPage() {
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 2xl:grid-cols-6">
         {cardData.map((data, index) => (
-          <Link key={index} href={data.href} passHref>
-           <Card className="w-full h-full transition-colors duration-300 hover:shadow-lg hover:bg-muted focus:shadow-lg focus:bg-muted">
-
+          <Link 
+            key={index} 
+            href={data.href} 
+            passHref
+            onFocus={() => setFocusedCard(index)}
+            onBlur={() => setFocusedCard(null)}
+            className="focus:outline-none"
+          >
+           <Card 
+             className={`w-full h-full transition-colors duration-300 hover:shadow-lg hover:bg-muted ${
+               focusedCard === index ? 'shadow-lg bg-muted ring-2 ring-primary' : ''
+             }`}
+           >
               <CardHeader className="p-3">
                 <CardTitle className="text-3xl font-medium break-words">
                   {t(data.title)}
