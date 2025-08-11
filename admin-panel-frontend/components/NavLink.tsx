@@ -15,9 +15,17 @@ interface NavLinkProps {
   onLinkClick?: () => void;
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, onLinkClick }) => {
+const NavLink: React.FC<NavLinkProps> = ({
+  href,
+  Icon,
+  name,
+  isMenuOpen,
+  badge,
+  onLinkClick,
+}) => {
   const pathname = usePathname();
   const { data: session } = useSession();
+
   const { data: notificationCount } = useQuery<number>({
     queryKey: ["FormsCount", name],
     queryFn: async () => {
@@ -43,31 +51,47 @@ const NavLink: React.FC<NavLinkProps> = ({ href, Icon, name, isMenuOpen, badge, 
 
   return (
     <Link
-  href={href}
-  className={`flex items-center rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary
-    ${pathname.startsWith(href) ? "bg-muted text-primary" : ""}
-    ${isMenuOpen ? "justify-start gap-3" : "justify-center"}
-  `}
-  onClick={onLinkClick}
->
-  <Icon className="h-4 w-4" />
+      href={href}
+      className={`
+        flex items-center rounded-lg px-3 py-2 text-muted-foreground 
+        transition-all duration-200 hover:text-primary hover:bg-muted/50
+        ${pathname.startsWith(href) ? "bg-muted text-primary shadow-sm" : ""}
+        justify-start gap-3 group relative overflow-hidden
+      `}
+      onClick={onLinkClick}
+    >
+      <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" />
 
-  <span
-    className={`
-      transition-all duration-200 overflow-hidden whitespace-nowrap
-      ${isMenuOpen ? "opacity-100 ml-0 w-auto" : "opacity-0 w-0"}
-    `}
-  >
-    {name}
-  </span>
+      <span
+        className={`
+        whitespace-nowrap transition-all duration-300 ease-in-out
+        ${
+          isMenuOpen
+            ? "opacity-100 translate-x-0 max-w-[200px]"
+            : "opacity-0 translate-x-2 max-w-0"
+        }
+      `}
+      >
+        {name}
+      </span>
 
-  {!!notificationCount && isMenuOpen && (
-    <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-      {notificationCount}
-    </Badge>
-  )}
-</Link>
-
+      <div
+        className={`
+        ml-auto transition-all duration-300 ease-in-out
+        ${
+          isMenuOpen && !!notificationCount
+            ? "opacity-100 scale-100 translate-x-0"
+            : "opacity-0 scale-75 translate-x-4"
+        }
+      `}
+      >
+        {!!notificationCount && (
+          <Badge className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs animate-pulse">
+            {notificationCount > 99 ? "99+" : notificationCount}
+          </Badge>
+        )}
+      </div>
+    </Link>
   );
 };
 
