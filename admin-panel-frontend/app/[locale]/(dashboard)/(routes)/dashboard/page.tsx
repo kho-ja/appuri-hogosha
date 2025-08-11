@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/navigation";
 
@@ -47,7 +46,6 @@ const cardData: CardData[] = [
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
-  const [focusedCard, setFocusedCard] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -55,20 +53,12 @@ export default function DashboardPage() {
         <h1 className="text-3xl w-2/4 font-bold">{t("Dashboard")}</h1>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 2xl:grid-cols-6">
-        {cardData.map((data, index) => (
-          <Link 
-            key={index} 
-            href={data.href} 
-            passHref
-            onFocus={() => setFocusedCard(index)}
-            onBlur={() => setFocusedCard(null)}
-            className="focus:outline-none"
-          >
-           <Card 
-             className={`w-full h-full transition-colors duration-300 hover:shadow-lg hover:bg-muted ${
-               focusedCard === index ? 'shadow-lg bg-muted ring-2 ring-primary' : ''
-             }`}
-           >
+        {cardData.map((data) => (
+          <Card key={data.id} className="w-full h-full rounded">
+            <Link
+              href={data.href}
+              className="block w-full h-full transition-colors duration-300 hover:shadow-lg hover:bg-muted rounded focus:shadow-lg focus:bg-muted focus:ring-2 focus:ring-primary outline-none"
+            >
               <CardHeader className="p-3">
                 <CardTitle className="text-3xl font-medium break-words">
                   {t(data.title)}
@@ -79,8 +69,8 @@ export default function DashboardPage() {
                   {t(data.description)}
                 </p>
               </CardFooter>
-            </Card>
-          </Link>
+            </Link>
+          </Card>
         ))}
       </div>
     </div>
