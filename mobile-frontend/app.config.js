@@ -88,6 +88,12 @@ module.exports = ({ config }) => {
       navigationBar: {
         visible: false,
       },
+      permissions: [
+        'WRITE_EXTERNAL_STORAGE',
+        'READ_EXTERNAL_STORAGE',
+        'READ_MEDIA_IMAGES',
+        'WRITE_MEDIA_STORAGE',
+      ],
       intentFilters: [
         {
           autoVerify: true,
@@ -121,7 +127,16 @@ module.exports = ({ config }) => {
       'expo-localization',
       'expo-sqlite',
       'expo-web-browser',
-      'expo-media-library',
+      [
+        'expo-media-library',
+        {
+          photosPermission:
+            'We need access to your photo library to save images to your gallery.',
+          savePhotosPermission:
+            'We need access to your photo library to save images to your gallery.',
+          isAccessMediaLocationEnabled: true,
+        },
+      ],
     ],
     experiments: {},
     extra: {

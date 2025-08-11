@@ -21,26 +21,44 @@ export default function ZoomGallery({
   images,
   initialIndex = 0,
   onRequestClose,
-  albumName = 'Downloads',
 }: Props) {
   const [index, setIndex] = useState(initialIndex);
   const current = useMemo(() => images[index]?.uri ?? '', [images, index]);
   const { language, i18n } = useContext(I18nContext);
 
   const saveToLibrary = useCallback(async (localUri: string) => {
-    const { status, canAskAgain } =
-      await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      if (canAskAgain) {
-        const retry = await MediaLibrary.requestPermissionsAsync();
-        if (retry.status !== 'granted') throw new Error('Permission denied');
-      } else {
-        throw new Error('Permission denied');
-      }
-    }
+    // For Android 13+ (API 33+), we need different permissions
+    try {
+      const { status, canAskAgain } =
+        await MediaLibrary.requestPermissionsAsync();
 
-    // Просто сохраняем в галерею без создания альбома
-    await MediaLibrary.saveToLibraryAsync(localUri);
+      if (status !== 'granted') {
+        if (canAskAgain) {
+          const retry = await MediaLibrary.requestPermissionsAsync();
+          if (retry.status !== 'granted') {
+            throw new Error(
+              'Permission denied. Please enable photo access in Settings.'
+            );
+          }
+        } else {
+          throw new Error(
+            'Permission denied. Please enable photo access in Settings.'
+          );
+        }
+      }
+
+      // save to library
+      await MediaLibrary.saveToLibraryAsync(localUri);
+    } catch (error: any) {
+      // If MediaLibrary fails, try alternative approach for Android
+      if (Platform.OS === 'android') {
+        console.warn('MediaLibrary failed, trying FileSystem approach:', error);
+        throw new Error(
+          'Unable to save image. This may be due to Android permission restrictions in development builds. Please try a production build.'
+        );
+      }
+      throw error;
+    }
   }, []);
 
   const downloadCurrent = useCallback(async () => {
@@ -62,21 +80,35 @@ export default function ZoomGallery({
       const filename = `image-${Date.now()}.jpg`;
       const localPath = (FileSystem.cacheDirectory || '') + filename;
 
-      // Правильный синтаксис для FileSystem.downloadAsync
+      // Download the image
       const downloadResult = await FileSystem.downloadAsync(
         current,
         localPath,
         {}
       );
+
+      // Save to gallery
       await saveToLibrary(downloadResult.uri);
 
       Alert.alert('Saved', 'Image saved to your Photos.');
     } catch (err: any) {
       console.error('Download error:', err);
-      Alert.alert(
-        'Download failed',
-        err?.message || 'Could not save the image.'
-      );
+
+      // More specific error messages
+      let errorMessage = 'Could not save the image.';
+
+      if (err?.message?.includes('Permission denied')) {
+        errorMessage =
+          'Permission denied. Please allow photo access in your device settings.';
+      } else if (err?.message?.includes('development builds')) {
+        errorMessage =
+          'Unable to save in development build. Try a production build or check permissions.';
+      } else if (Platform.OS === 'android') {
+        errorMessage =
+          'Unable to save image. Please ensure photo permissions are granted in Settings.';
+      }
+
+      Alert.alert('Download failed', errorMessage);
     }
   }, [current, saveToLibrary]);
 
@@ -88,10 +120,9 @@ export default function ZoomGallery({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        paddingTop: 50, // отступ от status bar
+        paddingTop: 50,
       }}
     >
-      {/* Кнопка закрытия слева */}
       <TouchableOpacity
         onPress={onRequestClose}
         style={{
@@ -106,7 +137,6 @@ export default function ZoomGallery({
         <Ionicons name='close' size={24} color='#fff' />
       </TouchableOpacity>
 
-      {/* Кнопка Download справа */}
       <TouchableOpacity
         onPress={downloadCurrent}
         style={{
