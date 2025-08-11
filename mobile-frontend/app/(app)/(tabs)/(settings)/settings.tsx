@@ -100,7 +100,7 @@ const LanguageSelection: React.FC<
     >
       <View style={styles.row}>
         <ThemedText style={styles.flag}>{flag}</ThemedText>
-        <ThemedText>{language}</ThemedText>
+        <ThemedText style={{ fontSize: 16 }}>{language}</ThemedText>
       </View>
       <RadioCircle selected={selected} />
     </TouchableOpacity>
@@ -357,7 +357,6 @@ export default function SettingsScreen() {
             )}
           >
             <ThemedView style={styles.contentContainer}>
-              <ThemedView style={styles.row}></ThemedView>
               <ThemedView style={styles.fontSizeContainer}>
                 <View style={styles.sliderWithLabels}>
                   <ThemedText
@@ -521,7 +520,7 @@ const styles = StyleSheet.create({
   },
   // Font Size Sheet styles
   fontSizeContainer: {
-    paddingVertical: 20,
+    paddingVertical: 45,
   },
   sliderWithLabels: {
     flexDirection: 'row',
