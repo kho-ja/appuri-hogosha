@@ -87,7 +87,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </span>
               </Link>
             </div>
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
+            <div className="flex-1 overflow-y-auto">
               <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-1">
                 <NavLinks user={user} isMenuOpen={isMenuOpen} />
               </nav>
