@@ -1000,7 +1000,7 @@ class StudentController implements IController {
             }
             if (parents && Array.isArray(parents)) {
                 if (parents.length > 5) {
-                    throw { status: 400, message: 'maximum_5_parents_allowed' };
+                    throw { status: 400, message: 'student_cant_attach_more_than_5_parents' };
                 }
             }
 
