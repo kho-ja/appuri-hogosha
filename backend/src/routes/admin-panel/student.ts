@@ -489,6 +489,18 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const { parents } = req.body
+             if (!parents || !Array.isArray(parents)) {
+                throw {
+                    status: 401,
+                    message: 'invalid_or_missing_parents'
+                }
+            }   
+            if (parents.length > 5) {
+                throw {
+                    status: 400,
+                    message: 'student_cant_attach_more_than_5_parents'
+                }
+            }
             if (parents && Array.isArray(parents) && isValidArrayId(parents)) {
                 const existingParents = await DB.query(`SELECT parent_id
                     FROM StudentParent
@@ -984,6 +996,11 @@ class StudentController implements IController {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_student_number'
+                }
+            }
+            if (parents && Array.isArray(parents)) {
+                if (parents.length > 5) {
+                    throw { status: 400, message: 'maximum_5_parents_allowed' };
                 }
             }
 
