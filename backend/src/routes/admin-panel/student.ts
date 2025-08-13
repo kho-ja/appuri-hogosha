@@ -491,7 +491,7 @@ class StudentController implements IController {
             const { parents } = req.body
              if (!parents || !Array.isArray(parents)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_parents'
                 }
             }   
@@ -501,7 +501,7 @@ class StudentController implements IController {
                     message: 'student_cant_attach_more_than_5_parents'
                 }
             }
-            if (parents && Array.isArray(parents) && isValidArrayId(parents)) {
+            if (isValidArrayId(parents)) {
                 const existingParents = await DB.query(`SELECT parent_id
                     FROM StudentParent
                     WHERE student_id = :student_id;`, {
