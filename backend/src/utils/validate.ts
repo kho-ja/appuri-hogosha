@@ -17,7 +17,7 @@ export function isValidPhoneNumber(phone_number: string): boolean {
 export function isValidString(name: string): boolean {
     return typeof name === 'string' &&
         name.trim().length > 0 &&
-        name.length <= 100; // Prevent excessively long strings
+        name.length <= 5000; // Prevent excessively long strings
 }
 
 export function isValidStudentNumber(student_number: string): boolean {
