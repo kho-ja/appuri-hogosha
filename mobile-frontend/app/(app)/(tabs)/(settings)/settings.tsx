@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from 'react';
 import {
   Alert,
@@ -31,6 +32,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { useFontSize } from '@/contexts/FontSizeContext';
 
 const languageData = [
   {
@@ -127,6 +129,15 @@ export default function SettingsScreen() {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
+
+  const { multiplier } = useFontSize();
+  const dynamicFontSizeSnapPoints = useMemo(() => {
+    if (multiplier >= 2.0) {
+      return ['50%', '55%'];
+    } else {
+      return ['40%', '50%'];
+    }
+  }, [multiplier]);
 
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
@@ -340,7 +351,7 @@ export default function SettingsScreen() {
           <BottomSheetModal
             ref={fontSizeBottomSheetRef}
             index={1}
-            snapPoints={snapPoints}
+            snapPoints={dynamicFontSizeSnapPoints}
             backgroundStyle={{ backgroundColor: '#eee' }}
             onDismiss={() => setIsOpen(false)}
             backdropComponent={() => (
@@ -357,6 +368,7 @@ export default function SettingsScreen() {
             )}
           >
             <ThemedView style={styles.contentContainer}>
+              <ThemedView style={styles.row}></ThemedView>
               <ThemedView style={styles.fontSizeContainer}>
                 <View style={styles.sliderWithLabels}>
                   <ThemedText
@@ -520,7 +532,7 @@ const styles = StyleSheet.create({
   },
   // Font Size Sheet styles
   fontSizeContainer: {
-    paddingVertical: 45,
+    paddingVertical: 20,
   },
   sliderWithLabels: {
     flexDirection: 'row',
