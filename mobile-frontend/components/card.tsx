@@ -104,6 +104,9 @@ const Card = ({
     zone: 'utc',
   });
   const localDateTime = utcDateTime.setZone(userTimeZone);
+  
+  const baseIconSize = 16;
+  const iconSize = Math.round(baseIconSize * Math.max(1, multiplier));
 
   return (
     <Pressable onPress={handlePress}>
@@ -212,7 +215,7 @@ const Card = ({
             </ThemedText>
             <Ionicons
               name='chevron-forward'
-              size={16}
+              size={iconSize}
               color={theme.mode === 'dark' ? '#0A84FF' : '#2089dc'}
               style={{ marginLeft: 4, opacity: 1 }}
             />
@@ -277,6 +280,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
+    marginLeft: 'auto',
   },
   bottomRow: {
     flexDirection: 'row',
@@ -284,10 +288,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 5,
     gap: 10,
-  },
-  dateContainer: {
-    marginTop: 5,
-    alignItems: 'flex-end',
+    flexWrap: 'wrap',
   },
   readMoreText: {
     fontWeight: '600',

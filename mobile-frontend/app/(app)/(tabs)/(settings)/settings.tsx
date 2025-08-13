@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from 'react';
 import {
   Alert,
@@ -31,6 +32,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
+import { useFontSize } from '@/contexts/FontSizeContext';
 
 const languageData = [
   {
@@ -100,7 +102,7 @@ const LanguageSelection: React.FC<
     >
       <View style={styles.row}>
         <ThemedText style={styles.flag}>{flag}</ThemedText>
-        <ThemedText>{language}</ThemedText>
+        <ThemedText style={{ fontSize: 16 }}>{language}</ThemedText>
       </View>
       <RadioCircle selected={selected} />
     </TouchableOpacity>
@@ -127,6 +129,15 @@ export default function SettingsScreen() {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = ['40%', '50%'];
+
+  const { multiplier } = useFontSize();
+  const dynamicFontSizeSnapPoints = useMemo(() => {
+    if (multiplier >= 2.0) {
+      return ['50%', '55%'];
+    } else {
+      return ['40%', '50%'];
+    }
+  }, [multiplier]);
 
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
@@ -317,7 +328,7 @@ export default function SettingsScreen() {
                 style={{
                   marginTop: 18,
                   marginBottom: 18,
-                  fontSize: 16,
+                  fontSize: 18,
                   alignSelf: 'flex-start',
                 }}
               >
@@ -340,7 +351,7 @@ export default function SettingsScreen() {
           <BottomSheetModal
             ref={fontSizeBottomSheetRef}
             index={1}
-            snapPoints={snapPoints}
+            snapPoints={dynamicFontSizeSnapPoints}
             backgroundStyle={{ backgroundColor: '#eee' }}
             onDismiss={() => setIsOpen(false)}
             backdropComponent={() => (
@@ -468,7 +479,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     width: '100%',
     backgroundColor: 'transparent',
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 16,
   },
   selected: {
