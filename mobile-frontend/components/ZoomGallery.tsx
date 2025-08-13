@@ -26,40 +26,49 @@ export default function ZoomGallery({
   const current = useMemo(() => images[index]?.uri ?? '', [images, index]);
   const { language, i18n } = useContext(I18nContext);
 
-  const saveToLibrary = useCallback(async (localUri: string) => {
-    // For Android 13+ (API 33+), we need different permissions
-    try {
-      const { status, canAskAgain } =
-        await MediaLibrary.requestPermissionsAsync();
+  const saveToLibrary = useCallback(
+    async (localUri: string) => {
+      // For Android 13+ (API 33+), we need different permissions
+      try {
+        const { status, canAskAgain } =
+          await MediaLibrary.requestPermissionsAsync();
 
-      if (status !== 'granted') {
-        if (canAskAgain) {
-          const retry = await MediaLibrary.requestPermissionsAsync();
-          if (retry.status !== 'granted') {
+        if (status !== 'granted') {
+          if (canAskAgain) {
+            const retry = await MediaLibrary.requestPermissionsAsync();
+            if (retry.status !== 'granted') {
+              throw new Error(
+                i18n[language].permissionDenied ||
+                  'Permission denied. Please enable photo access in Settings.'
+              );
+            }
+          } else {
             throw new Error(
-              'Permission denied. Please enable photo access in Settings.'
+              i18n[language].permissionDenied ||
+                'Permission denied. Please enable photo access in Settings.'
             );
           }
-        } else {
+        }
+
+        // save to library
+        await MediaLibrary.saveToLibraryAsync(localUri);
+      } catch (error: any) {
+        // If MediaLibrary fails, try alternative approach for Android
+        if (Platform.OS === 'android') {
+          console.warn(
+            'MediaLibrary failed, trying FileSystem approach:',
+            error
+          );
           throw new Error(
-            'Permission denied. Please enable photo access in Settings.'
+            i18n[language].unableToSaveInDevelopment ||
+              'Unable to save image. This may be due to Android permission restrictions in development builds. Please try a production build.'
           );
         }
+        throw error;
       }
-
-      // save to library
-      await MediaLibrary.saveToLibraryAsync(localUri);
-    } catch (error: any) {
-      // If MediaLibrary fails, try alternative approach for Android
-      if (Platform.OS === 'android') {
-        console.warn('MediaLibrary failed, trying FileSystem approach:', error);
-        throw new Error(
-          'Unable to save image. This may be due to Android permission restrictions in development builds. Please try a production build.'
-        );
-      }
-      throw error;
-    }
-  }, []);
+    },
+    [i18n, language]
+  );
 
   const downloadCurrent = useCallback(async () => {
     try {
@@ -90,27 +99,37 @@ export default function ZoomGallery({
       // Save to gallery
       await saveToLibrary(downloadResult.uri);
 
-      Alert.alert('Saved', 'Image saved to your Photos.');
+      Alert.alert(
+        i18n[language].imageSaved || 'Saved',
+        i18n[language].imageSavedMessage || 'Image saved to your Photos.'
+      );
     } catch (err: any) {
       console.error('Download error:', err);
 
       // More specific error messages
-      let errorMessage = 'Could not save the image.';
+      let errorMessage =
+        i18n[language].downloadError || 'Could not save the image.';
 
       if (err?.message?.includes('Permission denied')) {
         errorMessage =
+          i18n[language].permissionDenied ||
           'Permission denied. Please allow photo access in your device settings.';
       } else if (err?.message?.includes('development builds')) {
         errorMessage =
+          i18n[language].unableToSaveInDevelopment ||
           'Unable to save in development build. Try a production build or check permissions.';
       } else if (Platform.OS === 'android') {
         errorMessage =
+          i18n[language].permissionDenied ||
           'Unable to save image. Please ensure photo permissions are granted in Settings.';
       }
 
-      Alert.alert('Download failed', errorMessage);
+      Alert.alert(
+        i18n[language].downloadFailedImage || 'Download failed',
+        errorMessage
+      );
     }
-  }, [current, saveToLibrary]);
+  }, [current, saveToLibrary, i18n, language]);
 
   const Header = (
     <View
