@@ -489,7 +489,7 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const { parents } = req.body
-             if (!parents || !Array.isArray(parents)) {
+            if (!parents && Array.isArray(parents) && isValidArrayId(parents)) {
                 throw {
                     status: 400,
                     message: 'invalid_or_missing_parents'
@@ -498,7 +498,7 @@ class StudentController implements IController {
             if (parents.length > 5) {
                 throw {
                     status: 400,
-                    message: 'student_cant_attach_more_than_5_parents'
+                    message: 'maximum_5_parents_allowed'
                 }
             }
             if (isValidArrayId(parents)) {
@@ -1000,7 +1000,7 @@ class StudentController implements IController {
             }
             if (parents && Array.isArray(parents)) {
                 if (parents.length > 5) {
-                    throw { status: 400, message: 'student_cant_attach_more_than_5_parents' };
+                    throw { status: 400, message: 'maximum_5_parents_allowed' };
                 }
             }
 

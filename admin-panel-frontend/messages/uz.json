@@ -875,7 +875,7 @@
     "group_not_found": "Guruh topilmadi",
     "invalid_or_missing_parent_id": "Noto‘g‘ri yoki mavjud bo‘lmagan ota-ona IDsi",
     "parent_cant_attach_more_than_5_students": "Ota-ona 5 tadan ortiq talabani biriktira olmaydi",
-    "student_cant_attach_more_than_5_parents": "Talaba 5 tadan ortiq ota-onani biriktira olmaydi",
+    "maximum_5_parents_allowed": "Maksimal 5 ota-ona ruxsat etiladi",
     "invalid_or_missing_students": "Noto‘g‘ri yoki mavjud bo‘lmagan talabalar",
     "invalid_or_missing_post_id": "Noto‘g‘ri yoki mavjud bo‘lmagan post ID",
     "post_not_found": "Post topilmadi",
