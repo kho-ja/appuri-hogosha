@@ -877,6 +877,7 @@
     "invalid_or_missing_parent_id": "Invalid or missing parent ID",
     "parent_not_found": "Parent not found",
     "parent_cant_attach_more_than_5_students": "Parent can't attach more than 5 students",
+    "maximum_5_parents_allowed": "Maximum 5 parents allowed",
     "invalid_or_missing_students": "Invalid or missing students",
     "invalid_or_missing_post_id": "Invalid or missing post id",
     "post_not_found": "Post not found",

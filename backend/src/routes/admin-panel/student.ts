@@ -490,6 +490,12 @@ class StudentController implements IController {
 
             const { parents } = req.body
             if (parents && Array.isArray(parents) && isValidArrayId(parents)) {
+                if (parents.length > 5) {
+                    throw {
+                        status: 400,
+                        message: 'maximum_5_parents_allowed'
+                    }
+                }
                 const existingParents = await DB.query(`SELECT parent_id
                     FROM StudentParent
                     WHERE student_id = :student_id;`, {
@@ -984,6 +990,11 @@ class StudentController implements IController {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_student_number'
+                }
+            }
+            if (parents && Array.isArray(parents)) {
+                if (parents.length > 5) {
+                    throw { status: 400, message: 'maximum_5_parents_allowed' };
                 }
             }
 

@@ -876,6 +876,7 @@
     "invalid_or_missing_parent_id": "無効または存在しない保護者ID",
     "parent_not_found": "保護者が見つかりません",
     "parent_cant_attach_more_than_5_students": "保護者は5人以上の学生を紐付けることはできません",
+    "maximum_5_students_allowed": "最大5人の学生が許可されています",
     "invalid_or_missing_students": "無効または存在しない学生",
     "invalid_or_missing_post_id": "無効または存在しない投稿ID",
     "post_not_found": "投稿が見つかりません",

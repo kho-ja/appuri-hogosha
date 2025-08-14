@@ -873,6 +873,7 @@
     "invalid_or_missing_parent_id": "Неверный или отсутствующий идентификатор родителя",
     "parent_not_found": "Родитель не найден",
     "parent_cant_attach_more_than_5_students": "Родитель не может привязать более 5 студентов",
+    "maximum_5_parents_allowed": "Максимум 5 родителей разрешено",
     "invalid_or_missing_students": "Неверные или отсутствующие студенты",
     "invalid_or_missing_post_id": "Неверный или отсутствующий идентификатор поста",
     "post_not_found": "Пост не найден",
