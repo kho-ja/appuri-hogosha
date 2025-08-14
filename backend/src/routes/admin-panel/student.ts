@@ -489,19 +489,13 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const { parents } = req.body
-            if (!parents || !Array.isArray(parents) || !isValidArrayId(parents)) {
-                throw {
-                    status: 400,
-                    message: 'invalid_or_missing_parents'
+            if (parents && Array.isArray(parents) && isValidArrayId(parents)) {
+                if (parents.length > 5) {
+                    throw {
+                        status: 400,
+                        message: 'maximum_5_parents_allowed'
+                    }
                 }
-            }   
-            if (parents.length > 5) {
-                throw {
-                    status: 400,
-                    message: 'maximum_5_parents_allowed'
-                }
-            }
-            if (isValidArrayId(parents)) {
                 const existingParents = await DB.query(`SELECT parent_id
                     FROM StudentParent
                     WHERE student_id = :student_id;`, {
