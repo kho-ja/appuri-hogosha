@@ -489,7 +489,7 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const { parents } = req.body
-            if (!parents && !Array.isArray(parents) && isValidArrayId(parents)) {
+            if (!parents && !Array.isArray(parents) && !isValidArrayId(parents)) {
                 throw {
                     status: 400,
                     message: 'invalid_or_missing_parents'
