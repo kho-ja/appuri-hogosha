@@ -34,11 +34,13 @@
     "expo-constants": "~17.1.7",
     "expo-dev-client": "~5.2.4",
     "expo-device": "~7.1.4",
+    "expo-file-system": "~17.0.1",
     "expo-font": "~13.3.2",
     "expo-image": "~2.4.0",
     "expo-insights": "~0.9.3",
     "expo-linking": "~7.1.7",
     "expo-localization": "~16.1.6",
+    "expo-media-library": "~16.0.4",
     "expo-notifications": "~0.31.4",
     "expo-router": "~5.1.4",
     "expo-splash-screen": "~0.30.10",
@@ -54,7 +56,7 @@
     "react-native": "0.79.5",
     "react-native-autolink": "^4.2.0",
     "react-native-gesture-handler": "~2.24.0",
-    "react-native-image-zoom-viewer": "^3.0.1",
+    "react-native-image-viewing": "^0.2.2",
     "react-native-international-phone-number": "^0.9.3",
     "react-native-mmkv": "^2.12.2",
     "react-native-modal": "^13.0.1",
@@ -98,8 +100,7 @@
       "reactNativeDirectoryCheck": {
         "exclude": [
           "@rneui/base",
-          "@rneui/themed",
-          "react-native-image-zoom-viewer"
+          "@rneui/themed"
         ],
         "listUnknownPackages": false
       }

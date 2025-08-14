@@ -221,6 +221,17 @@ export default {
     checking: 'Checking...',
     updateFailed: 'Update Failed',
     manualUpdateComplete: 'Manual update complete. Restart to apply?',
+    /*update alerts*/
+
+    /*image alerts*/
+    imageSaved: 'Saved',
+    imageSavedMessage: 'Image saved to your Photos.',
+    downloadFailedImage: 'Download failed',
+    unableToSaveInDevelopment:
+      'Unable to save in development build. Try a production build or check permissions.',
+    permissionDenied: 'Permission denied to access photo library.',
+    downloadError: 'Failed to download image.',
+    /*image alerts*/
   },
   ja: {
     /*sign in page*/
@@ -444,6 +455,16 @@ export default {
     manualUpdateComplete:
       '手動アップデート完了。適用するために再起動しますか？',
     /*update alerts*/
+
+    /*image alerts*/
+    imageSaved: '保存完了',
+    imageSavedMessage: '画像がフォトライブラリに保存されました。',
+    downloadFailedImage: 'ダウンロード失敗',
+    unableToSaveInDevelopment:
+      '開発ビルドでは保存できません。本番ビルドを試すか、権限を確認してください。',
+    permissionDenied: 'フォトライブラリへのアクセス権限が拒否されました。',
+    downloadError: '画像のダウンロードに失敗しました。',
+    /*image alerts*/
   },
   uz: {
     /*sign in page*/
@@ -667,6 +688,16 @@ export default {
     manualUpdateComplete:
       "Qo'lda yangilanish tugallandi. Qo'llash uchun qayta ishga tushirasizmi?",
     /*update alerts*/
+
+    /*image alerts*/
+    imageSaved: 'Saqlandi',
+    imageSavedMessage: 'Rasm gallereyaga saqlandi.',
+    downloadFailedImage: 'Yuklab olish muvaffaqiyatsiz',
+    unableToSaveInDevelopment:
+      "Development buildda saqlab bo'lmaydi. Production buildni sinab ko'ring yoki ruxsatlarni tekshiring.",
+    permissionDenied: 'Foto kutubxonasiga kirish ruxsati berilmadi.',
+    downloadError: 'Rasmni yuklab olishda xatolik.',
+    /*image alerts*/
   },
   ru: {
     /*sign in page*/
@@ -865,6 +896,20 @@ export default {
     /*message detail*/
     detailedView: 'Подробный просмотр',
     /*message detail*/
+
+    /*download*/
+    download: 'Скачать',
+    /*download*/
+
+    /*image alerts*/
+    imageSaved: 'Сохранено',
+    imageSavedMessage: 'Изображение сохранено в галерею.',
+    downloadFailedImage: 'Ошибка загрузки',
+    unableToSaveInDevelopment:
+      'Невозможно сохранить в development сборке. Попробуйте production сборку или проверьте разрешения.',
+    permissionDenied: 'Доступ к фотогалерее запрещен.',
+    downloadError: 'Ошибка загрузки изображения.',
+    /*image alerts*/
   },
 };
 

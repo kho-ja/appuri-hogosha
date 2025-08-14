@@ -184,6 +184,14 @@ export type TranslationKeys = {
   checking: string;
   updateFailed: string;
   manualUpdateComplete: string;
+
+  /*image alerts*/
+  imageSaved: string;
+  imageSavedMessage: string;
+  downloadFailedImage: string;
+  unableToSaveInDevelopment: string;
+  permissionDenied: string;
+  downloadError: string;
 };
 
 export type Language = 'en' | 'ja' | 'uz' | 'ru';

@@ -3,7 +3,6 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  Modal,
   TouchableOpacity,
   Text,
   Pressable,
@@ -21,12 +20,12 @@ import { fetchMessageFromDB, saveMessageToDB } from '@/utils/queries';
 import { DatabaseMessage, Student } from '@/constants/types';
 import { Autolink } from 'react-native-autolink';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '@rneui/themed';
 import { DateTime } from 'luxon';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import ZoomGallery from '@/components/ZoomGallery';
 
 const styles = StyleSheet.create({
   container: {
@@ -64,19 +63,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 260,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 20,
-    padding: 10,
-  },
-  closeButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
   copyButton: {
     marginTop: -15,
     marginBottom: 20,
@@ -89,6 +75,9 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginVertical: 15,
+  },
+  imageItem: {
+    position: 'relative',
   },
   imageWrapper: {
     borderRadius: 12,
@@ -314,8 +303,8 @@ export default function DetailsScreen() {
     : message.images
       ? [message.images]
       : [];
-  const imagesForZoomViewer = imageArray.map(filename => ({
-    url: `${imageUrl}/${filename}`,
+  const imagesForZoomGallery = imageArray.map(filename => ({
+    uri: `${imageUrl}/${filename}`,
   }));
 
   const copyToClipboard = async () => {
@@ -392,7 +381,7 @@ export default function DetailsScreen() {
       {imageArray.length > 0 && (
         <View style={styles.imageContainer}>
           {imageArray.map((filename, idx) => (
-            <View key={idx}>
+            <View key={idx} style={styles.imageItem}>
               <TouchableOpacity
                 onPress={() => {
                   setCurrentImageIndex(idx);
@@ -463,28 +452,13 @@ export default function DetailsScreen() {
           </View>
         </Pressable>
       </View>
-      <Modal
+      <ZoomGallery
         visible={zoomVisible}
-        transparent={true}
+        images={imagesForZoomGallery}
+        initialIndex={currentImageIndex}
         onRequestClose={() => setZoomVisible(false)}
-      >
-        <Pressable
-          style={styles.closeButton}
-          onPress={() => setZoomVisible(false)}
-          hitSlop={20}
-        >
-          <Text style={[styles.closeButtonText, { fontSize: 16 * multiplier }]}>
-            ✕
-          </Text>
-        </Pressable>
-        <ImageViewer
-          imageUrls={imagesForZoomViewer}
-          index={currentImageIndex}
-          onCancel={() => setZoomVisible(false)}
-          enableSwipeDown={true}
-          onSwipeDown={() => setZoomVisible(false)}
-        />
-      </Modal>
+        albumName='Downloads'
+      />
     </ScrollView>
   );
 }
