@@ -1,11 +1,8 @@
-import js from "@eslint/js";
-import globals from "globals";
 import pluginPrettier from "eslint-plugin-prettier";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
-import { defineConfig } from "eslint/config";
 
-export default defineConfig({
+export default {
   files: ["**/*.{js,cjs,mjs,ts,tsx}"],
   languageOptions: {
     parser: tsParser,
@@ -13,16 +10,18 @@ export default defineConfig({
       ecmaVersion: 2021,
       sourceType: "module"
     },
-    globals: globals.node
+    globals: {
+      process: "readonly",
+      __dirname: "readonly",
+      require: "readonly"
+    }
   },
   plugins: {
     prettier: pluginPrettier,
     "@typescript-eslint": tsPlugin
   },
   rules: {
-    ...js.configs.recommended.rules,
-    ...tsPlugin.configs.recommended.rules,
     "prettier/prettier": "error",
-    "@typescript-eslint/no-unused-vars": "warn"
+    "no-unused-vars": "warn"
   }
-});
+};
