@@ -35,9 +35,15 @@
 		"@types/luxon": "^3.6.2",
 		"@types/morgan": "^1.9.9",
 		"@types/multer": "^2.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.39.1",
+		"@typescript-eslint/parser": "^8.39.1",
+		"eslint": "^9.33.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.4",
 		"nodemon": "^3.1.0",
+		"prettier": "^3.6.2",
 		"rimraf": "^5.0.5",
 		"tsx": "^4.20.3",
-		"typescript": "^5.4.5"
+		"typescript": "^5.9.2"
 	}
 }
