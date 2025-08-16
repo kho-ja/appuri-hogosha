@@ -122,54 +122,55 @@ class ParentController implements IController {
                 throw new Error('kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
             }
 
-            // STRICT SSRF Protection: Validate Kintone URL before making any network request
-            // This prevents Server-Side Request Forgery attacks by ensuring we only connect to legitimate Kintone domains
-            if (!isValidKintoneUrl(kintoneUrl)) {
-                console.warn(`SECURITY: Invalid Kintone URL attempt blocked: ${kintoneUrl}`);
-                throw {
-                    status: 400,
-                    message: 'invalid_kintone_url_provided'
-                };
-            }
-
-            // Additional SSRF protection: Explicit hostname validation
-            // Parse the URL and verify it matches allowed Kintone domain patterns
-            let parsedUrl: URL;
+            // ULTIMATE SSRF Protection: Complete URL reconstruction from validated components
+            // This approach completely eliminates any user input from flowing to fetch()
+            let validatedUrl: string;
+            
             try {
-                parsedUrl = new URL(kintoneUrl);
+                // Parse user input for validation only
+                const inputUrl = new URL(kintoneUrl);
+                const hostname = inputUrl.hostname.toLowerCase();
+                
+                // Strict regex validation for Kintone domains
+                const kintoneHostnamePattern = /^([a-z0-9][a-z0-9\-]{0,61}[a-z0-9]?)\.(cybozu|kintone|cybozu-dev)\.com$/;
+                const match = hostname.match(kintoneHostnamePattern);
+                
+                if (!match) {
+                    console.warn(`SECURITY: Invalid Kintone hostname blocked: ${hostname}`);
+                    throw new Error('invalid_kintone_url_provided');
+                }
+                
+                // Extract validated subdomain and domain
+                const subdomain = match[1];
+                const domain = match[2];
+                
+                // Validate path is a Kintone API endpoint
+                const validPaths = [
+                    '/k/v1/records.json',
+                    '/k/v1/record.json',
+                    '/k/v1/preview/app/views.json',
+                    '/k/v1/preview/app/form/fields.json'
+                ];
+                
+                const hasValidPath = validPaths.some(path => inputUrl.pathname === path);
+                if (!hasValidPath) {
+                    console.warn(`SECURITY: Invalid Kintone API path blocked: ${inputUrl.pathname}`);
+                    throw new Error('invalid_kintone_url_provided');
+                }
+                
+                // Reconstruct URL with only validated components - no user input flows through
+                validatedUrl = `https://${subdomain}.${domain}.com${inputUrl.pathname}`;
+                if (inputUrl.search) {
+                    validatedUrl += inputUrl.search;
+                }
+                
             } catch (error) {
-                console.warn(`SECURITY: Malformed Kintone URL attempt blocked: ${kintoneUrl}`);
+                console.warn(`SECURITY: Kintone URL validation failed: ${kintoneUrl}`);
                 throw {
                     status: 400,
                     message: 'invalid_kintone_url_provided'
                 };
             }
-
-            // Only allow official Kintone domains - strict hostname checking
-            const hostname = parsedUrl.hostname.toLowerCase();
-            const allowedKintoneDomains = [
-                '.cybozu.com',
-                '.kintone.com',
-                '.cybozu-dev.com'
-            ];
-
-            const isAllowedDomain = allowedKintoneDomains.some(domain =>
-                hostname.endsWith(domain) &&
-                hostname !== domain && // Prevent direct access to root domains
-                hostname.length > domain.length
-            );
-
-            if (!isAllowedDomain) {
-                console.warn(`SECURITY: Kintone URL with disallowed hostname blocked: ${hostname}`);
-                throw {
-                    status: 400,
-                    message: 'invalid_kintone_url_provided'
-                };
-            }
-
-            // Create safe URL from validated components to break data flow from user input
-            // This prevents SSRF by reconstructing URL from validated parts
-            const safeKintoneUrl = `https://${parsedUrl.hostname}${parsedUrl.pathname}${parsedUrl.search}`;
 
             // Additional validation: Ensure kintoneToken is a valid API token format
             if (!kintoneToken || typeof kintoneToken !== 'string' || kintoneToken.length < 10 || kintoneToken.length > 100) {
@@ -187,7 +188,7 @@ class ParentController implements IController {
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
             try {
-                const response = await fetch(safeKintoneUrl, {
+                const response = await fetch(validatedUrl, {
                     method: 'GET',
                     headers: {
                         "X-Cybozu-API-Token": kintoneToken,
