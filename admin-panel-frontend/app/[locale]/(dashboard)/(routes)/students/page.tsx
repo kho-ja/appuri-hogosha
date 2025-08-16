@@ -25,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
+import useApiPostQuery from "@/lib/useApiPostQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
@@ -35,9 +36,10 @@ export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data: studentData } = useApiQuery<StudentApi>(
-    `student/list?page=${page}&name=${search}`,
-    ["students", page, search]
+  const { data: studentData } = useApiPostQuery<StudentApi>(
+    "student/list",
+    ["students", page, search],
+    { page, name: search }
   );
   const queryClient = useQueryClient();
   const [studentId, setStudentId] = useState<number | null>(null);
