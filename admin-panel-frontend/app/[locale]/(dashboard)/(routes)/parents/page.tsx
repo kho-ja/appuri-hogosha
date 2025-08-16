@@ -24,7 +24,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import useTableQuery from "@/lib/useTableQuery";
@@ -35,10 +34,9 @@ export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiPostQuery<ParentApi>(
-    "parent/list",
-    ["parents", page, search],
-    { page, name: search }
+  const { data } = useApiQuery<ParentApi>(
+    `parent/list?page=${page}&name=${search}`,
+    ["parents", page, search]
   );
   const queryClient = useQueryClient();
   const [parentId, setParentId] = useState<number | null>(null);

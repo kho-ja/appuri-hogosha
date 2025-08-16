@@ -28,7 +28,6 @@ import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiQuery from "@/lib/useApiQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
 
 export function StudentTable({
   selectedStudents,
@@ -42,10 +41,9 @@ export function StudentTable({
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState<string>("");
-  const { data } = useApiPostQuery<StudentApi>(
-    "student/list",
-    ["students", page, search],
-    { page, name: search }
+  const { data } = useApiQuery<StudentApi>(
+    `student/list?page=${page}&name=${search}`,
+    ["students", page, search]
   );
 
   const selectedStudentIds = useMemo(
