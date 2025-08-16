@@ -2,7 +2,7 @@ import pluginPrettier from 'eslint-plugin-prettier';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
-export default {
+export default [{
   files: ['**/*.{js,cjs,mjs,ts,tsx}'],
   languageOptions: {
     parser: tsParser,
@@ -25,4 +25,4 @@ export default {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'warn',
   },
-};
+}];
