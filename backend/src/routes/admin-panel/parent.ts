@@ -132,6 +132,41 @@ class ParentController implements IController {
                 };
             }
 
+            // Additional SSRF protection: Explicit hostname validation
+            // Parse the URL and verify it matches allowed Kintone domain patterns
+            let parsedUrl: URL;
+            try {
+                parsedUrl = new URL(kintoneUrl);
+            } catch (error) {
+                console.warn(`SECURITY: Malformed Kintone URL attempt blocked: ${kintoneUrl}`);
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_url_provided'
+                };
+            }
+
+            // Only allow official Kintone domains - strict hostname checking
+            const hostname = parsedUrl.hostname.toLowerCase();
+            const allowedKintoneDomains = [
+                '.cybozu.com',
+                '.kintone.com', 
+                '.cybozu-dev.com'
+            ];
+            
+            const isAllowedDomain = allowedKintoneDomains.some(domain => 
+                hostname.endsWith(domain) && 
+                hostname !== domain && // Prevent direct access to root domains
+                hostname.length > domain.length
+            );
+            
+            if (!isAllowedDomain) {
+                console.warn(`SECURITY: Kintone URL with disallowed hostname blocked: ${hostname}`);
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_url_provided'
+                };
+            }
+
             // Additional validation: Ensure kintoneToken is a valid API token format
             if (!kintoneToken || typeof kintoneToken !== 'string' || kintoneToken.length < 10 || kintoneToken.length > 100) {
                 throw {
