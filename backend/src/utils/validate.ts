@@ -112,8 +112,21 @@ export function isValidUrl(url: string): boolean {
     }
 }
 
-// Kintone-specific URL validation
+// Kintone-specific URL validation with enhanced SSRF protection
 export function isValidKintoneUrl(url: string): boolean {
+    // Input sanitization - reject if null, undefined, or not string
+    if (!url || typeof url !== 'string' || url.length === 0) {
+        return false;
+    }
+
+    // Prevent excessively long URLs
+    if (url.length > 2048) {
+        return false;
+    }
+
+    // Normalize and trim the URL
+    url = url.trim();
+
     try {
         const parsedUrl = new URL(url);
 
@@ -122,18 +135,29 @@ export function isValidKintoneUrl(url: string): boolean {
             return false;
         }
 
-        // Validate Kintone domain patterns
+        // Validate hostname is present and not empty
+        if (!parsedUrl.hostname || parsedUrl.hostname.length === 0) {
+            return false;
+        }
+
+        // Block any userinfo in URL (username:password@domain)
+        if (parsedUrl.username || parsedUrl.password) {
+            return false;
+        }
+
+        // Block non-standard ports (Kintone uses standard HTTPS port 443)
+        if (parsedUrl.port && parsedUrl.port !== '443' && parsedUrl.port !== '') {
+            return false;
+        }
+
+        // Validate Kintone domain patterns with strict matching
         const hostname = parsedUrl.hostname.toLowerCase();
 
-        // Official Kintone domain patterns:
-        // - subdomain.cybozu.com
-        // - subdomain.kintone.com
-        // - subdomain.cybozu-dev.com (for development)
-        // - Custom domains with cybozu in path (some enterprise setups)
+        // Only allow official Kintone domains - no custom domains for security
         const validKintonePatterns = [
-            /^[a-zA-Z0-9\-]+\.cybozu\.com$/,
-            /^[a-zA-Z0-9\-]+\.kintone\.com$/,
-            /^[a-zA-Z0-9\-]+\.cybozu-dev\.com$/,
+            /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]?\.cybozu\.com$/,
+            /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]?\.kintone\.com$/,
+            /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]?\.cybozu-dev\.com$/,
         ];
 
         const isValidDomain = validKintonePatterns.some(pattern => pattern.test(hostname));
@@ -142,18 +166,50 @@ export function isValidKintoneUrl(url: string): boolean {
             return false;
         }
 
-        // Validate path structure - should contain /k/v1/ for API endpoints
-        const validPathPattern = /^\/k\/v1\//;
-        if (!validPathPattern.test(parsedUrl.pathname)) {
+        // Block internal/private IP addresses (additional layer)
+        const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+        const ipMatch = hostname.match(ipv4Regex);
+        if (ipMatch) {
+            const octets = ipMatch.slice(1, 5).map(Number);
+            // Block private IP ranges
+            if (
+                (octets[0] === 10) ||
+                (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+                (octets[0] === 192 && octets[1] === 168) ||
+                (octets[0] === 127) || // Loopback
+                (octets[0] === 169 && octets[1] === 254) // Link-local
+            ) {
+                return false;
+            }
+        }
+
+        // Validate path structure - must be Kintone API endpoints
+        const validPathPatterns = [
+            /^\/k\/v1\/records\.json$/,                    // Get/Update records
+            /^\/k\/v1\/record\.json$/,                     // Get specific record
+            /^\/k\/v1\/preview\/app\/views\.json$/,        // Get views (pre-live)
+            /^\/k\/v1\/preview\/app\/form\/fields\.json$/, // Get form fields (pre-live)
+            /^\/k\/guest\/\d+\/v1\/records\.json$/,        // Guest space records
+            /^\/k\/guest\/\d+\/v1\/record\.json$/,         // Guest space specific record
+        ];
+
+        const isValidPath = validPathPatterns.some(pattern => pattern.test(parsedUrl.pathname));
+        if (!isValidPath) {
             return false;
         }
 
-        // Additional security: block any obviously malicious patterns
+        // Additional security: block any malicious patterns in the full URL
         const maliciousPatterns = [
             /javascript:/i,
             /data:/i,
             /vbscript:/i,
-            /@/,  // Userinfo in URL
+            /file:/i,
+            /ftp:/i,
+            /<script/i,
+            /\.\./,     // Path traversal
+            /\0/,       // Null bytes
+            /%00/i,     // URL encoded null bytes
+            /%2e%2e/i,  // URL encoded path traversal
         ];
 
         const fullUrl = url.toLowerCase();
@@ -164,7 +220,8 @@ export function isValidKintoneUrl(url: string): boolean {
         }
 
         return true;
-    } catch {
+    } catch (error) {
+        // Any parsing error should result in rejection
         return false;
     }
 }

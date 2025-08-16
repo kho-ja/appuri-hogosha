@@ -36,8 +36,8 @@ class ParentController implements IController {
 
     initRoutes(): void {
         this.router.post('/create', verifyToken, this.createParent)
-        this.router.get('/list', verifyToken, this.parentList)
-        this.router.get('/list/detailed', verifyToken, this.detailedParentList)
+        this.router.post('/list', verifyToken, this.parentList)
+        this.router.post('/list/detailed', verifyToken, this.detailedParentList)
         this.router.post('/ids', verifyToken, this.parentIds)
         this.router.post('/upload', verifyToken, upload.single('file'), this.uploadParentsFromCSV);
         this.router.post('/kintoneUpload', verifyToken, this.uploadParentsFromKintone);
@@ -122,35 +122,72 @@ class ParentController implements IController {
                 throw new Error('kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
             }
 
-            // SSRF Protection: Validate Kintone URL before making request
+            // STRICT SSRF Protection: Validate Kintone URL before making any network request
+            // This prevents Server-Side Request Forgery attacks by ensuring we only connect to legitimate Kintone domains
             if (!isValidKintoneUrl(kintoneUrl)) {
+                console.warn(`SECURITY: Invalid Kintone URL attempt blocked: ${kintoneUrl}`);
                 throw {
                     status: 400,
                     message: 'invalid_kintone_url_provided'
                 };
             }
 
-            const response = await fetch(kintoneUrl, {
-                method: 'GET',
-                headers: {
-                    "X-Cybozu-API-Token": kintoneToken,
-                    'User-Agent': 'Appuri-Backend/1.0'
-                },
-                // Add timeout for security
-                signal: AbortSignal.timeout(5000) // 5 second timeout
-            })
-
-            if (!response.ok) {
-                const data = await response.json();
-                console.error(data, response.status);
-                return res.status(500).json({
-                    error: 'error_fetching_data_kintone',
-                    message: data.message
-                }).end();
+            // Additional validation: Ensure kintoneToken is a valid API token format
+            if (!kintoneToken || typeof kintoneToken !== 'string' || kintoneToken.length < 10 || kintoneToken.length > 100) {
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_token_provided'
+                };
             }
 
-            const data = await response.json();
+            let data: any;
             const errors: any[] = [];
+
+            // Create AbortController for better timeout control
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+            try {
+                const response = await fetch(kintoneUrl, {
+                    method: 'GET',
+                    headers: {
+                        "X-Cybozu-API-Token": kintoneToken,
+                        'User-Agent': 'Appuri-Backend/1.0',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal,
+                    // Additional security options
+                    redirect: 'error', // Don't follow redirects to prevent redirect-based SSRF
+                    referrerPolicy: 'no-referrer'
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const responseData = await response.json();
+                    console.error(responseData, response.status);
+                    return res.status(500).json({
+                        error: 'error_fetching_data_kintone',
+                        message: responseData.message
+                    }).end();
+                }
+
+                data = await response.json();
+
+            } catch (fetchError: any) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw {
+                        status: 408,
+                        message: 'kintone_request_timeout'
+                    };
+                }
+                throw {
+                    status: 500,
+                    message: 'kintone_network_error'
+                };
+            }
 
             for (const record of data.records) {
                 let given_name: any = record[given_name_field]
@@ -223,7 +260,7 @@ class ParentController implements IController {
                 }
             }
 
-            if (!kintoneRecords) {
+            if (kintoneRecords.length === 0) {
                 errors.push({ row: { email: 'no_records_found' } });
             }
 
@@ -1258,13 +1295,13 @@ class ParentController implements IController {
 
     detailedParentList = async (req: ExtendedRequest, res: Response) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
+            const page = parseInt(req.body.page as string) || 1;
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const email = req.query.email as string || '';
-            const phone_number = req.query.phone_number as string || '';
-            const name = req.query.name as string || '';
+            const email = req.body.email as string || '';
+            const phone_number = req.body.phone_number as string || '';
+            const name = req.body.name as string || '';
 
             const filters: string[] = [];
             const params: any = {
@@ -1363,13 +1400,13 @@ class ParentController implements IController {
 
     parentList = async (req: ExtendedRequest, res: Response) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
+            const page = parseInt(req.body.page as string) || 1;
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const email = req.query.email as string || '';
-            const phone_number = req.query.phone_number as string || '';
-            const name = req.query.name as string || '';
+            const email = req.body.email as string || '';
+            const phone_number = req.body.phone_number as string || '';
+            const name = req.body.name as string || '';
 
             const filters: string[] = [];
             const params: any = {

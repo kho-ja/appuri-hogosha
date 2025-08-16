@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
+import useApiPostQuery from "@/lib/useApiPostQuery";
 import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
@@ -35,9 +36,10 @@ export default function Admins() {
   const t = useTranslations("admins");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiQuery<AdminApi>(
-    `admin/list?page=${[page]}&name=${search}`,
-    ["admins", page, search]
+  const { data } = useApiPostQuery<AdminApi>(
+    "admin/list",
+    ["admins", page, search],
+    { page, name: search }
   );
   const queryClient = useQueryClient();
   const [adminId, setAdminId] = useState<number | null>(null);

@@ -27,7 +27,7 @@ class AdminController implements IController {
 
     initRoutes(): void {
         this.router.post('/create', verifyToken, this.createAdmin)
-        this.router.get('/list', verifyToken, this.adminList)
+        this.router.post('/list', verifyToken, this.adminList)
         this.router.post('/upload', verifyToken, upload.single('file'), this.uploadAdminsFromCSV);
         this.router.get('/export', verifyToken, this.exportAdminsToCSV)
         this.router.get('/:id', verifyToken, this.adminView)
@@ -577,13 +577,13 @@ class AdminController implements IController {
 
     adminList = async (req: ExtendedRequest, res: Response) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
+            const page = parseInt(req.body.page as string) || 1;
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const email = req.query.email as string || '';
-            const phone_number = req.query.phone_number as string || '';
-            const name = req.query.name as string || '';
+            const email = req.body.email as string || '';
+            const phone_number = req.body.phone_number as string || '';
+            const name = req.body.name as string || '';
 
             const filters: string[] = [];
             const params: any = {

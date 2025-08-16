@@ -45,15 +45,27 @@ import { useEffect } from "react";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import {
+  kintoneUrlSchema,
+  getKintoneUrlValidationError,
+} from "@/lib/kintoneUrlValidator";
 
 const formSchema = z.object({
-  kintoneUrl: z.string().url(),
-  kintoneToken: z.string().min(1),
-  given_name_field: z.string().min(1),
-  family_name_field: z.string().min(1),
-  phone_number_field: z.string().min(1),
-  email_field: z.string().min(1),
-  student_number_field: z.string().min(1),
+  kintoneUrl: z
+    .string()
+    .min(1, "kintone_url_required")
+    .refine(kintoneUrlSchema(), (val) => ({
+      message: getKintoneUrlValidationError(val),
+    })),
+  kintoneToken: z
+    .string()
+    .min(10, "kintone_token_too_short")
+    .max(100, "kintone_token_too_long"),
+  given_name_field: z.string().min(1, "field_required"),
+  family_name_field: z.string().min(1, "field_required"),
+  phone_number_field: z.string().min(1, "field_required"),
+  email_field: z.string().min(1, "field_required"),
+  student_number_field: z.string().min(1, "field_required"),
 });
 
 export default function CreateFromKintone() {
@@ -124,11 +136,19 @@ export default function CreateFromKintone() {
                 <FormItem>
                   <FormLabel>{t("kintoneUrl")}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      type="url"
+                      placeholder={t("kintoneUrlPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
                     {t("kintoneUrlDescription")}
+                    <br />
+                    <small className="text-muted-foreground">
+                      {t("kintoneUrlSecurityNote")}
+                    </small>
                   </FormDescription>
                 </FormItem>
               )}
@@ -141,11 +161,19 @@ export default function CreateFromKintone() {
                 <FormItem>
                   <FormLabel>{t("kintoneToken")}</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      type="password"
+                      placeholder={t("kintoneTokenPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                   <FormDescription>
                     {t("kintoneTokenDescription")}
+                    <br />
+                    <small className="text-muted-foreground">
+                      {t("kintoneTokenSecurityNote")}
+                    </small>
                   </FormDescription>
                 </FormItem>
               )}
