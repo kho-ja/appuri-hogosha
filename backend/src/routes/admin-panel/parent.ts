@@ -115,62 +115,41 @@ class ParentController implements IController {
     }
 
     uploadParentsFromKintone = async (req: ExtendedRequest, res: Response) => {
-        const { kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field } = req.body;
+        const { kintoneSubdomain, kintoneDomain, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field } = req.body;
         const kintoneRecords: any[] = [];
         try {
-            if (!kintoneUrl || !kintoneToken || !given_name_field || !family_name_field || !email_field || !phone_number_field || !student_number_field) {
-                throw new Error('kintoneUrl, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
+            if (!kintoneSubdomain || !kintoneDomain || !kintoneToken || !given_name_field || !family_name_field || !email_field || !phone_number_field || !student_number_field) {
+                throw new Error('kintoneSubdomain, kintoneDomain, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required')
             }
 
-            // ULTIMATE SSRF Protection: Complete URL reconstruction from validated components
-            // This approach completely eliminates any user input from flowing to fetch()
-            let validatedUrl: string;
-            
-            try {
-                // Parse user input for validation only
-                const inputUrl = new URL(kintoneUrl);
-                const hostname = inputUrl.hostname.toLowerCase();
-                
-                // Strict regex validation for Kintone domains
-                const kintoneHostnamePattern = /^([a-z0-9][a-z0-9\-]{0,61}[a-z0-9]?)\.(cybozu|kintone|cybozu-dev)\.com$/;
-                const match = hostname.match(kintoneHostnamePattern);
-                
-                if (!match) {
-                    console.warn(`SECURITY: Invalid Kintone hostname blocked: ${hostname}`);
-                    throw new Error('invalid_kintone_url_provided');
-                }
-                
-                // Extract validated subdomain and domain
-                const subdomain = match[1];
-                const domain = match[2];
-                
-                // Validate path is a Kintone API endpoint
-                const validPaths = [
-                    '/k/v1/records.json',
-                    '/k/v1/record.json',
-                    '/k/v1/preview/app/views.json',
-                    '/k/v1/preview/app/form/fields.json'
-                ];
-                
-                const hasValidPath = validPaths.some(path => inputUrl.pathname === path);
-                if (!hasValidPath) {
-                    console.warn(`SECURITY: Invalid Kintone API path blocked: ${inputUrl.pathname}`);
-                    throw new Error('invalid_kintone_url_provided');
-                }
-                
-                // Reconstruct URL with only validated components - no user input flows through
-                validatedUrl = `https://${subdomain}.${domain}.com${inputUrl.pathname}`;
-                if (inputUrl.search) {
-                    validatedUrl += inputUrl.search;
-                }
-                
-            } catch (error) {
-                console.warn(`SECURITY: Kintone URL validation failed: ${kintoneUrl}`);
+            // ULTIMATE SSRF Protection: Server-controlled URL mapping
+            // User can only select from predefined domain options
+            const allowedDomains: { [key: string]: string } = {
+                'cybozu': 'cybozu.com',
+                'kintone': 'kintone.com',
+                'cybozu-dev': 'cybozu-dev.com'
+            };
+
+            const selectedDomain = allowedDomains[kintoneDomain];
+            if (!selectedDomain) {
+                console.warn(`SECURITY: Invalid domain selection blocked: ${kintoneDomain}`);
                 throw {
                     status: 400,
-                    message: 'invalid_kintone_url_provided'
+                    message: 'invalid_kintone_domain_provided'
                 };
             }
+
+            // Validate subdomain format (only alphanumeric and hyphens)
+            if (!kintoneSubdomain || !/^[a-z0-9][a-z0-9\-]{0,61}[a-z0-9]?$/i.test(kintoneSubdomain)) {
+                console.warn(`SECURITY: Invalid subdomain format blocked: ${kintoneSubdomain}`);
+                throw {
+                    status: 400,
+                    message: 'invalid_kintone_subdomain_provided'
+                };
+            }
+
+            // Server-controlled URL construction - no user input flows directly to fetch()
+            const validatedUrl = `https://${kintoneSubdomain}.${selectedDomain}/k/v1/records.json`;
 
             // Additional validation: Ensure kintoneToken is a valid API token format
             if (!kintoneToken || typeof kintoneToken !== 'string' || kintoneToken.length < 10 || kintoneToken.length > 100) {
