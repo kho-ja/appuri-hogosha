@@ -84,16 +84,16 @@ class StudentController implements IController {
             const hostname = parsedUrl.hostname.toLowerCase();
             const allowedKintoneDomains = [
                 '.cybozu.com',
-                '.kintone.com', 
+                '.kintone.com',
                 '.cybozu-dev.com'
             ];
-            
-            const isAllowedDomain = allowedKintoneDomains.some(domain => 
-                hostname.endsWith(domain) && 
+
+            const isAllowedDomain = allowedKintoneDomains.some(domain =>
+                hostname.endsWith(domain) &&
                 hostname !== domain && // Prevent direct access to root domains
                 hostname.length > domain.length
             );
-            
+
             if (!isAllowedDomain) {
                 console.warn(`SECURITY: Kintone URL with disallowed hostname blocked: ${hostname}`);
                 throw {
@@ -101,6 +101,10 @@ class StudentController implements IController {
                     message: 'invalid_kintone_url_provided'
                 };
             }
+
+            // Create safe URL from validated components to break data flow from user input
+            // This prevents SSRF by reconstructing URL from validated parts
+            const safeKintoneUrl = `https://${parsedUrl.hostname}${parsedUrl.pathname}${parsedUrl.search}`;
 
             // Additional validation: Ensure kintoneToken is a valid API token format
             if (!kintoneToken || typeof kintoneToken !== 'string' || kintoneToken.length < 10 || kintoneToken.length > 100) {
@@ -115,7 +119,7 @@ class StudentController implements IController {
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
             try {
-                const response = await fetch(kintoneUrl, {
+                const response = await fetch(safeKintoneUrl, {
                     method: 'GET',
                     headers: {
                         "X-Cybozu-API-Token": kintoneToken,
