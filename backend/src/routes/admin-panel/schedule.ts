@@ -106,11 +106,7 @@ class SchedulePostController implements IController {
                 const imageName =
                     randomImageName() + mimeType.replace('image/', '.');
                 const imagePath = 'images/' + imageName;
-                const uploadResult = await Images3Client.uploadFile(
-                    buffer,
-                    mimeType,
-                    imagePath
-                );
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
                 postInsert = await DB.execute(
                     `
@@ -158,7 +154,7 @@ class SchedulePostController implements IController {
                 .map((value: any) => `(${value[0]}, ${value[1]}, ${value[2]})`)
                 .join(', ');
 
-            const result = await DB.query(`
+            await DB.query(`
                 INSERT INTO scheduledPostRecievers (scheduled_post_id, group_id, student_id)
                 VALUES ${updatedValues}
             `);
@@ -654,8 +650,7 @@ class SchedulePostController implements IController {
 
             const { students, groups } = req.body;
 
-            const deleteOldRecievers = await DB.query(`
-
+            await DB.query(`
                 DELETE FROM scheduledPostRecievers
                 WHERE scheduled_post_id = ${postId}
             `);
@@ -680,7 +675,7 @@ class SchedulePostController implements IController {
                 .map((value: any) => `(${value[0]}, ${value[1]}, ${value[2]})`)
                 .join(', ');
 
-            const insertNewRecievers = await DB.query(`
+            await DB.query(`
                 INSERT INTO scheduledPostRecievers (scheduled_post_id, group_id, student_id)
                 VALUES ${updatedValues}`);
 
@@ -787,6 +782,7 @@ class SchedulePostController implements IController {
                 })
                 .end();
         } catch (err: any) {
+            console.error('Error fetching scheduled post receivers:', err);
             return res
                 .status(500)
                 .json({

@@ -2192,11 +2192,7 @@ class PostController implements IController {
                 const imageName =
                     randomImageName() + mimeType.replace('image/', '.');
                 const imagePath = 'images/' + imageName;
-                const uploadResult = await Images3Client.uploadFile(
-                    buffer,
-                    mimeType,
-                    imagePath
-                );
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
                 postInsert = await DB.execute(
                     `

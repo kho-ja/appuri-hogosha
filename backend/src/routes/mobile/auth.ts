@@ -388,7 +388,9 @@ class AuthController implements IController {
                         arn: normalizedToken,
                     }
                 );
-            } catch (error) {}
+            } catch (error) {
+                console.error('Error during updating device token:', error);
+            }
 
             return res
                 .status(200)

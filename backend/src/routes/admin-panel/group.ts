@@ -1,6 +1,6 @@
 import { IController } from '../../utils/icontroller';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
-import express, { NextFunction, Request, Response, Router } from 'express';
+import express, { Response, Router } from 'express';
 import { generatePaginationLinks } from '../../utils/helper';
 import DB from '../../utils/db-client';
 import {

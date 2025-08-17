@@ -61,6 +61,7 @@ class PostController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            console.error('Error fetching post data:', e);
             return res
                 .status(500)
                 .json({

@@ -12,7 +12,6 @@ import {
     isValidArrayId,
     isValidId,
     isValidStudentNumber,
-    isValidKintoneUrl,
 } from '../../utils/validate';
 import process from 'node:process';
 import { generatePaginationLinks, parseKintoneRow } from '../../utils/helper';

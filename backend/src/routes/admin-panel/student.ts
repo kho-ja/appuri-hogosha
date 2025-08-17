@@ -15,7 +15,6 @@ import {
     isValidEmail,
     isValidArrayId,
     isValidId,
-    isValidKintoneUrl,
 } from '../../utils/validate';
 import process from 'node:process';
 import { stringify } from 'csv-stringify/sync';

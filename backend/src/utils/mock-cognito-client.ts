@@ -176,7 +176,7 @@ export class MockCognitoClient {
         // Find user by accessToken using Map iteration
         let foundUser: User | undefined;
 
-        for (const [key, user] of mockDatabase) {
+        for (const [, user] of mockDatabase) {
             if (user.accessToken === accessToken) {
                 foundUser = user;
                 break;

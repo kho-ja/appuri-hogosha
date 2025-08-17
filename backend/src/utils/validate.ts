@@ -63,12 +63,6 @@ export function isValidImage(mimetype: string): boolean {
     return mimetype.includes('image');
 }
 
-const permissionList = {};
-
-export function isValidPermissions(permissions: any): boolean {
-    return false;
-}
-
 const formStatusList = ['accept', 'reject', 'wait'];
 
 export function isValidStatus(status: string): boolean {
@@ -230,6 +224,7 @@ export function isValidKintoneUrl(url: string): boolean {
 
         return true;
     } catch (error) {
+        console.error('Invalid Kintone URL:', error);
         // Any parsing error should result in rejection
         return false;
     }
