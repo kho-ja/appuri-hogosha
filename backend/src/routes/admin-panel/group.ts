@@ -642,18 +642,18 @@ class GroupController implements IController {
 
                 if (insertStudentIds.length > 0) {
                     const insertData = insertStudentIds.map(
-                        (studentId: any) => ({
+                        (studentId: number) => ({
                             student_id: studentId,
                             group_id: group.id,
                         })
                     );
 
                     const placeholders = insertData
-                        .map(() => '(?, ?)')
+                        .map(() => `(?, ?)`)
                         .join(', ');
                     const values: any[] = [];
-                    insertData.forEach(item => {
-                        values.push(item.student_id, item.group_id);
+                    insertData.forEach(({ student_id, group_id }) => {
+                        values.push(student_id, group_id);
                     });
 
                     await DB.query(
