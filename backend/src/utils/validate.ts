@@ -15,20 +15,23 @@ export function isValidPhoneNumber(phone_number: string): boolean {
 }
 
 export function isValidString(name: string): boolean {
-    return typeof name === 'string' &&
-        name.trim().length > 0 &&
-        name.length <= 100; // Prevent excessively long strings
+    return (
+        typeof name === 'string' && name.trim().length > 0 && name.length <= 100
+    ); // Prevent excessively long strings
 }
 
 export function isValidLongString(text: string): boolean {
-    return typeof text === 'string' &&
+    return (
+        typeof text === 'string' &&
         text.trim().length > 0 &&
-        text.length <= 5000;
+        text.length <= 5000
+    );
 }
 
-
 export function isValidStudentNumber(student_number: string): boolean {
-    return typeof student_number === 'string' && student_number.trim().length > 0
+    return (
+        typeof student_number === 'string' && student_number.trim().length > 0
+    );
 }
 
 export function isValidId(id: string): boolean {
@@ -50,33 +53,31 @@ export function isValidStringArrayId(ids: string[]): boolean {
     return ids.every(id => isValidId(id));
 }
 
-const priorityList = ["low", "medium", "high"]
+const priorityList = ['low', 'medium', 'high'];
 
 export function isValidPriority(priority: string): boolean {
-    return typeof priority === 'string' && priorityList.includes(priority)
+    return typeof priority === 'string' && priorityList.includes(priority);
 }
 
 export function isValidImage(mimetype: string): boolean {
-    return mimetype.includes('image')
+    return mimetype.includes('image');
 }
 
-const permissionList = {}
+const permissionList = {};
 
 export function isValidPermissions(permissions: any): boolean {
-    return false
+    return false;
 }
 
-const formStatusList = ['accept', 'reject', 'wait']
+const formStatusList = ['accept', 'reject', 'wait'];
 
 export function isValidStatus(status: string): boolean {
-    return typeof status === 'string' && formStatusList.includes(status)
+    return typeof status === 'string' && formStatusList.includes(status);
 }
 
-const reasonList = [
-    'other', 'absence', 'lateness', 'leaving early'
-]
+const reasonList = ['other', 'absence', 'lateness', 'leaving early'];
 export function isValidReason(reason: string): boolean {
-    return typeof reason === 'string' && reasonList.includes(reason)
+    return typeof reason === 'string' && reasonList.includes(reason);
 }
 
 export function isValidDate(dateTime: string): boolean {
@@ -146,7 +147,11 @@ export function isValidKintoneUrl(url: string): boolean {
         }
 
         // Block non-standard ports (Kintone uses standard HTTPS port 443)
-        if (parsedUrl.port && parsedUrl.port !== '443' && parsedUrl.port !== '') {
+        if (
+            parsedUrl.port &&
+            parsedUrl.port !== '443' &&
+            parsedUrl.port !== ''
+        ) {
             return false;
         }
 
@@ -160,7 +165,9 @@ export function isValidKintoneUrl(url: string): boolean {
             /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]?\.cybozu-dev\.com$/,
         ];
 
-        const isValidDomain = validKintonePatterns.some(pattern => pattern.test(hostname));
+        const isValidDomain = validKintonePatterns.some(pattern =>
+            pattern.test(hostname)
+        );
 
         if (!isValidDomain) {
             return false;
@@ -173,10 +180,10 @@ export function isValidKintoneUrl(url: string): boolean {
             const octets = ipMatch.slice(1, 5).map(Number);
             // Block private IP ranges
             if (
-                (octets[0] === 10) ||
+                octets[0] === 10 ||
                 (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
                 (octets[0] === 192 && octets[1] === 168) ||
-                (octets[0] === 127) || // Loopback
+                octets[0] === 127 || // Loopback
                 (octets[0] === 169 && octets[1] === 254) // Link-local
             ) {
                 return false;
@@ -185,15 +192,17 @@ export function isValidKintoneUrl(url: string): boolean {
 
         // Validate path structure - must be Kintone API endpoints
         const validPathPatterns = [
-            /^\/k\/v1\/records\.json$/,                    // Get/Update records
-            /^\/k\/v1\/record\.json$/,                     // Get specific record
-            /^\/k\/v1\/preview\/app\/views\.json$/,        // Get views (pre-live)
+            /^\/k\/v1\/records\.json$/, // Get/Update records
+            /^\/k\/v1\/record\.json$/, // Get specific record
+            /^\/k\/v1\/preview\/app\/views\.json$/, // Get views (pre-live)
             /^\/k\/v1\/preview\/app\/form\/fields\.json$/, // Get form fields (pre-live)
-            /^\/k\/guest\/\d+\/v1\/records\.json$/,        // Guest space records
-            /^\/k\/guest\/\d+\/v1\/record\.json$/,         // Guest space specific record
+            /^\/k\/guest\/\d+\/v1\/records\.json$/, // Guest space records
+            /^\/k\/guest\/\d+\/v1\/record\.json$/, // Guest space specific record
         ];
 
-        const isValidPath = validPathPatterns.some(pattern => pattern.test(parsedUrl.pathname));
+        const isValidPath = validPathPatterns.some(pattern =>
+            pattern.test(parsedUrl.pathname)
+        );
         if (!isValidPath) {
             return false;
         }
@@ -206,10 +215,10 @@ export function isValidKintoneUrl(url: string): boolean {
             /file:/i,
             /ftp:/i,
             /<script/i,
-            /\.\./,     // Path traversal
-            /\0/,       // Null bytes
-            /%00/i,     // URL encoded null bytes
-            /%2e%2e/i,  // URL encoded path traversal
+            /\.\./, // Path traversal
+            /\0/, // Null bytes
+            /%00/i, // URL encoded null bytes
+            /%2e%2e/i, // URL encoded path traversal
         ];
 
         const fullUrl = url.toLowerCase();
