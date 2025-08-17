@@ -647,14 +647,19 @@ class GroupController implements IController {
                             group_id: group.id,
                         })
                     );
-                    const valuesString = insertData
-                        .map(
-                            (item: any) =>
-                                `(${item.student_id}, ${item.group_id})`
-                        )
+
+                    const placeholders = insertData
+                        .map(() => '(?, ?)')
                         .join(', ');
-                    await DB.query(`INSERT INTO GroupMember (student_id, group_id)
-                        VALUES ${valuesString};`);
+                    const values: any[] = [];
+                    insertData.forEach(item => {
+                        values.push(item.student_id, item.group_id);
+                    });
+
+                    await DB.query(
+                        `INSERT INTO GroupMember (student_id, group_id) VALUES ${placeholders};`,
+                        values
+                    );
                 }
             }
 
