@@ -58,9 +58,9 @@ export function redirectSystemPath({
         return pathname;
       }
     }
-    // Handle custom scheme URLs
-    else if (path.startsWith('jduapp://')) {
-      const cleanPath = path.replace('jduapp://', '');
+    // Handle custom scheme URLs (jduapp, jduapp-dev, jduapp-preview)
+    else if (path.startsWith('jduapp')) {
+      const cleanPath = path.replace(/^jduapp[^:]*:\/\//, '');
       let finalPath = cleanPath.startsWith('/') ? cleanPath : '/' + cleanPath;
 
       // Handle student message URLs in custom scheme
