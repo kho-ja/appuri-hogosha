@@ -70,8 +70,20 @@ module.exports = ({ config }) => {
         UIViewControllerBasedStatusBarAppearance: false,
         NSPhotoLibraryAddUsageDescription:
           'We need access to your photo library to save images to your gallery.',
+        // Add URL schemes for custom scheme deep links
+        CFBundleURLTypes: [
+          {
+            CFBundleURLName: variantConfig.scheme,
+            CFBundleURLSchemes: [variantConfig.scheme],
+          },
+        ],
       },
-      associatedDomains: ['applinks:appuri-hogosha.vercel.app'],
+      associatedDomains: [
+        'applinks:appuri-hogosha.vercel.app',
+        // Optionally add specific paths if needed
+        'applinks:appuri-hogosha.vercel.app/student/*',
+        'applinks:appuri-hogosha.vercel.app/parentnotification/*',
+      ],
       // CRITICAL: Add push notification entitlements for iOS preview builds
       entitlements: {
         'aps-environment':
@@ -108,6 +120,11 @@ module.exports = ({ config }) => {
               scheme: 'https',
               host: 'appuri-hogosha.vercel.app',
               pathPrefix: '/parentnotification',
+            },
+            {
+              scheme: 'https',
+              host: 'appuri-hogosha.vercel.app',
+              pathPrefix: '/student',
             },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
