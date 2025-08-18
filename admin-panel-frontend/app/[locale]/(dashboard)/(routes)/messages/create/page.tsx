@@ -431,7 +431,7 @@ export default function SendMessagePage() {
               <DialogContent className="sm:max-w-[80%] max-h-max">
                 <div className="sm:flex gap-4">
                   <DialogHeader className="w-full whitespace-pre-wrap">
-                    <DialogTitle className="whitespace-pre-wrap text-center">
+                    <DialogTitle className="whitespace-pre-wrap break-all text-center">
                       {formValues.title}
                     </DialogTitle>
                     <DialogDescription className="whitespace-pre-wrap break-all">
