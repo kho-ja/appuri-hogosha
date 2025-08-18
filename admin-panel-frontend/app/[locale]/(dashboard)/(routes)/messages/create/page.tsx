@@ -434,7 +434,7 @@ export default function SendMessagePage() {
                     <DialogTitle className="whitespace-pre-wrap text-center">
                       {formValues.title}
                     </DialogTitle>
-                    <DialogDescription className="whitespace-pre-wrap">
+                    <DialogDescription className="whitespace-pre-wrap break-all">
                       <ReactLinkify>{formValues.description}</ReactLinkify>
                     </DialogDescription>
                     <div className="flex w-full">
