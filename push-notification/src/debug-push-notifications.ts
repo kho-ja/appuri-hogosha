@@ -118,7 +118,7 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
         let messageConfiguration: any = {};
 
         if (analysis.type === 'apns') {
-            // Enhanced iOS APNS payload
+            // Enhanced iOS APNS payload - Fixed: Use structured fields only
             messageConfiguration = {
                 APNSMessage: {
                     Title: testMessage.title,
@@ -134,25 +134,8 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
                         timestamp: new Date().toISOString(),
                         url: testMessage.url,
                         post_id: testMessage.post_id
-                    },
-                    // Add iOS-specific payload
-                    RawContent: JSON.stringify({
-                        aps: {
-                            alert: {
-                                title: testMessage.title,
-                                body: testMessage.body
-                            },
-                            sound: 'default',
-                            badge: 1,
-                            'mutable-content': 1,
-                            'content-available': 1
-                        },
-                        data: {
-                            test: 'true',
-                            url: testMessage.url,
-                            post_id: testMessage.post_id
-                        }
-                    })
+                    }
+                    // Removed RawContent to prevent silent notification behavior on iOS
                 }
             };
         } else {

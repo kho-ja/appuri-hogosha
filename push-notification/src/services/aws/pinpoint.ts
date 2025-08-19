@@ -40,7 +40,7 @@ export class PinpointService {
             let messageConfiguration: DirectMessageConfiguration = {};
 
             if (channelType === 'APNS') {
-                // iOS Configuration
+                // iOS Configuration - Fixed: Use structured fields only, no RawContent
                 messageConfiguration = {
                     APNSMessage: {
                         Title: title,
@@ -51,20 +51,8 @@ export class PinpointService {
                         Action: 'OPEN_APP',
                         TimeToLive: 86400,
                         SilentPush: false,
-                        Data: messageData,
-                        RawContent: JSON.stringify({
-                            aps: {
-                                alert: {
-                                    title: title,
-                                    body: body
-                                },
-                                sound: 'default',
-                                badge: 1,
-                                'mutable-content': 1,
-                                'content-available': 1
-                            },
-                            data: messageData
-                        })
+                        Data: messageData
+                        // Removed RawContent to prevent silent notification behavior
                     }
                 };
             } else {
