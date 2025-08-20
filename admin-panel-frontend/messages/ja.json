@@ -9,8 +9,6 @@
     "forgotPassword": "パスワードをお忘れですか？",
     "loginButton": "ログイン",
     "loginWithGoogle": "Googleでログイン",
-    "noAccount": "アカウントをお持ちでないですか？",
-    "signUp": "サインアップ",
     "invalidCredentials": "無効なメールアドレスまたはパスワードです。",
     "InvalidCredentialsError": "無効なメールアドレスまたはパスワードです。",
     "OTPError": "初めてログインする場合は、アカウントの新しいパスワードを入力してください。",

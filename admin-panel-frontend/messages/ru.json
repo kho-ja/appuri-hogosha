@@ -9,8 +9,6 @@
     "forgotPassword": "Забыли пароль?",
     "loginButton": "Войти",
     "loginWithGoogle": "Войти через Google",
-    "noAccount": "Нет аккаунта?",
-    "signUp": "Зарегистрироваться",
     "InvalidCredentialsError": "Неверный email или пароль.",
     "OTPError": "Вы входите впервые, пожалуйста, введите новый пароль для вашего аккаунта",
     "AuthError": "Что-то пошло не так. Пожалуйста, попробуйте позже.",
