@@ -68,9 +68,9 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
-          name='student/[id]'
+          name='student/[studentId]/index'
           options={({ route }: any) => {
-            const studentId = route.params?.id;
+            const studentId = route.params?.studentId; // Теперь используем studentId
 
             // Find the student by ID to get their name
             const student = students?.find(s => s.id === Number(studentId));
@@ -126,8 +126,9 @@ const Layout = () => {
           }}
         />
         <Stack.Screen
-          name='message/[id]'
-          options={({ route }) => {
+          name='student/[studentId]/message/[id]'
+          // eslint-disable-next-line no-empty-pattern
+          options={({}) => {
             return {
               headerTitle: i18n[language].detailedView,
               headerTitleAlign: 'center',

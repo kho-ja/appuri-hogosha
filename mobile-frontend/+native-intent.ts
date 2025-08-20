@@ -22,14 +22,17 @@ export function redirectSystemPath({
         }
 
         // Handle student URLs specifically
-        // Convert /student/123/message/456 to proper app route
+        // Convert /student/123/message/456 to student page with message ID
         const studentMessageMatch = pathname.match(
           /^\/student\/(\d+)\/message\/(\d+)$/
         );
         if (studentMessageMatch) {
-          const [, , messageId] = studentMessageMatch;
-          const finalPath = `/student/message/${messageId}`;
-          console.log('Redirecting to student message path:', finalPath);
+          const [, studentId, messageId] = studentMessageMatch;
+          const finalPath = `/student/${studentId}/message/${messageId}`;
+          console.log('Redirecting to student page with message:', finalPath, {
+            studentId,
+            messageId,
+          });
           return finalPath;
         }
 
@@ -68,11 +71,12 @@ export function redirectSystemPath({
         /^\/student\/(\d+)\/message\/(\d+)$/
       );
       if (studentMessageMatch) {
-        const [, , messageId] = studentMessageMatch;
-        finalPath = `/student/message/${messageId}`;
+        const [, studentId, messageId] = studentMessageMatch;
+        finalPath = `/student/${studentId}/message/${messageId}`;
         console.log(
-          'Redirecting to custom scheme student message path:',
-          finalPath
+          'Redirecting to custom scheme student page with message:',
+          finalPath,
+          { studentId, messageId }
         );
         return finalPath;
       }
@@ -200,9 +204,18 @@ export function redirectSystemPath({
         /^\/student\/(\d+)\/message\/(\d+)$/
       );
       if (studentMessageMatch) {
-        const [, , messageId] = studentMessageMatch;
-        const finalPath = `/student/message/${messageId}`;
-        console.log('Redirecting to expo student message path:', finalPath);
+        const [, studentId, messageId] = studentMessageMatch;
+
+        console.log('Deep link to student message detected:', {
+          studentId,
+          messageId,
+          initial,
+        });
+
+        // Navigate to student page with messageId parameter
+        // Student page will automatically navigate to the message
+        const finalPath = `/student/${studentId}/message/${messageId}`;
+        console.log('Redirecting to student page with messageId:', finalPath);
         return finalPath;
       }
 
