@@ -207,12 +207,6 @@ export default function LoginForm() {
                 {t("loginWithGoogle")}
               </Button>
             </form>
-            <div className="mt-4 text-center text-sm">
-              {t("noAccount")}{" "}
-              <Link href="#" className="underline">
-                {t("signUp")}
-              </Link>
-            </div>
           </CardContent>
         </Card>
       </div>

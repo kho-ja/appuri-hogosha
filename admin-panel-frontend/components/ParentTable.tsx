@@ -28,6 +28,7 @@ import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiQuery from "@/lib/useApiQuery";
+import useApiPostQuery from "@/lib/useApiPostQuery";
 
 export function ParentTable({
   selectedParents,
@@ -41,9 +42,10 @@ export function ParentTable({
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState<string>("");
-  const { data, isLoading } = useApiQuery<ParentApi>(
-    `parent/list?page=${page}&name=${search}`,
-    ["parents", page, search]
+  const { data, isLoading } = useApiPostQuery<ParentApi>(
+    "parent/list",
+    ["parents", page, search],
+    { page, name: search }
   );
 
   const selectedParentIds = useMemo(

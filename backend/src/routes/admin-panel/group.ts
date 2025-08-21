@@ -188,7 +188,7 @@ class GroupController implements IController {
             ) {
                 const existingGroup = validResults.find(
                     group =>
-                        group.name === name 
+                        group.name === name
                 );
 
                 if (existingGroup) {
@@ -204,7 +204,7 @@ class GroupController implements IController {
 
             function isCompletelyInvalidExceptArrays(errors: any) {
                 return (
-                    errors.name  || !errors.student_numbers
+                    errors.name || !errors.student_numbers
                 );
             }
 
@@ -221,7 +221,7 @@ class GroupController implements IController {
                     existingError.row.student_numbers.push(...studentNumbersArray);
                 } else {
                     errors.push({
-                        row: { ...row, student_numbers: studentNumbersArray},
+                        row: { ...row, student_numbers: studentNumbersArray },
                         errors: { ...rowErrors },
                     });
                 }
