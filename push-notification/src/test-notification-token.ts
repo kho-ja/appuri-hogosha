@@ -19,6 +19,7 @@ const TEST_CONFIG = {
         description: 'This is a test notification to verify token functionality.',
         family_name: 'Doe',
         given_name: 'John',
+        student_id: '0',
         chat_id: '', // Will be set if testing Telegram
         language: 'en', // en, ja, ru, uz
         phone_number: '', // Will be set if testing SMS

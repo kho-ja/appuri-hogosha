@@ -3,8 +3,53 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import localImageLoader from "@/lib/localImageLoader";
+import { useEffect } from "react";
 
-export default function Home() {
+interface PageProps {
+  params: { locale: string; slug?: string[] };
+  searchParams: { variant?: string };
+}
+
+export default function ParentNotificationPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const androidLink =
+    process.env.NEXT_PUBLIC_ANDROID_STORE_URL ||
+    "https://play.google.com/store/apps/details?id=com.jduapp.parentnotification";
+  const iosLink =
+    process.env.NEXT_PUBLIC_IOS_STORE_URL || "https://apps.apple.com";
+
+  useEffect(() => {
+    const slugPath = params.slug?.join("/") ?? "";
+    const variant = searchParams.variant || "production";
+    const scheme =
+      variant === "development"
+        ? "jduapp-dev"
+        : variant === "preview"
+        ? "jduapp-preview"
+        : "jduapp";
+    const path = slugPath || "home";
+    const appUrl = `${scheme}://${path}`;
+
+    const userAgent = navigator.userAgent || navigator.vendor || "";
+    const storeUrl = /android/i.test(userAgent)
+      ? androidLink
+      : /iPad|iPhone|iPod/.test(userAgent)
+      ? iosLink
+      : undefined;
+
+    const timer = setTimeout(() => {
+      if (storeUrl) {
+        window.location.href = storeUrl;
+      }
+    }, 1500);
+
+    window.location.href = appUrl;
+
+    return () => clearTimeout(timer);
+  }, [params.slug, searchParams.variant, androidLink, iosLink]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <header className="container flex items-center justify-between pt-4">
@@ -40,7 +85,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link href="#">
+            <Link href={androidLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/google.png"
@@ -51,7 +96,7 @@ export default function Home() {
                 priority
               />
             </Link>
-            <Link href="#">
+            <Link href={iosLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/apple.png"
@@ -167,7 +212,7 @@ export default function Home() {
         <div className="flex flex-wrap items-center justify-center gap-8">
           <div className="w-32">{/* QR Code space */}</div>
           <div className="flex flex-col gap-4">
-            <Link href="#">
+            <Link href={androidLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/google.png"
@@ -178,7 +223,7 @@ export default function Home() {
                 priority
               />
             </Link>
-            <Link href="#">
+            <Link href={iosLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/apple.png"

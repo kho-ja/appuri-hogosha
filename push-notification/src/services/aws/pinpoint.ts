@@ -30,7 +30,7 @@ export class PinpointService {
             const body = getLocalizedText(post.language, 'body', post);
 
             const messageData = {
-                url: `jduapp://(tabs)/(home)/message/${post.id}`,
+                url: `jduapp://student/${post.student_id}/message/${post.id}`,
                 post_id: post.id.toString(),
                 priority: post.priority,
                 student_name: `${post.given_name} ${post.family_name}`,
@@ -86,7 +86,7 @@ export class PinpointService {
                                 priority: 'high'
                             },
                             data: {
-                                url: `jduapp://(tabs)/(home)/message/${post.id}`,
+                                url: `jduapp://student/${post.student_id}/message/${post.id}`,
                                 post_id: post.id.toString(),
                                 priority: post.priority,
                                 student_name: `${post.given_name} ${post.family_name}`,
