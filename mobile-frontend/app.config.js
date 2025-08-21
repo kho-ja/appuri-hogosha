@@ -81,7 +81,6 @@ module.exports = ({ config }) => {
       associatedDomains: [
         'applinks:appuri-hogosha.vercel.app',
         // Optionally add specific paths if needed
-        'applinks:appuri-hogosha.vercel.app/student/*',
         'applinks:appuri-hogosha.vercel.app/parentnotification/*',
       ],
       // CRITICAL: Add push notification entitlements for iOS preview builds
@@ -120,11 +119,6 @@ module.exports = ({ config }) => {
               scheme: 'https',
               host: 'appuri-hogosha.vercel.app',
               pathPrefix: '/parentnotification',
-            },
-            {
-              scheme: 'https',
-              host: 'appuri-hogosha.vercel.app',
-              pathPrefix: '/student',
             },
           ],
           category: ['BROWSABLE', 'DEFAULT'],

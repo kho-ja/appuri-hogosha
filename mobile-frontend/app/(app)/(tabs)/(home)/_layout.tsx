@@ -70,7 +70,7 @@ const Layout = () => {
         <Stack.Screen
           name='student/[studentId]/index'
           options={({ route }: any) => {
-            const studentId = route.params?.studentId; // Теперь используем studentId
+            const studentId = route.params?.studentId;
 
             // Find the student by ID to get their name
             const student = students?.find(s => s.id === Number(studentId));

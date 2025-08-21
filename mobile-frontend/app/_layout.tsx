@@ -105,8 +105,15 @@ export default function Root() {
             router.push(`/student/${studentId}/message/${messageId}`);
           }, 50);
         } else {
-          // For other deep links, navigate directly
-          router.push(redirectPath as any);
+          // Check if it's a student page (not message)
+          const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
+          if (studentMatch) {
+            console.log('Deep link to student page, using replace');
+            router.replace(redirectPath as any);
+          } else {
+            // For other deep links, navigate directly
+            router.push(redirectPath as any);
+          }
         }
       }
     });
