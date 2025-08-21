@@ -40,7 +40,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link href="#">
+            <Link href="https://play.google.com/store/apps/details?id=com.jduapp.parentnotification">
               <Image
                 loader={localImageLoader}
                 src="/assets/google.png"
@@ -51,7 +51,7 @@ export default function Home() {
                 priority
               />
             </Link>
-            <Link href="#">
+            <Link href="https://apps.apple.com/uz/app/parent-notification/id6744873338">
               <Image
                 loader={localImageLoader}
                 src="/assets/apple.png"
