@@ -113,7 +113,7 @@ class AuthController implements IController {
                 if (err.status === 400 || err.status === 401 || err.status === 404) {
                     throw { status: err.status, message: err.message };
                 }
-                throw err;
+                throw { status: 500, message: err.message || "InternalServerError" };
             }
         } catch (e: any) {
             console.error("Forgot password confirm error (admin):", e);

@@ -33,8 +33,7 @@ export default function ForgotPasswordPage() {
     if (/[^A-Za-z0-9]/.test(password)) score++;
     if (score >= 5) return { label: t("Strong"), color: "text-green-600" };
     if (score >= 3) return { label: t("Medium"), color: "text-yellow-600" };
-    if (score >= 1) return { label: t("Weak"), color: "text-red-600" };
-    return { label: t("VeryWeak"), color: "text-red-700" };
+    return { label: t("Weak"), color: "text-red-600" };
   }
 
   function isValidEmail(email: string) {
@@ -108,7 +107,7 @@ export default function ForgotPasswordPage() {
       });
       return;
     }
-    if (["Weak", "VeryWeak"].includes(passwordStrength.label)) {
+    if (passwordStrength.label === t("Weak")) {
       toast({
         title: t("Error"),
         description: t("PasswordTooWeak"),
@@ -235,7 +234,7 @@ export default function ForgotPasswordPage() {
                   code.length !== 6 ||
                   !newPassword ||
                   !passwordsMatch ||
-                  ["Weak", "VeryWeak"].includes(passwordStrength.label)
+                  passwordStrength.label === t("Weak")
                 }
               >
                 {t("ResetPassword")}
