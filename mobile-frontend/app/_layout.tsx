@@ -13,7 +13,7 @@ import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { redirectSystemPath } from '../+native-intent';
+import { redirectSystemPath } from '../native-intent';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();

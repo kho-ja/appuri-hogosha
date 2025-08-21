@@ -172,10 +172,10 @@ export default function ThisMessage({
       </PageHeader>
       <Card className="space-y-8 p-4">
         <div>
-          <CardTitle className="text-xl w-2/4 font-bold">
+          <CardTitle className="text-xl w-2/4 font-bold break-words">
             {data?.post?.title}
           </CardTitle>
-          <CardDescription className="whitespace-pre-wrap">
+          <CardDescription className="whitespace-pre-wrap break-words">
             <ReactLinkify>{data?.post?.description}</ReactLinkify>
           </CardDescription>
           {data?.post?.image && (

@@ -29,7 +29,17 @@ const intlMiddleware = createMiddleware({
 
 const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
-  const isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+  let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+
+  if (!isPublicPage) {
+    const path = req.nextUrl.pathname;
+    if (
+      path.startsWith("/parentnotification") ||
+      locales.some(locale => path.startsWith(`/${locale}/parentnotification`))
+    ) {
+      isPublicPage = true;
+    }
+  }
 
   // If user is not logged in and trying to access a non-public page, redirect to login
   if (!req.auth && !isPublicPage) {

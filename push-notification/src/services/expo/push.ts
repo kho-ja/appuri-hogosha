@@ -45,7 +45,7 @@ export class ExpoPushService {
                 title: title,
                 body: body,
                 data: {
-                    url: `jduapp://(tabs)/(home)/message/${post.id}`,
+                    url: `jduapp://student/${post.student_id}/message/${post.id}`,
                     post_id: post.id.toString(),
                     priority: post.priority,
                     student_name: `${post.given_name} ${post.family_name}`,
@@ -196,7 +196,7 @@ export class ExpoPushService {
                 title: title,
                 body: body,
                 data: {
-                    url: `jduapp://(tabs)/(home)/message/${post.id}`,
+                    url: `jduapp://student/${post.student_id}/message/${post.id}`,
                     post_id: post.id.toString(),
                     priority: post.priority,
                     student_name: `${post.given_name} ${post.family_name}`,

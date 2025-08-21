@@ -56,13 +56,23 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
-  kintoneUrl: z.string().min(1).url(),
-  kintoneToken: z.string().min(1),
-  given_name_field: z.string().min(1),
-  family_name_field: z.string().min(1),
-  email_field: z.string().min(1),
-  student_number_field: z.string().min(1),
-  phone_number_field: z.string().min(1),
+  subdomain: z
+    .string()
+    .min(1, "kintone_subdomain_required")
+    .max(50, "kintone_subdomain_too_long")
+    .regex(/^[a-zA-Z0-9-]+$/, "kintone_subdomain_invalid_format"),
+  domain: z.enum(["cybozu.com", "kintone.com", "cybozu-dev.com"], {
+    errorMap: () => ({ message: "kintone_domain_invalid" }),
+  }),
+  kintoneToken: z
+    .string()
+    .min(10, "kintone_token_too_short")
+    .max(100, "kintone_token_too_long"),
+  given_name_field: z.string().min(1, "field_required"),
+  family_name_field: z.string().min(1, "field_required"),
+  email_field: z.string().min(1, "field_required"),
+  student_number_field: z.string().min(1, "field_required"),
+  phone_number_field: z.string().min(1, "field_required"),
 });
 
 export default function CreateFromKintone() {
@@ -94,7 +104,8 @@ export default function CreateFromKintone() {
     const savedFormData = localStorage.getItem("formDataKintoneStudent");
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
     if (parsedFormData) {
-      form.setValue("kintoneUrl", parsedFormData.kintoneUrl);
+      form.setValue("subdomain", parsedFormData.subdomain);
+      form.setValue("domain", parsedFormData.domain);
       form.setValue("kintoneToken", parsedFormData.kintoneToken);
       form.setValue("given_name_field", parsedFormData.given_name_field);
       form.setValue("family_name_field", parsedFormData.family_name_field);
@@ -126,22 +137,60 @@ export default function CreateFromKintone() {
       <Card className="p-5 space-y-2">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="kintoneUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("kintoneUrl")}</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    {t("kintoneUrlDescription")}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="subdomain"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("kintoneSubdomain")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={t("kintoneSubdomainPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <FormDescription>
+                      {t("kintoneSubdomainDescription")}
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="domain"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("kintoneDomain")}</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={t("kintoneDomainPlaceholder")}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="cybozu.com">cybozu.com</SelectItem>
+                        <SelectItem value="kintone.com">kintone.com</SelectItem>
+                        <SelectItem value="cybozu-dev.com">
+                          cybozu-dev.com
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    <FormDescription>
+                      {t("kintoneDomainDescription")}
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -150,10 +199,18 @@ export default function CreateFromKintone() {
                 <FormItem>
                   <FormLabel>{t("kintoneToken")}</FormLabel>
                   <FormControl>
-                    <Input type="text" {...field} />
+                    <Input
+                      type="password"
+                      placeholder={t("kintoneTokenPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     {t("kintoneTokenDescription")}
+                    <br />
+                    <small className="text-muted-foreground">
+                      {t("kintoneTokenSecurityNote")}
+                    </small>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
