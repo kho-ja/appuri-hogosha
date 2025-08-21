@@ -40,8 +40,15 @@ class DatabaseClient {
         query: string,
         params?: any
     ): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
-        // Detect potential SQL injection vulnerabilities
+        // Strict validation before any database interaction
         this.validateQuery(query, params);
+
+        // Additional safety: ensure query is properly parameterized
+        if (!this.isQuerySafe(query, params)) {
+            throw new Error(
+                'Query must use parameterized statements for safety'
+            );
+        }
 
         const db = (await this.getConnection()) as Connection;
         // console.log(db.format(query, params))
@@ -54,12 +61,35 @@ class DatabaseClient {
         }
     }
 
+    private isQuerySafe(query: string, _params?: any): boolean {
+        // Ensure the query uses proper parameterization
+        const hasNamedParams = /:(\w+)/.test(query);
+        const hasPositionalParams = /\?/.test(query);
+
+        // If query has dynamic parts, it must use parameters
+        if (!hasNamedParams && !hasPositionalParams) {
+            // Allow only static queries or those with parameters
+            const containsDynamicContent = /\$\{|\+|concat\(/i.test(query);
+            if (containsDynamicContent) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private validateQuery(query: string, params?: any): void {
+        // Limit query length to prevent ReDoS attacks
+        if (query.length > 10000) {
+            throw new Error('Query too long - potential DoS attack');
+        }
+
         // Check for string interpolation patterns that indicate SQL injection risk
+        // Fixed ReDoS vulnerability by making the regex more specific and adding length limits
         const injectionPatterns = [
-            /\$\{[^}]*\}/, // Template literals like ${variable}
+            /\$\{[^}]{0,100}\}/, // Template literals - limited to 100 chars to prevent ReDoS
             /VALUES\s+\([^:?$]/i, // VALUES with non-parameterized data
-            /\+[^+]*\+/, // String concatenation
+            /\+[^+]{0,50}\+/, // String concatenation - limited length
             /'\s*\+\s*|'\s*\|\|\s*/, // String concatenation with quotes
         ];
 
@@ -110,8 +140,15 @@ class DatabaseClient {
         query: string,
         params?: any
     ): Promise<ResultSetHeader> {
-        // Apply the same validation as query method
+        // Apply the same strict validation as query method
         this.validateQuery(query, params);
+
+        // Additional safety: ensure query is properly parameterized
+        if (!this.isQuerySafe(query, params)) {
+            throw new Error(
+                'Query must use parameterized statements for safety'
+            );
+        }
 
         const db = (await this.getConnection()) as Connection;
         // console.log(db.format(query, params))

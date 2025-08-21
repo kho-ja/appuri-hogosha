@@ -324,14 +324,15 @@ class GroupController implements IController {
                             );
 
                             if (studentRows.length > 0) {
-                                const values = studentRows
-                                    .map(
-                                        (student: any) =>
-                                            `(${groupId}, ${student.id})`
-                                    )
-                                    .join(', ');
-                                await DB.execute(
-                                    `INSERT INTO GroupMember (group_id, student_id) VALUES ${values}`
+                                // Use safe bulk insert instead of string interpolation
+                                const insertData = studentRows.map(
+                                    (student: any) => [groupId, student.id]
+                                );
+
+                                await DB.bulkInsert(
+                                    'GroupMember',
+                                    ['group_id', 'student_id'],
+                                    insertData
                                 );
 
                                 const studentList = await DB.query(
@@ -438,14 +439,15 @@ class GroupController implements IController {
                             }
 
                             if (newStudents.length > 0) {
-                                const values = newStudents
-                                    .map(
-                                        (student: any) =>
-                                            `(${student.id}, ${groupId})`
-                                    )
-                                    .join(', ');
-                                await DB.execute(
-                                    `INSERT INTO GroupMember (student_id, group_id) VALUES ${values}`
+                                // Use safe bulk insert instead of string interpolation
+                                const insertData = newStudents.map(
+                                    (student: any) => [student.id, groupId]
+                                );
+
+                                await DB.bulkInsert(
+                                    'GroupMember',
+                                    ['student_id', 'group_id'],
+                                    insertData
                                 );
                                 attachedMembers.push(...newStudents);
                             }
@@ -641,20 +643,27 @@ class GroupController implements IController {
                 }
 
                 if (insertStudentIds.length > 0) {
+                    // Validate that all student IDs are valid integers
+                    if (!isValidArrayId(insertStudentIds)) {
+                        throw {
+                            status: 400,
+                            message: 'invalid_student_id',
+                        };
+                    }
+
+                    // Use safe bulk insert with parameterized queries
                     const insertData = insertStudentIds.map(
-                        (studentId: any) => ({
-                            student_id: studentId,
-                            group_id: group.id,
-                        })
+                        (studentId: any) => [
+                            Number(studentId), // Ensure it's a number
+                            group.id,
+                        ]
                     );
-                    const valuesString = insertData
-                        .map(
-                            (item: any) =>
-                                `(${item.student_id}, ${item.group_id})`
-                        )
-                        .join(', ');
-                    await DB.query(`INSERT INTO GroupMember (student_id, group_id)
-                        VALUES ${valuesString};`);
+
+                    await DB.bulkInsert(
+                        'GroupMember',
+                        ['student_id', 'group_id'],
+                        insertData
+                    );
                 }
             }
 
@@ -1037,11 +1046,16 @@ class GroupController implements IController {
                 );
 
                 if (studentRows.length > 0) {
-                    const values = studentRows
-                        .map((student: any) => `(${student.id}, ${groupId})`)
-                        .join(', ');
-                    await DB.execute(
-                        `INSERT INTO GroupMember(student_id, group_id) VALUES ${values}`
+                    // Use safe bulk insert instead of string interpolation
+                    const insertData = studentRows.map((student: any) => [
+                        student.id,
+                        groupId,
+                    ]);
+
+                    await DB.bulkInsert(
+                        'GroupMember',
+                        ['student_id', 'group_id'],
+                        insertData
                     );
 
                     const studentList = await DB.query(
