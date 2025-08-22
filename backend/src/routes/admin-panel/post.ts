@@ -5,7 +5,6 @@ import DB from '../../utils/db-client';
 import { Images3Client } from '../../utils/s3-client';
 import {
     isValidString,
-    isValidLongString,
     isValidArrayId,
     isValidPriority,
     isValidId,
@@ -2157,7 +2156,7 @@ class PostController implements IController {
                     message: 'invalid_or_missing_title',
                 };
             }
-            if (!description || !isValidLongString(description)) {
+            if (!description || !isValidString(description)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_description',

@@ -9,8 +9,6 @@
     "forgotPassword": "Parolni unutdingizmi?",
     "loginButton": "Kirish",
     "loginWithGoogle": "Google bilan kirish",
-    "noAccount": "Hisobingiz yo'qmi?",
-    "signUp": "Ro'yxatdan o'tish",
     "invalidCredentials": "Noto'g'ri elektron pochta yoki parol.",
     "InvalidCredentialsError": "Noto'g'ri elektron pochta yoki parol.",
     "OTPError": "Siz birinchi marta kirayotganingiz uchun, iltimos, hisobingiz uchun yangi parolni kiriting.",

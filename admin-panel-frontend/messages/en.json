@@ -9,8 +9,6 @@
     "forgotPassword": "Forgot your password?",
     "loginButton": "Login",
     "loginWithGoogle": "Login with Google",
-    "noAccount": "Don't have an account?",
-    "signUp": "Sign up",
     "InvalidCredentialsError": "Invalid email or password.",
     "OTPError": "You are entering first time please enter new password for your account",
     "AuthError": "Something went wrong. Please try again later.",
