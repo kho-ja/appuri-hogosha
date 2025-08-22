@@ -1,5 +1,9 @@
-import mysql, { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import process from "node:process";
+import mysql, {
+    Connection,
+    RowDataPacket,
+    ResultSetHeader,
+} from 'mysql2/promise';
+import process from 'node:process';
 
 class DatabaseClient {
     private connection: Connection | null = null;
@@ -11,19 +15,19 @@ class DatabaseClient {
                 pool: process.env.DB_PORT,
                 user: process.env.DB_USER,
                 password: process.env.DB_PASSWORD,
-                database: process.env.DB_DATABASE
+                database: process.env.DB_DATABASE,
             });
             console.log('Connected to the database successfully.');
-            return connection
+            return connection;
         } catch (e: any) {
-            console.log('Database connection error:', e)
+            console.log('Database connection error:', e);
         }
     }
 
     private async getConnection(): Promise<Connection | undefined> {
         try {
             if (!this.connection) {
-                this.connection = await this.createConnection() as Connection;
+                this.connection = (await this.createConnection()) as Connection;
                 this.connection.config.namedPlaceholders = true;
             }
             return this.connection;
@@ -32,25 +36,11 @@ class DatabaseClient {
         }
     }
 
-    public async query(query: string, params?: any): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
-        // Add query validation to prevent dangerous queries
-        const dangerousPatterns = [
-            /;\s*(drop|delete|truncate|alter|create|insert|update)\s+/i,
-            /union\s+select/i,
-            /information_schema/i,
-            /mysql\./i,
-            /--/,
-            /\/\*/
-        ];
-
-        for (const pattern of dangerousPatterns) {
-            if (pattern.test(query)) {
-                console.error('Potentially dangerous query detected:', query);
-                throw new Error('Query contains potentially dangerous patterns');
-            }
-        }
-
-        const db = await this.getConnection() as Connection;
+    public async query(
+        query: string,
+        params?: any
+    ): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
+        const db = (await this.getConnection()) as Connection;
         // console.log(db.format(query, params))
         try {
             const [results] = await db.query(query, params);
@@ -61,8 +51,11 @@ class DatabaseClient {
         }
     }
 
-    public async execute(query: string, params?: any): Promise<ResultSetHeader> {
-        const db = await this.getConnection() as Connection;
+    public async execute(
+        query: string,
+        params?: any
+    ): Promise<ResultSetHeader> {
+        const db = (await this.getConnection()) as Connection;
         // console.log(db.format(query, params))
         try {
             const [results] = await db.execute<ResultSetHeader>(query, params);
@@ -80,7 +73,6 @@ class DatabaseClient {
             this.connection = null;
         }
     }
-
 }
 
 export default new DatabaseClient();

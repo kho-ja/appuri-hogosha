@@ -332,7 +332,13 @@ export default function DetailsScreen() {
       <View
         style={[
           styles.titleRow,
-          { justifyContent: 'space-between', alignItems: 'center' },
+          multiplier > 1
+            ? { flexDirection: 'column-reverse', alignItems: 'flex-start' }
+            : {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              },
         ]}
       >
         <ThemedText
@@ -340,9 +346,9 @@ export default function DetailsScreen() {
             styles.title,
             {
               fontSize: 18 * multiplier,
-              width: 'auto',
               textAlign: 'left',
               flex: 1,
+              width: multiplier > 1 ? '100%' : 'auto',
             },
           ]}
         >
@@ -361,7 +367,8 @@ export default function DetailsScreen() {
             paddingVertical: 4 * multiplier,
             justifyContent: 'center',
             alignItems: 'center',
-            marginLeft: 10,
+            marginLeft: multiplier > 1 ? 0 : 10,
+            alignSelf: multiplier > 1 ? 'flex-end' : 'center',
           }}
         >
           <ThemedText
