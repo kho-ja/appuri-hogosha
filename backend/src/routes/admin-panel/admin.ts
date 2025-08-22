@@ -67,12 +67,12 @@ class AdminController implements IController {
             // Get admin from database to get their email
             const admins = await DB.query(
                 `
-                SELECT 
+                SELECT
                     ad.email,
                     ad.phone_number,
                     ad.given_name,
                     ad.family_name
-                FROM Admin ad 
+                FROM Admin ad
                 WHERE ad.id = :adminId
             `,
                 {
@@ -432,10 +432,10 @@ class AdminController implements IController {
                 };
             }
             const adminInfo = await DB.query(
-                `SELECT 
-                id, cognito_sub_id, email, 
-                phone_number, given_name, 
-                family_name, created_at, last_login_at 
+                `SELECT
+                id, cognito_sub_id, email,
+                phone_number, given_name,
+                family_name, created_at, last_login_at
                 FROM Admin
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -516,10 +516,10 @@ class AdminController implements IController {
                 };
             }
             const adminInfo = await DB.query(
-                `SELECT id, 
-                       email, phone_number, 
-                       given_name, family_name, 
-                       created_at 
+                `SELECT id,
+                       email, phone_number,
+                       given_name, family_name,
+                       created_at
                 FROM Admin
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -557,7 +557,7 @@ class AdminController implements IController {
             }
 
             await DB.execute(
-                `UPDATE Admin SET                    
+                `UPDATE Admin SET
                         phone_number = :phone_number,
                         family_name = :family_name,
                         given_name = :given_name
@@ -759,8 +759,8 @@ class AdminController implements IController {
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
             const adminList = await DB.query(
-                `SELECT 
-                id, email, phone_number, given_name, family_name 
+                `SELECT
+                id, email, phone_number, given_name, family_name
                 FROM Admin
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC
@@ -879,9 +879,9 @@ class AdminController implements IController {
             const admin = await this.cognitoClient.register(email, email);
 
             const adminInsert = await DB.execute(
-                `INSERT INTO Admin 
+                `INSERT INTO Admin
                 (cognito_sub_id, email, phone_number, given_name, family_name
-                    , created_at, last_login_at, permissions, school_id) VALUES 
+                    , created_at, last_login_at, permissions, school_id) VALUES
                     (:cognito_sub_id, :email, :phone_number, :given_name, :family_name
                     , NOW(), NOW(), '{}', :school_id) `,
                 {

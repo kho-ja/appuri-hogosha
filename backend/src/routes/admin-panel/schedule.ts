@@ -632,8 +632,8 @@ class SchedulePostController implements IController {
             }
 
             const post = await DB.query(
-                `Select 
-                title, description, priority, image, scheduled_at, admin_id, school_id 
+                `Select
+                title, description, priority, image, scheduled_at, admin_id, school_id
                 from scheduledPost where id = :postId and school_id = :school_id`,
                 {
                     postId: postId,
@@ -857,7 +857,7 @@ class SchedulePostController implements IController {
             const postId = postInsert.insertId;
 
             const recieversObject = await DB.query(`
-                SELECT 
+                SELECT
                     GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
                     GROUP_CONCAT(DISTINCT student_id) AS students
                 FROM scheduledPostRecievers

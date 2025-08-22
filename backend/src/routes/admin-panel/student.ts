@@ -723,10 +723,10 @@ class StudentController implements IController {
             }
 
             const studentInfo = await DB.query(
-                `SELECT 
-                id, email, given_name, family_name, 
-                phone_number, student_number 
-                FROM Student 
+                `SELECT
+                id, email, given_name, family_name,
+                phone_number, student_number
+                FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
                     id: studentId,
@@ -772,7 +772,7 @@ class StudentController implements IController {
 
                 if (removedParentIds.length > 0) {
                     await DB.query(
-                        `DELETE FROM StudentParent 
+                        `DELETE FROM StudentParent
                         WHERE student_id = :student_id AND parent_id IN (:parentIds);`,
                         {
                             student_id: student.id,
@@ -782,7 +782,7 @@ class StudentController implements IController {
 
                     await DB.query(
                         `
-                            DELETE pp 
+                            DELETE pp
                             FROM PostParent AS pp
                             INNER JOIN PostStudent AS ps ON pp.post_student_id = ps.id
                             WHERE ps.student_id = :student_id AND pp.parent_id IN (:parentIds);`,
@@ -882,10 +882,10 @@ class StudentController implements IController {
             }
 
             const studentInfo = await DB.query(
-                `SELECT 
-                id, email, given_name, family_name, 
-                phone_number, student_number 
-                FROM Student 
+                `SELECT
+                id, email, given_name, family_name,
+                phone_number, student_number
+                FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
                     id: studentId,
@@ -949,10 +949,10 @@ class StudentController implements IController {
                 };
             }
             const studentInfo = await DB.query(
-                `SELECT 
-                id, email, given_name, family_name, 
-                phone_number, student_number 
-                FROM Student 
+                `SELECT
+                id, email, given_name, family_name,
+                phone_number, student_number
+                FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
                     id: studentId,
@@ -1035,7 +1035,7 @@ class StudentController implements IController {
                 };
             }
             const studentInfo = await DB.query(
-                `SELECT 
+                `SELECT
                 id, email FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1131,10 +1131,10 @@ class StudentController implements IController {
                 };
             }
             const studentInfo = await DB.query(
-                `SELECT 
-                id, email, given_name, family_name, 
-                phone_number, student_number 
-                FROM Student 
+                `SELECT
+                id, email, given_name, family_name,
+                phone_number, student_number
+                FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
                     id: studentId,
@@ -1152,7 +1152,7 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const studentParents = await DB.query(
-                `SELECT pa.id, pa.email, 
+                `SELECT pa.id, pa.email,
                 pa.phone_number, pa.given_name, pa.family_name
                 FROM StudentParent AS sp
                 INNER JOIN Parent AS pa on sp.parent_id = pa.id
@@ -1209,7 +1209,7 @@ class StudentController implements IController {
                 isValidArrayId(studentIds)
             ) {
                 const studentList = await DB.query(
-                    `SELECT id,given_name, family_name 
+                    `SELECT id,given_name, family_name
                         FROM Student WHERE id IN (:students) AND school_id = :school_id`,
                     {
                         students: studentIds,
@@ -1274,8 +1274,8 @@ class StudentController implements IController {
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
             const studentList = await DB.query(
-                `SELECT 
-                id, email, given_name, family_name, 
+                `SELECT
+                id, email, given_name, family_name,
                 phone_number, student_number
                 FROM Student
                 WHERE school_id = :school_id ${whereClause}
@@ -1451,7 +1451,7 @@ class StudentController implements IController {
                     );
 
                     const parentList = await DB.query(
-                        `SELECT pa.id,pa.email,pa.phone_number,pa.given_name,pa.family_name 
+                        `SELECT pa.id,pa.email,pa.phone_number,pa.given_name,pa.family_name
                         FROM Parent as pa
                         INNER JOIN StudentParent as sp
                         ON sp.parent_id = pa.id AND sp.student_id = :student_id`,

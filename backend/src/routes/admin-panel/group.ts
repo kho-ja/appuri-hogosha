@@ -66,7 +66,7 @@ class GroupController implements IController {
 
             for (const group of groups) {
                 const memberList = await DB.query(
-                    `SELECT 
+                    `SELECT
                     st.student_number
                     FROM GroupMember AS gm
                     INNER JOIN Student as st ON gm.student_id = st.id
@@ -328,12 +328,13 @@ class GroupController implements IController {
                                 const insertData = studentRows.map(
                                     (student: any) => [groupId, student.id]
                                 );
-
-                                await DB.bulkInsert(
-                                    'GroupMember',
-                                    ['group_id', 'student_id'],
-                                    insertData
-                                );
+                                for (const row of insertData) {
+                                    const [group_id, student_id] = row;
+                                    await DB.execute(
+                                        `INSERT INTO GroupMember (group_id, student_id) VALUES (:group_id, :student_id)`,
+                                        { group_id, student_id }
+                                    );
+                                }
 
                                 const studentList = await DB.query(
                                     `SELECT st.id,st.given_name, st.family_name
@@ -393,9 +394,9 @@ class GroupController implements IController {
                             )[0].id;
 
                             const existingStudents = await DB.query(
-                                `SELECT st.id, st.student_number 
-                                FROM GroupMember AS gm 
-                                INNER JOIN Student as st 
+                                `SELECT st.id, st.student_number
+                                FROM GroupMember AS gm
+                                INNER JOIN Student as st
                                 ON gm.student_id = st.id
                                 WHERE gm.group_id = :group_id`,
                                 {
@@ -443,12 +444,13 @@ class GroupController implements IController {
                                 const insertData = newStudents.map(
                                     (student: any) => [student.id, groupId]
                                 );
-
-                                await DB.bulkInsert(
-                                    'GroupMember',
-                                    ['student_id', 'group_id'],
-                                    insertData
-                                );
+                                for (const row of insertData) {
+                                    const [student_id, group_id] = row;
+                                    await DB.execute(
+                                        `INSERT INTO GroupMember (student_id, group_id) VALUES (:student_id, :group_id)`,
+                                        { student_id, group_id }
+                                    );
+                                }
                                 attachedMembers.push(...newStudents);
                             }
 
@@ -624,7 +626,7 @@ class GroupController implements IController {
 
                 if (deleteStudentIds.length > 0) {
                     await DB.query(
-                        `DELETE FROM GroupMember 
+                        `DELETE FROM GroupMember
                         WHERE group_id = :group_id AND student_id IN (:studentIds);`,
                         {
                             group_id: group.id,
@@ -658,12 +660,13 @@ class GroupController implements IController {
                             group.id,
                         ]
                     );
-
-                    await DB.bulkInsert(
-                        'GroupMember',
-                        ['student_id', 'group_id'],
-                        insertData
-                    );
+                    for (const row of insertData) {
+                        const [student_id, group_id] = row;
+                        await DB.execute(
+                            `INSERT INTO GroupMember (student_id, group_id) VALUES (:student_id, :group_id)`,
+                            { student_id, group_id }
+                        );
+                    }
                 }
             }
 
@@ -759,7 +762,7 @@ class GroupController implements IController {
                 isValidArrayId(groupIds)
             ) {
                 const groupList = await DB.query(
-                    `SELECT id,name FROM StudentGroup 
+                    `SELECT id,name FROM StudentGroup
                     WHERE id IN (:groups) AND school_id = :school_id;`,
                     {
                         groups: groupIds,
@@ -809,7 +812,7 @@ class GroupController implements IController {
                 };
             }
             const groupInfo = await DB.query(
-                `SELECT id,name,created_at FROM StudentGroup 
+                `SELECT id,name,created_at FROM StudentGroup
                 WHERE id = :id AND school_id = :school_id`,
                 {
                     id: groupId,
@@ -1020,7 +1023,7 @@ class GroupController implements IController {
             }
 
             const groupInsert = await DB.execute(
-                `INSERT INTO StudentGroup(name, created_at, school_id) 
+                `INSERT INTO StudentGroup(name, created_at, school_id)
                 VALUE (:name, NOW(), :school_id);`,
                 {
                     name: name,
@@ -1051,17 +1054,18 @@ class GroupController implements IController {
                         student.id,
                         groupId,
                     ]);
-
-                    await DB.bulkInsert(
-                        'GroupMember',
-                        ['student_id', 'group_id'],
-                        insertData
-                    );
+                    for (const row of insertData) {
+                        const [student_id, group_id] = row;
+                        await DB.execute(
+                            `INSERT INTO GroupMember (student_id, group_id) VALUES (:student_id, :group_id)`,
+                            { student_id, group_id }
+                        );
+                    }
 
                     const studentList = await DB.query(
-                        `SELECT 
+                        `SELECT
                         st.id,st.phone_number,st.email,
-                        st.student_number,st.given_name,st.family_name 
+                        st.student_number,st.given_name,st.family_name
                     FROM GroupMember AS gm
                     INNER JOIN Student as st ON gm.student_id = st.id
                     WHERE group_id = :group_id;`,

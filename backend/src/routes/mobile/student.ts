@@ -60,7 +60,7 @@ class StudentController implements IController {
         try {
             const students = await DB.query(
                 `
-                        SELECT 
+                        SELECT
                             st.id,
                             st.family_name,
                             st.given_name,
@@ -72,7 +72,7 @@ class StudentController implements IController {
                         FROM StudentParent AS sp
                         INNER JOIN Student AS st ON st.id = sp.student_id
                         LEFT JOIN PostStudent AS ps ON ps.student_id = st.id
-                        LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id 
+                        LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id
                             AND pp.parent_id = sp.parent_id
                         WHERE sp.parent_id = :parent_id
                         GROUP BY st.id, st.family_name, st.given_name, st.student_number, st.email, st.phone_number;

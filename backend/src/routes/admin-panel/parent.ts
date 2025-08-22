@@ -97,12 +97,12 @@ class ParentController implements IController {
             // Get parent from database to get their email
             const parents = await DB.query(
                 `
-                SELECT 
+                SELECT
                     p.email,
                     p.phone_number,
                     p.given_name,
                     p.family_name
-                FROM Parent p 
+                FROM Parent p
                 WHERE p.id = :parentId
             `,
                 {
@@ -419,8 +419,8 @@ class ParentController implements IController {
                     row.phone_number
                 );
                 const parentInsert = await DB.execute(
-                    `INSERT INTO 
-                    Parent (cognito_sub_id, email, phone_number, given_name, family_name, school_id) 
+                    `INSERT INTO
+                    Parent (cognito_sub_id, email, phone_number, given_name, family_name, school_id)
                     VALUES (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id)`,
                     {
                         ...row,
@@ -558,7 +558,7 @@ class ParentController implements IController {
 
             for (const parent of parents) {
                 const studentList = await DB.query(
-                    `SELECT 
+                    `SELECT
                     st.student_number
                     FROM StudentParent AS sp
                     INNER JOIN Student AS st ON sp.student_id = st.id
@@ -948,7 +948,7 @@ class ParentController implements IController {
                                 );
 
                                 const studentList = await DB.query(
-                                    `SELECT st.id,st.email,st.phone_number,st.given_name,st.family_name 
+                                    `SELECT st.id,st.email,st.phone_number,st.given_name,st.family_name
                                         FROM Student as st
                                         INNER JOIN StudentParent as sp
                                         ON sp.student_id = st.id AND sp.parent_id = :parent_id`,
@@ -1205,7 +1205,7 @@ class ParentController implements IController {
             }
 
             const parentInfo = await DB.query(
-                `SELECT 
+                `SELECT
                     id, email, phone_number,
                     given_name, family_name, created_at
                     FROM Parent
@@ -1258,7 +1258,7 @@ class ParentController implements IController {
 
                 if (removedStudentIds.length > 0) {
                     await DB.query(
-                        `DELETE FROM StudentParent 
+                        `DELETE FROM StudentParent
                         WHERE parent_id = :parent_id AND student_id IN (:studentIds);`,
                         {
                             parent_id: parent.id,
@@ -1348,7 +1348,7 @@ class ParentController implements IController {
             }
 
             const parentInfo = await DB.query(
-                `SELECT 
+                `SELECT
                     id, email, phone_number,
                     given_name, family_name, created_at
                     FROM Parent
@@ -1414,7 +1414,7 @@ class ParentController implements IController {
                 isValidArrayId(parentIds)
             ) {
                 const parentList = await DB.query(
-                    `SELECT id, given_name, family_name 
+                    `SELECT id, given_name, family_name
                         FROM Parent WHERE id IN (:parents) AND school_id = :school_id`,
                     {
                         parents: parentIds,
@@ -1464,10 +1464,10 @@ class ParentController implements IController {
                 };
             }
             const parentInfo = await DB.query(
-                `SELECT 
-                id, cognito_sub_id, email, 
-                phone_number, given_name, 
-                family_name, created_at, last_login_at 
+                `SELECT
+                id, cognito_sub_id, email,
+                phone_number, given_name,
+                family_name, created_at, last_login_at
                 FROM Parent
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1548,10 +1548,10 @@ class ParentController implements IController {
                 };
             }
             const parentInfo = await DB.query(
-                `SELECT id, 
+                `SELECT id,
                        email,
-                       given_name, family_name, 
-                       created_at 
+                       given_name, family_name,
+                       created_at
                 FROM Parent
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1589,7 +1589,7 @@ class ParentController implements IController {
             }
 
             await DB.execute(
-                `UPDATE Parent SET                    
+                `UPDATE Parent SET
                         email = :email,
                         family_name = :family_name,
                         given_name = :given_name
@@ -1870,8 +1870,8 @@ class ParentController implements IController {
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
             const parentList = await DB.query(
-                `SELECT 
-                id, email, phone_number, given_name, family_name 
+                `SELECT
+                id, email, phone_number, given_name, family_name
                 FROM Parent
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC
@@ -1998,8 +1998,8 @@ class ParentController implements IController {
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
             const parentList = await DB.query(
-                `SELECT 
-                id, email, phone_number, given_name, family_name 
+                `SELECT
+                id, email, phone_number, given_name, family_name
                 FROM Parent
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC

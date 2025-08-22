@@ -1064,8 +1064,8 @@ class PostController implements IController {
             await DB.execute(
                 `
             DELETE FROM Post
-            WHERE school_id = ?  
-              AND id IN (${placeholders})  
+            WHERE school_id = ?
+              AND id IN (${placeholders})
         `,
                 [req.user.school_id, ...postIds]
             );
@@ -2340,6 +2340,7 @@ class PostController implements IController {
                     })
                     .end();
             } else {
+                console.log('Error occurred while creating post:', e);
                 return res
                     .status(500)
                     .json({

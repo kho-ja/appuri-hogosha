@@ -88,7 +88,7 @@ class FormController implements IController {
 
             const formList = await DB.query(
                 `SELECT
-                fo.id, fo.reason, DATE_FORMAT(fo.date, '%Y-%m-%d') AS date, fo.additional_message, 
+                fo.id, fo.reason, DATE_FORMAT(fo.date, '%Y-%m-%d') AS date, fo.additional_message,
                 DATE_FORMAT(fo.sent_at, '%Y-%m-%d %H:%i:%s') AS sent_at, fo.status,
                 pa.id AS parent_id, pa.family_name AS parent_family_name, pa.given_name AS parent_given_name,
                 st.id AS student_id, st.family_name AS student_family_name, st.given_name AS student_given_name
@@ -180,10 +180,10 @@ class FormController implements IController {
                 `SELECT
                     fo.id, fo.reason, DATE_FORMAT(fo.date, '%Y-%m-%d') AS date, fo.additional_message,
                     DATE_FORMAT(fo.sent_at, '%Y-%m-%d %H:%i:%s') AS sent_at, fo.status,
-                
+
                     pa.id AS parent_id, pa.family_name AS parent_family, pa.given_name as parent_given,
                     pa.phone_number AS parent_number,
-                
+
                     st.id AS student_id, st.family_name AS student_family, st.given_name as student_given,
                     st.phone_number AS student_phone_number, st.student_number AS student_number
                 FROM Form AS fo
@@ -273,10 +273,10 @@ class FormController implements IController {
                 `SELECT
                     fo.id, fo.reason, DATE_FORMAT(fo.date, '%Y-%m-%d') AS date, fo.additional_message,
                     DATE_FORMAT(fo.sent_at, '%Y-%m-%d %H:%i:%s') AS sent_at, fo.status,
-                
+
                     pa.id AS parent_id, pa.family_name AS parent_family, pa.given_name as parent_given,
                     pa.phone_number AS parent_number,
-                
+
                     st.id AS student_id, st.family_name AS student_family, st.given_name as student_given,
                     st.phone_number AS student_phone_number, st.student_number AS student_number
                 FROM Form AS fo
