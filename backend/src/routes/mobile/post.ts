@@ -205,7 +205,7 @@ class PostController implements IController {
                           LEFT JOIN StudentGroup AS sg ON sg.id = ps.group_id
                      WHERE pp.parent_id = :parent_id
                        AND (
-                           po.sent_at < :last_sent_at OR 
+                           po.sent_at < :last_sent_at OR
                            (po.sent_at = :last_sent_at AND pp.id < :last_post_id)
                        )
                      ORDER BY po.sent_at DESC, pp.id DESC
