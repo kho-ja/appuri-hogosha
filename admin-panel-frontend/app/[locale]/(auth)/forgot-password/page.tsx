@@ -211,7 +211,7 @@ export default function ForgotPasswordPage() {
     onSuccess: (data) => {
       toast({ title: t("PasswordChanged"), description: data.message });
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/login");
       }, 1200);
     },
     onError: (error) => {
