@@ -1,0 +1,30 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{js,ts}]
+indent_size = 4
+
+[*.json]
+indent_size = 4
+
+[package*.json]
+# Don't modify package files to prevent unnecessary Git changes
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+end_of_line = unset
+
+[*.{py,java}]
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab

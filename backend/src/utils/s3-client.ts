@@ -5,7 +5,7 @@ import {
     PutObjectAclCommandInput,
     PutObjectCommand,
     PutObjectCommandInput,
-    S3Client
+    S3Client,
 } from '@aws-sdk/client-s3';
 
 class MyS3Client {
@@ -29,9 +29,9 @@ class MyS3Client {
             Key: key,
             Body: buffer,
             ContentType: mime,
-        }
+        };
         // console.log(params);
-        const command = new PutObjectCommand(params)
+        const command = new PutObjectCommand(params);
         try {
             await this.client.send(command);
             return true;
@@ -46,7 +46,7 @@ class MyS3Client {
             Bucket: this.bucketName,
             Key: key,
             ACL: 'public-read',
-        }
+        };
 
         const command = new PutObjectAclCommand(params);
 
@@ -63,7 +63,7 @@ class MyS3Client {
         const params: DeleteObjectCommandInput = {
             Bucket: this.bucketName,
             Key: key,
-        }
+        };
 
         const command = new DeleteObjectCommand(params);
 
@@ -76,7 +76,6 @@ class MyS3Client {
         }
     }
 }
-
 
 const Images3Client = new MyS3Client(process.env.BUCKET_NAME ?? '');
 
