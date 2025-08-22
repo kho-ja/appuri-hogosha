@@ -121,8 +121,21 @@ export default {
     tryAgain: 'Try Again',
     /*message*/
 
+    /*404 error page*/
+    pageNotFound: 'Page Not Found',
+    pageNotFoundMessage:
+      "The page you're looking for doesn't exist or you don't have access to it.",
+    studentNotFound: 'Student Not Found',
+    studentNotFoundMessage: 'This student may not be assigned to your account.',
+    messageNotFoundTitle: 'Message Not Found',
+    messageNotAvailable: 'Message Not Available',
+    goToHomeScreen: 'Go to home screen',
+    /*404 error page*/
+
     /*error messages*/
     chooseCorrectDate: 'Please choose a correct date',
+    failedToRetrieveMessage: 'Failed to retrieve message',
+    messageDoesNotBelongToStudent: 'This message does not belong to student',
     /*error messages*/
 
     /*states*/
@@ -353,8 +366,22 @@ export default {
     tryAgain: 'もう一度試す',
     /*message*/
 
+    /*404 error page*/
+    pageNotFound: 'ページが見つかりません',
+    pageNotFoundMessage:
+      'お探しのページは存在しないか、アクセスする権限がありません。',
+    studentNotFound: '学生が見つかりません',
+    studentNotFoundMessage:
+      'この学生はあなたのアカウントに割り当てられていない可能性があります。',
+    messageNotFoundTitle: 'メッセージが見つかりません',
+    messageNotAvailable: 'メッセージが利用できません',
+    goToHomeScreen: 'ホーム画面に戻る',
+    /*404 error page*/
+
     /*error messages*/
     chooseCorrectDate: '正しい日付を選択してください',
+    failedToRetrieveMessage: 'メッセージの取得に失敗しました',
+    messageDoesNotBelongToStudent: 'このメッセージは学生に属していません',
     /*error messages*/
 
     /*states*/
@@ -586,8 +613,22 @@ export default {
     tryAgain: 'Qayta urinish',
     /*message*/
 
+    /*404 error page*/
+    pageNotFound: 'Sahifa topilmadi',
+    pageNotFoundMessage:
+      "Siz izlayotgan sahifa mavjud emas yoki unga kirishga ruxsatingiz yo'q.",
+    studentNotFound: 'Student topilmadi',
+    studentNotFoundMessage:
+      "Bu student sizning hisobingizga tayinlanmagan bo'lishi mumkin.",
+    messageNotFoundTitle: 'Xabar topilmadi',
+    messageNotAvailable: 'Xabar mavjud emas',
+    goToHomeScreen: "Bosh sahifaga o'tish",
+    /*404 error page*/
+
     /*error messages*/
     chooseCorrectDate: "Iltimos, to'g'ri sanani tanlang",
+    failedToRetrieveMessage: 'Xabarni olishda xatolik yuz berdi',
+    messageDoesNotBelongToStudent: 'Bu xabar studentga tegishli emas',
     /*error messages*/
 
     /*states*/
@@ -821,8 +862,22 @@ export default {
     tryAgain: 'Попробовать снова',
     /*message*/
 
+    /*404 error page*/
+    pageNotFound: 'Страница не найдена',
+    pageNotFoundMessage:
+      'Страница, которую вы ищете, не существует или у вас нет к ней доступа.',
+    studentNotFound: 'Студент не найден',
+    studentNotFoundMessage:
+      'Этот студент может быть не назначен на ваш аккаунт.',
+    messageNotFoundTitle: 'Сообщение не найдено',
+    messageNotAvailable: 'Сообщение недоступно',
+    goToHomeScreen: 'Перейти на главную',
+    /*404 error page*/
+
     /*error messages*/
     chooseCorrectDate: 'Пожалуйста, выберите правильную дату',
+    failedToRetrieveMessage: 'Не удалось получить сообщение',
+    messageDoesNotBelongToStudent: 'Это сообщение не принадлежит студенту',
     /*error messages*/
 
     /*states*/

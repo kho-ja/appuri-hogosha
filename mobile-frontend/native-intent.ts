@@ -67,9 +67,7 @@ function normalizePath(
   // Query string helpers (used by Expo Go)
   if (searchParams) {
     const studentId =
-      searchParams.get('studentId') ||
-      searchParams.get('student') ||
-      undefined;
+      searchParams.get('studentId') || searchParams.get('student') || undefined;
     const messageId = searchParams.get('messageId') || undefined;
     if (studentId && messageId) {
       pathname = `/student/${studentId}/message/${messageId}`;

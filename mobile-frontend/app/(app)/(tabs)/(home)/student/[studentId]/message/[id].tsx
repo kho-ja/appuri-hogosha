@@ -10,7 +10,7 @@ import {
   ToastAndroid,
   Image,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useSession } from '@/contexts/auth-context';
@@ -181,7 +181,7 @@ export default function DetailsScreen() {
               `[MessageDetails] Message ${id} belongs to student ${localMessage.student_id}, but requested for student ${actualStudentId}`
             );
             setError(
-              `This message does not belong to student ${actualStudentId}`
+              `${i18n[language].messageDoesNotBelongToStudent} ${actualStudentId}`
             );
             setLoading(false);
             return;
@@ -288,14 +288,24 @@ export default function DetailsScreen() {
         }
       } catch (error) {
         console.error('Error in fetchMessage:', error);
-        setError('Failed to retrieve message');
+        setError(i18n[language].failedToRetrieveMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMessage();
-  }, [id, actualStudentId, apiUrl, db, isOnline, session, markMessageAsRead]);
+  }, [
+    id,
+    actualStudentId,
+    apiUrl,
+    db,
+    isOnline,
+    session,
+    markMessageAsRead,
+    i18n,
+    language,
+  ]);
 
   if (loading)
     return (
@@ -304,9 +314,30 @@ export default function DetailsScreen() {
         <ThemedText>Loading...</ThemedText>
       </View>
     );
-  if (error) return <ThemedText>{error}</ThemedText>;
-  if (!message)
-    return <ThemedText>{i18n[language].messageNotFound}</ThemedText>;
+
+  if (error) {
+    // Redirect to 404 with custom message
+    router.replace({
+      pathname: '/+not-found',
+      params: {
+        title: i18n[language].messageNotFoundTitle,
+        message: error,
+      },
+    });
+    return null;
+  }
+
+  if (!message) {
+    // Redirect to 404 with custom message
+    router.replace({
+      pathname: '/+not-found',
+      params: {
+        title: i18n[language].messageNotAvailable,
+        message: i18n[language].messageNotFound,
+      },
+    });
+    return null;
+  }
 
   const getImportanceLabel = (priority: string) => {
     const mapping: { [key: string]: string } = {
