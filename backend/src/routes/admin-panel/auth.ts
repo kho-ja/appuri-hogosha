@@ -186,6 +186,23 @@ class AuthController implements IController {
 
             const admin = admins[0];
 
+            try {
+                const isFirstTime =
+                    await this.cognitoClient.isFirstTimeLogin(email);
+                if (isFirstTime) {
+                    console.log(
+                        `First-time login detected for admin: ${email}. Auto-verifying email...`
+                    );
+                    await this.cognitoClient.verifyEmail(email);
+                    console.log(`Email auto-verified for admin: ${email}`);
+                }
+            } catch (verifyError) {
+                console.error(
+                    'Failed to auto-verify email for admin:',
+                    verifyError
+                );
+            }
+
             return res
                 .status(200)
                 .json({
@@ -282,6 +299,19 @@ class AuthController implements IController {
             }
 
             const admin = admins[0];
+
+            try {
+                console.log(
+                    `Temporary password changed for admin: ${email}. Auto-verifying email...`
+                );
+                await this.cognitoClient.verifyEmail(email);
+                console.log(`Email auto-verified for admin: ${email}`);
+            } catch (verifyError) {
+                console.error(
+                    'Failed to auto-verify email for admin:',
+                    verifyError
+                );
+            }
 
             return res
                 .status(200)

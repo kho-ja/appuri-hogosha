@@ -23,6 +23,18 @@ import {
 } from '@aws-sdk/client-cognito-identity-provider';
 import process from 'node:process';
 
+/**
+ * CognitoClient class for handling AWS Cognito operations
+ *
+ * New verification features:
+ * - verifyEmail: Automatically verifies email addresses for admin users
+ * - isFirstTimeLogin: Checks if a user is logging in for the first time
+ *
+ * Auto-verification behavior:
+ * - Admin users: Email is auto-verified on first login or password change
+ * - Parent users: Phone number is auto-verified on first login or password change
+ * - Forgot password requires verification status to be true before allowing password reset
+ */
 class CognitoClient {
     private client: CognitoIdentityProviderClient;
     private pool_id: string;
@@ -215,6 +227,33 @@ class CognitoClient {
         }
     }
 
+    async verifyEmail(username: string): Promise<void> {
+        try {
+            console.log('Verifying email for user: %s', username);
+
+            const updateParams: AdminUpdateUserAttributesCommandInput = {
+                UserPoolId: this.pool_id,
+                Username: username,
+                UserAttributes: [
+                    {
+                        Name: 'email_verified',
+                        Value: 'true',
+                    },
+                ],
+            };
+
+            const updateCommand = new AdminUpdateUserAttributesCommand(
+                updateParams
+            );
+            await this.client.send(updateCommand);
+
+            console.log('✅ Email verified for user: %s', username);
+        } catch (error: any) {
+            console.error('❌ Failed to verify email for %s:', username, error);
+            throw error;
+        }
+    }
+
     async checkUserVerificationStatus(
         username: string
     ): Promise<{ phoneVerified: boolean; emailVerified: boolean }> {
@@ -245,6 +284,34 @@ class CognitoClient {
                 error
             ); // Fixed: Use %s placeholder
             return { phoneVerified: false, emailVerified: false };
+        }
+    }
+
+    async isFirstTimeLogin(username: string): Promise<boolean> {
+        try {
+            const getUserParams: AdminGetUserCommandInput = {
+                UserPoolId: this.pool_id,
+                Username: username,
+            };
+
+            const getUserCommand = new AdminGetUserCommand(getUserParams);
+            const userResult = await this.client.send(getUserCommand);
+
+            const userStatus = userResult.UserStatus;
+
+            const emailVerified =
+                userResult.UserAttributes?.find(
+                    attr => attr.Name === 'email_verified'
+                )?.Value === 'true';
+
+            return userStatus === 'FORCE_CHANGE_PASSWORD' || !emailVerified;
+        } catch (error: any) {
+            console.error(
+                'Failed to check first time login status for %s:',
+                username,
+                error
+            );
+            return false;
         }
     }
 
