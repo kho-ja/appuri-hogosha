@@ -1,6 +1,9 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
-export function generatePaginationLinks(currentPage: number, totalPages: number) {
+export function generatePaginationLinks(
+    currentPage: number,
+    totalPages: number
+) {
     // const links = [];
     //
     // if (totalPages <= 10) {
@@ -36,7 +39,7 @@ export function generatePaginationLinks(currentPage: number, totalPages: number)
         return links;
     }
 
-    links.push(1)
+    links.push(1);
 
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
@@ -49,7 +52,6 @@ export function generatePaginationLinks(currentPage: number, totalPages: number)
         links.push(i);
     }
 
-
     if (end < totalPages - 1) {
         links.push('...');
     }
@@ -59,28 +61,28 @@ export function generatePaginationLinks(currentPage: number, totalPages: number)
     return links;
 }
 
-export const randomImageName = (bytes = 32) => crypto.randomBytes(bytes).toString('hex');
+export const randomImageName = (bytes = 32) =>
+    crypto.randomBytes(bytes).toString('hex');
 
-export function parseKintoneRow(row: { value: string, type: string }) {
+export function parseKintoneRow(row: { value: string; type: string }) {
     switch (row.type) {
         case 'RECORD_NUMBER':
-            return Number(row.value)
+            return Number(row.value);
         case 'SINGLE_LINE_TEXT':
-            return String(row.value)
+            return String(row.value);
         case 'DATE':
-            return new Date(row.value)
+            return new Date(row.value);
         case 'NUMBER':
-            return Number(row.value)
+            return Number(row.value);
         case 'DROP_DOWN':
-            return String(row.value)
+            return String(row.value);
         case 'MULTI_LINE_TEXT':
-            return String(row.value)
+            return String(row.value);
         case 'CREATED_TIME':
-            return new Date(row.value)
+            return new Date(row.value);
         case 'LINK':
-            return String(row.value)
+            return String(row.value);
         default:
-            return row.value
+            return row.value;
     }
 }
-

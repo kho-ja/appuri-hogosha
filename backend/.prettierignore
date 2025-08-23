@@ -1,0 +1,11 @@
+# Ignore specific config files to prevent unnecessary formatting changes
+tsconfig.json
+package.json
+package-lock.json
+
+# Build output
+dist/
+node_modules/
+
+# Environment files
+.env*
