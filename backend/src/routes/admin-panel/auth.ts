@@ -57,8 +57,16 @@ class AuthController implements IController {
             this.protectedRoute
         );
         // Admin forgot password
-        this.router.post('/forgot-password-initiate', this.adminAuthLimiter, this.forgotPasswordInitiate);
-        this.router.post('/forgot-password-confirm', this.adminAuthLimiter, this.forgotPasswordConfirm);
+        this.router.post(
+            '/forgot-password-initiate',
+            this.adminAuthLimiter,
+            this.forgotPasswordInitiate
+        );
+        this.router.post(
+            '/forgot-password-confirm',
+            this.adminAuthLimiter,
+            this.forgotPasswordConfirm
+        );
     }
 
     forgotPasswordInitiate = async (req: Request, res: Response) => {
@@ -66,7 +74,7 @@ class AuthController implements IController {
             const { email } = req.body;
 
             if (!email) {
-                throw { status: 400, message: "EmailRequired" };
+                throw { status: 400, message: 'EmailRequired' };
             }
 
             const admins = await DB.query(
@@ -75,36 +83,43 @@ class AuthController implements IController {
             );
 
             if (admins.length === 0) {
-                throw { status: 404, message: "UserNotFound" };
+                throw { status: 404, message: 'UserNotFound' };
             }
 
             let isVerified;
             try {
-                isVerified = await this.cognitoClient.checkUserVerificationStatus(email);
+                isVerified =
+                    await this.cognitoClient.checkUserVerificationStatus(email);
             } catch (err) {
-                console.error("Failed to check verification status:", err);
-                throw { status: 500, message: "InternalServerError" };
+                console.error('Failed to check verification status:', err);
+                throw { status: 500, message: 'InternalServerError' };
             }
 
             if (!isVerified.emailVerified) {
-                throw { status: 400, message: "EmailNotVerified" };
+                throw { status: 400, message: 'EmailNotVerified' };
             }
 
             try {
                 const result = await this.cognitoClient.forgotPassword(email);
                 return res.status(200).json({ message: result.message });
             } catch (err: any) {
-                console.error("Cognito forgot password error:", err);
+                console.error('Cognito forgot password error:', err);
 
-                if (err.status === 400 || err.status === 401 || err.status === 429) {
+                if (
+                    err.status === 400 ||
+                    err.status === 401 ||
+                    err.status === 429
+                ) {
                     throw { status: err.status, message: err.message };
                 }
 
-                throw { status: 500, message: "ForgotPasswordInitiateError" };
+                throw { status: 500, message: 'ForgotPasswordInitiateError' };
             }
         } catch (e: any) {
-            console.error("Forgot password initiate error:", e);
-            return res.status(e.status || 500).json({ error: e.message || "InternalServerError" });
+            console.error('Forgot password initiate error:', e);
+            return res
+                .status(e.status || 500)
+                .json({ error: e.message || 'InternalServerError' });
         }
     };
 
@@ -113,7 +128,7 @@ class AuthController implements IController {
             const { email, verification_code, new_password } = req.body;
 
             if (!email || !verification_code || !new_password) {
-                throw { status: 400, message: "RequiredFieldsError" };
+                throw { status: 400, message: 'RequiredFieldsError' };
             }
 
             try {
@@ -124,17 +139,25 @@ class AuthController implements IController {
                 );
                 return res.status(200).json({ message: result.message });
             } catch (err: any) {
-                if (err.status === 400 || err.status === 401 || err.status === 404) {
+                if (
+                    err.status === 400 ||
+                    err.status === 401 ||
+                    err.status === 404
+                ) {
                     throw { status: err.status, message: err.message };
                 }
-                throw { status: 500, message: err.message || "InternalServerError" };
+                throw {
+                    status: 500,
+                    message: err.message || 'InternalServerError',
+                };
             }
         } catch (e: any) {
-            console.error("Forgot password confirm error (admin):", e);
-            return res.status(e.status || 500).json({ error: e.message || "InternalServerError" });
+            console.error('Forgot password confirm error (admin):', e);
+            return res
+                .status(e.status || 500)
+                .json({ error: e.message || 'InternalServerError' });
         }
     };
-
 
     login = async (req: Request, res: Response) => {
         try {
