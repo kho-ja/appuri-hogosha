@@ -10,7 +10,7 @@ import {
   ToastAndroid,
   Image,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useSession } from '@/contexts/auth-context';
@@ -92,7 +92,8 @@ export default function DetailsScreen() {
   const [zoomVisible, setZoomVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const { id } = useLocalSearchParams();
+  const { id, studentId } = useLocalSearchParams();
+  const actualStudentId = studentId ? Number(studentId) : undefined;
   const { language, i18n } = useContext(I18nContext);
   const { session } = useSession();
   const { isOnline } = useNetwork();
@@ -162,11 +163,29 @@ export default function DetailsScreen() {
         return;
       }
 
+      // Validate studentId parameter
+      if (!actualStudentId) {
+        setError('Student ID is required to view message');
+        setLoading(false);
+        return;
+      }
+
       try {
         let fullMessage: DatabaseMessage | null = null;
         const localMessage = await fetchMessageFromDB(db, Number(id));
 
         if (localMessage) {
+          // Check if message belongs to the specified student
+          if (localMessage.student_id !== actualStudentId) {
+            console.warn(
+              `[MessageDetails] Message ${id} belongs to student ${localMessage.student_id}, but requested for student ${actualStudentId}`
+            );
+            setError(
+              `${i18n[language].messageDoesNotBelongToStudent} ${actualStudentId}`
+            );
+            setLoading(false);
+            return;
+          }
           fullMessage = localMessage;
         } else if (isOnline) {
           // The message ID from notification is a PostParent ID
@@ -269,14 +288,24 @@ export default function DetailsScreen() {
         }
       } catch (error) {
         console.error('Error in fetchMessage:', error);
-        setError('Failed to retrieve message');
+        setError(i18n[language].failedToRetrieveMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchMessage();
-  }, [id, apiUrl, db, isOnline, session, markMessageAsRead]);
+  }, [
+    id,
+    actualStudentId,
+    apiUrl,
+    db,
+    isOnline,
+    session,
+    markMessageAsRead,
+    i18n,
+    language,
+  ]);
 
   if (loading)
     return (
@@ -285,9 +314,30 @@ export default function DetailsScreen() {
         <ThemedText>Loading...</ThemedText>
       </View>
     );
-  if (error) return <ThemedText>{error}</ThemedText>;
-  if (!message)
-    return <ThemedText>{i18n[language].messageNotFound}</ThemedText>;
+
+  if (error) {
+    // Redirect to 404 with custom message
+    router.replace({
+      pathname: '/+not-found',
+      params: {
+        title: i18n[language].messageNotFoundTitle,
+        message: error,
+      },
+    });
+    return null;
+  }
+
+  if (!message) {
+    // Redirect to 404 with custom message
+    router.replace({
+      pathname: '/+not-found',
+      params: {
+        title: i18n[language].messageNotAvailable,
+        message: i18n[language].messageNotFound,
+      },
+    });
+    return null;
+  }
 
   const getImportanceLabel = (priority: string) => {
     const mapping: { [key: string]: string } = {

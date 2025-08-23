@@ -13,7 +13,7 @@ import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { redirectSystemPath } from '../+native-intent';
+import { redirectSystemPath } from '../native-intent';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
@@ -48,10 +48,28 @@ export default function Root() {
             initial: true,
           });
           if (redirectPath !== '/unexpected-error') {
-            // Small delay to ensure app is ready
-            setTimeout(() => {
-              router.replace(redirectPath as any);
-            }, 1000);
+            // Check if it's a message deep link that needs proper navigation history
+            const messageMatch = redirectPath.match(
+              /^\/student\/(\d+)\/message\/(\d+)$/
+            );
+            if (messageMatch) {
+              const [, studentId, messageId] = messageMatch;
+              console.log('Creating navigation history for message deep link');
+
+              // Replace current screen with student page, then push message
+              setTimeout(() => {
+                router.replace(`/student/${studentId}`);
+                // Small delay to ensure student page is loaded
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+                }, 50);
+              }, 1000);
+            } else {
+              // For other deep links, navigate directly
+              setTimeout(() => {
+                router.replace(redirectPath as any);
+              }, 1000);
+            }
           }
         }
       } catch (error) {
@@ -68,8 +86,35 @@ export default function Root() {
         path: url,
         initial: false,
       });
+
       if (redirectPath !== '/unexpected-error') {
-        router.push(redirectPath as any);
+        // Check if it's a message deep link that needs proper navigation history
+        const messageMatch = redirectPath.match(
+          /^\/student\/(\d+)\/message\/(\d+)$/
+        );
+        if (messageMatch) {
+          const [, studentId, messageId] = messageMatch;
+          console.log(
+            'Creating navigation history for runtime message deep link'
+          );
+
+          // Replace current screen with student page, then push message
+          router.replace(`/student/${studentId}`);
+          // Small delay to ensure student page is loaded
+          setTimeout(() => {
+            router.push(`/student/${studentId}/message/${messageId}`);
+          }, 50);
+        } else {
+          // Check if it's a student page (not message)
+          const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
+          if (studentMatch) {
+            console.log('Deep link to student page, using replace');
+            router.replace(redirectPath as any);
+          } else {
+            // For other deep links, navigate directly
+            router.push(redirectPath as any);
+          }
+        }
       }
     });
 

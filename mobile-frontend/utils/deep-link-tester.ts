@@ -3,7 +3,7 @@ import { Alert, Platform } from 'react-native';
 
 /**
  * Utility function to test deep links based on app's structure
- * @param {string} path - The path to test (e.g., 'home', 'message/123')
+ * @param {string} path - The path to test (e.g., 'home', 'student/123/message/456')
  * @param {Object} params - Optional parameters to include in the URL
  */
 export const testDeepLink = (
@@ -69,13 +69,13 @@ export const getExternalTestCommands = () => {
   const commands = {
     android: [
       'adb shell am start -a android.intent.action.VIEW -d "jduapp://home" com.jduapp.parentnotification',
-      'adb shell am start -a android.intent.action.VIEW -d "jduapp://message/123" com.jduapp.parentnotification',
-      'adb shell am start -a android.intent.action.VIEW -d "https://appuri-hogosha.vercel.app/parentnotification/home" com.jduapp.parentnotification',
+      'adb shell am start -a android.intent.action.VIEW -d "jduapp://student/123/message/456" com.jduapp.parentnotification',
+      'adb shell am start -a android.intent.action.VIEW -d "https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456" com.jduapp.parentnotification',
     ],
     ios: [
       'xcrun simctl openurl booted "jduapp://home"',
-      'xcrun simctl openurl booted "jduapp://message/123"',
-      'xcrun simctl openurl booted "https://appuri-hogosha.vercel.app/parentnotification/home"',
+      'xcrun simctl openurl booted "jduapp://student/123/message/456"',
+      'xcrun simctl openurl booted "https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456"',
     ],
   };
 
@@ -88,7 +88,8 @@ export const getExternalTestCommands = () => {
 export const DeepLinkDebugHelper = {
   // Tab navigation links
   testHomeTab: () => testDeepLink('home'),
-  testMessageDetail: (id: string = '123') => testDeepLink(`message/${id}`),
+  testMessageDetail: (studentId: string = '123', id: string = '456') =>
+    testDeepLink(`student/${studentId}/message/${id}`),
   testStudentTab: () => testDeepLink('student'),
   testStudentDetail: (id: string = '456') => testDeepLink(`student/${id}`),
 
@@ -105,7 +106,7 @@ export const DeepLinkDebugHelper = {
 
   // Web URL format (for testing universal links)
   testWebUrl: () => {
-    const url = 'https://appuri-hogosha.vercel.app/parentnotification/home';
+    const url = 'https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456';
     console.log(`Testing web URL: ${url}`);
     Linking.openURL(url)
       .then(() => console.log('Web URL test successful'))

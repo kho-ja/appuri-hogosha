@@ -51,12 +51,12 @@ const Card = ({
           [new Date().toISOString(), message.id]
         );
       }
-      // router.push({ pathname: `message/${firstMessage.id}` as Href });
-      router.push({
-        pathname: `message/${firstMessage.id}`,
-        params: { studentId: studentId },
-      });
     }
+    // Navigate to message with full path
+    router.push({
+      pathname: `student/[studentId]/message/${firstMessage.id}`,
+      params: { studentId: studentId },
+    });
   };
 
   const getImportanceLabel = (priority: string) => {
@@ -104,7 +104,7 @@ const Card = ({
     zone: 'utc',
   });
   const localDateTime = utcDateTime.setZone(userTimeZone);
-  
+
   const baseIconSize = 16;
   const iconSize = Math.round(baseIconSize * Math.max(1, multiplier));
 
