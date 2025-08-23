@@ -10,7 +10,7 @@
     "loginButton": "Login",
     "loginWithGoogle": "Login with Google",
     "InvalidCredentialsError": "Invalid email or password.",
-    "OTPError": "You are entering first time please enter new password for your account",
+    "OTPError": "Update your password. Please enter a new password for your account.",
     "AuthError": "Something went wrong. Please try again later.",
     "loginFailed": "Login failed. Please try again later.",
     "loginNewPassword": "Password change required",

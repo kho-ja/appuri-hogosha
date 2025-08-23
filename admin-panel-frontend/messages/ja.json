@@ -11,7 +11,7 @@
     "loginWithGoogle": "Googleでログイン",
     "invalidCredentials": "無効なメールアドレスまたはパスワードです。",
     "InvalidCredentialsError": "無効なメールアドレスまたはパスワードです。",
-    "OTPError": "初めてログインする場合は、アカウントの新しいパスワードを入力してください。",
+    "OTPError": "パスワードを更新してください。アカウントの新しいパスワードを入力してください。",
     "AuthError": "何かが間違っています。後でもう一度お試しください。",
     "loginFailed": "ログインに失敗しました。もう一度お試しください。",
     "loginNewPassword": "パスワードの変更が必要です",

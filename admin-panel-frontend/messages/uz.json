@@ -11,7 +11,7 @@
     "loginWithGoogle": "Google bilan kirish",
     "invalidCredentials": "Noto'g'ri elektron pochta yoki parol.",
     "InvalidCredentialsError": "Noto'g'ri elektron pochta yoki parol.",
-    "OTPError": "Siz birinchi marta kirayotganingiz uchun, iltimos, hisobingiz uchun yangi parolni kiriting.",
+    "OTPError": "Parolingizni yangilang. Iltimos, hisobingiz uchun yangi parolni kiriting.",
     "AuthError": "Nimadir noto'g'ri ketdi. Iltimos, keyinroq qayta urinib ko'ring.",
     "loginFailed": "Kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring.",
     "loginNewPassword": "Parolni o'zgartirish kerak",
