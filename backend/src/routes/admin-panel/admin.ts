@@ -1,18 +1,22 @@
 import { IController } from '../../utils/icontroller';
-import { ExtendedRequest, verifyToken } from '../../middlewares/auth'
-import express, { Response, Router } from "express";
-import { Admin } from '../../utils/cognito-client'
-import DB from '../../utils/db-client'
+import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
+import express, { Response, Router } from 'express';
+import { Admin } from '../../utils/cognito-client';
+import DB from '../../utils/db-client';
 import iconv from 'iconv-lite';
-import { isValidEmail, isValidId, isValidPhoneNumber, isValidString } from "../../utils/validate";
-import process from "node:process";
-import { generatePaginationLinks } from "../../utils/helper";
+import {
+    isValidEmail,
+    isValidId,
+    isValidPhoneNumber,
+    isValidString,
+} from '../../utils/validate';
+import process from 'node:process';
+import { generatePaginationLinks } from '../../utils/helper';
 import { MockCognitoClient } from '../../utils/mock-cognito-client';
 import multer from 'multer';
 import { Readable } from 'node:stream';
 import csv from 'csv-parser';
 import { stringify } from 'csv-stringify/sync';
-
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -21,20 +25,30 @@ class AdminController implements IController {
     public cognitoClient: any;
 
     constructor() {
-        this.cognitoClient = process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
-        this.initRoutes()
+        this.cognitoClient =
+            process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
+        this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.post('/create', verifyToken, this.createAdmin)
-        this.router.post('/list', verifyToken, this.adminList)
-        this.router.post('/upload', verifyToken, upload.single('file'), this.uploadAdminsFromCSV);
-        this.router.get('/export', verifyToken, this.exportAdminsToCSV)
-        this.router.get('/:id', verifyToken, this.adminView)
-        this.router.post('/get-details', verifyToken, this.adminViewSecure) // Secure POST endpoint for sensitive data
-        this.router.put('/:id', verifyToken, this.adminEdit)
-        this.router.delete('/:id', verifyToken, this.adminDelete)
-        this.router.post('/:id/resend-password', verifyToken, this.resendTemporaryPassword);
+        this.router.post('/create', verifyToken, this.createAdmin);
+        this.router.post('/list', verifyToken, this.adminList);
+        this.router.post(
+            '/upload',
+            verifyToken,
+            upload.single('file'),
+            this.uploadAdminsFromCSV
+        );
+        this.router.get('/export', verifyToken, this.exportAdminsToCSV);
+        this.router.get('/:id', verifyToken, this.adminView);
+        this.router.post('/get-details', verifyToken, this.adminViewSecure); // Secure POST endpoint for sensitive data
+        this.router.put('/:id', verifyToken, this.adminEdit);
+        this.router.delete('/:id', verifyToken, this.adminDelete);
+        this.router.post(
+            '/:id/resend-password',
+            verifyToken,
+            this.resendTemporaryPassword
+        );
     }
 
     resendTemporaryPassword = async (req: ExtendedRequest, res: Response) => {
@@ -42,69 +56,94 @@ class AdminController implements IController {
             const adminId = req.params.id;
 
             if (!isValidId(adminId)) {
-                return res.status(400).json({
-                    error: 'Invalid admin ID'
-                }).end();
+                return res
+                    .status(400)
+                    .json({
+                        error: 'Invalid admin ID',
+                    })
+                    .end();
             }
 
             // Get admin from database to get their email
-            const admins = await DB.query(`
-                SELECT 
+            const admins = await DB.query(
+                `
+                SELECT
                     ad.email,
                     ad.phone_number,
                     ad.given_name,
                     ad.family_name
-                FROM Admin ad 
+                FROM Admin ad
                 WHERE ad.id = :adminId
-            `, {
-                adminId: adminId
-            });
+            `,
+                {
+                    adminId: adminId,
+                }
+            );
 
             if (admins.length === 0) {
-                return res.status(404).json({
-                    error: 'Admin not found'
-                }).end();
+                return res
+                    .status(404)
+                    .json({
+                        error: 'Admin not found',
+                    })
+                    .end();
             }
 
             const admin = admins[0];
 
             // Use Cognito client to resend temporary password
-            const result = await this.cognitoClient.resendTemporaryPassword(admin.email);
+            const result = await this.cognitoClient.resendTemporaryPassword(
+                admin.email
+            );
 
-            return res.status(200).json({
-                message: result.message,
-                admin_name: `${admin.given_name} ${admin.family_name}`,
-                email: admin.email
-            }).end();
-
+            return res
+                .status(200)
+                .json({
+                    message: result.message,
+                    admin_name: `${admin.given_name} ${admin.family_name}`,
+                    email: admin.email,
+                })
+                .end();
         } catch (e: any) {
             console.error('Error resending temporary password:', e);
 
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'Internal server error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'Internal server error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     exportAdminsToCSV = async (req: ExtendedRequest, res: Response) => {
         try {
-            const admins = await DB.query(`SELECT
+            const admins = await DB.query(
+                `SELECT
                 email, phone_number, given_name, family_name
                 FROM Admin
-                WHERE school_id = :school_id`, {
-                school_id: req.user.school_id
-            });
+                WHERE school_id = :school_id`,
+                {
+                    school_id: req.user.school_id,
+                }
+            );
 
             if (admins.length === 0) {
-                return res.status(404).json({
-                    error: 'No admins found'
-                }).end();
+                return res
+                    .status(404)
+                    .json({
+                        error: 'No admins found',
+                    })
+                    .end();
             }
 
             const csvData = admins.map((admin: any) => ({
@@ -116,19 +155,25 @@ class AdminController implements IController {
 
             const csvContent = stringify(csvData, {
                 header: true,
-                columns: ['email', 'phone_number', 'given_name', 'family_name']
+                columns: ['email', 'phone_number', 'given_name', 'family_name'],
             });
 
-            res.setHeader('Content-Disposition', 'attachment; filename="admins.csv"');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="admins.csv"'
+            );
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8'));
         } catch (e: any) {
-            return res.status(500).json({
-                error: 'Internal server error',
-                details: e.message
-            }).end();
+            return res
+                .status(500)
+                .json({
+                    error: 'Internal server error',
+                    details: e.message,
+                })
+                .end();
         }
-    }
+    };
 
     uploadAdminsFromCSV = async (req: ExtendedRequest, res: Response) => {
         const { throwInError, action, withCSV } = req.body;
@@ -143,25 +188,32 @@ class AdminController implements IController {
 
         try {
             if (!req.file || !req.file.buffer) {
-                return res.status(400).json({
-                    error: 'Bad Request',
-                    details: 'File is missing or invalid'
-                }).end();
+                return res
+                    .status(400)
+                    .json({
+                        error: 'Bad Request',
+                        details: 'File is missing or invalid',
+                    })
+                    .end();
             }
 
             const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
 
-            const stream = Readable.from(decodedContent)
+            const stream = Readable.from(decodedContent);
             await new Promise((resolve, reject) => {
                 stream
                     .pipe(csv())
                     .on('headers', (headers: any) => {
-                        if (headers[0].charCodeAt(0) === 0xFEFF) {
+                        if (headers[0].charCodeAt(0) === 0xfeff) {
                             headers[0] = headers[0].substring(1);
                         }
                     })
                     .on('data', (data: any) => {
-                        if (Object.values(data).some((value: any) => value.trim() !== '')) {
+                        if (
+                            Object.values(data).some(
+                                (value: any) => value.trim() !== ''
+                            )
+                        ) {
                             results.push(data);
                         }
                     })
@@ -169,8 +221,8 @@ class AdminController implements IController {
                     .on('error', reject);
             });
 
-            const validResults: any[] = []
-            const existingEmailsInCSV: string[] = []
+            const validResults: any[] = [];
+            const existingEmailsInCSV: string[] = [];
             for (const row of results) {
                 const { email, phone_number, given_name, family_name } = row;
                 const rowErrors: any = {};
@@ -179,12 +231,16 @@ class AdminController implements IController {
                 const normalizedGiven = String(given_name).trim();
                 const normalizedFamily = String(family_name).trim();
 
-                if (!isValidEmail(normalizedEmail)) rowErrors.email = 'invalid_email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber)) rowErrors.phone_number = 'invalid_phone_number';
-                if (!isValidString(normalizedGiven)) rowErrors.given_name = 'invalid_given_name';
-                if (!isValidString(normalizedFamily)) rowErrors.family_name = 'invalid_family_name';
+                if (!isValidEmail(normalizedEmail))
+                    rowErrors.email = 'invalid_email';
+                if (!isValidPhoneNumber(normalizedPhoneNumber))
+                    rowErrors.phone_number = 'invalid_phone_number';
+                if (!isValidString(normalizedGiven))
+                    rowErrors.given_name = 'invalid_given_name';
+                if (!isValidString(normalizedFamily))
+                    rowErrors.family_name = 'invalid_family_name';
                 if (existingEmailsInCSV.includes(normalizedEmail)) {
-                    rowErrors.email = 'email_already_exists'
+                    rowErrors.email = 'email_already_exists';
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
@@ -192,9 +248,9 @@ class AdminController implements IController {
                 } else {
                     row.email = normalizedEmail;
                     row.phone_number = normalizedPhoneNumber;
-                    row.given_name = normalizedGiven
-                    row.family_name = normalizedFamily
-                    existingEmailsInCSV.push(row.email)
+                    row.given_name = normalizedGiven;
+                    row.family_name = normalizedFamily;
+                    existingEmailsInCSV.push(row.email);
 
                     validResults.push(row);
                 }
@@ -206,39 +262,57 @@ class AdminController implements IController {
 
             const emails = validResults.map(row => row.email);
             if (emails.length === 0) {
-                return res.status(400).json({
-                    errors: errors,
-                    message: 'all_data_invalid'
-                }).end();
+                return res
+                    .status(400)
+                    .json({
+                        errors: errors,
+                        message: 'all_data_invalid',
+                    })
+                    .end();
             }
-            const existingAdmins = await DB.query('SELECT email FROM Admin WHERE email IN (:emails)', {
-                emails,
-            });
-            const existingEmails = existingAdmins.map((admin: any) => admin.email);
+            const existingAdmins = await DB.query(
+                'SELECT email FROM Admin WHERE email IN (:emails)',
+                {
+                    emails,
+                }
+            );
+            const existingEmails = existingAdmins.map(
+                (admin: any) => admin.email
+            );
 
             if (action === 'create') {
                 for (const row of validResults) {
                     if (existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'admin_already_exists' } });
+                        errors.push({
+                            row,
+                            errors: { email: 'admin_already_exists' },
+                        });
                     } else {
-                        const admin = await this.cognitoClient.register(row.email)
+                        const admin = await this.cognitoClient.register(
+                            row.email
+                        );
                         await DB.execute(
                             `INSERT INTO Admin(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
-                            VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`, {
-                            cognito_sub_id: admin.sub_id,
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            given_name: row.given_name,
-                            family_name: row.family_name,
-                            school_id: req.user.school_id,
-                        });
+                            VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`,
+                            {
+                                cognito_sub_id: admin.sub_id,
+                                email: row.email,
+                                phone_number: row.phone_number,
+                                given_name: row.given_name,
+                                family_name: row.family_name,
+                                school_id: req.user.school_id,
+                            }
+                        );
                         inserted.push(row);
                     }
                 }
             } else if (action === 'update') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'admin_does_not_exist' } });
+                        errors.push({
+                            row,
+                            errors: { email: 'admin_does_not_exist' },
+                        });
                     } else {
                         await DB.execute(
                             `UPDATE Admin SET
@@ -246,33 +320,44 @@ class AdminController implements IController {
                         given_name = :given_name,
                         family_name = :family_name
                         WHERE email = :email
-                        AND school_id = :school_id`, {
-                            email: row.email,
-                            phone_number: row.phone_number,
-                            given_name: row.given_name,
-                            family_name: row.family_name,
-                        });
+                        AND school_id = :school_id`,
+                            {
+                                email: row.email,
+                                phone_number: row.phone_number,
+                                given_name: row.given_name,
+                                family_name: row.family_name,
+                            }
+                        );
                         updated.push(row);
                     }
                 }
             } else if (action === 'delete') {
                 for (const row of validResults) {
                     if (!existingEmails.includes(row.email)) {
-                        errors.push({ row, errors: { email: 'admin_does_not_exist' } });
-                    } else {
-                        await this.cognitoClient.delete(row.email)
-                        await DB.execute('DELETE FROM Admin WHERE email = :email AND school_id = :school_id', {
-                            email: row.email,
-                            school_id: req.user.school_id,
+                        errors.push({
+                            row,
+                            errors: { email: 'admin_does_not_exist' },
                         });
+                    } else {
+                        await this.cognitoClient.delete(row.email);
+                        await DB.execute(
+                            'DELETE FROM Admin WHERE email = :email AND school_id = :school_id',
+                            {
+                                email: row.email,
+                                school_id: req.user.school_id,
+                            }
+                        );
                         deleted.push(row);
                     }
                 }
             } else {
-                return res.status(400).json({
-                    error: 'bad_request',
-                    details: 'invalid_action'
-                }).end();
+                return res
+                    .status(400)
+                    .json({
+                        error: 'bad_request',
+                        details: 'invalid_action',
+                    })
+                    .end();
             }
 
             if (errors.length > 0) {
@@ -282,42 +367,59 @@ class AdminController implements IController {
                         email: error?.row?.email,
                         phone_number: error?.row?.phone_number,
                         given_name: error?.row?.given_name,
-                        family_name: error?.row?.family_name
+                        family_name: error?.row?.family_name,
                     }));
                     const csvContent = stringify(csvData, {
                         header: true,
-                        columns: ['email', 'phone_number', 'given_name', 'family_name']
+                        columns: [
+                            'email',
+                            'phone_number',
+                            'given_name',
+                            'family_name',
+                        ],
                     });
                     // response headers for sending multipart files to send it with json response
                     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                    res.setHeader('Content-Disposition', 'attachment; filename=errors.csv');
+                    res.setHeader(
+                        'Content-Disposition',
+                        'attachment; filename=errors.csv'
+                    );
 
-                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8')
+                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8');
                 }
 
-                return res.status(400).json({
-                    message: 'csv_processed_with_errors',
+                return res
+                    .status(400)
+                    .json({
+                        message: 'csv_processed_with_errors',
+                        inserted: inserted,
+                        updated: updated,
+                        deleted: deleted,
+                        errors: errors.length > 0 ? errors : null,
+                        csvFile: csvFile,
+                    })
+                    .end();
+            }
+
+            return res
+                .status(200)
+                .json({
+                    message: 'csv_processed_successfully',
                     inserted: inserted,
                     updated: updated,
                     deleted: deleted,
-                    errors: errors.length > 0 ? errors : null,
-                    csvFile: csvFile,
-                }).end()
-            }
-
-            return res.status(200).json({
-                message: 'csv_processed_successfully',
-                inserted: inserted,
-                updated: updated,
-                deleted: deleted,
-            }).end()
+                })
+                .end();
         } catch (e: any) {
-            return res.status(500).json({
-                error: 'internal_server_error',
-                details: e.message
-            }).end();
+            return res
+                .status(500)
+                .json({
+                    error: 'internal_server_error',
+                    details: e.message,
+                })
+                .end();
         }
-    }
+    };
 
     adminDelete = async (req: ExtendedRequest, res: Response) => {
         try {
@@ -326,109 +428,121 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_admin_id'
-                }
+                    message: 'invalid_or_missing_admin_id',
+                };
             }
-            const adminInfo = await DB.query(`SELECT 
-                id, cognito_sub_id, email, 
-                phone_number, given_name, 
-                family_name, created_at, last_login_at 
+            const adminInfo = await DB.query(
+                `SELECT
+                id, cognito_sub_id, email,
+                phone_number, given_name,
+                family_name, created_at, last_login_at
                 FROM Admin
-                WHERE id = :id AND school_id = :school_id`, {
-                id: adminId,
-                school_id: req.user.school_id
-            });
+                WHERE id = :id AND school_id = :school_id`,
+                {
+                    id: adminId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'admin_not_found'
-                }
+                    message: 'admin_not_found',
+                };
             }
 
             const admin = adminInfo[0];
 
-            await this.cognitoClient.delete(admin.email)
+            await this.cognitoClient.delete(admin.email);
 
             await DB.execute('DELETE FROM Admin WHERE id = :id;', {
-                id: admin.id
-            })
+                id: admin.id,
+            });
 
-            return res.status(200).json({
-                message: 'adminDeleted'
-            }).end()
+            return res
+                .status(200)
+                .json({
+                    message: 'adminDeleted',
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     adminEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const {
-                phone_number,
-                given_name,
-                family_name,
-            } = req.body
+            const { phone_number, given_name, family_name } = req.body;
 
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_phone'
-                }
+                    message: 'invalid_or_missing_phone',
+                };
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_given_name'
-                }
+                    message: 'invalid_or_missing_given_name',
+                };
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_family_name'
-                }
+                    message: 'invalid_or_missing_family_name',
+                };
             }
 
             const adminId = req.params.id;
 
-
-
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_admin_id'
-                }
+                    message: 'invalid_or_missing_admin_id',
+                };
             }
-            const adminInfo = await DB.query(`SELECT id, 
-                       email, phone_number, 
-                       given_name, family_name, 
-                       created_at 
+            const adminInfo = await DB.query(
+                `SELECT id,
+                       email, phone_number,
+                       given_name, family_name,
+                       created_at
                 FROM Admin
-                WHERE id = :id AND school_id = :school_id`, {
-                id: adminId,
-                school_id: req.user.school_id
-            });
+                WHERE id = :id AND school_id = :school_id`,
+                {
+                    id: adminId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'admin_not_found'
-                }
+                    message: 'admin_not_found',
+                };
             }
 
             const admin = adminInfo[0];
 
-            const findDuplicates = await DB.query('SELECT id, phone_number FROM Admin WHERE phone_number = :phone_number', {
-                phone_number: phone_number,
-            })
+            const findDuplicates = await DB.query(
+                'SELECT id, phone_number FROM Admin WHERE phone_number = :phone_number',
+                {
+                    phone_number: phone_number,
+                }
+            );
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
@@ -436,58 +550,69 @@ class AdminController implements IController {
                     if (phone_number == duplicate.phone_number) {
                         throw {
                             status: 401,
-                            message: 'phone_number_already_exists'
-                        }
+                            message: 'phone_number_already_exists',
+                        };
                     }
                 }
             }
 
             await DB.execute(
-                `UPDATE Admin SET                    
+                `UPDATE Admin SET
                         phone_number = :phone_number,
                         family_name = :family_name,
                         given_name = :given_name
-                    WHERE id = :id`, {
-                phone_number: phone_number,
-                given_name: given_name,
-                family_name: family_name,
-                id: admin.id
-            });
-
-            return res.status(200).json({
-                admin: {
-                    id: admin.id,
-                    email: admin.email,
+                    WHERE id = :id`,
+                {
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
+                    id: admin.id,
                 }
-            }).end()
+            );
+
+            return res
+                .status(200)
+                .json({
+                    admin: {
+                        id: admin.id,
+                        email: admin.email,
+                        phone_number: phone_number,
+                        given_name: given_name,
+                        family_name: family_name,
+                    },
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     adminView = async (req: ExtendedRequest, res: Response) => {
         try {
             const adminId = req.params.id;
 
-
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_admin_id'
-                }
+                    message: 'invalid_or_missing_admin_id',
+                };
             }
-            const adminInfo = await DB.query(`SELECT id,
+            const adminInfo = await DB.query(
+                `SELECT id,
                        email,
                        phone_number,
                        given_name,
@@ -495,35 +620,46 @@ class AdminController implements IController {
                        created_at
                 FROM Admin
                 WHERE id = :id
-                AND school_id = :school_id`, {
-                id: adminId,
-                school_id: req.user.school_id
-            });
+                AND school_id = :school_id`,
+                {
+                    id: adminId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'admin_not_found'
-                }
+                    message: 'admin_not_found',
+                };
             }
 
             const admin = adminInfo[0];
 
-            return res.status(200).json({
-                admin: admin
-            }).end()
+            return res
+                .status(200)
+                .json({
+                    admin: admin,
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     // Secure POST version of adminView for sensitive data
     adminViewSecure = async (req: ExtendedRequest, res: Response) => {
@@ -534,10 +670,11 @@ class AdminController implements IController {
             if (!adminId || !isValidId(adminId)) {
                 throw {
                     status: 400,
-                    message: 'invalid_or_missing_admin_id'
-                }
+                    message: 'invalid_or_missing_admin_id',
+                };
             }
-            const adminInfo = await DB.query(`SELECT id,
+            const adminInfo = await DB.query(
+                `SELECT id,
                        email,
                        phone_number,
                        given_name,
@@ -545,35 +682,46 @@ class AdminController implements IController {
                        created_at
                 FROM Admin
                 WHERE id = :id
-                AND school_id = :school_id`, {
-                id: adminId,
-                school_id: req.user.school_id
-            });
+                AND school_id = :school_id`,
+                {
+                    id: adminId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             if (adminInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'admin_not_found'
-                }
+                    message: 'admin_not_found',
+                };
             }
 
             const admin = adminInfo[0];
 
-            return res.status(200).json({
-                admin: admin
-            }).end()
+            return res
+                .status(200)
+                .json({
+                    admin: admin,
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     adminList = async (req: ExtendedRequest, res: Response) => {
         try {
@@ -581,15 +729,15 @@ class AdminController implements IController {
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const email = req.body.email as string || '';
-            const phone_number = req.body.phone_number as string || '';
-            const name = req.body.name as string || '';
+            const email = (req.body.email as string) || '';
+            const phone_number = (req.body.phone_number as string) || '';
+            const name = (req.body.name as string) || '';
 
             const filters: string[] = [];
             const params: any = {
                 school_id: req.user.school_id,
                 limit: limit,
-                offset: offset
+                offset: offset,
             };
 
             if (email) {
@@ -601,22 +749,32 @@ class AdminController implements IController {
                 params.phone_number = `%${phone_number}%`;
             }
             if (name) {
-                filters.push('(given_name LIKE :name OR family_name LIKE :name)');
+                filters.push(
+                    '(given_name LIKE :name OR family_name LIKE :name)'
+                );
                 params.name = `%${name}%`;
             }
 
+            const whereClause =
+                filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
-            const whereClause = filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
-
-            const adminList = await DB.query(`SELECT 
-                id, email, phone_number, given_name, family_name 
+            const adminList = await DB.query(
+                `SELECT
+                id, email, phone_number, given_name, family_name
                 FROM Admin
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC
-                LIMIT :limit OFFSET :offset;`, params);
+                LIMIT :limit OFFSET :offset;`,
+                params
+            );
 
-            const totalAdmins = (await DB.query(`SELECT COUNT(*) as total
-                FROM Admin WHERE school_id = :school_id ${whereClause};`, params))[0].total
+            const totalAdmins = (
+                await DB.query(
+                    `SELECT COUNT(*) as total
+                FROM Admin WHERE school_id = :school_id ${whereClause};`,
+                    params
+                )
+            )[0].total;
 
             const totalPages = Math.ceil(totalAdmins / limit);
 
@@ -627,124 +785,145 @@ class AdminController implements IController {
                 total_admins: totalAdmins,
                 next_page: page < totalPages ? page + 1 : null,
                 prev_page: page > 1 ? page - 1 : null,
-                links: generatePaginationLinks(page, totalPages)
+                links: generatePaginationLinks(page, totalPages),
             };
 
-            return res.status(200).json({
-                admins: adminList,
-                pagination: pagination
-            }).end();
+            return res
+                .status(200)
+                .json({
+                    admins: adminList,
+                    pagination: pagination,
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 
     createAdmin = async (req: ExtendedRequest, res: Response) => {
         try {
-            const {
-                email,
-                phone_number,
-                given_name,
-                family_name
-            } = req.body
+            const { email, phone_number, given_name, family_name } = req.body;
 
             if (!email || !isValidEmail(email)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_email'
-                }
+                    message: 'invalid_or_missing_email',
+                };
             }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_phone'
-                }
+                    message: 'invalid_or_missing_phone',
+                };
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_given_name'
-                }
+                    message: 'invalid_or_missing_given_name',
+                };
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_family_name'
-                }
+                    message: 'invalid_or_missing_family_name',
+                };
             }
 
-
-            const findDuplicates = await DB.query('SELECT phone_number,email FROM Admin WHERE phone_number = :phone_number OR email = :email;', {
-                email: email,
-                phone_number: phone_number,
-            })
+            const findDuplicates = await DB.query(
+                'SELECT phone_number,email FROM Admin WHERE phone_number = :phone_number OR email = :email;',
+                {
+                    email: email,
+                    phone_number: phone_number,
+                }
+            );
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
 
-                if (email == duplicate.email && phone_number == duplicate.phone_number) {
+                if (
+                    email == duplicate.email &&
+                    phone_number == duplicate.phone_number
+                ) {
                     throw {
                         status: 401,
-                        message: 'email_and_phone_number_already_exist'
-                    }
+                        message: 'email_and_phone_number_already_exist',
+                    };
                 }
                 if (phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
-                        message: 'phone_number_already_exists'
-                    }
+                        message: 'phone_number_already_exists',
+                    };
                 } else {
                     throw {
                         status: 401,
-                        message: 'email_already_exists'
-                    }
+                        message: 'email_already_exists',
+                    };
                 }
             }
 
-            const admin = await this.cognitoClient.register(email, email)
+            const admin = await this.cognitoClient.register(email, email);
 
-            const adminInsert = await DB.execute(`INSERT INTO Admin 
+            const adminInsert = await DB.execute(
+                `INSERT INTO Admin
                 (cognito_sub_id, email, phone_number, given_name, family_name
-                    , created_at, last_login_at, permissions, school_id) VALUES 
+                    , created_at, last_login_at, permissions, school_id) VALUES
                     (:cognito_sub_id, :email, :phone_number, :given_name, :family_name
-                    , NOW(), NOW(), '{}', :school_id) `, {
-                cognito_sub_id: admin.sub_id,
-                email: email,
-                phone_number: phone_number,
-                given_name: given_name,
-                family_name: family_name,
-                school_id: req.user.school_id,
-            });
-
-            return res.status(200).json({
-                admin: {
-                    id: adminInsert.insertId,
+                    , NOW(), NOW(), '{}', :school_id) `,
+                {
+                    cognito_sub_id: admin.sub_id,
                     email: email,
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
+                    school_id: req.user.school_id,
                 }
-            }).end()
+            );
+
+            return res
+                .status(200)
+                .json({
+                    admin: {
+                        id: adminInsert.insertId,
+                        email: email,
+                        phone_number: phone_number,
+                        given_name: given_name,
+                        family_name: family_name,
+                    },
+                })
+                .end();
         } catch (e: any) {
             if (e.status) {
-                return res.status(e.status).json({
-                    error: e.message
-                }).end();
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
             } else {
-                return res.status(500).json({
-                    error: 'internal_server_error'
-                }).end();
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
             }
         }
-    }
+    };
 }
 
-export default AdminController
+export default AdminController;

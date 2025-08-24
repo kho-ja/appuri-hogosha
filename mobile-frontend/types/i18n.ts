@@ -104,8 +104,19 @@ export type TranslationKeys = {
   errorLoadingMessages: string;
   tryAgain: string;
 
+  // 404 error page
+  pageNotFound: string;
+  pageNotFoundMessage: string;
+  studentNotFound: string;
+  studentNotFoundMessage: string;
+  messageNotFoundTitle: string;
+  messageNotAvailable: string;
+  goToHomeScreen: string;
+
   // Error messages
   chooseCorrectDate: string;
+  failedToRetrieveMessage: string;
+  messageDoesNotBelongToStudent: string;
 
   // States
   loading: string;

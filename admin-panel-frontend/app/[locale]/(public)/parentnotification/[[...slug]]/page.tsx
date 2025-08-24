@@ -3,26 +3,71 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import localImageLoader from "@/lib/localImageLoader";
+import { useEffect } from "react";
 
-export default function Home() {
+interface PageProps {
+  params: { locale: string; slug?: string[] };
+  searchParams: { variant?: string };
+}
+
+export default function ParentNotificationPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const androidLink =
+    process.env.NEXT_PUBLIC_ANDROID_STORE_URL ||
+    "https://play.google.com/store/apps/details?id=com.jduapp.parentnotification";
+  const iosLink =
+    process.env.NEXT_PUBLIC_IOS_STORE_URL || "https://apps.apple.com";
+
+  useEffect(() => {
+    const slugPath = params.slug?.join("/") ?? "";
+    const variant = searchParams.variant || "production";
+    const scheme =
+      variant === "development"
+        ? "jduapp-dev"
+        : variant === "preview"
+        ? "jduapp-preview"
+        : "jduapp";
+    const path = slugPath || "home";
+    const appUrl = `${scheme}://${path}`;
+
+    const userAgent = navigator.userAgent || navigator.vendor || "";
+    const storeUrl = /android/i.test(userAgent)
+      ? androidLink
+      : /iPad|iPhone|iPod/.test(userAgent)
+      ? iosLink
+      : undefined;
+
+    const timer = setTimeout(() => {
+      if (storeUrl) {
+        window.location.href = storeUrl;
+      }
+    }, 1500);
+
+    window.location.href = appUrl;
+
+    return () => clearTimeout(timer);
+  }, [params.slug, searchParams.variant, androidLink, iosLink]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <header className="sticky top-0 z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800">
-      <div className="container flex items-center justify-between py-4">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-extrabold tracking-tight">
-            Parent Notification
-          </span>
+        <div className="container flex items-center justify-between py-4">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-extrabold tracking-tight">
+              Parent Notification
+            </span>
+          </div>
+          <nav className="flex gap-6">
+            <Link href="#" className="text-sm hover:underline">
+              Home
+            </Link>
+            <Link href="#" className="text-sm hover:underline">
+              Features
+            </Link>
+          </nav>
         </div>
-        <nav className="flex gap-6">
-          <Link href="#" className="text-sm hover:underline">
-            Home
-          </Link>
-          <Link href="#" className="text-sm hover:underline">
-            Features
-          </Link>
-        </nav>
-      </div>
       </header>
 
       {/* Hero Section */}
@@ -42,7 +87,7 @@ export default function Home() {
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row">
-            <Link href="https://play.google.com/store/apps/details?id=com.jduapp.parentnotification">
+            <Link href={androidLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/google.png"
@@ -53,7 +98,7 @@ export default function Home() {
                 priority
               />
             </Link>
-            <Link href="https://apps.apple.com/uz/app/parent-notification/id6744873338">
+            <Link href={iosLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/apple.png"
@@ -65,10 +110,10 @@ export default function Home() {
               />
             </Link>
           </div>
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Scan to get the app
-            </p>
-          </div>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Scan to get the app
+          </p>
+        </div>
         <div className="relative flex items-center justify-center">
           <Image
             loader={localImageLoader}
@@ -157,16 +202,16 @@ export default function Home() {
 
       {/* Download Section */}
       <footer className="relative py-10 bg-gray-50 dark:bg-slate-800 text-center">
-      <div className="container space-y-6">
-        <h2 className="text-2xl font-bold">
-          Download Parent Notification Today
-        </h2>
-        <p className="max-w-xl mx-auto text-gray-600 dark:text-gray-400">
-          Free to download and use. Stay connected with your child&apos;s
-          education journey.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-8">
-            <Link href="https://play.google.com/store/apps/details?id=com.jduapp.parentnotification">
+        <div className="container space-y-6">
+          <h2 className="text-2xl font-bold">
+            Download Parent Notification Today
+          </h2>
+          <p className="max-w-xl mx-auto text-gray-600 dark:text-gray-400">
+            Free to download and use. Stay connected with your child&apos;s
+            education journey.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            <Link href={androidLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/google.png"
@@ -177,7 +222,7 @@ export default function Home() {
                 priority
               />
             </Link>
-            <Link href="https://apps.apple.com/uz/app/parent-notification/id6744873338">
+            <Link href={iosLink}>
               <Image
                 loader={localImageLoader}
                 src="/assets/apple.png"

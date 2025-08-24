@@ -9,7 +9,9 @@ import {
     ChangePasswordCommand,
     ChangePasswordCommandInput,
     GetUserCommand,
-    GetUserCommandInput, AdminDeleteUserCommand, AdminDeleteUserCommandInput,
+    GetUserCommandInput,
+    AdminDeleteUserCommand,
+    AdminDeleteUserCommandInput,
     ConfirmForgotPasswordCommand,
     ConfirmForgotPasswordCommandInput,
     ForgotPasswordCommand,
@@ -17,12 +19,24 @@ import {
     AdminGetUserCommand,
     AdminGetUserCommandInput,
     AdminUpdateUserAttributesCommand,
-    AdminUpdateUserAttributesCommandInput
-} from "@aws-sdk/client-cognito-identity-provider";
-import process from "node:process";
+    AdminUpdateUserAttributesCommandInput,
+} from '@aws-sdk/client-cognito-identity-provider';
+import process from 'node:process';
 
+/**
+ * CognitoClient class for handling AWS Cognito operations
+ *
+ * New verification features:
+ * - verifyEmail: Automatically verifies email addresses for admin users
+ * - isFirstTimeLogin: Checks if a user is logging in for the first time
+ *
+ * Auto-verification behavior:
+ * - Admin users: Email is auto-verified on first login or password change
+ * - Parent users: Phone number is auto-verified on first login or password change
+ * - Forgot password requires verification status to be true before allowing password reset
+ */
 class CognitoClient {
-    private client: CognitoIdentityProviderClient
+    private client: CognitoIdentityProviderClient;
     private pool_id: string;
     private client_id: string;
 
@@ -31,19 +45,21 @@ class CognitoClient {
             region: process.env.SERVICE_REGION,
             credentials: {
                 accessKeyId: process.env.ACCESS_KEY ?? '',
-                secretAccessKey: process.env.SECRET_ACCESS_KEY ?? ''
-            }
-        })
+                secretAccessKey: process.env.SECRET_ACCESS_KEY ?? '',
+            },
+        });
 
         this.pool_id = pool_id;
         this.client_id = client_id;
     }
 
-    async resendTemporaryPassword(identifier: string): Promise<resendTemporaryPasswordOutput> {
+    async resendTemporaryPassword(
+        identifier: string
+    ): Promise<resendTemporaryPasswordOutput> {
         const params: AdminCreateUserCommandInput = {
             UserPoolId: this.pool_id,
             Username: identifier,
-            MessageAction: "RESEND"
+            MessageAction: 'RESEND',
         };
 
         try {
@@ -53,7 +69,7 @@ class CognitoClient {
             console.log('Temporary password resent successfully', data);
 
             return {
-                message: 'Temporary password resent successfully'
+                message: 'Temporary password resent successfully',
             };
         } catch (e: any) {
             console.error('error:', e);
@@ -66,7 +82,8 @@ class CognitoClient {
             } else if (e.name === 'UnsupportedUserStateException') {
                 throw {
                     status: 400,
-                    message: 'User has already activated their account. No temporary password needed.',
+                    message:
+                        'User has already activated their account. No temporary password needed.',
                 } as resendTemporaryPasswordThrow;
             } else if (e.name === 'InvalidParameterException') {
                 throw {
@@ -86,7 +103,7 @@ class CognitoClient {
         const params: AdminDeleteUserCommandInput = {
             Username: identifier,
             UserPoolId: this.pool_id,
-        }
+        };
 
         try {
             const command = new AdminDeleteUserCommand(params);
@@ -94,73 +111,86 @@ class CognitoClient {
             console.log('user deleted successfully', changeData);
 
             return {
-                message: 'user deleted successfully'
-            }
+                message: 'user deleted successfully',
+            };
         } catch (e: any) {
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
                     message: 'Invalid email',
-                } as deleteThrow
+                } as deleteThrow;
             } else if (e.name === 'UserNotFoundException') {
                 throw {
                     status: 404,
                     message: 'User Not Found',
-                } as deleteThrow
+                } as deleteThrow;
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
-                } as deleteThrow
+                    message: 'Internal server error',
+                } as deleteThrow;
             }
         }
     }
 
-    async register(identifier: string, email: string, phone_number: string): Promise<registerOutput> {
+    async register(
+        identifier: string,
+        email: string,
+        phone_number: string
+    ): Promise<registerOutput> {
         const params: AdminCreateUserCommandInput = {
             UserPoolId: this.pool_id,
             Username: identifier,
             UserAttributes: [
-                { Name: 'email', Value: email, },
-                ...(phone_number ? [{ Name: 'phone_number', Value: phone_number, }] : [])
-            ]
-        }
+                { Name: 'email', Value: email },
+                ...(phone_number
+                    ? [{ Name: 'phone_number', Value: phone_number }]
+                    : []),
+            ],
+        };
 
         try {
             const command = new AdminCreateUserCommand(params);
-            const data = await this.client.send(command)
+            const data = await this.client.send(command);
 
             // Auto-verify phone number after user creation
             if (phone_number) {
-                console.log(`Auto-verifying phone number for user: ${identifier}`);
+                console.log(
+                    `Auto-verifying phone number for user: ${identifier}`
+                );
                 await this.verifyPhoneNumber(identifier);
             }
 
             return {
-                sub_id: data.User?.Username ?? ''
-            }
+                sub_id: data.User?.Username ?? '',
+            };
         } catch (e: any) {
-            console.error('error:', e)
+            console.error('error:', e);
             if (e.name === 'UsernameExistsException') {
                 // If user already exists, try to verify their phone number
                 if (phone_number) {
-                    console.log(`User exists, attempting to verify phone number: ${identifier}`);
+                    console.log(
+                        `User exists, attempting to verify phone number: ${identifier}`
+                    );
                     try {
                         await this.verifyPhoneNumber(identifier);
                     } catch (verifyError) {
-                        console.error('Failed to verify existing user phone:', verifyError);
+                        console.error(
+                            'Failed to verify existing user phone:',
+                            verifyError
+                        );
                     }
                 }
 
                 throw {
                     status: 401,
-                    message: 'Email already exists'
-                } as registerThrow
+                    message: 'Email already exists',
+                } as registerThrow;
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
-                } as registerThrow
+                    message: 'Internal server error',
+                } as registerThrow;
             }
         }
     }
@@ -176,54 +206,127 @@ class CognitoClient {
                 UserAttributes: [
                     {
                         Name: 'phone_number_verified',
-                        Value: 'true'
-                    }
-                ]
+                        Value: 'true',
+                    },
+                ],
             };
 
-            const updateCommand = new AdminUpdateUserAttributesCommand(updateParams);
+            const updateCommand = new AdminUpdateUserAttributesCommand(
+                updateParams
+            );
             await this.client.send(updateCommand);
 
             console.log('✅ Phone number verified for user: %s', username); // Fixed: Use %s placeholder
         } catch (error: any) {
-            console.error('❌ Failed to verify phone number for %s:', username, error); // Fixed: Use %s placeholder
+            console.error(
+                '❌ Failed to verify phone number for %s:',
+                username,
+                error
+            ); // Fixed: Use %s placeholder
             throw error;
         }
     }
 
-    async checkUserVerificationStatus(username: string): Promise<{ phoneVerified: boolean, emailVerified: boolean }> {
+    async verifyEmail(username: string): Promise<void> {
+        try {
+            console.log('Verifying email for user: %s', username);
+
+            const updateParams: AdminUpdateUserAttributesCommandInput = {
+                UserPoolId: this.pool_id,
+                Username: username,
+                UserAttributes: [
+                    {
+                        Name: 'email_verified',
+                        Value: 'true',
+                    },
+                ],
+            };
+
+            const updateCommand = new AdminUpdateUserAttributesCommand(
+                updateParams
+            );
+            await this.client.send(updateCommand);
+
+            console.log('✅ Email verified for user: %s', username);
+        } catch (error: any) {
+            console.error('❌ Failed to verify email for %s:', username, error);
+            throw error;
+        }
+    }
+
+    async checkUserVerificationStatus(
+        username: string
+    ): Promise<{ phoneVerified: boolean; emailVerified: boolean }> {
         try {
             const getUserParams: AdminGetUserCommandInput = {
                 UserPoolId: this.pool_id,
-                Username: username
+                Username: username,
             };
 
             const getUserCommand = new AdminGetUserCommand(getUserParams);
             const userResult = await this.client.send(getUserCommand);
 
-            const phoneVerified = userResult.UserAttributes?.find(
-                attr => attr.Name === 'phone_number_verified'
-            )?.Value === 'true';
+            const phoneVerified =
+                userResult.UserAttributes?.find(
+                    attr => attr.Name === 'phone_number_verified'
+                )?.Value === 'true';
 
-            const emailVerified = userResult.UserAttributes?.find(
-                attr => attr.Name === 'email_verified'
-            )?.Value === 'true';
+            const emailVerified =
+                userResult.UserAttributes?.find(
+                    attr => attr.Name === 'email_verified'
+                )?.Value === 'true';
 
             return { phoneVerified, emailVerified };
         } catch (error: any) {
-            console.error('Failed to check verification status for %s:', username, error); // Fixed: Use %s placeholder
+            console.error(
+                'Failed to check verification status for %s:',
+                username,
+                error
+            ); // Fixed: Use %s placeholder
             return { phoneVerified: false, emailVerified: false };
         }
     }
 
-    async changeTempPassword(identifier: string, tempPassword: string, newPassword: string): Promise<changeTempPasswordOutput> {
+    async isFirstTimeLogin(username: string): Promise<boolean> {
+        try {
+            const getUserParams: AdminGetUserCommandInput = {
+                UserPoolId: this.pool_id,
+                Username: username,
+            };
+
+            const getUserCommand = new AdminGetUserCommand(getUserParams);
+            const userResult = await this.client.send(getUserCommand);
+
+            const userStatus = userResult.UserStatus;
+
+            const emailVerified =
+                userResult.UserAttributes?.find(
+                    attr => attr.Name === 'email_verified'
+                )?.Value === 'true';
+
+            return userStatus === 'FORCE_CHANGE_PASSWORD' || !emailVerified;
+        } catch (error: any) {
+            console.error(
+                'Failed to check first time login status for %s:',
+                username,
+                error
+            );
+            return false;
+        }
+    }
+
+    async changeTempPassword(
+        identifier: string,
+        tempPassword: string,
+        newPassword: string
+    ): Promise<changeTempPasswordOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'USER_PASSWORD_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
                 USERNAME: identifier,
                 PASSWORD: tempPassword,
-            }
+            },
         };
 
         try {
@@ -233,46 +336,51 @@ class CognitoClient {
             if (authData.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
                 const challengeParams: RespondToAuthChallengeCommandInput = {
                     ClientId: this.client_id,
-                    ChallengeName: "NEW_PASSWORD_REQUIRED",
+                    ChallengeName: 'NEW_PASSWORD_REQUIRED',
                     Session: authData.Session,
                     ChallengeResponses: {
                         USERNAME: identifier,
                         NEW_PASSWORD: newPassword,
-                    }
-                }
+                    },
+                };
 
-                const challengeCommand = new RespondToAuthChallengeCommand(challengeParams);
+                const challengeCommand = new RespondToAuthChallengeCommand(
+                    challengeParams
+                );
                 const challengeData = await this.client.send(challengeCommand);
 
                 return {
-                    accessToken: challengeData.AuthenticationResult?.AccessToken ?? '',
-                    refreshToken: challengeData.AuthenticationResult?.RefreshToken ?? ''
-                }
+                    accessToken:
+                        challengeData.AuthenticationResult?.AccessToken ?? '',
+                    refreshToken:
+                        challengeData.AuthenticationResult?.RefreshToken ?? '',
+                };
             } else {
                 throw {
                     status: 403,
                     message: 'Change temporary password not found',
-                } as changeTempPasswordThrow
+                } as changeTempPasswordThrow;
             }
         } catch (e: any) {
             if (e.name === 'InvalidPasswordException') {
                 throw {
                     status: 401,
-                    message: 'Password must Contains  at least 8 characters, 1 number, 1 special characters, 1 uppercase, 1 lowercase',
-                } as changeTempPasswordThrow
+                    message:
+                        'Password must Contains  at least 8 characters, 1 number, 1 special characters, 1 uppercase, 1 lowercase',
+                } as changeTempPasswordThrow;
             } else if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
                     message: 'Invalid username or password',
-                } as changeTempPasswordThrow
+                } as changeTempPasswordThrow;
             } else {
                 if (e.status) {
-                    throw e as changeTempPasswordThrow
+                    throw e as changeTempPasswordThrow;
                 } else {
                     throw {
                         status: 500,
                         message: 'Internal server error',
-                    } as changeTempPasswordThrow
+                    } as changeTempPasswordThrow;
                 }
             }
         }
@@ -285,50 +393,56 @@ class CognitoClient {
             AuthParameters: {
                 USERNAME: identifier,
                 PASSWORD: password,
-            }
-        }
+            },
+        };
 
         try {
             const command = new InitiateAuthCommand(params);
-            const authData = await this.client.send(command)
+            const authData = await this.client.send(command);
 
             if (authData?.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
                 throw {
                     status: 403,
-                    message: 'Please change your temporary password.'
-                } as loginThrow
+                    message: 'Please change your temporary password.',
+                } as loginThrow;
             } else if (authData?.AuthenticationResult) {
                 return {
-                    accessToken: authData.AuthenticationResult.AccessToken ?? '',
-                    refreshToken: authData.AuthenticationResult.RefreshToken ?? ''
-                }
+                    accessToken:
+                        authData.AuthenticationResult.AccessToken ?? '',
+                    refreshToken:
+                        authData.AuthenticationResult.RefreshToken ?? '',
+                };
             } else {
                 throw false;
             }
         } catch (e: any) {
-            console.error('error:', e)
+            console.error('error:', e);
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Invalid username or password'
-                } as loginThrow
+                    message: 'Invalid username or password',
+                } as loginThrow;
             } else if (e.status === 403) {
                 throw e as loginThrow;
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
-                } as accessTokenThrow
+                    message: 'Internal server error',
+                } as accessTokenThrow;
             }
         }
     }
 
-    async changePassword(accessToken: string, previousPassword: string, newPassword: string) {
+    async changePassword(
+        accessToken: string,
+        previousPassword: string,
+        newPassword: string
+    ) {
         const params: ChangePasswordCommandInput = {
             AccessToken: accessToken,
             PreviousPassword: previousPassword,
             ProposedPassword: newPassword,
-        }
+        };
 
         try {
             const command = new ChangePasswordCommand(params);
@@ -336,46 +450,54 @@ class CognitoClient {
             console.log('password change successfully', changeData);
         } catch (e: any) {
             if (e.name === 'NotAuthorizedException') {
-                console.log(e.message)
+                console.log(e.message);
             } else if (e.name === 'InvalidPasswordException') {
-                console.log(e.message)
+                console.log(e.message);
             } else {
-                console.log('error:', e)
+                console.log('error:', e);
             }
         }
     }
 
     async accessToken(accessToken: string): Promise<accessTokenOutput> {
         const params: GetUserCommandInput = {
-            AccessToken: accessToken
-        }
+            AccessToken: accessToken,
+        };
 
         try {
             const command = new GetUserCommand(params);
-            const userData = await this.client.send(command)
+            const userData = await this.client.send(command);
             return {
-                email: userData.UserAttributes?.find(obj => obj.Name === 'email')?.Value ?? '',
-                phone_number: userData.UserAttributes?.find(obj => obj.Name === 'phone_number')?.Value ?? '',
-                sub_id: userData.UserAttributes?.find(obj => obj.Name === 'sub')?.Value ?? ''
-            }
+                email:
+                    userData.UserAttributes?.find(obj => obj.Name === 'email')
+                        ?.Value ?? '',
+                phone_number:
+                    userData.UserAttributes?.find(
+                        obj => obj.Name === 'phone_number'
+                    )?.Value ?? '',
+                sub_id:
+                    userData.UserAttributes?.find(obj => obj.Name === 'sub')
+                        ?.Value ?? '',
+            };
         } catch (e: any) {
             if (e.name === 'NotAuthorizedException') {
                 if (e.message === 'Access Token has expired') {
                     throw {
                         status: 401,
-                        message: 'Access token has expired. Please use a refresh token to obtain a new access token.'
-                    } as accessTokenThrow
+                        message:
+                            'Access token has expired. Please use a refresh token to obtain a new access token.',
+                    } as accessTokenThrow;
                 } else {
                     throw {
                         status: 401,
                         message: 'Access token is invalid.',
-                    } as accessTokenThrow
+                    } as accessTokenThrow;
                 }
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
-                } as accessTokenThrow
+                    message: 'Internal server error',
+                } as accessTokenThrow;
             }
         }
     }
@@ -385,19 +507,21 @@ class CognitoClient {
             AuthFlow: 'REFRESH_TOKEN_AUTH',
             ClientId: this.client_id,
             AuthParameters: {
-                REFRESH_TOKEN: refreshToken
-            }
-        }
+                REFRESH_TOKEN: refreshToken,
+            },
+        };
 
         try {
             const command = new InitiateAuthCommand(params);
-            const authData = await this.client.send(command)
+            const authData = await this.client.send(command);
 
             if (authData?.AuthenticationResult) {
                 return {
-                    accessToken: authData.AuthenticationResult.AccessToken ?? '',
-                    refreshToken: authData.AuthenticationResult.RefreshToken ?? '',
-                }
+                    accessToken:
+                        authData.AuthenticationResult.AccessToken ?? '',
+                    refreshToken:
+                        authData.AuthenticationResult.RefreshToken ?? '',
+                };
             } else {
                 throw false;
             }
@@ -406,20 +530,19 @@ class CognitoClient {
                 if (e.message === 'Refresh Token has expired') {
                     throw {
                         status: 401,
-                        message: 'Refresh token has expired'
-                    } as refreshTokenThrow
-
+                        message: 'Refresh token has expired',
+                    } as refreshTokenThrow;
                 } else {
                     throw {
                         status: 403,
-                        message: 'Refresh token is invalid'
-                    } as refreshTokenThrow
+                        message: 'Refresh token is invalid',
+                    } as refreshTokenThrow;
                 }
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
-                } as refreshTokenThrow
+                    message: 'Internal server error',
+                } as refreshTokenThrow;
             }
         }
     }
@@ -439,16 +562,20 @@ class CognitoClient {
             console.log('Forgot password initiated successfully:', result);
 
             return {
-                message: 'If this phone number is registered, you will receive a verification code'
+                message:
+                    'If this phone number is registered, you will receive a verification code',
             };
         } catch (e: any) {
             console.error('Forgot password error:', e);
 
             if (e.name === 'UserNotFoundException') {
                 // For security, we don't reveal if user exists or not
-                console.log('User not found, but returning generic success message');
+                console.log(
+                    'User not found, but returning generic success message'
+                );
                 return {
-                    message: 'If this phone number is registered, you will receive a verification code'
+                    message:
+                        'If this phone number is registered, you will receive a verification code',
                 };
             } else if (e.name === 'InvalidParameterException') {
                 console.error('Invalid parameter error:', e.message);
@@ -456,35 +583,41 @@ class CognitoClient {
                 if (e.message && e.message.includes('no registered/verified')) {
                     throw {
                         status: 400,
-                        message: 'Phone number is not verified in the system. Please contact support.'
+                        message:
+                            'Phone number is not verified in the system. Please contact support.',
                     } as forgotPasswordThrow;
                 } else {
                     throw {
                         status: 400,
-                        message: 'Invalid phone number format'
+                        message: 'Invalid phone number format',
                     } as forgotPasswordThrow;
                 }
             } else if (e.name === 'LimitExceededException') {
                 throw {
                     status: 429,
-                    message: 'Too many requests. Please try again later'
+                    message: 'Too many requests. Please try again later',
                 } as forgotPasswordThrow;
             } else if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Unable to send verification code. Please contact support.'
+                    message:
+                        'Unable to send verification code. Please contact support.',
                 } as forgotPasswordThrow;
             } else {
                 console.error('Unexpected error:', e);
                 throw {
                     status: 500,
-                    message: 'Internal server error'
+                    message: 'Internal server error',
                 } as forgotPasswordThrow;
             }
         }
     }
 
-    async confirmForgotPassword(identifier: string, confirmationCode: string, newPassword: string): Promise<confirmForgotPasswordOutput> {
+    async confirmForgotPassword(
+        identifier: string,
+        confirmationCode: string,
+        newPassword: string
+    ): Promise<confirmForgotPasswordOutput> {
         const params: ConfirmForgotPasswordCommandInput = {
             ClientId: this.client_id,
             Username: identifier,
@@ -497,7 +630,7 @@ class CognitoClient {
             await this.client.send(command);
 
             return {
-                message: 'Password reset successfully'
+                message: 'Password reset successfully',
             };
         } catch (e: any) {
             console.error('Confirm forgot password error:', e);
@@ -505,37 +638,37 @@ class CognitoClient {
             if (e.name === 'UserNotFoundException') {
                 throw {
                     status: 404,
-                    message: 'User not found'
+                    message: 'User not found',
                 } as confirmForgotPasswordThrow;
             } else if (e.name === 'CodeMismatchException') {
                 throw {
                     status: 400,
-                    message: 'Invalid verification code'
+                    message: 'Invalid verification code',
                 } as confirmForgotPasswordThrow;
             } else if (e.name === 'ExpiredCodeException') {
                 throw {
                     status: 400,
-                    message: 'Verification code has expired'
+                    message: 'Verification code has expired',
                 } as confirmForgotPasswordThrow;
             } else if (e.name === 'InvalidPasswordException') {
                 throw {
                     status: 400,
-                    message: 'Password must contain at least 8 characters, 1 number, 1 special character, 1 uppercase, 1 lowercase'
+                    message:
+                        'Password must contain at least 8 characters, 1 number, 1 special character, 1 uppercase, 1 lowercase',
                 } as confirmForgotPasswordThrow;
             } else if (e.name === 'LimitExceededException') {
                 throw {
                     status: 400,
-                    message: 'Too many failed attempts. Please try again later'
+                    message: 'Too many failed attempts. Please try again later',
                 } as confirmForgotPasswordThrow;
             } else {
                 throw {
                     status: 500,
-                    message: 'Internal server error'
+                    message: 'Internal server error',
                 } as confirmForgotPasswordThrow;
             }
         }
     }
-
 }
 
 interface forgotPasswordOutput {
@@ -607,7 +740,7 @@ interface changeTempPasswordThrow {
 }
 
 interface registerOutput {
-    sub_id: string
+    sub_id: string;
 }
 
 interface registerThrow {
@@ -616,14 +749,13 @@ interface registerThrow {
 }
 
 interface deleteOutput {
-    message: string
+    message: string;
 }
 
 interface deleteThrow {
     status: 401 | 404 | 500;
     message: string;
 }
-
 
 const Parent = new CognitoClient(
     process.env.PARENT_POOL_ID ?? '',
@@ -635,4 +767,4 @@ const Admin = new CognitoClient(
     process.env.ADMIN_CLIENT_ID ?? ''
 );
 
-export { Parent, Admin }
+export { Parent, Admin };

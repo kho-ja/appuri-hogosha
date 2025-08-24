@@ -1,23 +1,23 @@
-import AuthController from "./auth";
-import StudentController from "./student";
-import ParentController from "./parent";
-import PostController from "./post";
-import SchedulePostController from "./schedule";
-import AdminController from "./admin";
-import GroupController from "./group";
-import FormController from "./form";
-import SchoolController from "./school";
-import { Router } from "express";
-import { IController } from "utils/icontroller";
+import AuthController from './auth';
+import StudentController from './student';
+import ParentController from './parent';
+import PostController from './post';
+import SchedulePostController from './schedule';
+import AdminController from './admin';
+import GroupController from './group';
+import FormController from './form';
+import SchoolController from './school';
+import { Router } from 'express';
+import { IController } from 'utils/icontroller';
 
 console.log('starting AdminPanel');
 
 class AdminPanelController implements IController {
     public router: Router = Router();
-    public path?: string | undefined = "/admin-panel";
+    public path?: string | undefined = '/admin-panel';
 
     constructor() {
-        this.initRoutes()
+        this.initRoutes();
     }
 
     initRoutes() {

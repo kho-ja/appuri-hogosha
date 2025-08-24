@@ -3,7 +3,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest } from "next/server";
 import { locales, localePrefix } from "@/navigation";
 
-const publicPages = ["/login", "/parentnotification"];
+const publicPages = ["/login", "/forgot-password", "/parentnotification"];
 
 const onlyAdminPathNames = ["/permissions"];
 
@@ -11,14 +11,14 @@ export const onlyAdminPathNameRegex = RegExp(
   `^(/(${locales.join("|")}))?(${onlyAdminPathNames
     .flatMap((p) => (p === "/" ? ["", "/"] : p))
     .join("|")})/?$`,
-  "i",
+  "i"
 );
 
 export const publicPathnameRegex = RegExp(
   `^(/(${locales.join("|")}))?(${publicPages
     .flatMap((p) => (p === "/" ? ["", "/"] : p))
     .join("|")})/?$`,
-  "i",
+  "i"
 );
 
 const intlMiddleware = createMiddleware({
@@ -29,7 +29,17 @@ const intlMiddleware = createMiddleware({
 
 const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
-  const isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+  let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+
+  if (!isPublicPage) {
+    const path = req.nextUrl.pathname;
+    if (
+      path.startsWith("/parentnotification") ||
+      locales.some(locale => path.startsWith(`/${locale}/parentnotification`))
+    ) {
+      isPublicPage = true;
+    }
+  }
 
   // If user is not logged in and trying to access a non-public page, redirect to login
   if (!req.auth && !isPublicPage) {
@@ -37,8 +47,12 @@ const authMiddleware = auth((req) => {
     return Response.redirect(newUrl);
   }
 
-  // If user is logged in and trying to access the login page, redirect to home page
-  if (req.auth && req.nextUrl.pathname.endsWith("/login")) {
+  // If user is logged in and trying to access auth pages, redirect to home page
+  if (
+    req.auth &&
+    (req.nextUrl.pathname.endsWith("/login") ||
+      req.nextUrl.pathname.endsWith("/forgot-password"))
+  ) {
     const newUrl = new URL("/", req.nextUrl.origin);
     return Response.redirect(newUrl);
   }

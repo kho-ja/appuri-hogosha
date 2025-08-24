@@ -11,9 +11,9 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-interface Parent {
-    phone_number: string;
+interface Admin {
     email: string;
+    phone_number: string;
     given_name: string;
     family_name: string;
 }
@@ -26,65 +26,61 @@ const client = new CognitoIdentityProviderClient({
     },
 });
 
-const PARENT_POOL_ID = process.env.PARENT_POOL_ID ?? '';
+const ADMIN_POOL_ID = process.env.ADMIN_POOL_ID ?? '';
 
-async function fixExistingUsers(): Promise<void> {
-    console.log('🔧 Fixing phone verification for existing users...\n');
+async function fixExistingAdmins(): Promise<void> {
+    console.log('🔧 Fixing email verification for existing admin users...\n');
 
     try {
-        // Get all parents from database
-        const parents: Parent[] = await DB.query(`
-            SELECT phone_number, email, given_name, family_name 
-            FROM Parent 
+        // Get all admins from database
+        const admins: Admin[] = await DB.query(`
+            SELECT email, phone_number, given_name, family_name 
+            FROM Admin 
             ORDER BY id
         `);
 
-        console.log(`Found ${parents.length} parents in database\n`);
+        console.log(`Found ${admins.length} admins in database\n`);
 
         let successCount = 0;
         let errorCount = 0;
 
-        for (const parent of parents) {
-            const phoneWithPlus = parent.phone_number.startsWith('+')
-                ? parent.phone_number
-                : `+${parent.phone_number}`;
-
+        for (const admin of admins) {
             console.log(
-                `\n👤 Processing: ${parent.given_name} ${parent.family_name}`
+                `\n👤 Processing: ${admin.given_name} ${admin.family_name}`
             );
-            console.log(`   Phone: ${phoneWithPlus}`);
+            console.log(`   Email: ${admin.email}`);
 
             try {
                 // First check if user exists and get current status
                 const getUserParams: AdminGetUserCommandInput = {
-                    UserPoolId: PARENT_POOL_ID,
-                    Username: phoneWithPlus,
+                    UserPoolId: ADMIN_POOL_ID,
+                    Username: admin.email,
                 };
 
                 const getUserCommand = new AdminGetUserCommand(getUserParams);
                 const userResult = await client.send(getUserCommand);
 
-                const phoneVerifiedAttr = userResult.UserAttributes?.find(
-                    attr => attr.Name === 'phone_number_verified'
+                const emailVerifiedAttr = userResult.UserAttributes?.find(
+                    attr => attr.Name === 'email_verified'
                 );
 
-                const isPhoneVerified = phoneVerifiedAttr?.Value === 'true';
+                const isEmailVerified = emailVerifiedAttr?.Value === 'true';
 
-                if (isPhoneVerified) {
-                    console.log(`   ✅ Phone already verified`);
+                if (isEmailVerified) {
+                    console.log(`   ✅ Email already verified`);
                     successCount++;
                     continue;
                 }
 
-                console.log(`   🔧 Verifying phone number...`);
+                console.log(`   🔧 Verifying email address...`);
 
-                // Update phone verification status
+                // Update email verification status
                 const updateParams: AdminUpdateUserAttributesCommandInput = {
-                    UserPoolId: PARENT_POOL_ID,
-                    Username: phoneWithPlus,
+                    UserPoolId: ADMIN_POOL_ID,
+                    Username: admin.email,
                     UserAttributes: [
                         {
-                            Name: 'phone_number_verified',
+                            Name: 'email_verified',
                             Value: 'true',
                         },
                     ],
@@ -94,7 +90,7 @@ async function fixExistingUsers(): Promise<void> {
                     updateParams
                 );
                 await client.send(updateCommand);
-                console.log(`   ✅ Phone number verified successfully!`);
+                console.log(`   ✅ Email address verified successfully!`);
                 successCount++;
             } catch (error: any) {
                 console.log(`   ❌ Error: ${error.name} - ${error.message}`);
@@ -107,13 +103,13 @@ async function fixExistingUsers(): Promise<void> {
 
         console.log('\n' + '='.repeat(50));
         console.log('🏁 SUMMARY:');
-        console.log(`✅ Successfully verified: ${successCount} users`);
-        console.log(`❌ Errors: ${errorCount} users`);
+        console.log(`✅ Successfully verified: ${successCount} admins`);
+        console.log(`❌ Errors: ${errorCount} admins`);
         console.log('='.repeat(50));
 
         if (successCount > 0) {
             console.log(
-                '\n🎉 Great! Now try the forgot password functionality again.'
+                '\n🎉 Great! Now try the admin forgot password functionality again.'
             );
         }
     } catch (error: any) {
@@ -124,21 +120,17 @@ async function fixExistingUsers(): Promise<void> {
     }
 }
 
-// Also create a function to verify a single user
-async function verifySingleUser(phoneNumber: string): Promise<void> {
-    const phoneWithPlus = phoneNumber.startsWith('+')
-        ? phoneNumber
-        : `+${phoneNumber}`;
-
-    console.log(`🔧 Verifying single user: ${phoneWithPlus}`);
+// Function to verify a single admin email
+async function verifySingleAdmin(email: string): Promise<void> {
+    console.log(`🔧 Verifying single admin: ${email}`);
 
     try {
         const updateParams: AdminUpdateUserAttributesCommandInput = {
-            UserPoolId: PARENT_POOL_ID,
-            Username: phoneWithPlus,
+            UserPoolId: ADMIN_POOL_ID,
+            Username: email,
             UserAttributes: [
                 {
-                    Name: 'phone_number_verified',
+                    Name: 'email_verified',
                     Value: 'true',
                 },
             ],
@@ -148,24 +140,20 @@ async function verifySingleUser(phoneNumber: string): Promise<void> {
             updateParams
         );
         await client.send(updateCommand);
-        console.log(`✅ Phone number verified successfully!`);
+        console.log(`✅ Email address verified successfully!`);
     } catch (error: any) {
         console.log(`❌ Error: ${error.name} - ${error.message}`);
     }
 }
 
-// Function to check verification status of a user
-async function checkUserStatus(phoneNumber: string): Promise<void> {
-    const phoneWithPlus = phoneNumber.startsWith('+')
-        ? phoneNumber
-        : `+${phoneNumber}`;
-
-    console.log(`🔍 Checking user status: ${phoneWithPlus}`);
+// Function to check verification status of an admin
+async function checkAdminStatus(email: string): Promise<void> {
+    console.log(`🔍 Checking admin status: ${email}`);
 
     try {
         const getUserParams: AdminGetUserCommandInput = {
-            UserPoolId: PARENT_POOL_ID,
-            Username: phoneWithPlus,
+            UserPoolId: ADMIN_POOL_ID,
+            Username: email,
         };
 
         const getUserCommand = new AdminGetUserCommand(getUserParams);
@@ -175,26 +163,26 @@ async function checkUserStatus(phoneNumber: string): Promise<void> {
         console.log(`   Enabled: ${userResult.Enabled}`);
 
         // Check all attributes
-        const phoneAttr = userResult.UserAttributes?.find(
-            attr => attr.Name === 'phone_number'
-        );
-        const phoneVerifiedAttr = userResult.UserAttributes?.find(
-            attr => attr.Name === 'phone_number_verified'
-        );
         const emailAttr = userResult.UserAttributes?.find(
             attr => attr.Name === 'email'
         );
         const emailVerifiedAttr = userResult.UserAttributes?.find(
             attr => attr.Name === 'email_verified'
         );
-
-        console.log(`   Phone: ${phoneAttr?.Value || 'Not set'}`);
-        console.log(
-            `   Phone Verified: ${phoneVerifiedAttr?.Value || 'false'}`
+        const phoneAttr = userResult.UserAttributes?.find(
+            attr => attr.Name === 'phone_number'
         );
+        const phoneVerifiedAttr = userResult.UserAttributes?.find(
+            attr => attr.Name === 'phone_number_verified'
+        );
+
         console.log(`   Email: ${emailAttr?.Value || 'Not set'}`);
         console.log(
             `   Email Verified: ${emailVerifiedAttr?.Value || 'false'}`
+        );
+        console.log(`   Phone: ${phoneAttr?.Value || 'Not set'}`);
+        console.log(
+            `   Phone Verified: ${phoneVerifiedAttr?.Value || 'false'}`
         );
     } catch (error: any) {
         console.log(`❌ Error: ${error.name} - ${error.message}`);
@@ -204,39 +192,39 @@ async function checkUserStatus(phoneNumber: string): Promise<void> {
 // Main execution
 const args = process.argv.slice(2);
 const command = args[0];
-const phoneNumber = args[1];
+const email = args[1];
 
 switch (command) {
     case 'fix-all':
-        fixExistingUsers();
+        fixExistingAdmins();
         break;
     case 'verify-single':
-        if (!phoneNumber) {
+        if (!email) {
             console.log(
-                '❌ Please provide a phone number: npm run fix-phone verify-single +998935108199'
+                '❌ Please provide an email address: npm run fix-email verify-single admin@example.com'
             );
             process.exit(1);
         }
-        verifySingleUser(phoneNumber);
+        verifySingleAdmin(email);
         break;
     case 'check-status':
-        if (!phoneNumber) {
+        if (!email) {
             console.log(
-                '❌ Please provide a phone number: npm run fix-phone check-status +998935108199'
+                '❌ Please provide an email address: npm run fix-email check-status admin@example.com'
             );
             process.exit(1);
         }
-        checkUserStatus(phoneNumber);
+        checkAdminStatus(email);
         break;
     default:
         console.log('Available commands:');
-        console.log('  fix-all          - Fix all users in database');
-        console.log('  verify-single    - Verify single user phone');
-        console.log('  check-status     - Check user verification status');
+        console.log('  fix-all          - Fix all admin users in database');
+        console.log('  verify-single    - Verify single admin email');
+        console.log('  check-status     - Check admin verification status');
         console.log('');
         console.log('Examples:');
-        console.log('  npm run fix-phone fix-all');
-        console.log('  npm run fix-phone verify-single +998935108199');
-        console.log('  npm run fix-phone check-status +998935108199');
+        console.log('  npm run fix-email fix-all');
+        console.log('  npm run fix-email verify-single admin@example.com');
+        console.log('  npm run fix-email check-status admin@example.com');
         break;
 }

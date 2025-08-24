@@ -27,8 +27,9 @@ export class TelegramService {
                 buttonText = 'Ko\'rish';
             }
 
+            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
             const button = Markup.inlineKeyboard([
-                Markup.button.url(buttonText, "https://appuri-hogosha.vercel.app/parentnotification")
+                Markup.button.url(buttonText, link)
             ]);
 
             await this.bot.telegram.sendMessage(post.chat_id, text, button);

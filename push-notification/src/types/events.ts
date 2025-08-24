@@ -41,6 +41,7 @@ export interface NotificationPost {
     description: string;
     family_name: string;
     given_name: string;
+    student_id: string;
     chat_id: string;
     language: string;
     phone_number: string;
