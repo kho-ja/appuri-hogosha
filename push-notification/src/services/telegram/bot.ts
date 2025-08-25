@@ -1,4 +1,4 @@
-import { Telegraf, Markup } from "telegraf";
+import { Telegraf, Markup } from 'telegraf';
 import { ENVIRONMENT } from '../../config/environment';
 import { NotificationPost } from '../../types/events';
 
@@ -15,7 +15,8 @@ export class TelegramService {
                 return false;
             }
 
-            let text = '', buttonText = '';
+            let text = '',
+                buttonText = '';
             if (post.language === 'jp') {
                 text = `新しい投稿: ${post.title} に ${post.given_name} ${post.family_name}`;
                 buttonText = '見る';
@@ -24,12 +25,12 @@ export class TelegramService {
                 buttonText = 'Посмотреть';
             } else {
                 text = `Yangi post: ${post.title} uchun ${post.given_name} ${post.family_name}`;
-                buttonText = 'Ko\'rish';
+                buttonText = "Ko'rish";
             }
 
             const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
             const button = Markup.inlineKeyboard([
-                Markup.button.url(buttonText, link)
+                Markup.button.url(buttonText, link),
             ]);
 
             await this.bot.telegram.sendMessage(post.chat_id, text, button);

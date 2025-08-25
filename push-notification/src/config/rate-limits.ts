@@ -1,12 +1,12 @@
 // Enhanced cost protection and rate limiting
 export const SMS_RATE_LIMIT = {
-    MAX_BATCH_SIZE: 50,           // Max messages per batch (to avoid error 105)
-    BATCH_DELAY_MS: 1000,         // Delay between batches
-    MAX_RETRIES: 2,               // Max retry attempts
-    RETRY_DELAY_MS: 5000,         // Delay before retry
-    DAILY_LIMIT: 1000,            // Daily SMS limit
-    HOURLY_LIMIT: 100,            // Hourly SMS limit
-    MESSAGE_TTL: 3600             // 1 hour TTL
+    MAX_BATCH_SIZE: 50, // Max messages per batch (to avoid error 105)
+    BATCH_DELAY_MS: 1000, // Delay between batches
+    MAX_RETRIES: 2, // Max retry attempts
+    RETRY_DELAY_MS: 5000, // Delay before retry
+    DAILY_LIMIT: 1000, // Daily SMS limit
+    HOURLY_LIMIT: 100, // Hourly SMS limit
+    MESSAGE_TTL: 3600, // 1 hour TTL
 } as const;
 
 // SMS counter for rate limiting (in-memory, use Redis in production)
@@ -40,14 +40,16 @@ export class SmsCounter {
     }
 
     canSend(): boolean {
-        return this.getDailyCount() < SMS_RATE_LIMIT.DAILY_LIMIT &&
-            this.getHourlyCount() < SMS_RATE_LIMIT.HOURLY_LIMIT;
+        return (
+            this.getDailyCount() < SMS_RATE_LIMIT.DAILY_LIMIT &&
+            this.getHourlyCount() < SMS_RATE_LIMIT.HOURLY_LIMIT
+        );
     }
 
     getRemainingQuota(): { daily: number; hourly: number } {
         return {
             daily: SMS_RATE_LIMIT.DAILY_LIMIT - this.getDailyCount(),
-            hourly: SMS_RATE_LIMIT.HOURLY_LIMIT - this.getHourlyCount()
+            hourly: SMS_RATE_LIMIT.HOURLY_LIMIT - this.getHourlyCount(),
         };
     }
 }
