@@ -14,7 +14,8 @@
 		"analyze-db": "npx ts-node src/analyze-db-tokens.ts",
 		"debug-push": "npx ts-node src/debug-push-notifications.ts",
 		"test-token": "npx ts-node src/test-notification-token.ts",
-		"lint": "echo 'Add linting here if needed'",
+		"lint": "eslint . --ext .ts,.tsx",
+        "lint:fix": "eslint . --ext .ts,.tsx --fix",
 		"type-check": "tsc --noEmit"
 	},
 	"keywords": [
@@ -41,6 +42,9 @@
 	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",
+		"@typescript-eslint/eslint-plugin": "^8.40.0",
+		"@typescript-eslint/parser": "^8.40.0",
+		"eslint-plugin-prettier": "^5.5.4",
 		"nodemon": "^3.1.0",
 		"rimraf": "^5.0.5",
 		"ts-node": "^10.9.1",

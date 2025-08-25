@@ -23,18 +23,27 @@ export class UnifiedPushService {
             }
 
             const tokenAnalysis = detectTokenType(post.arn);
-            console.log(`🔍 Token analysis for post ${post.id}: ${tokenAnalysis.platform} (${tokenAnalysis.type || 'unknown'})`);
+            console.log(
+                `🔍 Token analysis for post ${post.id}: ${tokenAnalysis.platform} (${tokenAnalysis.type || 'unknown'})`
+            );
 
             // Route to appropriate service based on token type
             if (tokenAnalysis.isExpoToken) {
                 console.log(`📱 Routing post ${post.id} to Expo Push Service`);
-                return await this.expoPushService.sendExpoPushNotification(post);
+                return await this.expoPushService.sendExpoPushNotification(
+                    post
+                );
             } else {
-                console.log(`📱 Routing post ${post.id} to AWS Pinpoint Service (${tokenAnalysis.platform})`);
+                console.log(
+                    `📱 Routing post ${post.id} to AWS Pinpoint Service (${tokenAnalysis.platform})`
+                );
                 return await this.pinpointService.sendPushNotification(post);
             }
         } catch (error) {
-            console.error(`❌ Error in unified push service for post ${post.id}:`, error);
+            console.error(
+                `❌ Error in unified push service for post ${post.id}:`,
+                error
+            );
             return false;
         }
     }
@@ -42,9 +51,11 @@ export class UnifiedPushService {
     /**
      * Send notifications to multiple recipients using the appropriate services
      */
-    async sendBulkPushNotifications(
-        posts: NotificationPost[]
-    ): Promise<{ successful: string[]; failed: string[]; stats: NotificationStats }> {
+    async sendBulkPushNotifications(posts: NotificationPost[]): Promise<{
+        successful: string[];
+        failed: string[];
+        stats: NotificationStats;
+    }> {
         const successful: string[] = [];
         const failed: string[] = [];
         const stats: NotificationStats = {
@@ -52,7 +63,7 @@ export class UnifiedPushService {
             expo: 0,
             pinpoint_ios: 0,
             pinpoint_android: 0,
-            invalid: 0
+            invalid: 0,
         };
 
         // Separate posts by token type
@@ -94,25 +105,37 @@ export class UnifiedPushService {
         // Send Expo notifications in bulk
         if (expoPosts.length > 0) {
             try {
-                const expoResults = await this.expoPushService.sendBulkExpoPushNotifications(expoPosts);
+                const expoResults =
+                    await this.expoPushService.sendBulkExpoPushNotifications(
+                        expoPosts
+                    );
                 successful.push(...expoResults.successful);
                 failed.push(...expoResults.failed);
             } catch (error) {
-                console.error('❌ Error sending Expo bulk notifications:', error);
+                console.error(
+                    '❌ Error sending Expo bulk notifications:',
+                    error
+                );
                 failed.push(...expoPosts.map(post => post.id));
             }
         }
 
         // Send Pinpoint notifications individually (AWS doesn't have efficient bulk API)
         if (pinpointPosts.length > 0) {
-            console.log(`🔄 Processing ${pinpointPosts.length} Pinpoint notifications...`);
+            console.log(
+                `🔄 Processing ${pinpointPosts.length} Pinpoint notifications...`
+            );
 
-            const pinpointPromises = pinpointPosts.map(async (post) => {
+            const pinpointPromises = pinpointPosts.map(async post => {
                 try {
-                    const success = await this.pinpointService.sendPushNotification(post);
+                    const success =
+                        await this.pinpointService.sendPushNotification(post);
                     return { postId: post.id, success };
                 } catch (error) {
-                    console.error(`❌ Error sending Pinpoint notification for post ${post.id}:`, error);
+                    console.error(
+                        `❌ Error sending Pinpoint notification for post ${post.id}:`,
+                        error
+                    );
                     return { postId: post.id, success: false };
                 }
             });
@@ -131,7 +154,9 @@ export class UnifiedPushService {
         // Mark invalid tokens as failed
         failed.push(...invalidPosts.map(post => post.id));
 
-        console.log(`📊 Bulk notification results: ${successful.length} successful, ${failed.length} failed`);
+        console.log(
+            `📊 Bulk notification results: ${successful.length} successful, ${failed.length} failed`
+        );
 
         return { successful, failed, stats };
     }
@@ -139,14 +164,16 @@ export class UnifiedPushService {
     /**
      * Analyze token distribution in a batch of posts
      */
-    analyzeTokenDistribution(posts: NotificationPost[]): TokenDistributionAnalysis {
+    analyzeTokenDistribution(
+        posts: NotificationPost[]
+    ): TokenDistributionAnalysis {
         const analysis: TokenDistributionAnalysis = {
             total: posts.length,
             expo: 0,
             ios: 0,
             android: 0,
             invalid: 0,
-            missing: 0
+            missing: 0,
         };
 
         for (const post of posts) {

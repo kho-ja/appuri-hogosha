@@ -30,23 +30,32 @@ export class NotificationProcessor {
             console.timeEnd('db-fetch');
 
             if (!posts.length) {
-                console.log("📭 No notifications to process");
-                return { message: "no notifications", count: 0, total: 0 };
+                console.log('📭 No notifications to process');
+                return { message: 'no notifications', count: 0, total: 0 };
             }
 
             // Separate posts into push-enabled and SMS-only
-            const pushPosts = posts.filter(post => post.arn && post.arn.trim() !== '');
-            const smsOnlyPosts = posts.filter(post => (!post.arn || post.arn.trim() === '') && post.sms);
+            const pushPosts = posts.filter(
+                post => post.arn && post.arn.trim() !== ''
+            );
+            const smsOnlyPosts = posts.filter(
+                post => (!post.arn || post.arn.trim() === '') && post.sms
+            );
 
             console.log(`📋 Processing ${posts.length} total notifications:`);
             console.log(`   📱 ${pushPosts.length} with push tokens (ARN)`);
             console.log(`   📧 ${smsOnlyPosts.length} SMS-only (no ARN)`);
 
             console.time('send-notifications');
-            const results = await this.sendMixedNotifications(pushPosts, smsOnlyPosts);
+            const results = await this.sendMixedNotifications(
+                pushPosts,
+                smsOnlyPosts
+            );
             console.timeEnd('send-notifications');
 
-            const successfulIds = results.successful.map(id => parseInt(id, 10));
+            const successfulIds = results.successful.map(id =>
+                parseInt(id, 10)
+            );
 
             if (successfulIds.length) {
                 console.time('db-update');
@@ -54,21 +63,22 @@ export class NotificationProcessor {
                 console.timeEnd('db-update');
             }
 
-            console.log(`✅ Successfully processed ${successfulIds.length}/${posts.length} notifications`);
+            console.log(
+                `✅ Successfully processed ${successfulIds.length}/${posts.length} notifications`
+            );
             console.log(`   📱 Push notifications: ${results.pushCount}`);
             console.log(`   📧 SMS notifications: ${results.smsCount}`);
 
             return {
-                message: "success",
+                message: 'success',
                 count: successfulIds.length,
                 total: posts.length,
                 push_count: results.pushCount,
-                sms_only_count: results.smsOnlyCount
+                sms_only_count: results.smsOnlyCount,
             };
-
         } catch (e) {
-            console.error("❌ Error in processNotifications:", e);
-            return { message: "error", count: 0, total: 0, error: String(e) };
+            console.error('❌ Error in processNotifications:', e);
+            return { message: 'error', count: 0, total: 0, error: String(e) };
         } finally {
             console.timeEnd('total-execution');
         }
@@ -87,25 +97,31 @@ export class NotificationProcessor {
             successful: [] as string[],
             pushCount: 0,
             smsCount: 0,
-            smsOnlyCount: 0
+            smsOnlyCount: 0,
         };
 
         // Process push-enabled posts (can have both push + SMS)
         if (pushPosts.length > 0) {
-            console.log(`🔄 Processing ${pushPosts.length} push-enabled notifications...`);
+            console.log(
+                `🔄 Processing ${pushPosts.length} push-enabled notifications...`
+            );
 
-            const pushPromises = pushPosts.map(async (post) => {
+            const pushPromises = pushPosts.map(async post => {
                 try {
                     let hasSuccessfulNotification = false;
 
                     // Send Telegram notification
-                    const telegramSuccess = await this.telegramService.sendNotification(post);
+                    const telegramSuccess =
+                        await this.telegramService.sendNotification(post);
                     if (telegramSuccess) {
                         hasSuccessfulNotification = true;
                     }
 
                     // Send push notification (these have ARN) using unified service
-                    const pushSuccess = await this.unifiedPushService.sendPushNotification(post);
+                    const pushSuccess =
+                        await this.unifiedPushService.sendPushNotification(
+                            post
+                        );
                     if (pushSuccess) {
                         hasSuccessfulNotification = true;
                         results.pushCount++;
@@ -118,32 +134,42 @@ export class NotificationProcessor {
                         if (smsSuccess) {
                             hasSuccessfulNotification = true;
                             results.smsCount++;
-                            console.log(`📧 SMS sent to post ${post.id} (with ARN)`);
+                            console.log(
+                                `📧 SMS sent to post ${post.id} (with ARN)`
+                            );
                         }
                     }
 
                     return hasSuccessfulNotification ? post.id : null;
                 } catch (error) {
-                    console.error(`❌ Error processing push post ${post.id}:`, error);
+                    console.error(
+                        `❌ Error processing push post ${post.id}:`,
+                        error
+                    );
                     return null;
                 }
             });
 
             const pushResults = await Promise.all(pushPromises);
-            const successfulPushIds = pushResults.filter(id => id !== null) as string[];
+            const successfulPushIds = pushResults.filter(
+                id => id !== null
+            ) as string[];
             results.successful.push(...successfulPushIds);
         }
 
         // Process SMS-only posts (no ARN, SMS only)
         if (smsOnlyPosts.length > 0) {
-            console.log(`🔄 Processing ${smsOnlyPosts.length} SMS-only notifications...`);
+            console.log(
+                `🔄 Processing ${smsOnlyPosts.length} SMS-only notifications...`
+            );
 
-            const smsOnlyPromises = smsOnlyPosts.map(async (post) => {
+            const smsOnlyPromises = smsOnlyPosts.map(async post => {
                 try {
                     let hasSuccessfulNotification = false;
 
                     // Send Telegram notification
-                    const telegramSuccess = await this.telegramService.sendNotification(post);
+                    const telegramSuccess =
+                        await this.telegramService.sendNotification(post);
                     if (telegramSuccess) {
                         hasSuccessfulNotification = true;
                     }
@@ -154,19 +180,26 @@ export class NotificationProcessor {
                         if (smsSuccess) {
                             hasSuccessfulNotification = true;
                             results.smsOnlyCount++;
-                            console.log(`📧 SMS-only sent to post ${post.id} (no ARN)`);
+                            console.log(
+                                `📧 SMS-only sent to post ${post.id} (no ARN)`
+                            );
                         }
                     }
 
                     return hasSuccessfulNotification ? post.id : null;
                 } catch (error) {
-                    console.error(`❌ Error processing SMS-only post ${post.id}:`, error);
+                    console.error(
+                        `❌ Error processing SMS-only post ${post.id}:`,
+                        error
+                    );
                     return null;
                 }
             });
 
             const smsOnlyResults = await Promise.all(smsOnlyPromises);
-            const successfulSmsOnlyIds = smsOnlyResults.filter(id => id !== null) as string[];
+            const successfulSmsOnlyIds = smsOnlyResults.filter(
+                id => id !== null
+            ) as string[];
             results.successful.push(...successfulSmsOnlyIds);
         }
 
@@ -184,31 +217,48 @@ export class NotificationProcessor {
 
             // Send with AWS SMS for non-Uzbekistan numbers
             if (!routing.isUzbekistan) {
-                console.log(`🌍 Non-Uzbekistan number detected: ${post.phone_number}`);
+                console.log(
+                    `🌍 Non-Uzbekistan number detected: ${post.phone_number}`
+                );
                 let formattedPhoneNumber = post.phone_number;
                 if (!formattedPhoneNumber.startsWith('+')) {
                     formattedPhoneNumber = `+${formattedPhoneNumber}`;
                 }
                 const text = generateSmsText(post);
-                return await this.awsSmsService.sendSms(formattedPhoneNumber, text);
+                return await this.awsSmsService.sendSms(
+                    formattedPhoneNumber,
+                    text
+                );
             }
 
-            console.log(`🇺🇿 Uzbekistan number detected: ${post.phone_number} (${routing.operator})`);
+            console.log(
+                `🇺🇿 Uzbekistan number detected: ${post.phone_number} (${routing.operator})`
+            );
 
             const text = generateSmsText(post);
 
             if (routing.usePlayMobile) {
-                console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
-                return await this.playMobileService.sendSms(post.phone_number, text, post.id);
+                console.log(
+                    `📤 Routing ${routing.operator} via PlayMobile API`
+                );
+                return await this.playMobileService.sendSms(
+                    post.phone_number,
+                    text,
+                    post.id
+                );
             } else {
-                console.log(`📤 Routing ${routing.operator} via AWS SMS (PlayMobile bypass)`);
+                console.log(
+                    `📤 Routing ${routing.operator} via AWS SMS (PlayMobile bypass)`
+                );
                 let formattedPhoneNumber = post.phone_number;
                 if (!formattedPhoneNumber.startsWith('+')) {
                     formattedPhoneNumber = `+${formattedPhoneNumber}`;
                 }
-                return await this.awsSmsService.sendSms(formattedPhoneNumber, text);
+                return await this.awsSmsService.sendSms(
+                    formattedPhoneNumber,
+                    text
+                );
             }
-
         } catch (error) {
             console.error(`❌ Error sending SMS for post ${post.id}:`, error);
             return false;

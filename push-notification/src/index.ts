@@ -9,9 +9,16 @@ import { CognitoHandler } from './handlers/cognito/sms-handler';
 import { ApiHandler } from './handlers/api/sms-api';
 import { NotificationProcessor } from './handlers/notifications/push-notifications';
 import { detectEventSource } from './utils/event-detection';
-import { EventSource, CognitoEvent, ApiGatewayEvent, DirectInvokeEvent } from './types/events';
+import {
+    EventSource,
+    CognitoEvent,
+    ApiGatewayEvent,
+    DirectInvokeEvent,
+} from './types/events';
 
-console.log(`🏃 Running in ${ENVIRONMENT.IS_LOCAL ? 'LOCAL' : 'LAMBDA'} environment`);
+console.log(
+    `🏃 Running in ${ENVIRONMENT.IS_LOCAL ? 'LOCAL' : 'LAMBDA'} environment`
+);
 
 // Initialize services
 const dbClient = new DatabaseClient();
@@ -32,8 +39,8 @@ const notificationProcessor = new NotificationProcessor(
 
 // Main Lambda handler with event routing
 export const handler = async (event: any, context: any) => {
-    console.log("🚀 Starting enhanced notification handler");
-    console.log("📥 Event:", JSON.stringify(event, null, 2));
+    console.log('🚀 Starting enhanced notification handler');
+    console.log('📥 Event:', JSON.stringify(event, null, 2));
 
     const eventSource: EventSource = detectEventSource(event);
     console.log(`📍 Event source detected: ${eventSource}`);
@@ -42,11 +49,15 @@ export const handler = async (event: any, context: any) => {
         switch (eventSource) {
             case 'COGNITO':
                 console.log('🔐 Processing Cognito SMS trigger');
-                return await cognitoHandler.handleCognitoSms(event as CognitoEvent);
+                return await cognitoHandler.handleCognitoSms(
+                    event as CognitoEvent
+                );
 
             case 'API_GATEWAY':
                 console.log('🌐 Processing API Gateway request');
-                return await apiHandler.handleApiRequest(event as ApiGatewayEvent);
+                return await apiHandler.handleApiRequest(
+                    event as ApiGatewayEvent
+                );
 
             case 'DIRECT_INVOKE':
                 console.log('🎯 Processing direct invoke');
@@ -55,46 +66,59 @@ export const handler = async (event: any, context: any) => {
 
             case 'SCHEDULED':
                 console.log('⏰ Processing scheduled task');
-                const result = await notificationProcessor.processNotifications();
+                const result =
+                    await notificationProcessor.processNotifications();
                 await dbClient.closeConnection();
 
                 // Enhanced logging for mixed notifications
                 console.log(`📊 Notification Summary:`);
-                console.log(`   📋 Total processed: ${result.count}/${result.total}`);
+                console.log(
+                    `   📋 Total processed: ${result.count}/${result.total}`
+                );
                 if (result.push_count !== undefined) {
-                    console.log(`   📱 Push notifications: ${result.push_count}`);
+                    console.log(
+                        `   📱 Push notifications: ${result.push_count}`
+                    );
                 }
                 if (result.sms_only_count !== undefined) {
-                    console.log(`   📧 SMS-only notifications: ${result.sms_only_count}`);
+                    console.log(
+                        `   📧 SMS-only notifications: ${result.sms_only_count}`
+                    );
                 }
 
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(result)
+                    body: JSON.stringify(result),
                 };
 
             default:
                 console.log('📱 Processing as default notification task');
-                const defaultResult = await notificationProcessor.processNotifications();
+                const defaultResult =
+                    await notificationProcessor.processNotifications();
                 await dbClient.closeConnection();
 
                 console.log(`📊 Default Notification Summary:`);
-                console.log(`   📋 Total processed: ${defaultResult.count}/${defaultResult.total}`);
+                console.log(
+                    `   📋 Total processed: ${defaultResult.count}/${defaultResult.total}`
+                );
                 if (defaultResult.push_count !== undefined) {
-                    console.log(`   📱 Push notifications: ${defaultResult.push_count}`);
+                    console.log(
+                        `   📱 Push notifications: ${defaultResult.push_count}`
+                    );
                 }
                 if (defaultResult.sms_only_count !== undefined) {
-                    console.log(`   📧 SMS-only notifications: ${defaultResult.sms_only_count}`);
+                    console.log(
+                        `   📧 SMS-only notifications: ${defaultResult.sms_only_count}`
+                    );
                 }
 
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(defaultResult)
+                    body: JSON.stringify(defaultResult),
                 };
         }
-
     } catch (error) {
-        console.error("❌ Handler error:", error);
+        console.error('❌ Handler error:', error);
 
         // Return appropriate error response based on event type
         if (eventSource === 'COGNITO') {
@@ -102,17 +126,18 @@ export const handler = async (event: any, context: any) => {
         } else if (eventSource === 'API_GATEWAY') {
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: 'Internal server error' })
+                body: JSON.stringify({ error: 'Internal server error' }),
             };
         } else {
             return {
                 statusCode: 500,
                 body: JSON.stringify({
-                    message: "error",
-                    error: error instanceof Error ? error.message : String(error),
+                    message: 'error',
+                    error:
+                        error instanceof Error ? error.message : String(error),
                     count: 0,
-                    total: 0
-                })
+                    total: 0,
+                }),
             };
         }
     } finally {
@@ -120,7 +145,7 @@ export const handler = async (event: any, context: any) => {
         try {
             await dbClient.closeConnection();
         } catch (closeError) {
-            console.warn("⚠️ Error closing database connection:", closeError);
+            console.warn('⚠️ Error closing database connection:', closeError);
         }
     }
 };
@@ -131,17 +156,19 @@ export {
     dbQueries,
     unifiedPushService,
     playMobileService,
-    awsSmsService
+    awsSmsService,
 };
 
 // For local development - run directly
 if (ENVIRONMENT.IS_LOCAL) {
     console.log('🚀 Running locally...');
-    handler({}, {}).then(result => {
-        console.log('📊 Result:', result);
-        process.exit(0);
-    }).catch(error => {
-        console.error('💥 Error:', error);
-        process.exit(1);
-    });
+    handler({}, {})
+        .then(result => {
+            console.log('📊 Result:', result);
+            process.exit(0);
+        })
+        .catch(error => {
+            console.error('💥 Error:', error);
+            process.exit(1);
+        });
 }

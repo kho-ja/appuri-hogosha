@@ -1,8 +1,8 @@
-import { DatabaseClient } from "./client";
-import { NotificationPost } from "../../types/events";
+import { DatabaseClient } from './client';
+import { NotificationPost } from '../../types/events';
 
 export class DatabaseQueries {
-    constructor(private db: DatabaseClient) { }
+    constructor(private db: DatabaseClient) {}
 
     async fetchPosts(): Promise<NotificationPost[]> {
         return await this.db.query(
@@ -157,7 +157,9 @@ export class DatabaseQueries {
 
     async updateProcessedPosts(ids: number[]): Promise<void> {
         if (!ids.length) return;
-        await this.db.execute(`UPDATE PostParent SET push = true WHERE id IN (${ids.join(',')});`);
+        await this.db.execute(
+            `UPDATE PostParent SET push = true WHERE id IN (${ids.join(',')});`
+        );
     }
 
     async getTokensForAnalysis(limit: number = 20): Promise<any[]> {

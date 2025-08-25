@@ -1,4 +1,7 @@
-import { CognitoIdentityProviderClient, DescribeUserPoolCommand } from '@aws-sdk/client-cognito-identity-provider';
+import {
+    CognitoIdentityProviderClient,
+    DescribeUserPoolCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
 import { getAwsConfig } from '../../config/aws';
 import { ENVIRONMENT } from '../../config/environment';
 
@@ -8,7 +11,7 @@ export interface CognitoMessageTemplates {
     emailVerificationMessage?: string;
     emailVerificationSubject?: string;
 
-    // Admin invitation templates  
+    // Admin invitation templates
     adminInviteEmailMessage?: string;
     adminInviteEmailSubject?: string;
     adminInviteSmsMessage?: string;
@@ -41,10 +44,12 @@ export class CognitoTemplateService {
         }
 
         try {
-            console.log('🔍 Fetching message templates from Cognito User Pool...');
+            console.log(
+                '🔍 Fetching message templates from Cognito User Pool...'
+            );
 
             const command = new DescribeUserPoolCommand({
-                UserPoolId: this.userPoolId
+                UserPoolId: this.userPoolId,
             });
 
             const response = await this.cognitoClient.send(command);
@@ -65,9 +70,15 @@ export class CognitoTemplateService {
                 smsAuthenticationMessage: userPool.SmsAuthenticationMessage,
 
                 // Admin invitation templates (from AdminCreateUserConfig.InviteMessageTemplate)
-                adminInviteEmailMessage: userPool.AdminCreateUserConfig?.InviteMessageTemplate?.EmailMessage,
-                adminInviteEmailSubject: userPool.AdminCreateUserConfig?.InviteMessageTemplate?.EmailSubject,
-                adminInviteSmsMessage: userPool.AdminCreateUserConfig?.InviteMessageTemplate?.SMSMessage,
+                adminInviteEmailMessage:
+                    userPool.AdminCreateUserConfig?.InviteMessageTemplate
+                        ?.EmailMessage,
+                adminInviteEmailSubject:
+                    userPool.AdminCreateUserConfig?.InviteMessageTemplate
+                        ?.EmailSubject,
+                adminInviteSmsMessage:
+                    userPool.AdminCreateUserConfig?.InviteMessageTemplate
+                        ?.SMSMessage,
             };
 
             // Cache the templates
@@ -75,74 +86,116 @@ export class CognitoTemplateService {
             this.cacheExpiry = Date.now() + this.CACHE_DURATION;
 
             console.log('✅ Successfully fetched Cognito message templates');
-            console.log('📋 Available templates:', Object.keys(templates).filter(key => templates[key as keyof CognitoMessageTemplates]));
+            console.log(
+                '📋 Available templates:',
+                Object.keys(templates).filter(
+                    key => templates[key as keyof CognitoMessageTemplates]
+                )
+            );
 
             return templates;
-
         } catch (error) {
-            console.error('❌ Failed to fetch Cognito message templates:', error);
-            throw new Error(`Failed to fetch templates: ${error instanceof Error ? error.message : String(error)}`);
+            console.error(
+                '❌ Failed to fetch Cognito message templates:',
+                error
+            );
+            throw new Error(
+                `Failed to fetch templates: ${error instanceof Error ? error.message : String(error)}`
+            );
         }
     }
 
     /**
      * Get a specific template by type and trigger
      */
-    async getTemplate(triggerSource: string, messageType: 'sms' | 'email' = 'sms'): Promise<string | null> {
+    async getTemplate(
+        triggerSource: string,
+        messageType: 'sms' | 'email' = 'sms'
+    ): Promise<string | null> {
         const templates = await this.getMessageTemplates();
 
         // Map trigger sources to template keys
         const templateMapping: Record<string, keyof CognitoMessageTemplates> = {
             // Verification templates
-            'CustomMessage_SignUp': messageType === 'sms' ? 'smsVerificationMessage' : 'emailVerificationMessage',
-            'CustomMessage_ResendCode': messageType === 'sms' ? 'smsVerificationMessage' : 'emailVerificationMessage',
-            'CustomMessage_ForgotPassword': messageType === 'sms' ? 'smsVerificationMessage' : 'emailVerificationMessage',
-            'CustomMessage_VerifyUserAttribute': messageType === 'sms' ? 'smsVerificationMessage' : 'emailVerificationMessage',
+            CustomMessage_SignUp:
+                messageType === 'sms'
+                    ? 'smsVerificationMessage'
+                    : 'emailVerificationMessage',
+            CustomMessage_ResendCode:
+                messageType === 'sms'
+                    ? 'smsVerificationMessage'
+                    : 'emailVerificationMessage',
+            CustomMessage_ForgotPassword:
+                messageType === 'sms'
+                    ? 'smsVerificationMessage'
+                    : 'emailVerificationMessage',
+            CustomMessage_VerifyUserAttribute:
+                messageType === 'sms'
+                    ? 'smsVerificationMessage'
+                    : 'emailVerificationMessage',
 
             // Admin invitation templates
-            'CustomMessage_AdminCreateUser': messageType === 'sms' ? 'adminInviteSmsMessage' : 'adminInviteEmailMessage',
-            'CustomSMSSender_AdminCreateUser': 'adminInviteSmsMessage',
+            CustomMessage_AdminCreateUser:
+                messageType === 'sms'
+                    ? 'adminInviteSmsMessage'
+                    : 'adminInviteEmailMessage',
+            CustomSMSSender_AdminCreateUser: 'adminInviteSmsMessage',
 
             // MFA templates
-            'CustomMessage_Authentication': 'smsAuthenticationMessage',
-            'CustomSMSSender_Authentication': 'smsAuthenticationMessage',
-            'CustomSMSSender_ForgotPassword': 'smsVerificationMessage',
-            'CustomSMSSender_ResendCode': 'smsVerificationMessage',
+            CustomMessage_Authentication: 'smsAuthenticationMessage',
+            CustomSMSSender_Authentication: 'smsAuthenticationMessage',
+            CustomSMSSender_ForgotPassword: 'smsVerificationMessage',
+            CustomSMSSender_ResendCode: 'smsVerificationMessage',
         };
 
         const templateKey = templateMapping[triggerSource];
         if (!templateKey) {
-            console.warn(`⚠️ No template mapping found for trigger: ${triggerSource}`);
+            console.warn(
+                `⚠️ No template mapping found for trigger: ${triggerSource}`
+            );
             return null;
         }
 
         const template = templates[templateKey];
         if (!template) {
-            console.warn(`⚠️ Template not configured in User Pool: ${templateKey}`);
+            console.warn(
+                `⚠️ Template not configured in User Pool: ${templateKey}`
+            );
             return null;
         }
 
-        console.log(`📋 Using Cognito template for ${triggerSource}: ${templateKey}`);
+        console.log(
+            `📋 Using Cognito template for ${triggerSource}: ${templateKey}`
+        );
         return template;
     }
 
     /**
      * Process template with placeholders
      */
-    processTemplate(template: string, placeholders: Record<string, string>): string {
+    processTemplate(
+        template: string,
+        placeholders: Record<string, string>
+    ): string {
         let processedTemplate = template;
 
         // Replace AWS Cognito placeholders
         Object.entries(placeholders).forEach(([key, value]) => {
             const patterns = [
-                new RegExp(`\\{${key}\\}`, 'g'),     // {key}
-                new RegExp(`\\{#{4}\\}`, 'g'),       // {####} for codes
-                new RegExp(`\\{username\\}`, 'g'),   // {username}
+                new RegExp(`\\{${key}\\}`, 'g'), // {key}
+                new RegExp(`\\{#{4}\\}`, 'g'), // {####} for codes
+                new RegExp(`\\{username\\}`, 'g'), // {username}
             ];
 
             patterns.forEach(pattern => {
-                if (pattern.source.includes(key) || (key === 'code' && pattern.source.includes('#{4}'))) {
-                    processedTemplate = processedTemplate.replace(pattern, value);
+                if (
+                    pattern.source.includes(key) ||
+                    (key === 'code' && pattern.source.includes('#{4}'))
+                ) {
+                    processedTemplate = processedTemplate.replace(
+                        pattern,
+                        value
+                    );
                 }
             });
         });
@@ -166,24 +219,30 @@ export class CognitoTemplateService {
     /**
      * Check if templates are configured
      */
-    async validateTemplateConfiguration(): Promise<{ valid: boolean, missing: string[] }> {
+    async validateTemplateConfiguration(): Promise<{
+        valid: boolean;
+        missing: string[];
+    }> {
         try {
             const templates = await this.getMessageTemplates();
             const missing: string[] = [];
 
             // Check for essential templates
-            if (!templates.smsVerificationMessage) missing.push('SMS Verification Message');
-            if (!templates.emailVerificationMessage) missing.push('Email Verification Message');
-            if (!templates.adminInviteSmsMessage) missing.push('Admin Invite SMS Message');
+            if (!templates.smsVerificationMessage)
+                missing.push('SMS Verification Message');
+            if (!templates.emailVerificationMessage)
+                missing.push('Email Verification Message');
+            if (!templates.adminInviteSmsMessage)
+                missing.push('Admin Invite SMS Message');
 
             return {
                 valid: missing.length === 0,
-                missing
+                missing,
             };
         } catch (error) {
             return {
                 valid: false,
-                missing: ['Failed to fetch templates']
+                missing: ['Failed to fetch templates'],
             };
         }
     }

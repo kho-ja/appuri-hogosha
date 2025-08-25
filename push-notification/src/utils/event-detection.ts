@@ -10,7 +10,9 @@ export const detectEventSource = (event: any): EventSource => {
 
     // API Gateway
     if (event.httpMethod && event.path) {
-        console.log(`🔍 Detected API Gateway: ${event.httpMethod} ${event.path}`);
+        console.log(
+            `🔍 Detected API Gateway: ${event.httpMethod} ${event.path}`
+        );
         return 'API_GATEWAY';
     }
 
@@ -32,6 +34,8 @@ export const detectEventSource = (event: any): EventSource => {
         return 'COGNITO';
     }
 
-    console.log(`🔍 Unknown event type - treating as default notification task`);
+    console.log(
+        `🔍 Unknown event type - treating as default notification task`
+    );
     return 'UNKNOWN';
 };

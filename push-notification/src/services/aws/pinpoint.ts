@@ -1,4 +1,8 @@
-import { PinpointClient, SendMessagesCommand, DirectMessageConfiguration } from '@aws-sdk/client-pinpoint';
+import {
+    PinpointClient,
+    SendMessagesCommand,
+    DirectMessageConfiguration,
+} from '@aws-sdk/client-pinpoint';
 import { getAwsConfig } from '../../config/aws';
 import { ENVIRONMENT } from '../../config/environment';
 import { detectTokenType } from '../../utils/token-detection';
@@ -19,7 +23,9 @@ export class PinpointService {
                 return false;
             }
 
-            const { channelType, isValid, platform } = detectTokenType(post.arn);
+            const { channelType, isValid, platform } = detectTokenType(
+                post.arn
+            );
 
             if (!isValid) {
                 console.log(`Invalid token format for post ${post.id}`);
@@ -34,7 +40,7 @@ export class PinpointService {
                 post_id: post.id.toString(),
                 priority: post.priority,
                 student_name: `${post.given_name} ${post.family_name}`,
-                click_action: 'FLUTTER_NOTIFICATION_CLICK'
+                click_action: 'FLUTTER_NOTIFICATION_CLICK',
             };
 
             let messageConfiguration: DirectMessageConfiguration = {};
@@ -56,16 +62,16 @@ export class PinpointService {
                             aps: {
                                 alert: {
                                     title: title,
-                                    body: body
+                                    body: body,
                                 },
                                 sound: 'default',
                                 badge: 1,
                                 'mutable-content': 1,
-                                'content-available': 1
+                                'content-available': 1,
                             },
-                            data: messageData
-                        })
-                    }
+                            data: messageData,
+                        }),
+                    },
                 };
             } else {
                 // Android Configuration
@@ -83,7 +89,7 @@ export class PinpointService {
                                 color: '#005678',
                                 click_action: 'FLUTTER_NOTIFICATION_CLICK',
                                 channel_id: 'default',
-                                priority: 'high'
+                                priority: 'high',
                             },
                             data: {
                                 url: `jduapp://student/${post.student_id}/message/${post.id}`,
@@ -93,7 +99,7 @@ export class PinpointService {
                                 test_type: 'production',
                                 title: title,
                                 body: body,
-                                click_action: 'FLUTTER_NOTIFICATION_CLICK'
+                                click_action: 'FLUTTER_NOTIFICATION_CLICK',
                             },
                             android: {
                                 priority: 'high',
@@ -105,11 +111,11 @@ export class PinpointService {
                                     channel_id: 'default',
                                     notification_priority: 'PRIORITY_HIGH',
                                     default_sound: true,
-                                    default_vibrate_timings: true
-                                }
-                            }
-                        })
-                    }
+                                    default_vibrate_timings: true,
+                                },
+                            },
+                        }),
+                    },
                 };
             }
 
@@ -118,25 +124,32 @@ export class PinpointService {
                 MessageRequest: {
                     Addresses: {
                         [post.arn]: {
-                            ChannelType: channelType
-                        }
+                            ChannelType: channelType,
+                        },
                     },
-                    MessageConfiguration: messageConfiguration
-                }
+                    MessageConfiguration: messageConfiguration,
+                },
             });
 
             const result = await this.pinpointClient.send(command);
             const messageResult = result.MessageResponse?.Result?.[post.arn];
 
             if (messageResult?.DeliveryStatus === 'SUCCESSFUL') {
-                console.log(`✅ Push notification sent successfully for post ${post.id} via ${platform}`);
+                console.log(
+                    `✅ Push notification sent successfully for post ${post.id} via ${platform}`
+                );
                 return true;
             } else {
-                console.log(`❌ Push notification failed for post ${post.id} via ${platform}`);
+                console.log(
+                    `❌ Push notification failed for post ${post.id} via ${platform}`
+                );
                 return false;
             }
         } catch (error) {
-            console.error(`❌ Error sending push notification for post ${post.id}:`, error);
+            console.error(
+                `❌ Error sending push notification for post ${post.id}:`,
+                error
+            );
             return false;
         }
     }

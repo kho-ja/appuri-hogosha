@@ -1,6 +1,10 @@
-import { PinpointClient, SendMessagesCommand, ChannelType } from '@aws-sdk/client-pinpoint';
-import { config } from "dotenv";
-import DatabaseClient from "./db-client";
+import {
+    PinpointClient,
+    SendMessagesCommand,
+    ChannelType,
+} from '@aws-sdk/client-pinpoint';
+import { config } from 'dotenv';
+import DatabaseClient from './db-client';
 
 config();
 
@@ -11,21 +15,29 @@ console.log(`🏃 Running in ${isLocal ? 'LOCAL' : 'LAMBDA'} environment`);
 
 // AWS Client configuration
 const awsConfig: any = {
-    region: process.env.AWS_REGION || 'us-east-1'
+    region: process.env.AWS_REGION || 'us-east-1',
 };
 
 // For local development, you can optionally specify custom credentials
-if (isLocal && process.env.LOCAL_AWS_ACCESS_KEY_ID && process.env.LOCAL_AWS_SECRET_ACCESS_KEY) {
+if (
+    isLocal &&
+    process.env.LOCAL_AWS_ACCESS_KEY_ID &&
+    process.env.LOCAL_AWS_SECRET_ACCESS_KEY
+) {
     console.log('🔑 Using custom local AWS credentials');
     awsConfig.credentials = {
         accessKeyId: process.env.LOCAL_AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.LOCAL_AWS_SECRET_ACCESS_KEY
+        secretAccessKey: process.env.LOCAL_AWS_SECRET_ACCESS_KEY,
     };
-} else if (isLocal && process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+} else if (
+    isLocal &&
+    process.env.AWS_ACCESS_KEY_ID &&
+    process.env.AWS_SECRET_ACCESS_KEY
+) {
     console.log('🔑 Using standard AWS credentials');
     awsConfig.credentials = {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     };
 } else if (isLocal) {
     console.log('🔑 Using AWS CLI credentials or default credential chain');
@@ -39,7 +51,11 @@ const DB = new DatabaseClient();
 // Enhanced token detection with more details
 const analyzeToken = (token: string) => {
     if (!token) {
-        return { type: 'invalid', platform: 'unknown', issues: ['Token is empty'] };
+        return {
+            type: 'invalid',
+            platform: 'unknown',
+            issues: ['Token is empty'],
+        };
     }
 
     const issues: string[] = [];
@@ -64,7 +80,7 @@ const analyzeToken = (token: string) => {
             channelType: ChannelType.APNS,
             length: length,
             format: 'Device Token (64 hex)',
-            issues: length !== 64 ? ['Unusual length for iOS token'] : []
+            issues: length !== 64 ? ['Unusual length for iOS token'] : [],
         };
     } else if (iosModernTokenPattern.test(token) && isHexOnly) {
         return {
@@ -73,7 +89,7 @@ const analyzeToken = (token: string) => {
             channelType: ChannelType.APNS,
             length: length,
             format: 'Modern iOS Token',
-            issues: length < 64 ? ['Token too short for iOS'] : []
+            issues: length < 64 ? ['Token too short for iOS'] : [],
         };
     } else if (fcmLegacyPattern.test(token) || hasColon) {
         return {
@@ -82,7 +98,7 @@ const analyzeToken = (token: string) => {
             channelType: ChannelType.GCM,
             length: length,
             format: 'FCM Token',
-            issues: length < 100 ? ['Token seems too short for FCM'] : []
+            issues: length < 100 ? ['Token seems too short for FCM'] : [],
         };
     } else {
         issues.push('Unknown token format');
@@ -96,13 +112,16 @@ const analyzeToken = (token: string) => {
             channelType: ChannelType.GCM, // Default to GCM
             length: length,
             format: 'Unknown Format',
-            issues: issues
+            issues: issues,
         };
     }
 };
 
 // Enhanced push notification with better payload
-const sendEnhancedPushNotification = async (token: string, testMessage: any) => {
+const sendEnhancedPushNotification = async (
+    token: string,
+    testMessage: any
+) => {
     const analysis = analyzeToken(token);
 
     console.log(`\n🔍 Token Analysis:`);
@@ -133,27 +152,27 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
                         test: 'true',
                         timestamp: new Date().toISOString(),
                         url: testMessage.url,
-                        post_id: testMessage.post_id
+                        post_id: testMessage.post_id,
                     },
                     // Add iOS-specific payload
                     RawContent: JSON.stringify({
                         aps: {
                             alert: {
                                 title: testMessage.title,
-                                body: testMessage.body
+                                body: testMessage.body,
                             },
                             sound: 'default',
                             badge: 1,
                             'mutable-content': 1,
-                            'content-available': 1
+                            'content-available': 1,
                         },
                         data: {
                             test: 'true',
                             url: testMessage.url,
-                            post_id: testMessage.post_id
-                        }
-                    })
-                }
+                            post_id: testMessage.post_id,
+                        },
+                    }),
+                },
             };
         } else {
             // Enhanced Android FCM payload
@@ -169,20 +188,20 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
                         test: 'true',
                         timestamp: new Date().toISOString(),
                         url: testMessage.url,
-                        post_id: testMessage.post_id
+                        post_id: testMessage.post_id,
                     },
                     // Add Android-specific payload with FCM v1 format
                     RawContent: JSON.stringify({
                         message: {
                             notification: {
                                 title: testMessage.title,
-                                body: testMessage.body
+                                body: testMessage.body,
                             },
                             data: {
                                 test: 'true',
                                 url: testMessage.url,
                                 post_id: testMessage.post_id,
-                                click_action: 'FLUTTER_NOTIFICATION_CLICK'
+                                click_action: 'FLUTTER_NOTIFICATION_CLICK',
                             },
                             android: {
                                 priority: 'high',
@@ -194,12 +213,12 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
                                     sound: 'default',
                                     channel_id: 'default',
                                     default_sound: true,
-                                    default_vibrate_timings: true
-                                }
-                            }
-                        }
-                    })
-                }
+                                    default_vibrate_timings: true,
+                                },
+                            },
+                        },
+                    }),
+                },
             };
         }
 
@@ -208,11 +227,11 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
             MessageRequest: {
                 Addresses: {
                     [token]: {
-                        ChannelType: analysis.channelType
-                    }
+                        ChannelType: analysis.channelType,
+                    },
                 },
-                MessageConfiguration: messageConfiguration
-            }
+                MessageConfiguration: messageConfiguration,
+            },
         });
 
         console.log(`\n📤 Sending ${analysis.platform} notification...`);
@@ -232,26 +251,47 @@ const sendEnhancedPushNotification = async (token: string, testMessage: any) => 
 
             if (analysis.type === 'fcm') {
                 console.log(`   📱 Android Troubleshooting:`);
-                console.log(`      1. Check if app is in background/foreground`);
-                console.log(`      2. Verify FCM server key in Pinpoint console`);
+                console.log(
+                    `      1. Check if app is in background/foreground`
+                );
+                console.log(
+                    `      2. Verify FCM server key in Pinpoint console`
+                );
                 console.log(`      3. Check device notification permissions`);
-                console.log(`      4. Look for 'onMessageReceived' in app logs`);
+                console.log(
+                    `      4. Look for 'onMessageReceived' in app logs`
+                );
                 console.log(`      5. Test with Firebase Console directly`);
-                console.log(`      6. Check if device has internet connectivity`);
-                console.log(`      7. Verify notification channel is created in app`);
+                console.log(
+                    `      6. Check if device has internet connectivity`
+                );
+                console.log(
+                    `      7. Verify notification channel is created in app`
+                );
             } else {
                 console.log(`   📱 iOS Troubleshooting:`);
-                console.log(`      1. Check APNS certificate in Pinpoint console`);
-                console.log(`      2. Verify app is signed with correct provisioning profile`);
+                console.log(
+                    `      1. Check APNS certificate in Pinpoint console`
+                );
+                console.log(
+                    `      2. Verify app is signed with correct provisioning profile`
+                );
                 console.log(`      3. Check device notification permissions`);
-                console.log(`      4. Ensure app delegate handles notifications`);
+                console.log(
+                    `      4. Ensure app delegate handles notifications`
+                );
                 console.log(`      5. Test with production vs sandbox APNS`);
-                console.log(`      6. Check if device is connected to internet`);
+                console.log(
+                    `      6. Check if device is connected to internet`
+                );
             }
 
             return true;
         } else {
-            console.log(`\n❌ AWS reports failure:`, messageResult?.StatusMessage);
+            console.log(
+                `\n❌ AWS reports failure:`,
+                messageResult?.StatusMessage
+            );
             return false;
         }
     } catch (error) {
@@ -268,7 +308,7 @@ const testSpecificToken = async (token: string, customMessage?: any) => {
         title: `Debug Test - ${new Date().toLocaleTimeString()}`,
         body: `This is a debug notification sent from ${isLocal ? 'local' : 'Lambda'} environment`,
         url: `jduapp://student/0/message/debug-${Date.now()}`,
-        post_id: `debug-${Date.now()}`
+        post_id: `debug-${Date.now()}`,
     };
 
     return await sendEnhancedPushNotification(token, testMessage);
@@ -311,21 +351,26 @@ const testWithDatabaseTokens = async (limit: number = 5) => {
                 title: `Test ${index + 1} - Debug Notification`,
                 body: `Debug test from ${isLocal ? 'local' : 'Lambda'} at ${new Date().toLocaleTimeString()}`,
                 url: `jduapp://student/0/message/test-${index + 1}`,
-                post_id: `test-${index + 1}`
+                post_id: `test-${index + 1}`,
             };
 
-            const success = await sendEnhancedPushNotification(row.token, testMessage);
+            const success = await sendEnhancedPushNotification(
+                row.token,
+                testMessage
+            );
 
             results.push({
                 parentId: row.id,
                 phone: row.phone_number,
                 token: row.token.substring(0, 30) + '...',
                 success: success,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             });
 
             if (success) {
-                console.log(`\n⏰ Notification sent! Check your device in the next 30 seconds...`);
+                console.log(
+                    `\n⏰ Notification sent! Check your device in the next 30 seconds...`
+                );
                 console.log(`   📱 Expected: "${testMessage.title}"`);
                 console.log(`   💬 Content: "${testMessage.body}"`);
             }
@@ -344,16 +389,15 @@ const testWithDatabaseTokens = async (limit: number = 5) => {
             summary: {
                 total: results.length,
                 successful: results.filter(r => r.success).length,
-                failed: results.filter(r => !r.success).length
-            }
+                failed: results.filter(r => !r.success).length,
+            },
         };
-
     } catch (error) {
         console.error('❌ Database test error:', error);
         return {
             success: false,
             message: `Database error: ${error instanceof Error ? error.message : String(error)}`,
-            results: []
+            results: [],
         };
     }
 };
@@ -372,24 +416,29 @@ const checkPinpointConfiguration = async () => {
         console.log(`   1. Go to: https://console.aws.amazon.com/pinpoint/`);
         console.log(`   2. Select your app: ${process.env.PINPOINT_APP_ID}`);
         console.log(`   3. Check Settings → Push notifications:`);
-        console.log(`      ✅ Firebase Cloud Messaging (FCM) - Enabled with valid server key`);
-        console.log(`      ✅ Apple Push Notification service (APNs) - Enabled with valid certificate`);
+        console.log(
+            `      ✅ Firebase Cloud Messaging (FCM) - Enabled with valid server key`
+        );
+        console.log(
+            `      ✅ Apple Push Notification service (APNs) - Enabled with valid certificate`
+        );
         console.log(`   4. Verify channel status shows "Enabled"`);
         console.log(`   5. Check if certificates are not expired`);
 
         return { success: true, message: 'Configuration guide provided' };
-
     } catch (error) {
         console.error('❌ Configuration check error:', error);
         return {
             success: false,
-            message: `Configuration check error: ${error instanceof Error ? error.message : String(error)}`
+            message: `Configuration check error: ${error instanceof Error ? error.message : String(error)}`,
         };
     }
 };
 
 // Main debug function
-const debugPushNotifications = async (options: { limit?: number, token?: string, message?: any } = {}) => {
+const debugPushNotifications = async (
+    options: { limit?: number; token?: string; message?: any } = {}
+) => {
     console.log('🔧 AWS End User Messaging Push Notification Debugger');
     console.log('═'.repeat(60));
     console.log(`📱 App ID: ${process.env.PINPOINT_APP_ID}`);
@@ -401,7 +450,7 @@ const debugPushNotifications = async (options: { limit?: number, token?: string,
         environment: isLocal ? 'local' : 'lambda',
         timestamp: new Date().toISOString(),
         appId: process.env.PINPOINT_APP_ID,
-        region: process.env.AWS_REGION
+        region: process.env.AWS_REGION,
     };
 
     try {
@@ -412,12 +461,17 @@ const debugPushNotifications = async (options: { limit?: number, token?: string,
         if (options.token) {
             console.log('\n🎯 Testing specific token...');
             results.specificTest = {
-                success: await testSpecificToken(options.token, options.message),
-                token: options.token.substring(0, 30) + '...'
+                success: await testSpecificToken(
+                    options.token,
+                    options.message
+                ),
+                token: options.token.substring(0, 30) + '...',
             };
         } else {
             // Test with database tokens
-            results.databaseTest = await testWithDatabaseTokens(options.limit || 5);
+            results.databaseTest = await testWithDatabaseTokens(
+                options.limit || 5
+            );
         }
 
         console.log('\n📋 Final Troubleshooting Steps:');
@@ -443,7 +497,6 @@ const debugPushNotifications = async (options: { limit?: number, token?: string,
         results.message = 'Debug session completed successfully';
 
         return results;
-
     } catch (error) {
         console.error('❌ Debug session error:', error);
         results.success = false;
@@ -456,33 +509,32 @@ const debugPushNotifications = async (options: { limit?: number, token?: string,
 
 // Lambda handler
 export const handler = async (event: any, context: any) => {
-    console.log("🚀 Starting push notification debugger");
-    console.log("📥 Event:", JSON.stringify(event, null, 2));
+    console.log('🚀 Starting push notification debugger');
+    console.log('📥 Event:', JSON.stringify(event, null, 2));
 
     try {
         // Parse options from event
         const options = {
             limit: event.limit || 3, // Default to 3 in Lambda to avoid timeouts
             token: event.token,
-            message: event.message
+            message: event.message,
         };
 
         const result = await debugPushNotifications(options);
 
         return {
             statusCode: 200,
-            body: JSON.stringify(result, null, 2)
+            body: JSON.stringify(result, null, 2),
         };
-
     } catch (error) {
-        console.error("❌ Handler error:", error);
+        console.error('❌ Handler error:', error);
         return {
             statusCode: 500,
             body: JSON.stringify({
                 success: false,
                 error: error instanceof Error ? error.message : String(error),
-                timestamp: new Date().toISOString()
-            })
+                timestamp: new Date().toISOString(),
+            }),
         };
     }
 };
@@ -490,12 +542,17 @@ export const handler = async (event: any, context: any) => {
 // For local development - run directly
 if (isLocal) {
     console.log('🚀 Running locally...');
-    debugPushNotifications({ limit: 5 }).then(result => {
-        console.log('\n✅ Debug session completed!');
-        console.log('📊 Final Result:', JSON.stringify(result.databaseTest?.summary || result, null, 2));
-        process.exit(0);
-    }).catch(error => {
-        console.error('❌ Debug session failed:', error);
-        process.exit(1);
-    });
+    debugPushNotifications({ limit: 5 })
+        .then(result => {
+            console.log('\n✅ Debug session completed!');
+            console.log(
+                '📊 Final Result:',
+                JSON.stringify(result.databaseTest?.summary || result, null, 2)
+            );
+            process.exit(0);
+        })
+        .catch(error => {
+            console.error('❌ Debug session failed:', error);
+            process.exit(1);
+        });
 }

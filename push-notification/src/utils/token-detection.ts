@@ -13,7 +13,11 @@ export interface TokenAnalysis {
 
 export const detectTokenType = (token: string): TokenAnalysis => {
     if (!token) {
-        return { channelType: ChannelType.GCM, isValid: false, platform: 'unknown' };
+        return {
+            channelType: ChannelType.GCM,
+            isValid: false,
+            platform: 'unknown',
+        };
     }
 
     // Check if it's an Expo push token first
@@ -22,7 +26,7 @@ export const detectTokenType = (token: string): TokenAnalysis => {
             channelType: ChannelType.GCM, // Expo uses FCM under the hood
             isValid: true,
             platform: 'Expo',
-            isExpoToken: true
+            isExpoToken: true,
         };
     }
 
@@ -33,11 +37,23 @@ export const detectTokenType = (token: string): TokenAnalysis => {
     const fcmTokenPattern = /^[A-Za-z0-9_-]+:[A-Za-z0-9_-]+/;
 
     if (iosTokenPattern.test(token)) {
-        return { channelType: ChannelType.APNS, isValid: true, platform: 'iOS' };
+        return {
+            channelType: ChannelType.APNS,
+            isValid: true,
+            platform: 'iOS',
+        };
     } else if (fcmTokenPattern.test(token) || token.includes(':')) {
-        return { channelType: ChannelType.GCM, isValid: true, platform: 'Android' };
+        return {
+            channelType: ChannelType.GCM,
+            isValid: true,
+            platform: 'Android',
+        };
     } else {
-        return { channelType: ChannelType.GCM, isValid: true, platform: 'Android (assumed)' };
+        return {
+            channelType: ChannelType.GCM,
+            isValid: true,
+            platform: 'Android (assumed)',
+        };
     }
 };
 
@@ -46,7 +62,10 @@ export const detectTokenType = (token: string): TokenAnalysis => {
  * Expo push tokens start with ExponentPushToken[...] or ExpoPushToken[...]
  */
 export const isExpoPushToken = (token: string): boolean => {
-    return token.startsWith('ExponentPushToken[') || token.startsWith('ExpoPushToken[');
+    return (
+        token.startsWith('ExponentPushToken[') ||
+        token.startsWith('ExpoPushToken[')
+    );
 };
 
 export const analyzeToken = (token: string): TokenAnalysis => {
@@ -55,7 +74,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             channelType: ChannelType.GCM,
             isValid: false,
             platform: 'unknown',
-            issues: ['Token is empty']
+            issues: ['Token is empty'],
         };
     }
 
@@ -71,7 +90,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             format: 'Expo Push Token',
             isValid: true,
             isExpoToken: true,
-            issues: []
+            issues: [],
         };
     }
 
@@ -96,7 +115,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             length: length,
             format: 'Device Token (64 hex)',
             isValid: true,
-            issues: length !== 64 ? ['Unusual length for iOS token'] : []
+            issues: length !== 64 ? ['Unusual length for iOS token'] : [],
         };
     } else if (iosModernTokenPattern.test(token) && isHexOnly) {
         return {
@@ -106,7 +125,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             length: length,
             format: 'Modern iOS Token',
             isValid: true,
-            issues: length < 64 ? ['Token too short for iOS'] : []
+            issues: length < 64 ? ['Token too short for iOS'] : [],
         };
     } else if (fcmLegacyPattern.test(token) || hasColon) {
         return {
@@ -116,7 +135,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             length: length,
             format: 'FCM Token',
             isValid: true,
-            issues: length < 100 ? ['Token seems too short for FCM'] : []
+            issues: length < 100 ? ['Token seems too short for FCM'] : [],
         };
     } else {
         issues.push('Unknown token format');
@@ -131,7 +150,7 @@ export const analyzeToken = (token: string): TokenAnalysis => {
             length: length,
             format: 'Unknown Format',
             isValid: false,
-            issues: issues
+            issues: issues,
         };
     }
 };
