@@ -12,23 +12,49 @@ import { setupNotificationHandler } from '@/utils/notifications';
 import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
 import { router } from 'expo-router';
 import { redirectSystemPath } from '../native-intent';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
 
+// Keep splash screen visible while app is loading
+SplashScreen.preventAutoHideAsync();
+
 export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
+  const [appIsReady, setAppIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    // Load saved theme
-    AsyncStorage.getItem('themeMode').then(savedMode => {
-      if (savedMode === 'light' || savedMode === 'dark') {
-        setThemeMode(savedMode);
+    async function prepare() {
+      try {
+        // Load saved theme
+        const savedMode = await AsyncStorage.getItem('themeMode');
+        if (savedMode === 'light' || savedMode === 'dark') {
+          setThemeMode(savedMode);
+        }
+
+        // Add any other initialization here
+        // Simulate app loading with timer (adjust time as needed)
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds
+      } catch (e) {
+        console.warn('Error during app initialization:', e);
+      } finally {
+        // Tell the app to render
+        setAppIsReady(true);
       }
-    });
+    }
+
+    prepare();
   }, []);
+
+  React.useEffect(() => {
+    if (appIsReady) {
+      // Hide splash screen after app is ready
+      SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
 
   React.useEffect(() => {
     // Save theme when it changes
