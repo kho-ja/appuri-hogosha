@@ -19,7 +19,7 @@ export class DiagnosticsService {
     updateStatus(
         messageId: string,
         status: string,
-        description?: string
+        _description?: string
     ): void {
         const message = this.pendingMessages.get(messageId);
         if (message) {

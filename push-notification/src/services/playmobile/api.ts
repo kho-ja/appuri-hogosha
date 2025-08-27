@@ -11,7 +11,7 @@ export class PlayMobileService {
         phoneNumber: string,
         message: string,
         postId?: string,
-        priority: 'low' | 'normal' | 'high' | 'realtime' = 'normal'
+        _priority: 'low' | 'normal' | 'high' | 'realtime' = 'normal'
     ): Promise<SmsResult> {
         try {
             // 0. Check character limits to prevent unnecessary costs

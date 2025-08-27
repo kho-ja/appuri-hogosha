@@ -507,7 +507,7 @@ const debugPushNotifications = async (
 };
 
 // Lambda handler
-export const handler = async (event: any, context: any) => {
+export const handler = async (event: any, _context: any) => {
     console.log('🚀 Starting push notification debugger');
     console.log('📥 Event:', JSON.stringify(event, null, 2));
 

@@ -38,7 +38,7 @@ const notificationProcessor = new NotificationProcessor(
 );
 
 // Main Lambda handler with event routing
-export const handler = async (event: any, context: any) => {
+export const handler = async (event: any, _context: any) => {
     console.log('🚀 Starting enhanced notification handler');
     console.log('📥 Event:', JSON.stringify(event, null, 2));
 
