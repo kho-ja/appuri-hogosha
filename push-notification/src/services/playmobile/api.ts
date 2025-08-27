@@ -164,7 +164,8 @@ export class PlayMobileService {
                             errorResponse = JSON.parse(responseText);
                         } catch (parseError) {
                             console.error(
-                                `❌ Failed to parse error response: ${responseText}`
+                                `❌ Failed to parse error response: ${responseText}`,
+                                parseError
                             );
                             return {
                                 success: false,

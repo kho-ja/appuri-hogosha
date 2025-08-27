@@ -1,6 +1,6 @@
 import { PinpointService } from '../aws/pinpoint';
 import { ExpoPushService } from '../expo/push';
-import { detectTokenType, isExpoPushToken } from '../../utils/token-detection';
+import { detectTokenType } from '../../utils/token-detection';
 import { NotificationPost } from '../../types/events';
 
 export class UnifiedPushService {

@@ -84,6 +84,7 @@ export class PlayMobileCredentialsService {
                         };
                     }
                 } catch (e) {
+                    console.error(e);
                     // Even if parsing fails, 400 usually means we're authenticated
                     return {
                         valid: true,

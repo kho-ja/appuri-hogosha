@@ -100,7 +100,6 @@ export const analyzeToken = (token: string): TokenAnalysis => {
 
     // FCM token patterns
     const fcmLegacyPattern = /^[A-Za-z0-9_-]+:[A-Za-z0-9_-]+/; // Contains colon
-    const fcmModernPattern = /^[A-Za-z0-9_-]{140,}$/; // Very long base64-like
 
     // Check token characteristics
     const hasColon = token.includes(':');

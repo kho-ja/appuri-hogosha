@@ -240,6 +240,7 @@ export class CognitoTemplateService {
                 missing,
             };
         } catch (error) {
+            console.error(error);
             return {
                 valid: false,
                 missing: ['Failed to fetch templates'],
