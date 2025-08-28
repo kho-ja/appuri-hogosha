@@ -1,5 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import {
+  StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { Button, useTheme } from '@rneui/themed';
@@ -349,6 +354,15 @@ export default function ForgotPasswordScreen() {
               disabled={isLoading}
               loading={isLoading}
             />
+
+            <TouchableOpacity
+              style={styles.backToSignInContainer}
+              onPress={() => router.push('/sign-in')}
+            >
+              <ThemedText style={styles.backToSignInText}>
+                {i18n[language].backToSignIn}
+              </ThemedText>
+            </TouchableOpacity>
           </ThemedView>
         </SafeAreaView>
       </TouchableWithoutFeedback>
@@ -609,5 +623,14 @@ const styles = StyleSheet.create({
   resendText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  backToSignInContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  backToSignInText: {
+    fontSize: 14,
+    color: '#4285F4',
+    textDecorationLine: 'underline',
   },
 });

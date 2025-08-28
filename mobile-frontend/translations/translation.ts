@@ -8,7 +8,7 @@ export default {
     email: 'Email',
     enterEmail: 'Enter email here',
     password: 'Password',
-    enterPassword: 'Enter SMS code here',
+    enterPassword: 'Enter password here',
     loginToAccount: 'Login',
     forgotPassword: 'Forgot your password?',
     resetPassword: 'reset password',
@@ -38,6 +38,7 @@ export default {
     enterNewPasswordText: 'Please create a secure password for your account.',
     confirmNewPassword: 'Confirm new password',
     saveNewPassword: 'Save',
+    backToSignIn: 'Back to Sign In',
     /*forgot password pages*/
 
     /*tab bar layout*/
@@ -253,7 +254,7 @@ export default {
     email: 'メールアドレス',
     enterEmail: 'メールアドレスを入力',
     password: 'パスワード',
-    enterPassword: 'SMSコードを入力',
+    enterPassword: 'パスワードを入力してください',
     loginToAccount: 'ログイン',
     forgotPassword: 'パスワードを忘れましたか？',
     resetPassword: 'パスワードをリセット',
@@ -283,6 +284,7 @@ export default {
     enterNewPasswordText: 'アカウント用の安全なパスワードを作成してください。',
     confirmNewPassword: '新しいパスワードを確認',
     saveNewPassword: '保存',
+    backToSignIn: '登録ページに戻る',
     /*forgot password pages*/
 
     /*tab bar layout*/
@@ -500,7 +502,7 @@ export default {
     email: 'Elektron pochta',
     enterEmail: 'Elektron pochtangizni kiriting',
     password: 'Parol',
-    enterPassword: 'SMS kodni kiriting',
+    enterPassword: 'Parolni kiriting',
     loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
@@ -530,6 +532,7 @@ export default {
     enterNewPasswordText: 'Iltimos, hisobingiz uchun xavfsiz parol yarating',
     confirmNewPassword: 'Parolni takrorlang',
     saveNewPassword: 'Saqlash',
+    backToSignIn: "Ro'yxatdan o'tish sahifasiga qaytish",
     /*forgot password pages*/
 
     /*tab bar layout*/
@@ -747,7 +750,7 @@ export default {
     email: 'Электронная почта',
     enterEmail: 'Введите свою электронную почту',
     password: 'Пароль',
-    enterPassword: 'Введите SMS-код',
+    enterPassword: 'Введите пароль',
     loginToAccount: 'Войти',
     forgotPassword: 'Забыли пароль?',
     resetPassword: 'Восстановить пароль',
@@ -778,6 +781,7 @@ export default {
       'Пожалуйста, создайте безопасный пароль для вашего аккаунта.',
     confirmNewPassword: 'Подтвердите новый пароль',
     saveNewPassword: 'Сохранить',
+    backToSignIn: 'Вернуться на страницу регистрации',
     /*forgot password pages*/
 
     /*tab bar layout*/
