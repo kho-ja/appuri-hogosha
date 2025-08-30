@@ -151,6 +151,7 @@ module.exports = ({ config }) => {
           image: variantConfig.splashLight,
           imageWidth: 200,
           resizeMode: 'contain',
+          hideAsync: true,
           dark: {
             image: variantConfig.splashDark,
             backgroundColor: '#000000',
@@ -159,12 +160,13 @@ module.exports = ({ config }) => {
           ios: {
             backgroundColor: '#ffffff',
             image: variantConfig.splashLight,
-            imageWidth: 200,
+            imageWidth: 120,
             resizeMode: 'contain',
+            hideAsync: true,
             dark: {
               image: variantConfig.splashDark,
               backgroundColor: '#000000',
-              imageWidth: 200,
+              imageWidth: 120,
             },
           },
         },

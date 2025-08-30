@@ -37,7 +37,7 @@ export default function Root() {
 
         // Add any other initialization here
         // Simulate app loading with timer (adjust time as needed)
-        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds
+        await new Promise(resolve => setTimeout(resolve, 1500));
       } catch (e) {
         console.warn('Error during app initialization:', e);
       } finally {
