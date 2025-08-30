@@ -10,9 +10,12 @@ export const menuButton = (lang: Language, isLoggedIn: boolean) => {
     const keyboard = new Keyboard().text(text).row();
     if (isLoggedIn) {
         keyboard.text(
-            lang === 'jp' ? '🚪 ログアウト' :
-            lang === 'ru' ? '🚪 Выйти' :
-            '🚪 Logout'
-        );    }
+            lang === 'jp'
+                ? '🚪 ログアウト'
+                : lang === 'ru'
+                  ? '🚪 Выйти'
+                  : '🚪 Logout'
+        );
+    }
     return keyboard.resized();
 };

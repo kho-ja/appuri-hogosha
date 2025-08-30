@@ -16,9 +16,8 @@ class SceneMiddleware {
                 await handler(ctx);
             }
         } catch (error) {
-            console.error('scene handler error: ',error);
+            console.error('scene handler error: ', error);
         }
-
     }
 }
 

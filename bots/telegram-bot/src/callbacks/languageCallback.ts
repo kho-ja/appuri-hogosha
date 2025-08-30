@@ -1,9 +1,9 @@
-import {Bot} from 'grammy';
-import {IBotContext} from '../middlewares/sessionMiddleware';
-import {menuHandler} from "../commands/menuCommand";
+import { Bot } from 'grammy';
+import { IBotContext } from '../middlewares/sessionMiddleware';
+import { menuHandler } from '../commands/menuCommand';
 
 export const languageCallback = (bot: Bot<IBotContext>) => {
-    bot.callbackQuery('set_lang_ru', async (ctx) => {
+    bot.callbackQuery('set_lang_ru', async ctx => {
         ctx.session.language = 'ru';
         // ctx.session.scene = '';
         await ctx.save(ctx.session);
@@ -13,7 +13,7 @@ export const languageCallback = (bot: Bot<IBotContext>) => {
         await menuHandler(ctx);
     });
 
-    bot.callbackQuery('set_lang_jp', async (ctx) => {
+    bot.callbackQuery('set_lang_jp', async ctx => {
         ctx.session.language = 'jp';
         // ctx.session.scene = '';
         await ctx.save(ctx.session);
@@ -23,7 +23,7 @@ export const languageCallback = (bot: Bot<IBotContext>) => {
         await menuHandler(ctx);
     });
 
-    bot.callbackQuery('set_lang_uz', async (ctx) => {
+    bot.callbackQuery('set_lang_uz', async ctx => {
         ctx.session.language = 'uz';
         // ctx.session.scene = '';
         await ctx.save(ctx.session);
