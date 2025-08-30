@@ -1,5 +1,5 @@
-import {InlineKeyboard} from 'grammy';
-import {Language} from '../middlewares/sessionMiddleware';
+import { InlineKeyboard } from 'grammy';
+import { Language } from '../middlewares/sessionMiddleware';
 
 export const loginTypeButton = (lang: Language) => {
     let phone;

@@ -14,8 +14,10 @@ export interface IBotContext extends Context {
     save: (session: IBotSession) => Promise<void>;
 }
 
-
-export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) => {
+export const sessionMiddleware: MiddlewareFn<IBotContext> = async (
+    ctx,
+    next
+) => {
     const chatId = ctx.chat?.id;
     console.log('chatId:', chatId);
     if (!chatId) {
@@ -23,9 +25,12 @@ export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) =>
     }
 
     try {
-        const result = await DB.query('SELECT scene, language, parent_id FROM ParentSession WHERE chat_id = :chat_id;', {
-            chat_id: chatId
-        });
+        const result = await DB.query(
+            'SELECT scene, language, parent_id FROM ParentSession WHERE chat_id = :chat_id;',
+            {
+                chat_id: chatId,
+            }
+        );
         console.log('result:', result);
 
         ctx.session = result.length
@@ -38,13 +43,14 @@ export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) =>
                 console.log('session:', session);
                 if (session.parent_id > 0) {
                     console.log('update session');
-                    const query = "UPDATE ParentSession  SET language = :language, scene = :scene, step = :step, parent_id = :parent_id WHERE chat_id = :chat_id;";
+                    const query =
+                        'UPDATE ParentSession  SET language = :language, scene = :scene, step = :step, parent_id = :parent_id WHERE chat_id = :chat_id;';
                     await DB.execute(query, {
                         language: session.language,
                         scene: session.scene,
                         step: 0,
                         parent_id: session.parent_id,
-                        chat_id: chatId
+                        chat_id: chatId,
                     });
                 } else {
                     console.log('insert session');
@@ -60,7 +66,7 @@ export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) =>
                         scene: session.scene,
                         step: 0,
                         parent_id: session.parent_id,
-                        chat_id: chatId
+                        chat_id: chatId,
                     });
                 }
             } catch (e) {
@@ -74,7 +80,3 @@ export const sessionMiddleware: MiddlewareFn<IBotContext> = async (ctx, next) =>
         console.error('Session Middleware Error:', error);
     }
 };
-
-
-
-

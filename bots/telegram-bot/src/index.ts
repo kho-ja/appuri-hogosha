@@ -1,19 +1,21 @@
 import { Bot, webhookCallback } from 'grammy';
 import dotenv from 'dotenv';
-import { IBotContext, sessionMiddleware } from './middlewares/sessionMiddleware';
+import {
+    IBotContext,
+    sessionMiddleware,
+} from './middlewares/sessionMiddleware';
 import { sceneHandler } from './middlewares/sceneMiddleware';
 import { startHandler } from './commands/startCommand';
 import { languageCallback } from './callbacks/languageCallback';
 import { languageScene } from './scenes/languageScene';
-import { menuHandler } from "./commands/menuCommand";
-import { contactHandler } from "./handlers/contactHandler";
-import { phoneButton } from "./buttons/phoneButton";
-import { Parent } from "./utils/cognito-client";
-import DB from "./utils/db-client";
-import { userNotExist } from "./handlers/userNotExist";
+import { menuHandler } from './commands/menuCommand';
+import { contactHandler } from './handlers/contactHandler';
+import { phoneButton } from './buttons/phoneButton';
+import { Parent } from './utils/cognito-client';
+import DB from './utils/db-client';
+import { userNotExist } from './handlers/userNotExist';
 import { logoutHandler } from './handlers/logoutHandler';
 import { logoutCommand } from './commands/logoutCommand';
-
 
 dotenv.config();
 
@@ -37,7 +39,7 @@ bot.on('message:contact', contactHandler);
 
 bot.command('logout', logoutCommand);
 
-bot.callbackQuery('contact_login', async (ctx) => {
+bot.callbackQuery('contact_login', async ctx => {
     let text;
     if (ctx.session.language === 'jp') {
         text = '下のボタンを押して電話番号を送信してください';
@@ -48,32 +50,35 @@ bot.callbackQuery('contact_login', async (ctx) => {
     }
     await ctx.deleteMessage();
     await ctx.reply(text, {
-        reply_markup: phoneButton(ctx.session.language)
+        reply_markup: phoneButton(ctx.session.language),
     });
 });
 
-bot.callbackQuery('email_password_login', async (ctx) => {
+bot.callbackQuery('email_password_login', async ctx => {
     let text;
     if (ctx.session.language === 'jp') {
-        text = '📧メールアドレスとパスワードを送信してください\n\n' +
+        text =
+            '📧メールアドレスとパスワードを送信してください\n\n' +
             '例:user@example.com mypassword123\n\n' +
             '注意:\n' +
             '- メールアドレスとパスワードはスペースで区切ってください。\n' +
             '- メッセージは送信後、自動的に削除されます。\n' +
             '- 正確な情報を入力してください。';
     } else if (ctx.session.language === 'ru') {
-        text = '📧 Пожалуйста, отправьте свою почту и пароль.\n\n' +
+        text =
+            '📧 Пожалуйста, отправьте свою почту и пароль.\n\n' +
             'Пример: user@example.com mypassword123\n\n' +
             'Примечание:\n' +
             '- Почту и пароль разделяйте пробелом.\n' +
             '- Сообщение будет удалено автоматически после отправки.\n' +
             '- Убедитесь, что вводите правильные данные.';
     } else {
-        text = '📧Iltimos, pochtangizni va parolingizni yuboring.\n\n' +
+        text =
+            '📧Iltimos, pochtangizni va parolingizni yuboring.\n\n' +
             'Misol: user@example.com mypassword123\n\n' +
             'Diqqat:\n' +
             '- Pochta va parolni probel orqali ajrating.\n' +
-            '- Xabar yuborilgandan song, avtomatik ravishda o\'chiriladi.\n' +
+            "- Xabar yuborilgandan song, avtomatik ravishda o'chiriladi.\n" +
             `'- Ma'lumotlaringiz to'g'ri ekanligiga ishonch hosil qiling.'`;
     }
     await ctx.deleteMessage();
@@ -85,7 +90,7 @@ const emailPasswordRegex = /^([\w.%+-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,})\s(.+)$/;
 const logoutRegex = /^🚪 (Logout|ログアウト|Выйти)$/;
 bot.hears(logoutRegex, logoutHandler);
 
-bot.hears(emailPasswordRegex, async (ctx) => {
+bot.hears(emailPasswordRegex, async ctx => {
     const messageText = ctx.message?.text;
 
     if (!messageText) {
@@ -115,7 +120,10 @@ bot.hears(emailPasswordRegex, async (ctx) => {
             return;
         }
 
-        const users = await DB.query('SELECT id FROM Parent WHERE email = :email;', { email: email });
+        const users = await DB.query(
+            'SELECT id FROM Parent WHERE email = :email;',
+            { email: email }
+        );
 
         if (users.length === 0) {
             await userNotExist(ctx);
@@ -131,14 +139,12 @@ bot.hears(emailPasswordRegex, async (ctx) => {
     }
 });
 
-bot.hears([
-    'Tilni o`zgartirish:🇯🇵🇺🇿🇷🇺',
-    'Изменить язык:🇯🇵🇺🇿🇷🇺',
-    '言語を変更:🇯🇵🇺🇿🇷🇺'
-  ], async (ctx) => {
-    await languageScene(ctx);
-  });
-
+bot.hears(
+    ['Tilni o`zgartirish:🇯🇵🇺🇿🇷🇺', 'Изменить язык:🇯🇵🇺🇿🇷🇺', '言語を変更:🇯🇵🇺🇿🇷🇺'],
+    async ctx => {
+        await languageScene(ctx);
+    }
+);
 
 // bot.start().then(() => {
 //     console.log('Bot is running!');
