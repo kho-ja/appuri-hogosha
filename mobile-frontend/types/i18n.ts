@@ -33,6 +33,7 @@ export type TranslationKeys = {
   saveNewPassword: string;
   detailedView: string;
   contractFile: string;
+  backToSignIn: string;
 
   // Tab bar layout
   home: string;
