@@ -1,6 +1,8 @@
 import pluginPrettier from 'eslint-plugin-prettier';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import sqlTemplate from 'eslint-plugin-sql-template';
+import sqlPlugin from 'eslint-plugin-sql';
 
 export default [
     {
@@ -76,6 +78,8 @@ export default [
         plugins: {
             prettier: pluginPrettier,
             '@typescript-eslint': tsPlugin,
+            'sql-template': sqlTemplate,
+            sql: sqlPlugin,
         },
         rules: {
             'prettier/prettier': 'error',
@@ -84,6 +88,15 @@ export default [
                 'warn',
                 { argsIgnorePattern: '^_' },
             ],
+            'sql/format': [
+                2,
+                {
+                    ignoreExpressions: false,
+                    ignoreInline: true,
+                    ignoreTagless: true,
+                },
+            ],
+            'sql-template/no-unsafe-query': 'error',
         },
     },
 ];
