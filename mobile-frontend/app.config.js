@@ -64,18 +64,6 @@ module.exports = ({ config }) => {
     updates: {
       url: 'https://u.expo.dev/61968ac8-e70b-44e4-a5ed-00d5521eec81',
     },
-    splash: {
-      image: variantConfig.splashLight,
-      dark: {
-        image: variantConfig.splashDark,
-        resizeMode: 'contain',
-        backgroundColor: '#000000',
-      },
-      imageWidth: 200,
-      resizeMode: 'contain',
-      backgroundColor: '#ffffff',
-      hideAsync: false,
-    },
     ios: {
       supportsTablet: true,
       bundleIdentifier: variantConfig.iosBundleId,
@@ -156,6 +144,31 @@ module.exports = ({ config }) => {
       favicon: './assets/images/favicon.png',
     },
     plugins: [
+      [
+        'expo-splash-screen',
+        {
+          backgroundColor: '#ffffff',
+          image: variantConfig.splashLight,
+          imageWidth: 200,
+          resizeMode: 'contain',
+          dark: {
+            image: variantConfig.splashDark,
+            backgroundColor: '#000000',
+            imageWidth: 200,
+          },
+          ios: {
+            backgroundColor: '#ffffff',
+            image: variantConfig.splashLight,
+            imageWidth: 200,
+            resizeMode: 'contain',
+            dark: {
+              image: variantConfig.splashDark,
+              backgroundColor: '#000000',
+              imageWidth: 200,
+            },
+          },
+        },
+      ],
       [
         'expo-notifications',
         {
