@@ -46,19 +46,22 @@ export class ApiHandler {
                 default:
                     return {
                         statusCode: 404,
-                        body: JSON.stringify({ error: 'Route not found' })
+                        body: JSON.stringify({ error: 'Route not found' }),
                     };
             }
         } catch (error) {
             console.error('❌ API request error:', error);
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: 'Internal server error' })
+                body: JSON.stringify({ error: 'Internal server error' }),
             };
         }
     }
 
-    async handleDirectInvoke(action: string, payload: any): Promise<ApiResponse> {
+    async handleDirectInvoke(
+        action: string,
+        payload: any
+    ): Promise<ApiResponse> {
         console.log(`🎯 Processing direct invoke: ${action}`);
 
         try {
@@ -76,12 +79,17 @@ export class ApiHandler {
             console.error('❌ Direct invoke error:', error);
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) })
+                body: JSON.stringify({
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                }),
             };
         }
     }
 
-    private async handleSmsRequest(event: ApiGatewayEvent): Promise<ApiResponse> {
+    private async handleSmsRequest(
+        event: ApiGatewayEvent
+    ): Promise<ApiResponse> {
         const body = JSON.parse(event.body);
         const { phone, message, type = 'single' } = body;
 
@@ -92,7 +100,11 @@ export class ApiHandler {
         }
     }
 
-    private async handleSingleSms(payload: { phone: string; message: string; messageId?: string }): Promise<ApiResponse> {
+    private async handleSingleSms(payload: {
+        phone: string;
+        message: string;
+        messageId?: string;
+    }): Promise<ApiResponse> {
         try {
             const { phone, message, messageId } = payload;
 
@@ -103,7 +115,11 @@ export class ApiHandler {
 
             if (routing.isUzbekistan && routing.usePlayMobile) {
                 // Use PlayMobile for supported Uzbekistan operators
-                success = await this.playMobileService.sendSms(phone, message, messageId);
+                success = await this.playMobileService.sendSms(
+                    phone,
+                    message,
+                    messageId
+                );
                 provider = 'playmobile';
             } else {
                 // Use AWS SMS for Ucell, international numbers, or fallback
@@ -118,19 +134,28 @@ export class ApiHandler {
                     message: success ? 'SMS sent successfully' : 'SMS failed',
                     provider: provider,
                     operator: routing.operator,
-                    routing: routing.isUzbekistan ? (routing.usePlayMobile ? 'PlayMobile' : 'AWS (Ucell bypass)') : 'AWS (International)'
-                })
+                    routing: routing.isUzbekistan
+                        ? routing.usePlayMobile
+                            ? 'PlayMobile'
+                            : 'AWS (Ucell bypass)'
+                        : 'AWS (International)',
+                }),
             };
-
         } catch (error) {
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) })
+                body: JSON.stringify({
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                }),
             };
         }
     }
 
-    private async handleBulkSms(payload: { phones: string[]; message: string }): Promise<ApiResponse> {
+    private async handleBulkSms(payload: {
+        phones: string[];
+        message: string;
+    }): Promise<ApiResponse> {
         try {
             const { phones, message } = payload;
             const results: BulkSmsResult[] = [];
@@ -148,11 +173,18 @@ export class ApiHandler {
 
                         if (routing.isUzbekistan && routing.usePlayMobile) {
                             // Use PlayMobile for supported operators
-                            success = await this.playMobileService.sendSms(phone, message, messageId);
+                            success = await this.playMobileService.sendSms(
+                                phone,
+                                message,
+                                messageId
+                            );
                             provider = 'playmobile';
                         } else {
                             // Use AWS for Ucell, international, or fallback
-                            success = await this.awsSmsService.sendSms(phone, message);
+                            success = await this.awsSmsService.sendSms(
+                                phone,
+                                message
+                            );
                             provider = 'aws';
                         }
 
@@ -161,13 +193,20 @@ export class ApiHandler {
                             success,
                             provider,
                             operator: routing.operator,
-                            routing: routing.isUzbekistan ? (routing.usePlayMobile ? 'PlayMobile' : 'AWS (Ucell bypass)') : 'AWS (International)'
+                            routing: routing.isUzbekistan
+                                ? routing.usePlayMobile
+                                    ? 'PlayMobile'
+                                    : 'AWS (Ucell bypass)'
+                                : 'AWS (International)',
                         };
                     } catch (error) {
                         return {
                             phone,
                             success: false,
-                            error: error instanceof Error ? error.message : String(error)
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
                         };
                     }
                 });
@@ -184,17 +223,24 @@ export class ApiHandler {
                         total: results.length,
                         successful: results.filter(r => r.success).length,
                         failed: results.filter(r => !r.success).length,
-                        playmobile_provider: results.filter(r => r.provider === 'playmobile').length,
-                        aws_provider: results.filter(r => r.provider === 'aws').length,
-                        ucell_bypass: results.filter(r => r.routing === 'AWS (Ucell bypass)').length
-                    }
-                })
+                        playmobile_provider: results.filter(
+                            r => r.provider === 'playmobile'
+                        ).length,
+                        aws_provider: results.filter(r => r.provider === 'aws')
+                            .length,
+                        ucell_bypass: results.filter(
+                            r => r.routing === 'AWS (Ucell bypass)'
+                        ).length,
+                    },
+                }),
             };
-
         } catch (error) {
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) })
+                body: JSON.stringify({
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                }),
             };
         }
     }
@@ -208,33 +254,38 @@ export class ApiHandler {
             body: JSON.stringify({
                 ...diagnostics,
                 timestamp: new Date().toISOString(),
-                message: 'SMS diagnostics retrieved successfully'
-            })
+                message: 'SMS diagnostics retrieved successfully',
+            }),
         };
     }
 
     private async handleCredentialsCheck(): Promise<ApiResponse> {
-        const credentialTest = await this.credentialsService.verifyCredentials();
+        const credentialTest =
+            await this.credentialsService.verifyCredentials();
 
         return {
             statusCode: credentialTest.valid ? 200 : 400,
             body: JSON.stringify({
                 valid: credentialTest.valid,
                 reason: credentialTest.reason,
-                timestamp: new Date().toISOString()
-            })
+                timestamp: new Date().toISOString(),
+            }),
         };
     }
 
     private async handleSmsTest(event: ApiGatewayEvent): Promise<ApiResponse> {
         try {
             const body = JSON.parse(event.body);
-            const { phone, message = 'Test message from JDU', testApi = false } = body;
+            const {
+                phone,
+                message = 'Test message from JDU',
+                testApi = false,
+            } = body;
 
             if (!phone) {
                 return {
                     statusCode: 400,
-                    body: JSON.stringify({ error: 'Phone number is required' })
+                    body: JSON.stringify({ error: 'Phone number is required' }),
                 };
             }
 
@@ -246,7 +297,12 @@ export class ApiHandler {
                 const routing = getUzbekistanOperatorRouting(phone);
                 if (routing.isUzbekistan) {
                     console.log('🧪 Testing PlayMobile API connection...');
-                    testResult = await this.playMobileService.sendSmsWithProtection(phone, message, 'TEST');
+                    testResult =
+                        await this.playMobileService.sendSmsWithProtection(
+                            phone,
+                            message,
+                            'TEST'
+                        );
                 }
             }
 
@@ -257,14 +313,14 @@ export class ApiHandler {
                     phone: phone,
                     canSend: smsCounter.canSend(),
                     quota: smsCounter.getRemainingQuota(),
-                    testResult: testResult
-                })
+                    testResult: testResult,
+                }),
             };
-
         } catch (error) {
+            console.error(error);
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Invalid request body' })
+                body: JSON.stringify({ error: 'Invalid request body' }),
             };
         }
     }
@@ -279,14 +335,15 @@ export class ApiHandler {
 
             return {
                 statusCode: 200,
-                body: JSON.stringify({ message: 'Webhook processed successfully' })
+                body: JSON.stringify({
+                    message: 'Webhook processed successfully',
+                }),
             };
-
         } catch (error) {
             console.error('❌ Webhook processing error:', error);
             return {
                 statusCode: 500,
-                body: JSON.stringify({ error: 'Failed to process webhook' })
+                body: JSON.stringify({ error: 'Failed to process webhook' }),
             };
         }
     }

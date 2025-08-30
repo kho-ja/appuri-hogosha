@@ -1,12 +1,16 @@
-import mysql, { Connection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
-import { ENVIRONMENT } from "../../config/environment";
+import mysql, {
+    Connection,
+    RowDataPacket,
+    ResultSetHeader,
+} from 'mysql2/promise';
+import { ENVIRONMENT } from '../../config/environment';
 
 export class DatabaseClient {
     private connection: Connection | null = null;
 
     private async createConnection(): Promise<Connection | undefined> {
         try {
-            console.log("Connecting to the database...");
+            console.log('Connecting to the database...');
             const connection: Connection = await mysql.createConnection({
                 host: ENVIRONMENT.DB_HOST,
                 port: ENVIRONMENT.DB_PORT,
@@ -14,10 +18,10 @@ export class DatabaseClient {
                 password: ENVIRONMENT.DB_PASSWORD,
                 database: ENVIRONMENT.DB_NAME,
             });
-            console.log("Connected to the database successfully.");
+            console.log('Connected to the database successfully.');
             return connection;
         } catch (e: any) {
-            console.log("Database connection error:", e);
+            console.log('Database connection error:', e);
         }
     }
 
@@ -29,26 +33,29 @@ export class DatabaseClient {
             }
             return this.connection;
         } catch (e: any) {
-            console.log("error in getConnection()", e);
+            console.log('error in getConnection()', e);
         }
     }
 
     public async query(
         query: string,
-        params?: any,
+        params?: any
     ): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
         const db = (await this.getConnection()) as Connection;
         try {
             const [results] = await db.query(query, params);
             return results;
         } catch (e: any) {
-            console.log("error in query", e);
+            console.log('error in query', e);
             throw e;
         }
     }
 
-    public async execute(query: string, params?: any): Promise<ResultSetHeader> {
-        const db = await this.getConnection() as Connection;
+    public async execute(
+        query: string,
+        params?: any
+    ): Promise<ResultSetHeader> {
+        const db = (await this.getConnection()) as Connection;
         try {
             const [results] = await db.execute<ResultSetHeader>(query, params);
             return results;
@@ -61,7 +68,7 @@ export class DatabaseClient {
     public async closeConnection(): Promise<void> {
         if (this.connection) {
             await this.connection.end();
-            console.log("Database connection closed");
+            console.log('Database connection closed');
             this.connection = null;
         }
     }

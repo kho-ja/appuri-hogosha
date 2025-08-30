@@ -1,10 +1,14 @@
-import { config } from "dotenv";
+import { config } from 'dotenv';
 import { UnifiedPushService } from './services/unified/push';
 import { ExpoPushService } from './services/expo/push';
 import { TelegramService } from './services/telegram/bot';
 import { AwsSmsService } from './services/aws/sms';
 import { PlayMobileService } from './services/playmobile/api';
-import { analyzeToken, detectTokenType, isExpoPushToken } from './utils/token-detection';
+import {
+    analyzeToken,
+    detectTokenType,
+    isExpoPushToken,
+} from './utils/token-detection';
 import { getUzbekistanOperatorRouting } from './utils/validation';
 import { generateSmsText } from './utils/localization';
 import { NotificationPost } from './types/events';
@@ -16,7 +20,8 @@ const TEST_CONFIG = {
     defaultPost: {
         id: 'test-001',
         title: 'Test Notification',
-        description: 'This is a test notification to verify token functionality.',
+        description:
+            'This is a test notification to verify token functionality.',
         family_name: 'Doe',
         given_name: 'John',
         student_id: '0',
@@ -24,7 +29,7 @@ const TEST_CONFIG = {
         language: 'en', // en, ja, ru, uz
         phone_number: '', // Will be set if testing SMS
         priority: 'high',
-        sms: false // Will be set if testing SMS
+        sms: false, // Will be set if testing SMS
     } as Partial<NotificationPost>,
 
     // Test modes
@@ -32,8 +37,8 @@ const TEST_CONFIG = {
         PUSH_ONLY: 'push_only',
         SMS_ONLY: 'sms_only',
         TELEGRAM_ONLY: 'telegram_only',
-        ALL_CHANNELS: 'all_channels'
-    }
+        ALL_CHANNELS: 'all_channels',
+    },
 };
 
 class NotificationTokenTester {
@@ -61,8 +66,9 @@ class NotificationTokenTester {
         const testTokens = {
             expo: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
             ios: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2g3h4',
-            android: 'fGhI:APA91bHuN_example_fcm_token_here_with_colon_separator',
-            invalid: 'invalid_token_format'
+            android:
+                'fGhI:APA91bHuN_example_fcm_token_here_with_colon_separator',
+            invalid: 'invalid_token_format',
         };
 
         // Test token detection
@@ -82,18 +88,24 @@ class NotificationTokenTester {
         console.log('\n3️⃣ Token Validation:');
         for (const [type, token] of Object.entries(testTokens)) {
             const isValid = this.expoPushService.isExpoPushToken(token);
-            console.log(`   ${type}: ${isValid ? '✅ Valid' : '❌ Invalid'} Expo token`);
+            console.log(
+                `   ${type}: ${isValid ? '✅ Valid' : '❌ Invalid'} Expo token`
+            );
         }
 
         // Test token distribution analysis
-        const testPosts = Object.values(testTokens).map((token, index) => ({
-            ...TEST_CONFIG.defaultPost,
-            id: `test-${index}`,
-            arn: token
-        } as NotificationPost));
+        const testPosts = Object.values(testTokens).map(
+            (token, index) =>
+                ({
+                    ...TEST_CONFIG.defaultPost,
+                    id: `test-${index}`,
+                    arn: token,
+                }) as NotificationPost
+        );
 
         console.log('\n4️⃣ Token Distribution Analysis:');
-        const distribution = this.unifiedPushService.analyzeTokenDistribution(testPosts);
+        const distribution =
+            this.unifiedPushService.analyzeTokenDistribution(testPosts);
         console.log(`   Total: ${distribution.total}`);
         console.log(`   Expo: ${distribution.expo}`);
         console.log(`   iOS: ${distribution.ios}`);
@@ -107,9 +119,14 @@ class NotificationTokenTester {
     /**
      * Test a push notification token
      */
-    async testPushToken(token: string, customData?: Partial<NotificationPost>): Promise<boolean> {
+    async testPushToken(
+        token: string,
+        customData?: Partial<NotificationPost>
+    ): Promise<boolean> {
         console.log('\n🔍 === TESTING PUSH NOTIFICATION TOKEN ===');
-        console.log(`Token: ${token.substring(0, 20)}...${token.substring(token.length - 10)}`);
+        console.log(
+            `Token: ${token.substring(0, 20)}...${token.substring(token.length - 10)}`
+        );
 
         // Analyze the token
         const analysis = analyzeToken(token);
@@ -133,12 +150,13 @@ class NotificationTokenTester {
         const testPost: NotificationPost = {
             ...TEST_CONFIG.defaultPost,
             ...customData,
-            arn: token
+            arn: token,
         } as NotificationPost;
 
         try {
             console.log('\n📤 Sending push notification...');
-            const success = await this.unifiedPushService.sendPushNotification(testPost);
+            const success =
+                await this.unifiedPushService.sendPushNotification(testPost);
 
             if (success) {
                 console.log('✅ Push notification sent successfully!');
@@ -156,7 +174,10 @@ class NotificationTokenTester {
     /**
      * Test SMS functionality with a phone number
      */
-    async testSMS(phoneNumber: string, customData?: Partial<NotificationPost>): Promise<boolean> {
+    async testSMS(
+        phoneNumber: string,
+        customData?: Partial<NotificationPost>
+    ): Promise<boolean> {
         console.log('\n📱 === TESTING SMS NOTIFICATION ===');
         console.log(`Phone: ${phoneNumber}`);
 
@@ -165,7 +186,9 @@ class NotificationTokenTester {
         console.log('\n📊 Phone Analysis:');
         console.log(`   Is Uzbekistan: ${routing.isUzbekistan ? '✅' : '❌'}`);
         console.log(`   Operator: ${routing.operator}`);
-        console.log(`   Use PlayMobile: ${routing.usePlayMobile ? '✅' : '❌'}`);
+        console.log(
+            `   Use PlayMobile: ${routing.usePlayMobile ? '✅' : '❌'}`
+        );
 
         // Create test post
         const testPost: NotificationPost = {
@@ -173,7 +196,7 @@ class NotificationTokenTester {
             ...customData,
             phone_number: phoneNumber,
             sms: true,
-            arn: '' // No push token for SMS-only test
+            arn: '', // No push token for SMS-only test
         } as NotificationPost;
 
         try {
@@ -184,7 +207,9 @@ class NotificationTokenTester {
             // for International numbers, we send SMS via AWS SMS
             if (!routing.isUzbekistan) {
                 console.log('🌐 Sending SMS via AWS SMS...');
-                const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+                const formattedPhone = phoneNumber.startsWith('+')
+                    ? phoneNumber
+                    : `+${phoneNumber}`;
                 console.log(`Formatted Phone: ${formattedPhone}`);
                 return await this.awsSmsService.sendSms(formattedPhone, text);
             }
@@ -193,11 +218,20 @@ class NotificationTokenTester {
 
             if (routing.usePlayMobile) {
                 console.log('📤 Using PlayMobile API...');
-                success = await this.playMobileService.sendSms(phoneNumber, text, testPost.id);
+                success = await this.playMobileService.sendSms(
+                    phoneNumber,
+                    text,
+                    testPost.id
+                );
             } else {
                 console.log('📤 Using AWS SMS...');
-                const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
-                success = await this.awsSmsService.sendSms(formattedPhone, text);
+                const formattedPhone = phoneNumber.startsWith('+')
+                    ? phoneNumber
+                    : `+${phoneNumber}`;
+                success = await this.awsSmsService.sendSms(
+                    formattedPhone,
+                    text
+                );
             }
 
             if (success) {
@@ -216,7 +250,10 @@ class NotificationTokenTester {
     /**
      * Test Telegram notification
      */
-    async testTelegram(chatId: string, customData?: Partial<NotificationPost>): Promise<boolean> {
+    async testTelegram(
+        chatId: string,
+        customData?: Partial<NotificationPost>
+    ): Promise<boolean> {
         console.log('\n💬 === TESTING TELEGRAM NOTIFICATION ===');
         console.log(`Chat ID: ${chatId}`);
 
@@ -225,12 +262,13 @@ class NotificationTokenTester {
             ...TEST_CONFIG.defaultPost,
             ...customData,
             chat_id: chatId,
-            arn: '' // No push token for Telegram-only test
+            arn: '', // No push token for Telegram-only test
         } as NotificationPost;
 
         try {
             console.log('\n📤 Sending Telegram notification...');
-            const success = await this.telegramService.sendNotification(testPost);
+            const success =
+                await this.telegramService.sendNotification(testPost);
 
             if (success) {
                 console.log('✅ Telegram notification sent successfully!');
@@ -259,7 +297,7 @@ class NotificationTokenTester {
         const results = {
             push: false,
             sms: false,
-            telegram: false
+            telegram: false,
         };
 
         // Create comprehensive test post
@@ -269,7 +307,7 @@ class NotificationTokenTester {
             arn: pushToken || '',
             phone_number: phoneNumber || '',
             chat_id: chatId || '',
-            sms: !!phoneNumber
+            sms: !!phoneNumber,
         } as NotificationPost;
 
         // Test push notification
@@ -308,13 +346,23 @@ class NotificationTokenTester {
 
         console.log(`Runtime: ${envInfo.runtime}`);
         console.log(`Region: ${envInfo.region}`);
-        console.log(`PlayMobile Config: ${envInfo.hasPlayMobileConfig ? '✅' : '❌'}`);
-        console.log(`Telegram Config: ${envInfo.hasTelegramConfig ? '✅' : '❌'}`);
-        console.log(`AWS Credentials: ${envInfo.hasLocalAwsCredentials ? '✅' : '❌'}`);
-        console.log(`Cognito Config: ${envInfo.hasCognitoConfig ? '✅' : '❌'}`);
+        console.log(
+            `PlayMobile Config: ${envInfo.hasPlayMobileConfig ? '✅' : '❌'}`
+        );
+        console.log(
+            `Telegram Config: ${envInfo.hasTelegramConfig ? '✅' : '❌'}`
+        );
+        console.log(
+            `AWS Credentials: ${envInfo.hasLocalAwsCredentials ? '✅' : '❌'}`
+        );
+        console.log(
+            `Cognito Config: ${envInfo.hasCognitoConfig ? '✅' : '❌'}`
+        );
 
         console.log('\n📋 Required Environment Variables:');
-        console.log(`PINPOINT_APP_ID: ${ENVIRONMENT.PINPOINT_APP_ID ? '✅' : '❌'}`);
+        console.log(
+            `PINPOINT_APP_ID: ${ENVIRONMENT.PINPOINT_APP_ID ? '✅' : '❌'}`
+        );
         console.log(`BOT_TOKEN: ${ENVIRONMENT.BOT_TOKEN ? '✅' : '❌'}`);
         console.log(`BROKER_URL: ${ENVIRONMENT.BROKER_URL ? '✅' : '❌'}`);
         console.log(`DB_HOST: ${ENVIRONMENT.DB_HOST ? '✅' : '❌'}`);
@@ -334,11 +382,21 @@ async function main() {
     if (args.length === 0) {
         console.log('\n🚀 === NOTIFICATION TOKEN TESTER ===');
         console.log('\nUsage:');
-        console.log('  npm run test-token -- expo                      # Test Expo integration');
-        console.log('  npm run test-token -- push <token>             # Test push notification');
-        console.log('  npm run test-token -- sms <phone_number>       # Test SMS notification');
-        console.log('  npm run test-token -- telegram <chat_id>       # Test Telegram notification');
-        console.log('  npm run test-token -- all <push_token> <phone_number> <chat_id>');
+        console.log(
+            '  npm run test-token -- expo                      # Test Expo integration'
+        );
+        console.log(
+            '  npm run test-token -- push <token>             # Test push notification'
+        );
+        console.log(
+            '  npm run test-token -- sms <phone_number>       # Test SMS notification'
+        );
+        console.log(
+            '  npm run test-token -- telegram <chat_id>       # Test Telegram notification'
+        );
+        console.log(
+            '  npm run test-token -- all <push_token> <phone_number> <chat_id>'
+        );
         console.log('\nExamples:');
         console.log('  npm run test-token -- expo');
         console.log('  npm run test-token -- push "ExponentPushToken[xxx...]"');
@@ -389,7 +447,9 @@ async function main() {
                 break;
 
             default:
-                console.error('❌ Invalid mode. Use: expo, push, sms, telegram, or all');
+                console.error(
+                    '❌ Invalid mode. Use: expo, push, sms, telegram, or all'
+                );
         }
     } catch (error) {
         console.error('❌ Test failed:', error);

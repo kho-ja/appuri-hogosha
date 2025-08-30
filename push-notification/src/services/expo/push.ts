@@ -1,4 +1,9 @@
-import { Expo, ExpoPushMessage, ExpoPushTicket, ExpoPushReceiptId } from 'expo-server-sdk';
+import {
+    Expo,
+    ExpoPushMessage,
+    ExpoPushTicket,
+    ExpoPushReceiptId,
+} from 'expo-server-sdk';
 import { NotificationPost } from '../../types/events';
 import { getLocalizedText } from '../../utils/localization';
 
@@ -9,7 +14,7 @@ export class ExpoPushService {
         // Create a new Expo SDK client
         this.expo = new Expo({
             accessToken: process.env.EXPO_ACCESS_TOKEN, // Optional: for analytics
-            useFcmV1: true // Use FCM v1 API (recommended)
+            useFcmV1: true, // Use FCM v1 API (recommended)
         });
     }
 
@@ -32,7 +37,9 @@ export class ExpoPushService {
 
             // Check if this is a valid Expo push token
             if (!this.isExpoPushToken(post.arn)) {
-                console.log(`Invalid Expo push token for post ${post.id}: ${post.arn}`);
+                console.log(
+                    `Invalid Expo push token for post ${post.id}: ${post.arn}`
+                );
                 return false;
             }
 
@@ -49,20 +56,22 @@ export class ExpoPushService {
                     post_id: post.id.toString(),
                     priority: post.priority,
                     student_name: `${post.given_name} ${post.family_name}`,
-                    click_action: 'OPEN_APP'
+                    click_action: 'OPEN_APP',
                 },
                 priority: 'high',
                 sound: 'default',
                 badge: 1,
                 // Remove channelId - Android-only field that can cause iOS issues
-                // channelId: 'default', 
+                // channelId: 'default',
                 categoryId: 'message', // For iOS notification categories
                 ttl: 86400, // Time to live in seconds (24 hours)
                 mutableContent: true, // Allow content modifications on iOS
                 // _contentAvailable: true, // Can cause issues with visible notifications
             };
 
-            console.log(`📱 Sending Expo push notification for post ${post.id}`);
+            console.log(
+                `📱 Sending Expo push notification for post ${post.id}`
+            );
 
             // Send the notification
             const chunks = this.expo.chunkPushNotifications([message]);
@@ -70,10 +79,14 @@ export class ExpoPushService {
 
             for (const chunk of chunks) {
                 try {
-                    const ticketChunk = await this.expo.sendPushNotificationsAsync(chunk);
+                    const ticketChunk =
+                        await this.expo.sendPushNotificationsAsync(chunk);
                     tickets.push(...ticketChunk);
                 } catch (error) {
-                    console.error(`❌ Error sending push notification chunk for post ${post.id}:`, error);
+                    console.error(
+                        `❌ Error sending push notification chunk for post ${post.id}:`,
+                        error
+                    );
                     return false;
                 }
             }
@@ -81,21 +94,30 @@ export class ExpoPushService {
             // Check if the notification was accepted
             const ticket = tickets[0];
             if (ticket.status === 'ok') {
-                console.log(`✅ Expo push notification sent successfully for post ${post.id}`);
+                console.log(
+                    `✅ Expo push notification sent successfully for post ${post.id}`
+                );
 
                 // Optionally, you can store the receipt ID to check delivery status later
                 if (ticket.id) {
-                    console.log(`📋 Receipt ID for post ${post.id}: ${ticket.id}`);
+                    console.log(
+                        `📋 Receipt ID for post ${post.id}: ${ticket.id}`
+                    );
                     // You could store this receipt ID in the database for later verification
                 }
 
                 return true;
             } else {
-                console.log(`❌ Expo push notification failed for post ${post.id}:`, ticket.message);
+                console.log(
+                    `❌ Expo push notification failed for post ${post.id}:`,
+                    ticket.message
+                );
 
                 // Handle specific error cases
                 if (ticket.details?.error === 'DeviceNotRegistered') {
-                    console.log(`📱 Device not registered for post ${post.id} - token may be invalid`);
+                    console.log(
+                        `📱 Device not registered for post ${post.id} - token may be invalid`
+                    );
                     // You might want to mark this token as invalid in your database
                 } else if (ticket.details?.error === 'MessageTooBig') {
                     console.log(`📏 Message too big for post ${post.id}`);
@@ -106,7 +128,10 @@ export class ExpoPushService {
                 return false;
             }
         } catch (error) {
-            console.error(`❌ Error sending Expo push notification for post ${post.id}:`, error);
+            console.error(
+                `❌ Error sending Expo push notification for post ${post.id}:`,
+                error
+            );
             return false;
         }
     }
@@ -115,25 +140,38 @@ export class ExpoPushService {
      * Check delivery receipts for sent notifications
      * This method can be called periodically to verify delivery status
      */
-    async checkDeliveryReceipts(receiptIds: ExpoPushReceiptId[]): Promise<void> {
+    async checkDeliveryReceipts(
+        receiptIds: ExpoPushReceiptId[]
+    ): Promise<void> {
         try {
-            const receiptIdChunks = this.expo.chunkPushNotificationReceiptIds(receiptIds);
+            const receiptIdChunks =
+                this.expo.chunkPushNotificationReceiptIds(receiptIds);
 
             for (const chunk of receiptIdChunks) {
                 try {
-                    const receipts = await this.expo.getPushNotificationReceiptsAsync(chunk);
+                    const receipts =
+                        await this.expo.getPushNotificationReceiptsAsync(chunk);
 
                     for (const receiptId in receipts) {
                         const receipt = receipts[receiptId];
 
                         if (receipt.status === 'ok') {
-                            console.log(`✅ Receipt ${receiptId}: delivered successfully`);
+                            console.log(
+                                `✅ Receipt ${receiptId}: delivered successfully`
+                            );
                         } else if (receipt.status === 'error') {
-                            console.error(`❌ Receipt ${receiptId}: delivery failed`, receipt.message);
+                            console.error(
+                                `❌ Receipt ${receiptId}: delivery failed`,
+                                receipt.message
+                            );
 
                             // Handle specific delivery errors
-                            if (receipt.details?.error === 'DeviceNotRegistered') {
-                                console.log(`📱 Device not registered for receipt ${receiptId}`);
+                            if (
+                                receipt.details?.error === 'DeviceNotRegistered'
+                            ) {
+                                console.log(
+                                    `📱 Device not registered for receipt ${receiptId}`
+                                );
                                 // Mark the push token as invalid
                             }
                         }
@@ -150,7 +188,10 @@ export class ExpoPushService {
     /**
      * Validate multiple Expo push tokens
      */
-    validatePushTokens(tokens: string[]): { valid: string[]; invalid: string[] } {
+    validatePushTokens(tokens: string[]): {
+        valid: string[];
+        invalid: string[];
+    } {
         const valid: string[] = [];
         const invalid: string[] = [];
 
@@ -175,8 +216,8 @@ export class ExpoPushService {
         const failed: string[] = [];
 
         // Filter only posts with valid Expo tokens
-        const validPosts = posts.filter(post =>
-            post.arn && this.isExpoPushToken(post.arn)
+        const validPosts = posts.filter(
+            post => post.arn && this.isExpoPushToken(post.arn)
         );
 
         if (validPosts.length === 0) {
@@ -184,7 +225,9 @@ export class ExpoPushService {
             return { successful, failed };
         }
 
-        console.log(`📤 Sending ${validPosts.length} Expo push notifications...`);
+        console.log(
+            `📤 Sending ${validPosts.length} Expo push notifications...`
+        );
 
         // Create messages for all valid posts
         const messages: ExpoPushMessage[] = validPosts.map(post => {
@@ -200,7 +243,7 @@ export class ExpoPushService {
                     post_id: post.id.toString(),
                     priority: post.priority,
                     student_name: `${post.given_name} ${post.family_name}`,
-                    click_action: 'OPEN_APP'
+                    click_action: 'OPEN_APP',
                 },
                 priority: 'high',
                 sound: 'default',
@@ -220,7 +263,8 @@ export class ExpoPushService {
             const chunk = chunks[i];
 
             try {
-                const tickets = await this.expo.sendPushNotificationsAsync(chunk);
+                const tickets =
+                    await this.expo.sendPushNotificationsAsync(chunk);
 
                 // Process results
                 for (let j = 0; j < tickets.length; j++) {
@@ -229,10 +273,15 @@ export class ExpoPushService {
 
                     if (ticket.status === 'ok') {
                         successful.push(post.id);
-                        console.log(`✅ Expo notification sent for post ${post.id}`);
+                        console.log(
+                            `✅ Expo notification sent for post ${post.id}`
+                        );
                     } else {
                         failed.push(post.id);
-                        console.log(`❌ Expo notification failed for post ${post.id}:`, ticket.message);
+                        console.log(
+                            `❌ Expo notification failed for post ${post.id}:`,
+                            ticket.message
+                        );
                     }
                 }
             } catch (error) {
@@ -243,7 +292,9 @@ export class ExpoPushService {
             }
         }
 
-        console.log(`📊 Expo bulk send complete: ${successful.length} successful, ${failed.length} failed`);
+        console.log(
+            `📊 Expo bulk send complete: ${successful.length} successful, ${failed.length} failed`
+        );
         return { successful, failed };
     }
 }

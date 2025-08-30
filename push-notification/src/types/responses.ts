@@ -24,7 +24,7 @@ export interface NotificationResult {
     total: number;
     push_count?: number;
     sms_only_count?: number;
-    error?: string
+    error?: string;
 }
 
 export interface DiagnosticsResult {
