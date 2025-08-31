@@ -4,36 +4,50 @@ export interface OperatorRouting {
     usePlayMobile: boolean;
 }
 
-export const getUzbekistanOperatorRouting = (phoneNumber: string): OperatorRouting => {
-    if (!phoneNumber) return { isUzbekistan: false, operator: 'Unknown', usePlayMobile: false };
+export const getUzbekistanOperatorRouting = (
+    phoneNumber: string
+): OperatorRouting => {
+    if (!phoneNumber)
+        return {
+            isUzbekistan: false,
+            operator: 'Unknown',
+            usePlayMobile: false,
+        };
 
     // Remove + if present for checking
-    const cleanNumber = phoneNumber.startsWith('+') ? phoneNumber.substring(1) : phoneNumber;
+    const cleanNumber = phoneNumber.startsWith('+')
+        ? phoneNumber.substring(1)
+        : phoneNumber;
 
     // Check if it's Uzbekistan (12 digits starting with 998)
     if (cleanNumber.length !== 12 || !cleanNumber.startsWith('998')) {
-        return { isUzbekistan: false, operator: 'Unknown', usePlayMobile: false };
+        return {
+            isUzbekistan: false,
+            operator: 'Unknown',
+            usePlayMobile: false,
+        };
     }
 
     // Operator detection
     const operatorCode = cleanNumber.substring(3, 5);
-    const operators: Record<string, { name: string; usePlayMobile: boolean }> = {
-        '90': { name: 'Beeline', usePlayMobile: true },    // Use PlayMobile for Beeline
-        '91': { name: 'Ucell', usePlayMobile: false },     // Use AWS for Ucell (problems with PlayMobile)
-        '93': { name: 'Ucell', usePlayMobile: false },     // Use AWS for Ucell (problems with PlayMobile)
-        '94': { name: 'Ucell', usePlayMobile: false },     // Use AWS for Ucell (problems with PlayMobile)
-        '95': { name: 'UMS', usePlayMobile: true },        // Use PlayMobile for UMS
-        '97': { name: 'Mobiuz', usePlayMobile: true },     // Use PlayMobile for Mobiuz
-        '98': { name: 'Mobiuz', usePlayMobile: true },     // Use PlayMobile for Mobiuz
-        '99': { name: 'Beeline', usePlayMobile: true }     // Use PlayMobile for Beeline
-    };
+    const operators: Record<string, { name: string; usePlayMobile: boolean }> =
+        {
+            '90': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
+            '91': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '93': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '94': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '95': { name: 'UMS', usePlayMobile: true }, // Use PlayMobile for UMS
+            '97': { name: 'Mobiuz', usePlayMobile: true }, // Use PlayMobile for Mobiuz
+            '98': { name: 'Mobiuz', usePlayMobile: true }, // Use PlayMobile for Mobiuz
+            '99': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
+        };
 
     const operatorInfo = operators[operatorCode];
     if (operatorInfo) {
         return {
             isUzbekistan: true,
             operator: operatorInfo.name,
-            usePlayMobile: operatorInfo.usePlayMobile
+            usePlayMobile: operatorInfo.usePlayMobile,
         };
     }
 
@@ -98,6 +112,6 @@ export const checkSmsCharacterLimit = (message: string): SmsCharacterCheck => {
         withinLimit: parts === 1,
         encoding,
         parts,
-        cost
+        cost,
     };
 };

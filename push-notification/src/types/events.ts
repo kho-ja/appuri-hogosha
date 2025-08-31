@@ -32,7 +32,12 @@ export interface DirectInvokeEvent {
     payload: any;
 }
 
-export type EventSource = 'COGNITO' | 'API_GATEWAY' | 'DIRECT_INVOKE' | 'SCHEDULED' | 'UNKNOWN';
+export type EventSource =
+    | 'COGNITO'
+    | 'API_GATEWAY'
+    | 'DIRECT_INVOKE'
+    | 'SCHEDULED'
+    | 'UNKNOWN';
 
 export interface NotificationPost {
     id: string;

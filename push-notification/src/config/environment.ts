@@ -1,4 +1,4 @@
-import { config } from "dotenv";
+import { config } from 'dotenv';
 
 config();
 
@@ -43,6 +43,9 @@ export const getEnvironmentInfo = () => ({
     region: ENVIRONMENT.AWS_REGION,
     hasPlayMobileConfig: !!(ENVIRONMENT.BROKER_URL && ENVIRONMENT.BROKER_AUTH),
     hasTelegramConfig: !!ENVIRONMENT.BOT_TOKEN,
-    hasLocalAwsCredentials: !!(ENVIRONMENT.LOCAL_AWS_ACCESS_KEY_ID && ENVIRONMENT.LOCAL_AWS_SECRET_ACCESS_KEY),
+    hasLocalAwsCredentials: !!(
+        ENVIRONMENT.LOCAL_AWS_ACCESS_KEY_ID &&
+        ENVIRONMENT.LOCAL_AWS_SECRET_ACCESS_KEY
+    ),
     hasCognitoConfig: !!ENVIRONMENT.COGNITO_USER_POOL_ID,
 });
