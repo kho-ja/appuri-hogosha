@@ -5,7 +5,9 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "node ./dist/index.js",
-		"dev": "nodemon"
+		"dev": "nodemon",
+		"lint": "eslint . --ext .ts,.tsx",
+		"lint:fix": "eslint . --ext .ts,.tsx --fix"
 	},
 	"keywords": [],
 	"author": "",
@@ -20,8 +22,11 @@
 	"devDependencies": {
 		"@types/node": "^22.9.3",
 		"@types/node-fetch": "^2.6.12",
+		"@typescript-eslint/eslint-plugin": "^8.41.0",
+		"@typescript-eslint/parser": "^8.41.0",
+		"eslint-plugin-prettier": "^5.5.4",
 		"nodemon": "^3.1.7",
-		"typescript": "^5.7.2",
-		"ts-node": "^10.9.2"
+		"ts-node": "^10.9.2",
+		"typescript": "^5.7.2"
 	}
 }

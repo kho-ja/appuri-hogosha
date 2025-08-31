@@ -1,4 +1,4 @@
-import {IBotContext} from '../middlewares/sessionMiddleware';
+import { IBotContext } from '../middlewares/sessionMiddleware';
 
 export const userNotExist = async (ctx: IBotContext) => {
     let text;
@@ -11,7 +11,7 @@ export const userNotExist = async (ctx: IBotContext) => {
     }
     await ctx.reply(text, {
         reply_markup: {
-            remove_keyboard: true
-        }
+            remove_keyboard: true,
+        },
     });
 };
