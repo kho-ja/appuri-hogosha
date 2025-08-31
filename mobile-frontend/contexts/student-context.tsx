@@ -1,7 +1,6 @@
 import React, {
   useEffect,
   useState,
-  useCallback,
   createContext,
   useContext,
   PropsWithChildren,
@@ -11,7 +10,7 @@ import { useSession } from '@/contexts/auth-context';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useNetwork } from './network-context';
 import { useQuery } from '@tanstack/react-query';
-import { fetchStudentsFromDB } from '@/utils/queries';
+import { fetchStudentsFromDB, saveStudentsToDB } from '@/utils/queries';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -40,35 +39,12 @@ export function useStudents() {
 }
 
 export function StudentProvider(props: PropsWithChildren) {
-  const { signOut, refreshToken, session } = useSession();
+  const { signOut, refreshToken, session, isDemo } = useSession();
   const { isOnline } = useNetwork();
   const [students, setStudents] = useState<Student[] | null>(null);
   const [activeStudent, setActiveStudent] = useState<Student | null>(null);
   const db = useSQLiteContext();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-
-  const saveStudentsToDB = useCallback(
-    async (studentList: Student[]) => {
-      const statement = await db.prepareAsync(
-        'INSERT OR REPLACE INTO student (id, student_number, family_name, given_name, phone_number, email) VALUES (?, ?, ?, ?, ?, ?)'
-      );
-      try {
-        for (const student of studentList) {
-          await statement.executeAsync([
-            student.id,
-            student.student_number,
-            student.family_name,
-            student.given_name,
-            student.phone_number,
-            student.email,
-          ]);
-        }
-      } finally {
-        await statement.finalizeAsync();
-      }
-    },
-    [db]
-  );
 
   const {
     data,
@@ -80,7 +56,7 @@ export function StudentProvider(props: PropsWithChildren) {
   } = useQuery<Student[], Error>({
     queryKey: ['students'],
     queryFn: async () => {
-      if (isOnline) {
+      if (isOnline && !isDemo) {
         try {
           const res = await fetch(`${apiUrl}/students`, {
             method: 'GET',
@@ -103,7 +79,7 @@ export function StudentProvider(props: PropsWithChildren) {
           }
 
           const serverStudents = (await res.json()) as Student[];
-          await saveStudentsToDB(serverStudents);
+          await saveStudentsToDB(db, serverStudents);
           return serverStudents;
         } catch (err) {
           console.error('Online fetch failed, falling back to DB:', err);

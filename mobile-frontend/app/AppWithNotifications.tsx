@@ -14,6 +14,7 @@ import { FontSizeProvider } from '@/contexts/FontSizeContext';
 import { Platform, Alert, Linking } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useUpdateAlerts } from '@/hooks/useUpdateAlerts';
+import DemoBanner from '@/components/DemoBanner';
 
 // Helper function to guide users for battery optimization
 const showBatteryOptimizationAlert = async (i18n: any, language: string) => {
@@ -199,6 +200,7 @@ const AppWithNotifications: React.FC = () => {
         <SessionDependentPushTokenHandler pushToken={pushToken} />
         <StudentProvider>
           <FontSizeProvider>
+            <DemoBanner />
             <Slot />
           </FontSizeProvider>
         </StudentProvider>

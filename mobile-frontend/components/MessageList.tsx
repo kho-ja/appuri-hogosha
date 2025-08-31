@@ -221,8 +221,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Contexts and hooks
   const db = useSQLiteContext();
   const { isOnline } = useNetwork();
-  const { session, refreshToken, signOut } = useSession();
+  const { session, refreshToken, signOut, isDemo } = useSession();
   const { language, i18n } = useContext(I18nContext);
+  const canFetchOnline = isOnline && !isDemo;
   const { theme } = useTheme();
   const textColor = useThemeColor({}, 'text');
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -340,7 +341,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       }
       return undefined;
     },
-    enabled: Boolean(student && isOnline && session),
+    enabled: Boolean(student && canFetchOnline && session),
     retry: 2,
     retryDelay: 1000,
   });
@@ -353,7 +354,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Load offline messages when component mounts or goes offline
   useEffect(() => {
     const loadOfflineData = async () => {
-      if (!student || isOnline) return;
+      if (!student || canFetchOnline) return;
 
       try {
         const messages = await fetchMessagesFromDB(db, student.student_number);
@@ -363,12 +364,12 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       }
     };
     loadOfflineData();
-  }, [student, isOnline, db]);
+  }, [student, canFetchOnline, db]);
 
   // Prepare read messages data for online mode
   useEffect(() => {
     const prepareOnlineData = async () => {
-      if (!student || !isOnline || !session) return;
+      if (!student || !canFetchOnline || !session) return;
 
       try {
         readButNotSentMessageIDs.current = await fetchReadButNotSentMessages(
@@ -380,13 +381,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       }
     };
     prepareOnlineData();
-  }, [student, isOnline, db, session]);
+  }, [student, canFetchOnline, db, session]);
 
   // Update unread count based on online/offline status
   const updateUnreadCount = useCallback(async () => {
     if (!student) return;
     try {
-      if (isOnline && session) {
+      if (canFetchOnline && session) {
         const res = await fetch(`${apiUrl}/unread`, {
           method: 'GET',
           headers: {
@@ -421,7 +422,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     }
   }, [
     student,
-    isOnline,
+    canFetchOnline,
     session,
     apiUrl,
     db,
@@ -447,13 +448,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     useCallback(() => {
       const refreshData = async () => {
         if (!student) return;
-        if (isOnline && session) {
+        if (canFetchOnline && session) {
           readButNotSentMessageIDs.current = await fetchReadButNotSentMessages(
             db,
             student.student_number
           );
           refetchRef.current();
-        } else if (!isOnline) {
+        } else if (!canFetchOnline) {
           const messages = await fetchMessagesFromDB(
             db,
             student.student_number
@@ -463,14 +464,14 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         updateUnreadCount();
       };
       refreshData();
-    }, [student, isOnline, db, session, updateUnreadCount])
+    }, [student, canFetchOnline, db, session, updateUnreadCount])
   );
 
   // Handle pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      if (isOnline && session) {
+      if (canFetchOnline && session) {
         readButNotSentMessageIDs.current = await fetchReadButNotSentMessages(
           db,
           student!.student_number
@@ -490,7 +491,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 
   // Load more messages (infinite scrolling)
   const handleLoadMore = async () => {
-    if (isOnline) {
+    if (canFetchOnline) {
       if (hasNextPage && !isFetchingNextPage) {
         await fetchNextPage();
       }
@@ -512,21 +513,23 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   };
 
   const messageGroups = useMemo(() => {
-    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
+    const allMessages = canFetchOnline
+      ? data?.pages.flat() || []
+      : localMessages;
     return groupMessages(allMessages);
-  }, [isOnline, data, localMessages]);
+  }, [canFetchOnline, data, localMessages]);
 
   // Show loading state during initial load
   if (
     !student ||
-    (isOnline && !session) ||
-    (isLoading && isOnline && session)
+    (canFetchOnline && !session) ||
+    (isLoading && canFetchOnline && session)
   ) {
     return <MessageListLoading />;
   }
 
   // Show error state if needed
-  if (isError && isOnline) {
+  if (isError && canFetchOnline) {
     return (
       <View style={styles.errorContainer}>
         <ThemedText
@@ -584,7 +587,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         ))}
 
         {/* Load more button */}
-        {(hasNextPage || (!isOnline && localMessages.length >= 10)) && (
+        {(hasNextPage || (!canFetchOnline && localMessages.length >= 10)) && (
           <Button
             title={i18n[language].loadMoreMessages}
             onPress={handleLoadMore}
@@ -597,11 +600,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
               { backgroundColor: '#003d56' },
             ]}
             disabled={
-              isOnline
+              canFetchOnline
                 ? !hasNextPage || isFetchingNextPage
                 : isLoadingMoreOffline
             }
-            loading={isOnline ? isFetchingNextPage : isLoadingMoreOffline}
+            loading={canFetchOnline ? isFetchingNextPage : isLoadingMoreOffline}
             loadingProps={{
               color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
             }}

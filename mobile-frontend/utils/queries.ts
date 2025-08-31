@@ -105,6 +105,29 @@ export const fetchStudentsFromDB = async (
   }));
 };
 
+export const saveStudentsToDB = async (
+  database: SQLiteDatabase,
+  studentList: Student[]
+) => {
+  const statement = await database.prepareAsync(
+    'INSERT OR REPLACE INTO student (id, student_number, family_name, given_name, phone_number, email) VALUES (?, ?, ?, ?, ?, ?)'
+  );
+  try {
+    for (const student of studentList) {
+      await statement.executeAsync([
+        student.id,
+        student.student_number,
+        student.family_name,
+        student.given_name,
+        student.phone_number,
+        student.email,
+      ]);
+    }
+  } finally {
+    await statement.finalizeAsync();
+  }
+};
+
 export const fetchReadButNotSentMessages = async (
   database: SQLiteDatabase,
   studentID: string

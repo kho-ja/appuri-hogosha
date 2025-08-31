@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotificationsAsync } from '@/utils/notifications';
 import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
+import { saveStudentsToDB, saveMessagesToDB } from '@/utils/queries';
+import { demoStudents, demoMessages } from '@/constants/demoData';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -19,6 +21,7 @@ const AuthContext = React.createContext<{
   refreshToken: () => void;
   setSession: (session: string | null) => void;
   isLoading: boolean;
+  isDemo: boolean;
 }>({
   signIn: () => new Promise(() => null),
   signOut: () => null,
@@ -26,6 +29,7 @@ const AuthContext = React.createContext<{
   refreshToken: () => null,
   setSession: () => null,
   isLoading: false,
+  isDemo: false,
 });
 
 export function useSession() {
@@ -41,6 +45,8 @@ export function useSession() {
 
 export function SessionProvider(props: React.PropsWithChildren) {
   const [[isLoading, session], setSession] = useStorageState('session');
+  const [[demoLoading, demoFlag], setDemoFlag] = useStorageState('is_demo');
+  const isDemo = demoFlag === 'true';
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -77,6 +83,27 @@ export function SessionProvider(props: React.PropsWithChildren) {
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
+          setDemoFlag(null);
+          const fullNumber = country?.callingCode + phoneNumber.replaceAll(' ', '');
+          if (`+${fullNumber}` === '+19999999999' && password === 'demo123') {
+            setSession('demo-session');
+            setDemoFlag('true');
+            const seeded = await AsyncStorage.getItem('demo_seeded');
+            if (!seeded) {
+              await saveStudentsToDB(db, demoStudents);
+              for (const entry of demoMessages) {
+                await saveMessagesToDB(
+                  db,
+                  entry.messages,
+                  entry.student_number,
+                  entry.student_id
+                );
+              }
+              await AsyncStorage.setItem('demo_seeded', 'true');
+            }
+            router.replace('/');
+            return;
+          }
           try {
             await registerForPushNotificationsAsync().then(async token => {
               const response = await fetch(`${apiUrl}/login`, {
@@ -85,8 +112,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                  phone_number:
-                    country?.callingCode + phoneNumber.replaceAll(' ', ''),
+                  phone_number: fullNumber,
                   password,
                   token,
                 }),
@@ -127,6 +153,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
           }
         },
         refreshToken: async () => {
+          if (isDemo) return;
           try {
             const refreshToken = await AsyncStorage.getItem('refresh_token');
             if (!refreshToken) {
@@ -174,13 +201,15 @@ export function SessionProvider(props: React.PropsWithChildren) {
             // await db.execAsync('DELETE FROM student');
             await db.execAsync('DELETE FROM message');
 
-            const refreshToken = await AsyncStorage.getItem('refresh_token');
-            if (refreshToken) {
-              await fetch(`${apiUrl}/revoke`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refresh_token: refreshToken }),
-              });
+            if (!isDemo) {
+              const refreshToken = await AsyncStorage.getItem('refresh_token');
+              if (refreshToken) {
+                await fetch(`${apiUrl}/revoke`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ refresh_token: refreshToken }),
+                });
+              }
             }
 
             // Clear AsyncStorage
@@ -188,6 +217,9 @@ export function SessionProvider(props: React.PropsWithChildren) {
             await AsyncStorage.removeItem('country');
             await AsyncStorage.removeItem('password');
             await AsyncStorage.removeItem('refresh_token');
+            await AsyncStorage.removeItem('demo_seeded');
+            await AsyncStorage.removeItem('is_demo');
+            setDemoFlag(null);
           } catch (error) {
             console.error('Error during sign out:', error);
           } finally {
@@ -197,6 +229,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
         session,
         setSession,
         isLoading,
+        isDemo,
       }}
     >
       {props.children}
