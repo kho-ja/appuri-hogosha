@@ -106,7 +106,8 @@ export const DeepLinkDebugHelper = {
 
   // Web URL format (for testing universal links)
   testWebUrl: () => {
-    const url = 'https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456';
+    const url =
+      'https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456';
     console.log(`Testing web URL: ${url}`);
     Linking.openURL(url)
       .then(() => console.log('Web URL test successful'))
