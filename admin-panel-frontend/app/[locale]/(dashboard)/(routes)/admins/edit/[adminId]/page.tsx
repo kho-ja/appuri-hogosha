@@ -74,7 +74,8 @@ export default function EditAdmin({
     {
       onSuccess: (data) => {
         form.reset();
-        router.push(`/admins/${adminId}`);
+        router.replace(`/admins/${adminId}`);
+        router.refresh();
         toast({
           title: t("AdminUpdated"),
           description: tName("name", { ...data?.admin }),
