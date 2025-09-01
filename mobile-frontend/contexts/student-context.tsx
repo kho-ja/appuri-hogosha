@@ -12,6 +12,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useNetwork } from './network-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsFromDB } from '@/utils/queries';
+import DemoModeService from '@/services/demo-mode-service';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -40,7 +41,7 @@ export function useStudents() {
 }
 
 export function StudentProvider(props: PropsWithChildren) {
-  const { signOut, refreshToken, session } = useSession();
+  const { signOut, refreshToken, session, isDemoMode } = useSession();
   const { isOnline } = useNetwork();
   const [students, setStudents] = useState<Student[] | null>(null);
   const [activeStudent, setActiveStudent] = useState<Student | null>(null);
@@ -70,6 +71,8 @@ export function StudentProvider(props: PropsWithChildren) {
     [db]
   );
 
+  // Add import for demo service at the top of the file if not already imported
+
   const {
     data,
     error,
@@ -80,6 +83,22 @@ export function StudentProvider(props: PropsWithChildren) {
   } = useQuery<Student[], Error>({
     queryKey: ['students'],
     queryFn: async () => {
+      if (isDemoMode) {
+        await DemoModeService.simulateNetworkDelay(300, 800);
+
+        const demoStudents = DemoModeService.getDemoStudents();
+
+        // Update unread counts from demo service
+        const studentsWithUnread = demoStudents.map((student: Student) => ({
+          ...student,
+          unread_count: DemoModeService.getDemoUnreadCount(student.id),
+        }));
+
+        // Save to database for consistency
+        await saveStudentsToDB(studentsWithUnread);
+        return studentsWithUnread;
+      }
+
       if (isOnline) {
         try {
           const res = await fetch(`${apiUrl}/students`, {
@@ -114,17 +133,20 @@ export function StudentProvider(props: PropsWithChildren) {
       }
     },
     enabled: !!session,
-    staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
-    refetchOnWindowFocus: true, // Refetch when app comes back into focus
-    refetchInterval: 5 * 60 * 1000, // Auto-refetch every 5 minutes when online
-    refetchIntervalInBackground: false, // Don't refetch in background
+    staleTime: isDemoMode ? 0 : 2 * 60 * 1000, // Demo mode always fresh, regular mode 2 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: isDemoMode ? false : 5 * 60 * 1000, // No auto-refetch in demo mode
+    refetchIntervalInBackground: false,
   });
 
   useEffect(() => {
     if (isSuccess && data) {
       setStudents(data);
+      console.log(
+        `[StudentProvider] Loaded ${data.length} students (Demo: ${isDemoMode})`
+      );
     }
-  }, [isSuccess, data]);
+  }, [isSuccess, data, isDemoMode]);
 
   useEffect(() => {
     if (isError && error) {

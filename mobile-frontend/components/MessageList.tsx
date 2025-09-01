@@ -32,6 +32,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
+import demoModeService from '@/services/demo-mode-service';
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -221,7 +222,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Contexts and hooks
   const db = useSQLiteContext();
   const { isOnline } = useNetwork();
-  const { session, refreshToken, signOut } = useSession();
+  const { session, refreshToken, signOut, isDemoMode } = useSession();
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
   const textColor = useThemeColor({}, 'text');
@@ -252,13 +253,38 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     loadStudent();
   }, [db, studentId]);
 
-  // Fetch messages from API (online mode)
+  // Fetch messages from API (online mode) or demo mode
   const fetchMessagesFromAPI = async ({
     pageParam,
   }: {
     pageParam: { last_post_id: number; last_sent_at: string | null } | null;
   }) => {
     if (!student) return [];
+
+    // Handle demo mode
+    if (isDemoMode) {
+      await demoModeService.simulateNetworkDelay(300, 800);
+
+      const offset = pageParam?.last_post_id || 0;
+      const limit = 10;
+      const demoMessages = demoModeService.getDemoMessages(
+        student.id,
+        offset,
+        limit
+      );
+
+      // Save demo messages to local database for consistency
+      if (demoMessages.length > 0) {
+        await saveMessagesToDB(
+          db,
+          demoMessages,
+          student.student_number,
+          student.id
+        );
+      }
+
+      return demoMessages;
+    }
 
     const requestBody: any = {
       student_id: student.id,
@@ -317,7 +343,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     }
   };
 
-  // Infinite query setup for online message fetching
+  // Infinite query setup for message fetching (online, offline, and demo modes)
   const {
     data,
     fetchNextPage,
@@ -327,7 +353,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ['messages', student?.id],
+    queryKey: ['messages', student?.id, isDemoMode ? 'demo' : 'regular'],
     queryFn: fetchMessagesFromAPI,
     initialPageParam: null,
     getNextPageParam: lastPage => {
@@ -340,9 +366,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       }
       return undefined;
     },
-    enabled: Boolean(student && isOnline && session),
-    retry: 2,
+    enabled: Boolean(student && session && (isDemoMode || isOnline)),
+    retry: isDemoMode ? 0 : 2, // No retry in demo mode
     retryDelay: 1000,
+    staleTime: isDemoMode ? 0 : 2 * 60 * 1000, // Always fresh in demo mode
+    refetchInterval: isDemoMode ? false : undefined, // No auto-refetch in demo mode
   });
 
   // Update refetch ref when it changes
@@ -353,7 +381,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Load offline messages when component mounts or goes offline
   useEffect(() => {
     const loadOfflineData = async () => {
-      if (!student || isOnline) return;
+      if (!student || isDemoMode || isOnline) return;
 
       try {
         const messages = await fetchMessagesFromDB(db, student.student_number);
@@ -363,7 +391,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
       }
     };
     loadOfflineData();
-  }, [student, isOnline, db]);
+  }, [student, isOnline, isDemoMode, db]);
 
   // Prepare read messages data for online mode
   useEffect(() => {
@@ -382,11 +410,15 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     prepareOnlineData();
   }, [student, isOnline, db, session]);
 
-  // Update unread count based on online/offline status
+  // Update unread count based on demo/online/offline status
   const updateUnreadCount = useCallback(async () => {
     if (!student) return;
     try {
-      if (isOnline && session) {
+      if (isDemoMode) {
+        // Demo mode: get unread count from demo service
+        const demoUnreadCount = demoModeService.getDemoUnreadCount(student.id);
+        setUnreadCount(demoUnreadCount);
+      } else if (isOnline && session) {
         const res = await fetch(`${apiUrl}/unread`, {
           method: 'GET',
           headers: {
@@ -421,6 +453,7 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     }
   }, [
     student,
+    isDemoMode,
     isOnline,
     session,
     apiUrl,
@@ -447,7 +480,9 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     useCallback(() => {
       const refreshData = async () => {
         if (!student) return;
-        if (isOnline && session) {
+        if (isDemoMode) {
+          // No need to refresh, data is static
+        } else if (isOnline && session) {
           readButNotSentMessageIDs.current = await fetchReadButNotSentMessages(
             db,
             student.student_number
@@ -463,14 +498,18 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         updateUnreadCount();
       };
       refreshData();
-    }, [student, isOnline, db, session, updateUnreadCount])
+    }, [student, isDemoMode, isOnline, db, session, updateUnreadCount])
   );
 
   // Handle pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      if (isOnline && session) {
+      if (isDemoMode) {
+        // Demo mode: simulate refresh but don't actually fetch new data
+        await demoModeService.simulateNetworkDelay(300, 600);
+        await refetchRef.current(); // This will use demo data
+      } else if (isOnline && session) {
         readButNotSentMessageIDs.current = await fetchReadButNotSentMessages(
           db,
           student!.student_number
@@ -490,7 +529,12 @@ const MessageList = ({ studentId }: { studentId: number }) => {
 
   // Load more messages (infinite scrolling)
   const handleLoadMore = async () => {
-    if (isOnline) {
+    if (isDemoMode) {
+      // Demo mode: use infinite query (which handles demo mode)
+      if (hasNextPage && !isFetchingNextPage) {
+        await fetchNextPage();
+      }
+    } else if (isOnline) {
       if (hasNextPage && !isFetchingNextPage) {
         await fetchNextPage();
       }
@@ -512,21 +556,22 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   };
 
   const messageGroups = useMemo(() => {
-    const allMessages = isOnline ? data?.pages.flat() || [] : localMessages;
+    const allMessages =
+      isDemoMode || isOnline ? data?.pages.flat() || [] : localMessages;
     return groupMessages(allMessages);
-  }, [isOnline, data, localMessages]);
+  }, [isDemoMode, isOnline, data, localMessages]);
 
   // Show loading state during initial load
   if (
     !student ||
-    (isOnline && !session) ||
-    (isLoading && isOnline && session)
+    (!isDemoMode && isOnline && !session) ||
+    (isLoading && (isDemoMode || (isOnline && session)))
   ) {
     return <MessageListLoading />;
   }
 
-  // Show error state if needed
-  if (isError && isOnline) {
+  // Show error state if needed (but not for demo mode)
+  if (isError && !isDemoMode && isOnline) {
     return (
       <View style={styles.errorContainer}>
         <ThemedText
@@ -584,7 +629,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
         ))}
 
         {/* Load more button */}
-        {(hasNextPage || (!isOnline && localMessages.length >= 10)) && (
+        {(hasNextPage ||
+          (!isDemoMode && !isOnline && localMessages.length >= 10)) && (
           <Button
             title={i18n[language].loadMoreMessages}
             onPress={handleLoadMore}
@@ -597,11 +643,13 @@ const MessageList = ({ studentId }: { studentId: number }) => {
               { backgroundColor: '#003d56' },
             ]}
             disabled={
-              isOnline
+              isDemoMode || isOnline
                 ? !hasNextPage || isFetchingNextPage
                 : isLoadingMoreOffline
             }
-            loading={isOnline ? isFetchingNextPage : isLoadingMoreOffline}
+            loading={
+              isDemoMode || isOnline ? isFetchingNextPage : isLoadingMoreOffline
+            }
             loadingProps={{
               color: theme.mode === 'dark' ? '#4a90a4' : '#ffffff',
             }}

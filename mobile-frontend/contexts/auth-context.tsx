@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotificationsAsync } from '@/utils/notifications';
 import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
+import DemoModeService from '@/services/demo-mode-service';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -19,6 +20,7 @@ const AuthContext = React.createContext<{
   refreshToken: () => void;
   setSession: (session: string | null) => void;
   isLoading: boolean;
+  isDemoMode: boolean;
 }>({
   signIn: () => new Promise(() => null),
   signOut: () => null,
@@ -26,6 +28,7 @@ const AuthContext = React.createContext<{
   refreshToken: () => null,
   setSession: () => null,
   isLoading: false,
+  isDemoMode: false,
 });
 
 export function useSession() {
@@ -41,10 +44,20 @@ export function useSession() {
 
 export function SessionProvider(props: React.PropsWithChildren) {
   const [[isLoading, session], setSession] = useStorageState('session');
+  const [isDemoMode, setIsDemoMode] = React.useState(false);
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const previousSessionRef = React.useRef<string | null>(session);
+
+  // Initialize demo mode state on mount
+  React.useEffect(() => {
+    const initializeDemoMode = async () => {
+      const demoActive = await DemoModeService.isDemoModeActive();
+      setIsDemoMode(demoActive);
+    };
+    initializeDemoMode();
+  }, []);
 
   // Track session changes and invalidate queries when session becomes available after being null
   React.useEffect(() => {
@@ -74,6 +87,51 @@ export function SessionProvider(props: React.PropsWithChildren) {
           phoneNumber = phoneNumber.startsWith('0')
             ? phoneNumber.slice(1)
             : phoneNumber;
+
+          const fullPhoneNumber =
+            country?.callingCode + phoneNumber.replaceAll(' ', '');
+
+          // Check if demo credentials
+          if (DemoModeService.isDemoCredentials(fullPhoneNumber, password)) {
+            // Enable demo mode
+            await DemoModeService.enableDemoMode();
+            setIsDemoMode(true);
+
+            // Simulate network delay for realistic experience
+            await DemoModeService.simulateNetworkDelay();
+
+            // Get demo session data
+            const demoSession = DemoModeService.getDemoSessionData();
+
+            // Store demo credentials
+            await AsyncStorage.setItem('phoneNumber', phoneNumber);
+            await AsyncStorage.setItem('country', JSON.stringify(country));
+            await AsyncStorage.setItem('password', password);
+
+            // Set demo session
+            setSession(demoSession.access_token);
+            await AsyncStorage.setItem(
+              'refresh_token',
+              demoSession.refresh_token
+            );
+
+            // Clear existing user data and insert demo user
+            await db.execAsync('DELETE FROM user');
+            await db.runAsync(
+              'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
+              [
+                demoSession.user.given_name,
+                demoSession.user.family_name,
+                demoSession.user.phone_number,
+                demoSession.user.email,
+              ]
+            );
+
+            router.replace('/');
+            return;
+          }
+
+          // Regular authentication flow
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
@@ -127,6 +185,11 @@ export function SessionProvider(props: React.PropsWithChildren) {
           }
         },
         refreshToken: async () => {
+          // Skip refresh for demo mode
+          if (isDemoMode) {
+            return;
+          }
+
           try {
             const refreshToken = await AsyncStorage.getItem('refresh_token');
             if (!refreshToken) {
@@ -166,6 +229,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
         },
         signOut: async () => {
           try {
+            // Handle demo mode sign out
+            if (isDemoMode) {
+              await DemoModeService.disableDemoMode();
+              setIsDemoMode(false);
+            }
+
             // Clear specific queries instead of all cache
             queryClient.removeQueries({ queryKey: ['messages'] });
 
@@ -174,13 +243,15 @@ export function SessionProvider(props: React.PropsWithChildren) {
             // await db.execAsync('DELETE FROM student');
             await db.execAsync('DELETE FROM message');
 
-            const refreshToken = await AsyncStorage.getItem('refresh_token');
-            if (refreshToken) {
-              await fetch(`${apiUrl}/revoke`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ refresh_token: refreshToken }),
-              });
+            if (!isDemoMode) {
+              const refreshToken = await AsyncStorage.getItem('refresh_token');
+              if (refreshToken) {
+                await fetch(`${apiUrl}/revoke`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ refresh_token: refreshToken }),
+                });
+              }
             }
 
             // Clear AsyncStorage
@@ -197,6 +268,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
         session,
         setSession,
         isLoading,
+        isDemoMode,
       }}
     >
       {props.children}

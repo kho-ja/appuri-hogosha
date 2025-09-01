@@ -100,9 +100,17 @@ const Card = ({
   const sentTimeString = firstMessage.sent_time;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const utcDateTime = DateTime.fromFormat(sentTimeString, 'yyyy-MM-dd HH:mm', {
-    zone: 'utc',
-  });
+  // Handle both ISO format (demo data) and database format (regular data)
+  let utcDateTime;
+  if (sentTimeString.includes('T')) {
+    // ISO format: 2025-08-30T10:30:00Z
+    utcDateTime = DateTime.fromISO(sentTimeString, { zone: 'utc' });
+  } else {
+    // Database format: 2025-08-30 10:30
+    utcDateTime = DateTime.fromFormat(sentTimeString, 'yyyy-MM-dd HH:mm', {
+      zone: 'utc',
+    });
+  }
   const localDateTime = utcDateTime.setZone(userTimeZone);
 
   const baseIconSize = 16;
