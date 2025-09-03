@@ -56,19 +56,35 @@ export default function Root() {
               const [, studentId, messageId] = messageMatch;
               console.log('Creating navigation history for message deep link');
 
-              // Replace current screen with student page, then push message
+              // Create proper navigation stack: Home -> Student -> Message
               setTimeout(() => {
-                router.replace(`/student/${studentId}`);
-                // Small delay to ensure student page is loaded
+                router.replace('/(app)/(tabs)/(home)'); // Start from home
                 setTimeout(() => {
-                  router.push(`/student/${studentId}/message/${messageId}`);
-                }, 50);
+                  router.push(`/student/${studentId}`); // Push student page
+                  setTimeout(() => {
+                    router.push(`/student/${studentId}/message/${messageId}`); // Push message
+                  }, 100);
+                }, 100);
               }, 1000);
             } else {
-              // For other deep links, navigate directly
-              setTimeout(() => {
-                router.replace(redirectPath as any);
-              }, 1000);
+              // Check if it's a student page
+              const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
+              if (studentMatch) {
+                console.log('Creating navigation history for student deep link');
+                
+                // Create proper navigation stack: Home -> Student
+                setTimeout(() => {
+                  router.replace('/(app)/(tabs)/(home)'); // Start from home
+                  setTimeout(() => {
+                    router.push(redirectPath as any); // Push student page
+                  }, 100);
+                }, 1000);
+              } else {
+                // For other deep links, navigate directly
+                setTimeout(() => {
+                  router.replace(redirectPath as any);
+                }, 1000);
+              }
             }
           }
         }
