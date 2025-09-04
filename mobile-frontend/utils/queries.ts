@@ -102,6 +102,8 @@ export const fetchStudentsFromDB = async (
     given_name: row.given_name,
     phone_number: row.phone_number,
     email: row.email,
+    messageCount: row.messageCount || 0,
+    unread_count: row.unread_count || 0,
   }));
 };
 
