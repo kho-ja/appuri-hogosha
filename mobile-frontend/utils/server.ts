@@ -30,6 +30,7 @@ export default class Database {
           read_time TEXT,
           sent_status INTEGER,
           sent_time TEXT,
+          came_time TEXT,
           student_id INTEGER,
           FOREIGN KEY (student_id) REFERENCES student (id)
       );
