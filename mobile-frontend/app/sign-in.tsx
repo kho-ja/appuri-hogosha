@@ -83,8 +83,14 @@ export default function SignIn() {
   }, [handleBackPress]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async () =>
-      await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
+    mutationFn: async () => {
+      let loginPhone = phoneNumber.replaceAll(' ', '');
+      if (selectedCountry?.cca2 === 'JP' && loginPhone.startsWith('0')) {
+        loginPhone = loginPhone.substring(1);
+      }
+      console.log('Login phone:', selectedCountry?.cca2, loginPhone);
+      return await signIn(selectedCountry, loginPhone, password);
+    },
     onError: error => {
       Toast.show(i18n[language].loginFailed, {
         duration: Toast.durations.LONG,

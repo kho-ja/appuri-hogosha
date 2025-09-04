@@ -193,7 +193,12 @@ export default function SettingsScreen() {
         {
           text: i18n[language].logout || 'Logout',
           style: 'destructive',
-          onPress: () => signOut(),
+          onPress: async () => {
+            await AsyncStorage.removeItem('students');
+            await AsyncStorage.removeItem('studentId');
+            await AsyncStorage.removeItem('selectedStudent');
+            signOut();
+          },
         },
       ]
     );
