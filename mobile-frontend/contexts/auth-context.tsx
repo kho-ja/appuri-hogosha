@@ -259,6 +259,10 @@ export function SessionProvider(props: React.PropsWithChildren) {
             await AsyncStorage.removeItem('country');
             await AsyncStorage.removeItem('password');
             await AsyncStorage.removeItem('refresh_token');
+            // Student-related cache
+            await AsyncStorage.removeItem('students');
+            await AsyncStorage.removeItem('studentId');
+            await AsyncStorage.removeItem('selectedStudent');
           } catch (error) {
             console.error('Error during sign out:', error);
           } finally {

@@ -118,9 +118,13 @@ export default function ForgotPasswordScreen() {
 
     setIsLoading(true);
     try {
+      let sendPhone = phoneNumber.replaceAll(' ', '');
+      if (sendPhone.startsWith('0')) {
+        sendPhone = sendPhone.substring(1);
+      }
       await sendVerificationCode(
         selectedCountry?.callingCode || '+1',
-        phoneNumber.replaceAll(' ', '')
+        sendPhone
       );
 
       setIsLoading(false);
