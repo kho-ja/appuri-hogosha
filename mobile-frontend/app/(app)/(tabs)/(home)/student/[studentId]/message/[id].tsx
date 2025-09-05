@@ -143,6 +143,21 @@ export default function DetailsScreen() {
               isDemoMode ? 'demo' : 'regular',
             ],
           });
+
+          // Force update of unread count for demo mode
+          queryClient.invalidateQueries({
+            queryKey: ['unread-count', targetStudentId],
+          });
+
+          // Force a refetch to ensure immediate UI update
+          queryClient.refetchQueries({
+            queryKey: [
+              'messages',
+              targetStudentId,
+              isDemoMode ? 'demo' : 'regular',
+            ],
+          });
+
           return;
         }
 
@@ -154,7 +169,7 @@ export default function DetailsScreen() {
 
         // Sync with backend if online
         if (isOnline && session) {
-          const response = await fetch(`${apiUrl}/read-messages`, {
+          const response = await fetch(`${apiUrl}/view`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -163,14 +178,15 @@ export default function DetailsScreen() {
             body: JSON.stringify({
               post_id: messageId,
               student_id: targetStudentId,
-              viewed_at: currentTime,
             }),
           });
+
+          const responseText = await response.text();
 
           if (!response.ok) {
             console.error(
               'Failed to sync read status with backend:',
-              await response.text()
+              responseText
             );
             await db.runAsync(
               'UPDATE message SET sent_status = 0 WHERE id = ?',
@@ -190,8 +206,22 @@ export default function DetailsScreen() {
             : prevMessage
         );
 
-        // Invalidate queries to update message list UI
+        // Invalidate queries to update message list UI and unread count
         queryClient.invalidateQueries({
+          queryKey: [
+            'messages',
+            targetStudentId,
+            isDemoMode ? 'demo' : 'regular',
+          ],
+        });
+
+        // Force update of unread count by invalidating unread count queries too
+        queryClient.invalidateQueries({
+          queryKey: ['unread-count', targetStudentId],
+        });
+
+        // Force a refetch to ensure immediate UI update
+        queryClient.refetchQueries({
           queryKey: [
             'messages',
             targetStudentId,
@@ -249,7 +279,7 @@ export default function DetailsScreen() {
             // Check if message belongs to the specified student
             if (localMessage.student_id !== actualStudentId) {
               console.warn(
-                `[MessageDetails] Message ${id} belongs to student ${localMessage.student_id}, but requested for student ${actualStudentId}`
+                `Message ${id} belongs to student ${localMessage.student_id}, but requested for student ${actualStudentId}`
               );
               setError(
                 `${i18n[language].messageDoesNotBelongToStudent} ${actualStudentId}`
@@ -382,6 +412,40 @@ export default function DetailsScreen() {
     i18n,
     language,
   ]);
+
+  // Force refresh message list when this component unmounts or when message is marked as read
+  useEffect(() => {
+    return () => {
+      // When leaving the message detail screen, invalidate the message list to ensure
+      // the read status is updated in the list view
+      queryClient.invalidateQueries({
+        queryKey: [
+          'messages',
+          actualStudentId,
+          isDemoMode ? 'demo' : 'regular',
+        ],
+      });
+    };
+  }, [actualStudentId, isDemoMode, queryClient]);
+
+  // Additional effect to refresh message list when opened via deeplink
+  useEffect(() => {
+    // Small delay to ensure message is loaded and marked as read
+    const timer = setTimeout(() => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          'messages',
+          actualStudentId,
+          isDemoMode ? 'demo' : 'regular',
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['unread-count', actualStudentId],
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [actualStudentId, isDemoMode, queryClient]);
 
   if (loading)
     return (

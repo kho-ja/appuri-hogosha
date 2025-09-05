@@ -142,9 +142,6 @@ export function StudentProvider(props: PropsWithChildren) {
   useEffect(() => {
     if (isSuccess && data) {
       setStudents(data);
-      console.log(
-        `[StudentProvider] Loaded ${data.length} students (Demo: ${isDemoMode})`
-      );
     }
   }, [isSuccess, data, isDemoMode]);
 

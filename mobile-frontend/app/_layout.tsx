@@ -37,6 +37,84 @@ export default function Root() {
 
   // Handle deep links
   React.useEffect(() => {
+    // Helper function to handle navigation with proper history
+    const handleNavigation = (
+      redirectPath: string,
+      isInitial: boolean = false,
+      originalUrl?: string
+    ) => {
+      console.log(
+        `Handling navigation to: ${redirectPath} (initial: ${isInitial})`
+      );
+
+      // Determine if this is an HTTPS deep link (production) vs dev schemes
+      const isHttpsDeepLink = originalUrl?.startsWith('https://');
+
+      // Check if it's a message deep link that needs proper navigation history
+      const messageMatch = redirectPath.match(
+        /^\/student\/(\d+)\/message\/(\d+)$/
+      );
+      if (messageMatch) {
+        const [, studentId, messageId] = messageMatch;
+        console.log('Creating navigation history for message deep link');
+
+        // For initial URLs, add a longer delay to ensure app is fully loaded
+        const delay = isInitial ? 1000 : 0;
+
+        setTimeout(() => {
+          if (isHttpsDeepLink) {
+            // HTTPS deep links: Create full navigation stack Home → Student → Message
+            console.log('HTTPS deep link: Creating full navigation stack');
+            router.replace('/');
+
+            setTimeout(() => {
+              router.push(`/student/${studentId}`);
+
+              setTimeout(() => {
+                router.push(`/student/${studentId}/message/${messageId}`);
+              }, 100);
+            }, 50);
+          } else {
+            // Dev schemes (exp, jduapp): Use original logic
+            console.log('Dev scheme: Using replace + push logic');
+            router.replace(`/student/${studentId}`);
+
+            setTimeout(() => {
+              router.push(`/student/${studentId}/message/${messageId}`);
+            }, 100);
+          }
+        }, delay);
+      } else {
+        // Check if it's a student page (not message)
+        const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
+        if (studentMatch) {
+          console.log('Deep link to student page');
+          const delay = isInitial ? 1000 : 0;
+          setTimeout(() => {
+            if (isHttpsDeepLink) {
+              // HTTPS: Create proper stack Home → Student
+              console.log('HTTPS deep link: Creating Home → Student stack');
+              router.replace('/');
+              setTimeout(() => {
+                router.push(redirectPath as any);
+              }, 50);
+            } else {
+              // Dev schemes: Direct replace
+              console.log('Dev scheme: Direct replace to student');
+              router.replace(redirectPath as any);
+            }
+          }, delay);
+        } else {
+          // For other deep links, navigate directly
+          const delay = isInitial ? 1000 : 0;
+          const navigationMethod = isInitial ? router.replace : router.push;
+          setTimeout(() => {
+            navigationMethod(redirectPath as any);
+          }, delay);
+        }
+      }
+    };
+
     // Handle initial URL if app was opened via deep link
     const handleInitialURL = async () => {
       try {
@@ -48,28 +126,7 @@ export default function Root() {
             initial: true,
           });
           if (redirectPath !== '/unexpected-error') {
-            // Check if it's a message deep link that needs proper navigation history
-            const messageMatch = redirectPath.match(
-              /^\/student\/(\d+)\/message\/(\d+)$/
-            );
-            if (messageMatch) {
-              const [, studentId, messageId] = messageMatch;
-              console.log('Creating navigation history for message deep link');
-
-              // Replace current screen with student page, then push message
-              setTimeout(() => {
-                router.replace(`/student/${studentId}`);
-                // Small delay to ensure student page is loaded
-                setTimeout(() => {
-                  router.push(`/student/${studentId}/message/${messageId}`);
-                }, 50);
-              }, 1000);
-            } else {
-              // For other deep links, navigate directly
-              setTimeout(() => {
-                router.replace(redirectPath as any);
-              }, 1000);
-            }
+            handleNavigation(redirectPath, true, initialURL);
           }
         }
       } catch (error) {
@@ -88,33 +145,7 @@ export default function Root() {
       });
 
       if (redirectPath !== '/unexpected-error') {
-        // Check if it's a message deep link that needs proper navigation history
-        const messageMatch = redirectPath.match(
-          /^\/student\/(\d+)\/message\/(\d+)$/
-        );
-        if (messageMatch) {
-          const [, studentId, messageId] = messageMatch;
-          console.log(
-            'Creating navigation history for runtime message deep link'
-          );
-
-          // Replace current screen with student page, then push message
-          router.replace(`/student/${studentId}`);
-          // Small delay to ensure student page is loaded
-          setTimeout(() => {
-            router.push(`/student/${studentId}/message/${messageId}`);
-          }, 50);
-        } else {
-          // Check if it's a student page (not message)
-          const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
-          if (studentMatch) {
-            console.log('Deep link to student page, using replace');
-            router.replace(redirectPath as any);
-          } else {
-            // For other deep links, navigate directly
-            router.push(redirectPath as any);
-          }
-        }
+        handleNavigation(redirectPath, false, url);
       }
     });
 

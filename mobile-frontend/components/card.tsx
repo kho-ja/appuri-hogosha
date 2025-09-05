@@ -13,7 +13,6 @@ import { I18nContext } from '@/contexts/i18n-context';
 import { Message } from '@/constants/types';
 import { cn } from '@/utils/utils';
 import { Ionicons } from '@expo/vector-icons';
-import { useSQLiteContext } from 'expo-sqlite';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import Autolink from 'react-native-autolink';
 import { ThemedView } from '@/components/ThemedView';
@@ -31,7 +30,6 @@ const Card = ({
 }) => {
   const router = useRouter();
   const { language, i18n } = useContext(I18nContext);
-  const db = useSQLiteContext();
   const { multiplier } = useFontSize();
   const { theme } = useTheme();
   // const isRead = message.read_status === 1 || !!message.viewed_at // Derive directly from prop
@@ -43,16 +41,8 @@ const Card = ({
   const isRead = messageGroup.every(m => m.read_status === 1 || !!m.viewed_at);
 
   const handlePress = async () => {
-    // Mark message as read in the database
-    for (const message of messageGroup) {
-      if (!isRead) {
-        await db.runAsync(
-          'UPDATE message SET read_status = 1, read_time = ? WHERE id = ?',
-          [new Date().toISOString(), message.id]
-        );
-      }
-    }
     // Navigate to message with full path
+    // Note: The message will be marked as read in the detail screen
     router.push({
       pathname: `student/[studentId]/message/${firstMessage.id}`,
       params: { studentId: studentId },
