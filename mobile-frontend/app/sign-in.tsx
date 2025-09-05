@@ -85,10 +85,9 @@ export default function SignIn() {
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       let loginPhone = phoneNumber.replaceAll(' ', '');
-      if (selectedCountry?.cca2 === 'JP' && loginPhone.startsWith('0')) {
+      if (loginPhone.startsWith('0')) {
         loginPhone = loginPhone.substring(1);
       }
-      console.log('Login phone:', selectedCountry?.cca2, loginPhone);
       return await signIn(selectedCountry, loginPhone, password);
     },
     onError: error => {

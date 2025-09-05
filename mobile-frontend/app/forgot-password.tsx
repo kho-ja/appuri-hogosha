@@ -119,7 +119,7 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
     try {
       let sendPhone = phoneNumber.replaceAll(' ', '');
-      if (selectedCountry?.cca2 === 'JP' && sendPhone.startsWith('0')) {
+      if (sendPhone.startsWith('0')) {
         sendPhone = sendPhone.substring(1);
       }
       await sendVerificationCode(
