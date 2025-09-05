@@ -192,8 +192,8 @@ export default function SettingsScreen() {
         },
         {
           text: i18n[language].logout || 'Logout',
-        style: 'destructive',
-        onPress: () => signOut(),
+          style: 'destructive',
+          onPress: () => signOut(),
         },
       ]
     );
