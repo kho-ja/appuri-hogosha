@@ -32,7 +32,11 @@ export const fetchMessageFromDB = async (
   const result = await database.getFirstAsync<DatabaseMessage | null>(query, [
     messageID,
   ]);
-  if (!result) return null;
+
+  if (!result) {
+    return null;
+  }
+
   return {
     id: result.id,
     title: result.title,
@@ -102,6 +106,8 @@ export const fetchStudentsFromDB = async (
     given_name: row.given_name,
     phone_number: row.phone_number,
     email: row.email,
+    messageCount: row.messageCount || 0,
+    unread_count: row.unread_count || 0,
   }));
 };
 
@@ -126,7 +132,8 @@ export const saveMessageToDB = async (
       ? message.images
       : [message.images]
     : null;
-  return await database.runAsync(
+  const read_status = message.viewed_at ? 1 : 0;
+  const result = await database.runAsync(
     'INSERT OR REPLACE INTO message (id, student_number, student_id, title, content, priority, group_name, edited_at, images, sent_time, read_status, read_time, sent_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     message.id,
     student_number,
@@ -138,8 +145,9 @@ export const saveMessageToDB = async (
     message.edited_at,
     images ? JSON.stringify(images) : null,
     message.sent_time,
-    message.viewed_at ? 1 : 0,
+    read_status,
     message.viewed_at,
     message.viewed_at ? 1 : 0
   );
+  return result;
 };

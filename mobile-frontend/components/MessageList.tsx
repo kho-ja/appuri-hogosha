@@ -475,6 +475,16 @@ const MessageList = ({ studentId }: { studentId: number }) => {
     updateUnreadCount();
   }, [updateUnreadCount]);
 
+  // Listen for database changes and update unread count
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Periodically update unread count to catch any database changes
+      updateUnreadCount();
+    }, 2000); // Check every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [updateUnreadCount]);
+
   // Refresh data when screen comes into focus
   useFocusEffect(
     useCallback(() => {

@@ -203,17 +203,19 @@ class DemoModeService {
 
     try {
       const messages = this.getDemoMessages(studentId, 0, 1000); // Get all messages
+
       const message = messages.find(m => m.id === messageId);
 
       if (message) {
         // Convert to DatabaseMessage format
         const student = this.getDemoStudents().find(s => s.id === studentId);
         if (student) {
-          return {
+          const result = {
             ...message,
             student_id: studentId,
             student_number: student.student_number,
           } as DatabaseMessage;
+          return result;
         }
       }
 
