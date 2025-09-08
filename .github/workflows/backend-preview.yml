@@ -1,0 +1,256 @@
+name: Backend Preview Deploys
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+    paths:
+      - "backend/**"
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+
+env:
+  LAMBDA_FUNCTION_NAME: ParentsAdminAPI
+
+jobs:
+  preview-deploy:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: backend-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
+      - name: Prune dev dependencies
+        working-directory: backend
+        run: npm prune --omit=dev
+
+      - name: Install AWS CLI
+        run: |
+          python3 -m pip install --upgrade --user pip
+          python3 -m pip install --user awscli
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Package Lambda (dist + runtime deps)
+        working-directory: backend
+        run: |
+          (cd dist && zip -r ../backend.zip .)
+          zip -ur backend.zip node_modules package.json
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create or update per-PR Lambda function
+        id: pr_function
+        env:
+          BASE_FN: ${{ env.LAMBDA_FUNCTION_NAME }}
+          PREVIEW_FN: ParentsAdminAPI-pr-${{ github.event.number }}
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          echo "preview_fn=$PREVIEW_FN" >> "$GITHUB_OUTPUT"
+
+          if aws lambda get-function --function-name "$PREVIEW_FN" >/dev/null 2>&1; then
+            echo "Updating existing preview function $PREVIEW_FN"
+            aws lambda update-function-code \
+              --function-name "$PREVIEW_FN" \
+              --zip-file fileb://backend.zip \
+              --query 'LastModified' --output text
+          else
+            echo "Creating preview function $PREVIEW_FN by cloning $BASE_FN configuration"
+            aws lambda get-function --function-name "$BASE_FN" --query 'Configuration' --output json > base-config.json
+            # Build create-function input by reusing relevant fields from base function
+            jq '{
+              FunctionName: env.PREVIEW_FN,
+              Role: .Role,
+              Runtime: .Runtime,
+              Handler: .Handler,
+              Timeout: .Timeout,
+              MemorySize: .MemorySize,
+              Architectures: (.Architectures // ["x86_64"]),
+              Layers: (.Layers // [] | map(.Arn))
+            }
+            + (if .Environment then {Environment: .Environment} else {} end)
+            + (if .TracingConfig then {TracingConfig: .TracingConfig} else {} end)
+            + (if (.VpcConfig and (.VpcConfig.SubnetIds|length>0) and (.VpcConfig.SecurityGroupIds|length>0)) then {VpcConfig: {SubnetIds: .VpcConfig.SubnetIds, SecurityGroupIds: .VpcConfig.SecurityGroupIds}} else {} end)
+            + (if .EphemeralStorage then {EphemeralStorage: .EphemeralStorage} else {} end)
+            + (if .DeadLetterConfig then {DeadLetterConfig: .DeadLetterConfig} else {} end)
+            + {PackageType: "Zip"}' base-config.json > create-input.json
+
+            aws lambda create-function \
+              --cli-input-json file://create-input.json \
+              --zip-file fileb://backend.zip \
+              --query 'LastModified' --output text
+          fi
+
+      - name: Ensure Function URL for preview function and fetch URL
+        id: function_url
+        env:
+          PREVIEW_FN: ParentsAdminAPI-pr-${{ github.event.number }}
+        run: |
+          set -e
+          # Try to get the URL; if missing, create it with public access (NONE) and permissive CORS for preview
+          if aws lambda get-function-url-config --function-name "$PREVIEW_FN" >/dev/null 2>&1; then
+            URL=$(aws lambda get-function-url-config --function-name "$PREVIEW_FN" --query 'FunctionUrl' --output text)
+          else
+            aws lambda create-function-url-config \
+              --function-name "$PREVIEW_FN" \
+              --auth-type NONE \
+              --cors "{\"AllowOrigins\":[\"*\"],\"AllowMethods\":[\"*\"],\"AllowHeaders\":[\"*\"],\"AllowCredentials\":false}"
+            URL=$(aws lambda get-function-url-config --function-name "$PREVIEW_FN" --query 'FunctionUrl' --output text)
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Deployment (preview)
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.function_url.outputs.url }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const envName = `preview/pr-${{ github.event.number }}`;
+            const ref = context.payload.pull_request.head.sha;
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref,
+              environment: envName,
+              required_contexts: [],
+              auto_merge: false,
+              transient_environment: true,
+              production_environment: false,
+              description: 'Backend preview deployment',
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.id,
+              state: 'success',
+              environment_url: process.env.PREVIEW_URL,
+              log_url: process.env.PREVIEW_URL,
+              description: 'Backend preview ready',
+            });
+
+      - name: Comment PR with preview URL
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.function_url.outputs.url }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `🚀 Backend preview for this PR is live:\n\n${process.env.PREVIEW_URL}\n\nEnvironment: pr-${{ github.event.number }}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const marker = 'Backend preview for this PR is live:';
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  preview-teardown:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AWS CLI
+        run: |
+          python3 -m pip install --upgrade --user pip
+          python3 -m pip install --user awscli
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Remove function URL, alias, and version
+        id: cleanup
+        env:
+          PREVIEW_FN: ParentsAdminAPI-pr-${{ github.event.number }}
+        run: |
+          set -e
+          # Delete function URL config (ignore if missing)
+          aws lambda delete-function-url-config --function-name "$PREVIEW_FN" >/dev/null 2>&1 || true
+          # Delete the preview function entirely
+          aws lambda delete-function --function-name "$PREVIEW_FN" >/dev/null 2>&1 || true
+
+      - name: Mark Deployment inactive
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const envName = `preview/pr-${{ github.event.number }}`;
+            // Create a new deployment marked as inactive to signal teardown
+            const ref = context.payload.pull_request.head.sha;
+            const { data: deployment } = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref,
+              environment: envName,
+              required_contexts: [],
+              auto_merge: false,
+              transient_environment: true,
+              production_environment: false,
+              description: 'Backend preview torn down',
+            });
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.id,
+              state: 'inactive',
+              description: 'Preview environment removed',
+            });
+
+      - name: Comment PR that preview was removed
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `🧹 Backend preview for pr-${{ github.event.number }} has been removed.`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

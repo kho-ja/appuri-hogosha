@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useMessages, useTranslations } from "next-intl";
 import { login } from "@/login";
 import LanguageSelect from "@/components/LanguageSelect";
 import { ToggleMode } from "@/components/toggle-mode";
@@ -31,6 +32,8 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import NewPasswordInput, {
   validateNewPassword,
 } from "@/components/NewPasswordInput";
+import Image from "next/image";
+import localImageLoader from "@/lib/localImageLoader";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -47,6 +50,12 @@ export default function LoginForm() {
   const t = useTranslations("LoginForm");
   const { toast } = useToast();
   const [feedbackPassword, setFeedbackPassword] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  // Access messages to check if an error key exists without manual mapping
+  const allMessages = useMessages() as any;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,11 +66,37 @@ export default function LoginForm() {
   });
 
   const handleGoogleLogin = () => {
+    setGoogleLoading(true);
+    toast({ title: t("LoggingIn"), description: t("wait") });
     // Redirect to backend Google login endpoint
     window.location.href = `${
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/admin-panel"
     }/google`;
   };
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      const ns = (allMessages?.LoginForm ?? {}) as Record<string, string>;
+      const keyToUse = Object.prototype.hasOwnProperty.call(ns, error)
+        ? error
+        : ("AuthError" as const);
+      const message = t(keyToUse as any);
+      setGoogleError(message);
+      setGoogleLoading(false);
+      toast({
+        title: t("loginFailed"),
+        description: message,
+        variant: "destructive",
+      });
+      // Clean the URL to remove the error param without re-navigation
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("error");
+        window.history.replaceState({}, document.title, url.toString());
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     toast({
@@ -196,9 +231,25 @@ export default function LoginForm() {
                   variant="outline"
                   className="w-full"
                   onClick={handleGoogleLogin}
+                  isLoading={googleLoading}
+                  icon={
+                    <Image
+                      loader={localImageLoader}
+                      src="/assets/google_logo.webp"
+                      alt="Google Logo"
+                      width={16}
+                      height={16}
+                    />
+                  }
+                  disabled={googleLoading}
                 >
                   {t("loginWithGoogle")}
                 </Button>
+                {googleError && (
+                  <p className="text-sm text-red-500 text-center">
+                    {googleError}
+                  </p>
+                )}
               </form>
             </Form>
           </CardContent>
