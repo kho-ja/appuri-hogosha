@@ -126,6 +126,73 @@ jobs:
           fi
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
+      - name: Push backend URL to Vercel env (branch-scoped)
+        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          PREVIEW_URL: ${{ steps.function_url.outputs.url }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          API="https://api.vercel.com"
+          AUTH="Authorization: Bearer ${VERCEL_TOKEN}"
+          CT="Content-Type: application/json"
+          BACKEND_URL="${PREVIEW_URL%/}/admin-panel"
+
+          # Fetch current env vars
+          ENV_JSON=$(curl -sfSL -H "$AUTH" "$API/v9/projects/${VERCEL_PROJECT_ID}/env?decrypt=true")
+
+          delete_env() {
+            local KEY="$1"
+            echo "$ENV_JSON" | jq -r --arg KEY "$KEY" --arg BR "$BRANCH" '.envs[] | select(.key==$KEY and .target and ("preview" as $t | any(.target[]; .==$t)) and (.gitBranch==$BR)) | .id' \
+              | while read -r ID; do
+                  [ -n "$ID" ] && curl -sfSL -X DELETE -H "$AUTH" "$API/v9/projects/${VERCEL_PROJECT_ID}/env/$ID" >/dev/null || true
+                done
+          }
+
+          create_env() {
+            local KEY="$1"; local VAL="$2"
+            curl -sfSL -X POST -H "$AUTH" -H "$CT" \
+              -d "{\"key\":\"$KEY\",\"value\":\"$VAL\",\"type\":\"encrypted\",\"target\":[\"preview\"],\"gitBranch\":\"$BRANCH\"}" \
+              "$API/v9/projects/${VERCEL_PROJECT_ID}/env" >/dev/null
+          }
+
+          for KEY in BACKEND_URL NEXT_PUBLIC_BACKEND_URL; do
+            delete_env "$KEY"
+            create_env "$KEY" "$BACKEND_URL"
+          done
+
+      - name: Trigger Vercel redeploy (optional)
+        if: ${{ (secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '') || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          API="https://api.vercel.com"
+          AUTH="Authorization: Bearer ${VERCEL_TOKEN:-}"
+          TEAM_Q=""
+          if [ -n "${VERCEL_TEAM_ID:-}" ]; then TEAM_Q="?teamId=${VERCEL_TEAM_ID}"; fi
+
+          if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_PROJECT_ID:-}" ]; then
+            # Try API-based redeploy of the latest preview deployment for this branch
+            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$API/v13/deployments${TEAM_Q:+$TEAM_Q}&projectId=${VERCEL_PROJECT_ID}&target=preview" || echo '{}')
+            DID=$(echo "$DEPLOYMENTS" | jq -r --arg BR "$BRANCH" '.deployments // [] | map(select((.meta.githubCommitRef==$BR) or (.meta.branch==$BR))) | .[0].uid // ""')
+            if [ -n "$DID" ]; then
+              curl -sfSL -X POST -H "$AUTH" "$API/v13/deployments/$DID/redeploy${TEAM_Q:+$TEAM_Q}" >/dev/null || true
+              exit 0
+            fi
+          fi
+
+          # Fallback to classic deploy hook if provided
+          if [ -n "${DEPLOY_HOOK:-}" ]; then
+            curl -sfSL -X POST "$DEPLOY_HOOK" >/dev/null || true
+          fi
+
       - name: Create GitHub Deployment (preview)
         uses: actions/github-script@v7
         env:
@@ -254,3 +321,49 @@ jobs:
               issue_number: context.issue.number,
               body,
             });
+
+      - name: Remove Vercel env vars for this branch (optional)
+        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          API="https://api.vercel.com"
+          AUTH="Authorization: Bearer ${VERCEL_TOKEN}"
+          ENV_JSON=$(curl -sfSL -H "$AUTH" "$API/v9/projects/${VERCEL_PROJECT_ID}/env?decrypt=true")
+          for KEY in BACKEND_URL NEXT_PUBLIC_BACKEND_URL; do
+            echo "$ENV_JSON" | jq -r --arg KEY "$KEY" --arg BR "$BRANCH" '.envs[] | select(.key==$KEY and .target and ("preview" as $t | any(.target[]; .==$t)) and (.gitBranch==$BR)) | .id' \
+              | while read -r ID; do
+                  [ -n "$ID" ] && curl -sfSL -X DELETE -H "$AUTH" "$API/v9/projects/${VERCEL_PROJECT_ID}/env/$ID" >/dev/null || true
+                done
+          done
+
+      - name: Trigger Vercel redeploy after removal (optional)
+        if: ${{ (secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '') || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          API="https://api.vercel.com"
+          AUTH="Authorization: Bearer ${VERCEL_TOKEN:-}"
+          TEAM_Q=""
+          if [ -n "${VERCEL_TEAM_ID:-}" ]; then TEAM_Q="?teamId=${VERCEL_TEAM_ID}"; fi
+
+          if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_PROJECT_ID:-}" ]; then
+            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$API/v13/deployments${TEAM_Q:+$TEAM_Q}&projectId=${VERCEL_PROJECT_ID}&target=preview" || echo '{}')
+            DID=$(echo "$DEPLOYMENTS" | jq -r --arg BR "$BRANCH" '.deployments // [] | map(select((.meta.githubCommitRef==$BR) or (.meta.branch==$BR))) | .[0].uid // ""')
+            if [ -n "$DID" ]; then
+              curl -sfSL -X POST -H "$AUTH" "$API/v13/deployments/$DID/redeploy${TEAM_Q:+$TEAM_Q}" >/dev/null || true
+              exit 0
+            fi
+          fi
+
+          if [ -n "${DEPLOY_HOOK:-}" ]; then
+            curl -sfSL -X POST "$DEPLOY_HOOK" >/dev/null || true
+          fi
