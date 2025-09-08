@@ -32,10 +32,11 @@ export function redirectSystemPath({
     }
 
     // Custom schemes: jduapp, jduapp-dev, jduapp-preview
+    // Поддерживаем все схемы во всех версиях приложения
     if (url.protocol.startsWith('jduapp')) {
       const pathname = '/' + path.replace(/^[^:]+:\/\//, '');
       const normalized = normalizePath(pathname);
-      console.log('Custom scheme redirect:', normalized);
+      console.log('Custom scheme redirect:', url.protocol, '->', normalized);
       return normalized;
     }
 
