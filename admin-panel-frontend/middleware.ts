@@ -31,6 +31,18 @@ const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
   let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
 
+  // Treat OAuth callback with tokens in query as public so the home page can process and sign in
+  const hasOAuthParams =
+    req.nextUrl.searchParams.has('access_token') &&
+    req.nextUrl.searchParams.has('user');
+  if (hasOAuthParams) {
+    // Redirect all OAuth callbacks to a server route that completes sign-in
+  const redirectUrl = new URL('/api/oauth/complete', req.nextUrl.origin);
+  const paramsArray = Array.from(req.nextUrl.searchParams.entries());
+  paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
+    return Response.redirect(redirectUrl);
+  }
+
   if (!isPublicPage) {
     const path = req.nextUrl.pathname;
     if (

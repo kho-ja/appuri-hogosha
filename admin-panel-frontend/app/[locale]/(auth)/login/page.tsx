@@ -56,6 +56,13 @@ export default function LoginForm() {
     },
   });
 
+  const handleGoogleLogin = () => {
+    // Redirect to backend Google login endpoint
+    window.location.href = `${
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/admin-panel"
+    }/google`;
+  };
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     toast({
       title: t("LoggingIn"),
@@ -184,7 +191,12 @@ export default function LoginForm() {
                 >
                   {t("loginButton")}
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleLogin}
+                >
                   {t("loginWithGoogle")}
                 </Button>
               </form>
