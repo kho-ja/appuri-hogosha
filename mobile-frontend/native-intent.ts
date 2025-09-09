@@ -60,6 +60,53 @@ export function redirectSystemPath({
   }
 }
 
+// Helper function to check if parent has only one student
+async function hasOnlyOneStudent(): Promise<boolean> {
+  try {
+    // We'll use AsyncStorage to temporarily store this info
+    // This will be set by the StudentProvider when students data is loaded
+    const { default: AsyncStorage } = await import(
+      '@react-native-async-storage/async-storage'
+    );
+    const studentsCount = await AsyncStorage.getItem('students_count');
+    return studentsCount === '1';
+  } catch (error) {
+    console.error('Error checking student count:', error);
+    return false;
+  }
+}
+
+// Enhanced navigation function that considers single student scenario
+export async function getSmartNavigationPath(
+  originalPath: string
+): Promise<string> {
+  const hasOnlyOne = await hasOnlyOneStudent();
+
+  if (!hasOnlyOne) {
+    return originalPath;
+  }
+
+  // If user has only one student, adjust paths accordingly
+  // For root/home path, navigate directly to the single student
+  if (originalPath === '/' || originalPath === '/home') {
+    try {
+      const { default: AsyncStorage } = await import(
+        '@react-native-async-storage/async-storage'
+      );
+      const singleStudentId = await AsyncStorage.getItem('single_student_id');
+      if (singleStudentId) {
+        return `/student/${singleStudentId}`;
+      }
+    } catch (error) {
+      console.error('Error getting single student ID:', error);
+    }
+  }
+
+  // For student paths, they remain the same since the student page exists
+  // For message paths, they remain the same since the detailed view exists
+  return originalPath;
+}
+
 function normalizePath(
   pathname: string,
   searchParams?: URLSearchParams

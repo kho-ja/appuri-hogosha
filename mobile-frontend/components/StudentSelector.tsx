@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -46,12 +47,41 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
 
     // Auto-navigate if there's only one student (only once)
     React.useEffect(() => {
-      if (students?.length === 1 && !hasAutoNavigated) {
-        setHasAutoNavigated(true);
-        handleStudentSelect(students[0], true);
-      } else if (students?.length !== 1) {
-        setHasAutoNavigated(false);
-      }
+      const handleSingleStudentNavigation = async () => {
+        if (students?.length === 1 && !hasAutoNavigated) {
+          setHasAutoNavigated(true);
+
+          // Save metadata for deeplink handling
+          try {
+            await AsyncStorage.setItem('students_count', '1');
+            await AsyncStorage.setItem(
+              'single_student_id',
+              students[0].id.toString()
+            );
+          } catch (error) {
+            console.error('Error saving single student metadata:', error);
+          }
+
+          handleStudentSelect(students[0], true);
+        } else if (students?.length !== 1) {
+          setHasAutoNavigated(false);
+
+          // Update metadata for multiple students
+          if (students) {
+            try {
+              await AsyncStorage.setItem(
+                'students_count',
+                students.length.toString()
+              );
+              await AsyncStorage.removeItem('single_student_id');
+            } catch (error) {
+              console.error('Error updating student metadata:', error);
+            }
+          }
+        }
+      };
+
+      handleSingleStudentNavigation();
     }, [students, handleStudentSelect, hasAutoNavigated]);
     const avatarColors = [
       '#fc958d',

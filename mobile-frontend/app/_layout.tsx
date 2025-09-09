@@ -13,7 +13,7 @@ import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { redirectSystemPath } from '../native-intent';
+import { redirectSystemPath, getSmartNavigationPath } from '../native-intent';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
@@ -38,7 +38,7 @@ export default function Root() {
   // Handle deep links
   React.useEffect(() => {
     // Helper function to handle navigation with proper history
-    const handleNavigation = (
+    const handleNavigation = async (
       redirectPath: string,
       isInitial: boolean = false,
       originalUrl?: string
@@ -47,11 +47,15 @@ export default function Root() {
         `Handling navigation to: ${redirectPath} (initial: ${isInitial})`
       );
 
+      // Apply smart navigation logic for single student scenarios
+      const smartPath = await getSmartNavigationPath(redirectPath);
+      console.log(`Smart navigation path: ${smartPath}`);
+
       // Determine if this is an HTTPS deep link (production) vs dev schemes
       const isHttpsDeepLink = originalUrl?.startsWith('https://');
 
       // Check if it's a message deep link that needs proper navigation history
-      const messageMatch = redirectPath.match(
+      const messageMatch = smartPath.match(
         /^\/student\/(\d+)\/message\/(\d+)$/
       );
       if (messageMatch) {
@@ -63,16 +67,30 @@ export default function Root() {
 
         setTimeout(() => {
           if (isHttpsDeepLink) {
-            // HTTPS deep links: Create full navigation stack Home → Student → Message
-            console.log('HTTPS deep link: Creating full navigation stack');
+            // HTTPS deep links: Check if we have single student
+            console.log(
+              'HTTPS deep link: Creating navigation stack for message'
+            );
+            
+            // Always start with home, but the auto-navigation logic will handle single student case
             router.replace('/');
 
             setTimeout(() => {
-              router.push(`/student/${studentId}`);
-
-              setTimeout(() => {
-                router.push(`/student/${studentId}/message/${messageId}`);
-              }, 100);
+              // If this was originally a smart path redirect and we have only one student,
+              // the home page will auto-navigate to student page, so we just need to push the message
+              if (smartPath !== redirectPath) {
+                // This means we had smart navigation (single student case)
+                console.log('Single student case: Direct message navigation');
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+                }, 500); // Give more time for auto-navigation
+              } else {
+                // Multiple students case: normal flow
+                router.push(`/student/${studentId}`);
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+                }, 100);
+              }
             }, 50);
           } else {
             // Dev schemes (exp, jduapp): Use original logic
@@ -86,7 +104,7 @@ export default function Root() {
         }, delay);
       } else {
         // Check if it's a student page (not message)
-        const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
+        const studentMatch = smartPath.match(/^\/student\/(\d+)$/);
         if (studentMatch) {
           console.log('Deep link to student page');
           const delay = isInitial ? 1000 : 0;
@@ -96,12 +114,12 @@ export default function Root() {
               console.log('HTTPS deep link: Creating Home → Student stack');
               router.replace('/');
               setTimeout(() => {
-                router.push(redirectPath as any);
+                router.push(smartPath as any);
               }, 50);
             } else {
               // Dev schemes: Direct replace
               console.log('Dev scheme: Direct replace to student');
-              router.replace(redirectPath as any);
+              router.replace(smartPath as any);
             }
           }, delay);
         } else {
@@ -109,7 +127,7 @@ export default function Root() {
           const delay = isInitial ? 1000 : 0;
           const navigationMethod = isInitial ? router.replace : router.push;
           setTimeout(() => {
-            navigationMethod(redirectPath as any);
+            navigationMethod(smartPath as any);
           }, delay);
         }
       }

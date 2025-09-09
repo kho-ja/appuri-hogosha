@@ -13,6 +13,7 @@ import { useNetwork } from './network-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsFromDB } from '@/utils/queries';
 import DemoModeService from '@/services/demo-mode-service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -71,6 +72,26 @@ export function StudentProvider(props: PropsWithChildren) {
     [db]
   );
 
+  // Helper function to save student count and single student ID for deeplink navigation
+  const saveStudentMetadata = useCallback(async (studentList: Student[]) => {
+    try {
+      await AsyncStorage.setItem(
+        'students_count',
+        studentList.length.toString()
+      );
+      if (studentList.length === 1) {
+        await AsyncStorage.setItem(
+          'single_student_id',
+          studentList[0].id.toString()
+        );
+      } else {
+        await AsyncStorage.removeItem('single_student_id');
+      }
+    } catch (error) {
+      console.error('Error saving student metadata:', error);
+    }
+  }, []);
+
   // Add import for demo service at the top of the file if not already imported
 
   const {
@@ -96,6 +117,7 @@ export function StudentProvider(props: PropsWithChildren) {
 
         // Save to database for consistency
         await saveStudentsToDB(studentsWithUnread);
+        await saveStudentMetadata(studentsWithUnread);
         return studentsWithUnread;
       }
 
@@ -123,13 +145,18 @@ export function StudentProvider(props: PropsWithChildren) {
 
           const serverStudents = (await res.json()) as Student[];
           await saveStudentsToDB(serverStudents);
+          await saveStudentMetadata(serverStudents);
           return serverStudents;
         } catch (err) {
           console.error('Online fetch failed, falling back to DB:', err);
-          return await fetchStudentsFromDB(db);
+          const dbStudents = await fetchStudentsFromDB(db);
+          await saveStudentMetadata(dbStudents);
+          return dbStudents;
         }
       } else {
-        return await fetchStudentsFromDB(db);
+        const dbStudents = await fetchStudentsFromDB(db);
+        await saveStudentMetadata(dbStudents);
+        return dbStudents;
       }
     },
     enabled: !!session,
