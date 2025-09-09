@@ -82,11 +82,12 @@ module.exports = ({ config }) => {
         UIViewControllerBasedStatusBarAppearance: false,
         NSPhotoLibraryAddUsageDescription:
           'We need access to your photo library to save images to your gallery.',
-        // Add URL schemes for custom scheme deep links
+        // Add URL schemes for all custom schemes (not just current variant)
+        // This allows dev app to handle production URLs and vice versa
         CFBundleURLTypes: [
           {
-            CFBundleURLName: variantConfig.scheme,
-            CFBundleURLSchemes: [variantConfig.scheme],
+            CFBundleURLName: 'jduapp',
+            CFBundleURLSchemes: ['jduapp', 'jduapp-dev', 'jduapp-preview'],
           },
         ],
       },
@@ -133,6 +134,16 @@ module.exports = ({ config }) => {
               host: 'appuri-hogosha.vercel.app',
               pathPrefix: '/parentnotification',
             },
+          ],
+          category: ['BROWSABLE', 'DEFAULT'],
+        },
+        // Add support for all custom schemes in all app variants
+        {
+          action: 'VIEW',
+          data: [
+            { scheme: 'jduapp' },
+            { scheme: 'jduapp-dev' },
+            { scheme: 'jduapp-preview' },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
         },

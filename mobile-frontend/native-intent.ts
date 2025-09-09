@@ -35,7 +35,7 @@ export function redirectSystemPath({
     if (url.protocol.startsWith('jduapp')) {
       const pathname = '/' + path.replace(/^[^:]+:\/\//, '');
       const normalized = normalizePath(pathname);
-      console.log('Custom scheme redirect:', normalized);
+      console.log('Custom scheme redirect:', url.protocol, '->', normalized);
       return normalized;
     }
 
