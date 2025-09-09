@@ -127,7 +127,6 @@ jobs:
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Push backend URL to Vercel env (branch-scoped)
-        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -135,6 +134,9 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ] || [ -z "${VERCEL_PROJECT_ID:-}" ]; then
+            echo "Vercel credentials not set; skipping env sync" && exit 0
+          fi
           API="https://api.vercel.com"
           AUTH="Authorization: Bearer ${VERCEL_TOKEN}"
           CT="Content-Type: application/json"
@@ -164,7 +166,6 @@ jobs:
           done
 
       - name: Trigger Vercel redeploy (optional)
-        if: ${{ (secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '') || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -323,13 +324,15 @@ jobs:
             });
 
       - name: Remove Vercel env vars for this branch (optional)
-        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ] || [ -z "${VERCEL_PROJECT_ID:-}" ]; then
+            echo "Vercel credentials not set; skipping env cleanup" && exit 0
+          fi
           API="https://api.vercel.com"
           AUTH="Authorization: Bearer ${VERCEL_TOKEN}"
           ENV_JSON=$(curl -sfSL -H "$AUTH" "$API/v9/projects/${VERCEL_PROJECT_ID}/env?decrypt=true")
@@ -341,7 +344,6 @@ jobs:
           done
 
       - name: Trigger Vercel redeploy after removal (optional)
-        if: ${{ (secrets.VERCEL_TOKEN != '' && secrets.VERCEL_PROJECT_ID != '') || secrets.VERCEL_DEPLOY_HOOK_URL != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
