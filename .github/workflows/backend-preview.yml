@@ -116,15 +116,59 @@ jobs:
           set -e
           # Try to get the URL; if missing, create it with public access (NONE) and permissive CORS for preview
           if aws lambda get-function-url-config --function-name "$PREVIEW_FN" >/dev/null 2>&1; then
-            URL=$(aws lambda get-function-url-config --function-name "$PREVIEW_FN" --query 'FunctionUrl' --output text)
+            # Ensure auth is NONE and CORS permissive for previews
+            aws lambda update-function-url-config \
+              --function-name "$PREVIEW_FN" \
+              --auth-type NONE \
+              --cors "{\"AllowOrigins\":[\"*\"],\"AllowMethods\":[\"*\"],\"AllowHeaders\":[\"*\"],\"AllowCredentials\":false}"
           else
             aws lambda create-function-url-config \
               --function-name "$PREVIEW_FN" \
               --auth-type NONE \
               --cors "{\"AllowOrigins\":[\"*\"],\"AllowMethods\":[\"*\"],\"AllowHeaders\":[\"*\"],\"AllowCredentials\":false}"
-            URL=$(aws lambda get-function-url-config --function-name "$PREVIEW_FN" --query 'FunctionUrl' --output text)
           fi
+          URL=$(aws lambda get-function-url-config --function-name "$PREVIEW_FN" --query 'FunctionUrl' --output text)
+          # Ensure public permission to invoke function URL
+          aws lambda add-permission \
+            --function-name "$PREVIEW_FN" \
+            --action lambda:InvokeFunctionUrl \
+            --principal '*' \
+            --function-url-auth-type NONE \
+            --statement-id "allow-public-pr-${{ github.event.number }}" >/dev/null 2>&1 || true
+
+          # Verify policy includes a statement that allows public invoke for Function URL with auth NONE; if not, add with a unique id
+          POLICY=$(aws lambda get-policy --function-name "$PREVIEW_FN" --query 'Policy' --output text || echo '')
+          HAS_PUBLIC=$(jq -r 'try (.Statement // [] | any(.Action=="lambda:InvokeFunctionUrl" and (.Principal=="*" or .Principal.AWS=="*") and (.Condition.StringEquals."lambda:FunctionUrlAuthType"=="NONE"))) catch false' <<< "${POLICY:-{}}")
+          if [ "$HAS_PUBLIC" != "true" ]; then
+            SID="allow-public-${{ github.run_id }}-${{ github.run_attempt }}"
+            aws lambda add-permission \
+              --function-name "$PREVIEW_FN" \
+              --action lambda:InvokeFunctionUrl \
+              --principal '*' \
+              --function-url-auth-type NONE \
+              --statement-id "$SID" >/dev/null
+          fi
+
+          # Quick probe: if we still see 403, try one more unique permission and warn
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo 000)
+          if [ "$STATUS" = "403" ]; then
+            SID2="allow-public-retry-${{ github.run_id }}-${{ github.run_attempt }}"
+            aws lambda add-permission \
+              --function-name "$PREVIEW_FN" \
+              --action lambda:InvokeFunctionUrl \
+              --principal '*' \
+              --function-url-auth-type NONE \
+              --statement-id "$SID2" >/dev/null || true
+          fi
+
+          echo "Computed Function URL: $URL"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+          # Set BACKEND_URL env on the preview function so callback matches the preview URL
+          ENV_JSON=$(aws lambda get-function --function-name "$PREVIEW_FN" --query 'Configuration.Environment.Variables' --output json)
+          UPDATED_ENV=$(jq --arg BACKEND_URL "${URL%/}/admin-panel" '(. // {}) + {BACKEND_URL: $BACKEND_URL}' <<< "$ENV_JSON")
+          jq -n --argjson vars "$UPDATED_ENV" '{Variables: $vars}' > env-payload.json
+          aws lambda update-function-configuration --function-name "$PREVIEW_FN" --environment file://env-payload.json >/dev/null
 
       - name: Push backend URL to Vercel env (branch-scoped)
         env:
@@ -176,15 +220,17 @@ jobs:
           set -euo pipefail
           API="https://api.vercel.com"
           AUTH="Authorization: Bearer ${VERCEL_TOKEN:-}"
-          TEAM_Q=""
-          if [ -n "${VERCEL_TEAM_ID:-}" ]; then TEAM_Q="?teamId=${VERCEL_TEAM_ID}"; fi
 
           if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_PROJECT_ID:-}" ]; then
             # Try API-based redeploy of the latest preview deployment for this branch
-            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$API/v13/deployments${TEAM_Q:+$TEAM_Q}&projectId=${VERCEL_PROJECT_ID}&target=preview" || echo '{}')
+            LIST_URL="$API/v13/deployments?projectId=${VERCEL_PROJECT_ID}&target=preview"
+            if [ -n "${VERCEL_TEAM_ID:-}" ]; then LIST_URL="$LIST_URL&teamId=${VERCEL_TEAM_ID}"; fi
+            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$LIST_URL" || echo '{}')
             DID=$(echo "$DEPLOYMENTS" | jq -r --arg BR "$BRANCH" '.deployments // [] | map(select((.meta.githubCommitRef==$BR) or (.meta.branch==$BR))) | .[0].uid // ""')
             if [ -n "$DID" ]; then
-              curl -sfSL -X POST -H "$AUTH" "$API/v13/deployments/$DID/redeploy${TEAM_Q:+$TEAM_Q}" >/dev/null || true
+              REDEPLOY_URL="$API/v13/deployments/$DID/redeploy"
+              if [ -n "${VERCEL_TEAM_ID:-}" ]; then REDEPLOY_URL="$REDEPLOY_URL?teamId=${VERCEL_TEAM_ID}"; fi
+              curl -sfSL -X POST -H "$AUTH" "$REDEPLOY_URL" >/dev/null || true
               exit 0
             fi
           fi
@@ -354,14 +400,16 @@ jobs:
           set -euo pipefail
           API="https://api.vercel.com"
           AUTH="Authorization: Bearer ${VERCEL_TOKEN:-}"
-          TEAM_Q=""
-          if [ -n "${VERCEL_TEAM_ID:-}" ]; then TEAM_Q="?teamId=${VERCEL_TEAM_ID}"; fi
 
           if [ -n "${VERCEL_TOKEN:-}" ] && [ -n "${VERCEL_PROJECT_ID:-}" ]; then
-            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$API/v13/deployments${TEAM_Q:+$TEAM_Q}&projectId=${VERCEL_PROJECT_ID}&target=preview" || echo '{}')
+            LIST_URL="$API/v13/deployments?projectId=${VERCEL_PROJECT_ID}&target=preview"
+            if [ -n "${VERCEL_TEAM_ID:-}" ]; then LIST_URL="$LIST_URL&teamId=${VERCEL_TEAM_ID}"; fi
+            DEPLOYMENTS=$(curl -sfSL -H "$AUTH" "$LIST_URL" || echo '{}')
             DID=$(echo "$DEPLOYMENTS" | jq -r --arg BR "$BRANCH" '.deployments // [] | map(select((.meta.githubCommitRef==$BR) or (.meta.branch==$BR))) | .[0].uid // ""')
             if [ -n "$DID" ]; then
-              curl -sfSL -X POST -H "$AUTH" "$API/v13/deployments/$DID/redeploy${TEAM_Q:+$TEAM_Q}" >/dev/null || true
+              REDEPLOY_URL="$API/v13/deployments/$DID/redeploy"
+              if [ -n "${VERCEL_TEAM_ID:-}" ]; then REDEPLOY_URL="$REDEPLOY_URL?teamId=${VERCEL_TEAM_ID}"; fi
+              curl -sfSL -X POST -H "$AUTH" "$REDEPLOY_URL" >/dev/null || true
               exit 0
             fi
           fi
