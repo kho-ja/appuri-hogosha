@@ -60,6 +60,36 @@ export function redirectSystemPath({
   }
 }
 
+// Enhanced function to handle single student scenarios
+export async function getNavigationPathForSingleStudent(
+  originalPath: string
+): Promise<string> {
+  try {
+    const { default: AsyncStorage } = await import(
+      '@react-native-async-storage/async-storage'
+    );
+    const studentsCount = await AsyncStorage.getItem('students_count');
+    const singleStudentId = await AsyncStorage.getItem('single_student_id');
+
+    // If user has only one student and trying to go home, redirect to student
+    if (
+      studentsCount === '1' &&
+      singleStudentId &&
+      (originalPath === '/' || originalPath === '/home')
+    ) {
+      console.log(
+        `Single student detected, redirecting home to student: ${singleStudentId}`
+      );
+      return `/student/${singleStudentId}`;
+    }
+
+    return originalPath;
+  } catch (error) {
+    console.error('Error in single student navigation:', error);
+    return originalPath;
+  }
+}
+
 function normalizePath(
   pathname: string,
   searchParams?: URLSearchParams

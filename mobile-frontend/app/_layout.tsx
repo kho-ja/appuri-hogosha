@@ -13,7 +13,10 @@ import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { redirectSystemPath } from '../native-intent';
+import {
+  redirectSystemPath,
+  getNavigationPathForSingleStudent,
+} from '../native-intent';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
@@ -47,9 +50,6 @@ export default function Root() {
         `Handling navigation to: ${redirectPath} (initial: ${isInitial})`
       );
 
-      // Determine if this is an HTTPS deep link (production) vs dev schemes
-      const isHttpsDeepLink = originalUrl?.startsWith('https://');
-
       // Check if it's a message deep link that needs proper navigation history
       const messageMatch = redirectPath.match(
         /^\/student\/(\d+)\/message\/(\d+)$/
@@ -59,54 +59,29 @@ export default function Root() {
         console.log('Creating navigation history for message deep link');
 
         // For initial URLs, add a longer delay to ensure app is fully loaded
-        const delay = isInitial ? 1000 : 0;
+        const delay = isInitial ? 1500 : 0;
 
         setTimeout(() => {
-          if (isHttpsDeepLink) {
-            // HTTPS deep links: Create full navigation stack Home → Student → Message
-            console.log('HTTPS deep link: Creating full navigation stack');
-            router.replace('/');
+          // For both HTTPS and dev schemes: Use consistent logic
+          console.log('Setting up navigation for message');
+          router.replace(`/student/${studentId}`);
 
-            setTimeout(() => {
-              router.push(`/student/${studentId}`);
-
-              setTimeout(() => {
-                router.push(`/student/${studentId}/message/${messageId}`);
-              }, 100);
-            }, 50);
-          } else {
-            // Dev schemes (exp, jduapp): Use original logic
-            console.log('Dev scheme: Using replace + push logic');
-            router.replace(`/student/${studentId}`);
-
-            setTimeout(() => {
-              router.push(`/student/${studentId}/message/${messageId}`);
-            }, 100);
-          }
+          setTimeout(() => {
+            router.push(`/student/${studentId}/message/${messageId}`);
+          }, 500);
         }, delay);
       } else {
         // Check if it's a student page (not message)
         const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
         if (studentMatch) {
           console.log('Deep link to student page');
-          const delay = isInitial ? 1000 : 0;
+          const delay = isInitial ? 1500 : 0;
           setTimeout(() => {
-            if (isHttpsDeepLink) {
-              // HTTPS: Create proper stack Home → Student
-              console.log('HTTPS deep link: Creating Home → Student stack');
-              router.replace('/');
-              setTimeout(() => {
-                router.push(redirectPath as any);
-              }, 50);
-            } else {
-              // Dev schemes: Direct replace
-              console.log('Dev scheme: Direct replace to student');
-              router.replace(redirectPath as any);
-            }
+            router.replace(redirectPath as any);
           }, delay);
         } else {
           // For other deep links, navigate directly
-          const delay = isInitial ? 1000 : 0;
+          const delay = isInitial ? 1500 : 0;
           const navigationMethod = isInitial ? router.replace : router.push;
           setTimeout(() => {
             navigationMethod(redirectPath as any);
@@ -121,10 +96,14 @@ export default function Root() {
         const initialURL = await Linking.getInitialURL();
         if (initialURL) {
           console.log('App opened with initial URL:', initialURL);
-          const redirectPath = redirectSystemPath({
+          let redirectPath = redirectSystemPath({
             path: initialURL,
             initial: true,
           });
+          
+          // Check if we need to handle single student case
+          redirectPath = await getNavigationPathForSingleStudent(redirectPath);
+          
           if (redirectPath !== '/unexpected-error') {
             handleNavigation(redirectPath, true, initialURL);
           }
@@ -137,12 +116,15 @@ export default function Root() {
     handleInitialURL();
 
     // Handle deep links when app is already running
-    const subscription = Linking.addEventListener('url', ({ url }) => {
+    const subscription = Linking.addEventListener('url', async ({ url }) => {
       console.log('Deep link received:', url);
-      const redirectPath = redirectSystemPath({
+      let redirectPath = redirectSystemPath({
         path: url,
         initial: false,
       });
+
+      // Check if we need to handle single student case
+      redirectPath = await getNavigationPathForSingleStudent(redirectPath);
 
       if (redirectPath !== '/unexpected-error') {
         handleNavigation(redirectPath, false, url);

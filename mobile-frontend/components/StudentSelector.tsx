@@ -16,7 +16,6 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
   ({ students }) => {
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
-    const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
     const { theme } = useTheme();
     const textColor = useThemeColor({}, 'text');
 
@@ -44,15 +43,12 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       [router, students]
     );
 
-    // Auto-navigate if there's only one student (only once)
+    // Save metadata for deeplink navigation (but no auto-navigation)
+    // This resolves the extra page issue in navigation
     React.useEffect(() => {
-      if (students?.length === 1 && !hasAutoNavigated) {
-        setHasAutoNavigated(true);
-        handleStudentSelect(students[0], true);
-      } else if (students?.length !== 1) {
-        setHasAutoNavigated(false);
-      }
-    }, [students, handleStudentSelect, hasAutoNavigated]);
+      // Убираем сохранение метаданных - будет обрабатываться в student-context
+      console.log(`Students count: ${students?.length || 0}`);
+    }, [students]);
     const avatarColors = [
       '#fc958d',
       '#fc9abc',
