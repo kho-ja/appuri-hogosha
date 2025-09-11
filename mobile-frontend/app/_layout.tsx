@@ -61,14 +61,43 @@ export default function Root() {
         // For initial URLs, add a longer delay to ensure app is fully loaded
         const delay = isInitial ? 1500 : 0;
 
-        setTimeout(() => {
-          // For both HTTPS and dev schemes: Use consistent logic
-          console.log('Setting up navigation for message');
-          router.replace(`/student/${studentId}`);
+        setTimeout(async () => {
+          try {
+            const studentsCount = await AsyncStorage.getItem('students_count');
 
-          setTimeout(() => {
-            router.push(`/student/${studentId}/message/${messageId}`);
-          }, 500);
+            if (studentsCount && parseInt(studentsCount) > 1) {
+              console.log(
+                'Multiple students: Creating Home → Student → Message navigation'
+              );
+              // Create full navigation history: Home → Student → Message
+              router.replace('/');
+
+              setTimeout(() => {
+                router.push(`/student/${studentId}`);
+
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+                }, 200);
+              }, 300);
+            } else {
+              console.log(
+                'Single student: Creating Student → Message navigation'
+              );
+              // For single student: Student → Message
+              router.replace(`/student/${studentId}`);
+
+              setTimeout(() => {
+                router.push(`/student/${studentId}/message/${messageId}`);
+              }, 300);
+            }
+          } catch (error) {
+            console.error('Error in message navigation:', error);
+            // Fallback to original logic
+            router.replace(`/student/${studentId}`);
+            setTimeout(() => {
+              router.push(`/student/${studentId}/message/${messageId}`);
+            }, 300);
+          }
         }, delay);
       } else {
         // Check if it's a student page (not message)
@@ -76,8 +105,32 @@ export default function Root() {
         if (studentMatch) {
           console.log('Deep link to student page');
           const delay = isInitial ? 1500 : 0;
-          setTimeout(() => {
-            router.replace(redirectPath as any);
+
+          setTimeout(async () => {
+            // Check if user has multiple students - create proper navigation history
+            try {
+              const studentsCount =
+                await AsyncStorage.getItem('students_count');
+
+              if (studentsCount && parseInt(studentsCount) > 1) {
+                console.log(
+                  'Multiple students: Creating Home → Student navigation'
+                );
+                // First navigate to home, then push student page to create proper history
+                router.replace('/');
+
+                setTimeout(() => {
+                  router.push(redirectPath as any);
+                }, 300);
+              } else {
+                // Single student or unknown count: direct navigation
+                console.log('Single/unknown students: Direct navigation');
+                router.replace(redirectPath as any);
+              }
+            } catch (error) {
+              console.error('Error checking student count:', error);
+              router.replace(redirectPath as any);
+            }
           }, delay);
         } else {
           // For other deep links, navigate directly
@@ -96,14 +149,18 @@ export default function Root() {
         const initialURL = await Linking.getInitialURL();
         if (initialURL) {
           console.log('App opened with initial URL:', initialURL);
+
+          // Set deeplink flag to prevent auto-navigation
+          await AsyncStorage.setItem('is_deeplink_navigation', 'true');
+
           let redirectPath = redirectSystemPath({
             path: initialURL,
             initial: true,
           });
-          
+
           // Check if we need to handle single student case
           redirectPath = await getNavigationPathForSingleStudent(redirectPath);
-          
+
           if (redirectPath !== '/unexpected-error') {
             handleNavigation(redirectPath, true, initialURL);
           }
@@ -118,6 +175,10 @@ export default function Root() {
     // Handle deep links when app is already running
     const subscription = Linking.addEventListener('url', async ({ url }) => {
       console.log('Deep link received:', url);
+
+      // Set deeplink flag to prevent auto-navigation
+      await AsyncStorage.setItem('is_deeplink_navigation', 'true');
+
       let redirectPath = redirectSystemPath({
         path: url,
         initial: false,

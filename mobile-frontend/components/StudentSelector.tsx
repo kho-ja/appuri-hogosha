@@ -16,6 +16,9 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
   ({ students }) => {
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
+    const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
+    const [isDeepLinkNavigation, setIsDeepLinkNavigation] =
+      React.useState(false);
     const { theme } = useTheme();
     const textColor = useThemeColor({}, 'text');
 
@@ -43,12 +46,45 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       [router, students]
     );
 
-    // Save metadata for deeplink navigation (but no auto-navigation)
-    // This resolves the extra page issue in navigation
+    // Check if we're in a deeplink navigation scenario
     React.useEffect(() => {
-      // Убираем сохранение метаданных - будет обрабатываться в student-context
-      console.log(`Students count: ${students?.length || 0}`);
-    }, [students]);
+      const checkDeepLinkNavigation = async () => {
+        try {
+          const { default: AsyncStorage } = await import(
+            '@react-native-async-storage/async-storage'
+          );
+          const deepLinkFlag = await AsyncStorage.getItem(
+            'is_deeplink_navigation'
+          );
+          setIsDeepLinkNavigation(deepLinkFlag === 'true');
+
+          // Clear the flag after reading it
+          if (deepLinkFlag === 'true') {
+            await AsyncStorage.removeItem('is_deeplink_navigation');
+          }
+        } catch (error) {
+          console.error('Error checking deeplink flag:', error);
+          setIsDeepLinkNavigation(false);
+        }
+      };
+
+      checkDeepLinkNavigation();
+    }, []);
+
+    // Auto-navigate if there's only one student (restored functionality)
+    React.useEffect(() => {
+      if (
+        students?.length === 1 &&
+        !hasAutoNavigated &&
+        !isDeepLinkNavigation
+      ) {
+        console.log('Auto-navigating to single student (not deeplink)');
+        setHasAutoNavigated(true);
+        handleStudentSelect(students[0], true);
+      } else if (students?.length !== 1) {
+        setHasAutoNavigated(false);
+      }
+    }, [students, handleStudentSelect, hasAutoNavigated, isDeepLinkNavigation]);
     const avatarColors = [
       '#fc958d',
       '#fc9abc',

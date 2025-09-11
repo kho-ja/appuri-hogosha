@@ -72,13 +72,14 @@ export async function getNavigationPathForSingleStudent(
     const singleStudentId = await AsyncStorage.getItem('single_student_id');
 
     // If user has only one student and trying to go home, redirect to student
+    // BUT only for deeplink navigation, not for normal navigation
     if (
       studentsCount === '1' &&
       singleStudentId &&
       (originalPath === '/' || originalPath === '/home')
     ) {
       console.log(
-        `Single student detected, redirecting home to student: ${singleStudentId}`
+        `Single student deeplink detected, redirecting home to student: ${singleStudentId}`
       );
       return `/student/${singleStudentId}`;
     }
