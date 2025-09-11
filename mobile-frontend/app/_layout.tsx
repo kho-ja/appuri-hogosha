@@ -87,17 +87,15 @@ export default function Root() {
         // For single student, create simple navigation history
         const delay = isInitial ? 1000 : 0;
         setTimeout(() => {
-          // For message links, create history: Student → Message
+          // For message links, create direct navigation to message (no extra student page)
           const messageMatch = optimizedPath.match(
             /^\/student\/(\d+)\/message\/(\d+)$/
           );
           if (messageMatch) {
             const [, studentId, messageId] = messageMatch;
-            console.log('Single student: Creating Student → Message history');
-            router.replace(`/student/${studentId}`);
-            setTimeout(() => {
-              router.push(`/student/${studentId}/message/${messageId}`);
-            }, 100);
+            console.log('Single student: Direct navigation to message');
+            // Direct navigation to message - this will create proper history automatically
+            router.replace(`/student/${studentId}/message/${messageId}` as any);
           } else {
             // For student pages or other links, navigate directly
             console.log('Single student: Direct navigation');
