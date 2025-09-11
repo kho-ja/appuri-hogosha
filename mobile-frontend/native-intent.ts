@@ -1,3 +1,32 @@
+// Function to get navigation path optimized for single student
+export function getNavigationPathForSingleStudent(
+  originalPath: string,
+  studentId: number
+): string {
+  console.log('Optimizing navigation for single student:', studentId);
+
+  // Check if the original path is a message link
+  const messageMatch = originalPath.match(/^\/student\/\d+\/message\/(\d+)$/);
+  if (messageMatch) {
+    const messageId = messageMatch[1];
+    return `/student/${studentId}/message/${messageId}`;
+  }
+
+  // Check if it's a student page
+  const studentMatch = originalPath.match(/^\/student\/\d+$/);
+  if (studentMatch) {
+    return `/student/${studentId}`;
+  }
+
+  // For home or root paths, go directly to student page
+  if (originalPath === '/' || originalPath === '/home') {
+    return `/student/${studentId}`;
+  }
+
+  // For other paths, keep as is
+  return originalPath;
+}
+
 export function redirectSystemPath({
   path,
   initial: _initial,
@@ -57,37 +86,6 @@ export function redirectSystemPath({
   } catch (error) {
     console.error('Error processing path:', path, error);
     return '/unexpected-error';
-  }
-}
-
-// Enhanced function to handle single student scenarios
-export async function getNavigationPathForSingleStudent(
-  originalPath: string
-): Promise<string> {
-  try {
-    const { default: AsyncStorage } = await import(
-      '@react-native-async-storage/async-storage'
-    );
-    const studentsCount = await AsyncStorage.getItem('students_count');
-    const singleStudentId = await AsyncStorage.getItem('single_student_id');
-
-    // If user has only one student and trying to go home, redirect to student
-    // BUT only for deeplink navigation, not for normal navigation
-    if (
-      studentsCount === '1' &&
-      singleStudentId &&
-      (originalPath === '/' || originalPath === '/home')
-    ) {
-      console.log(
-        `Single student deeplink detected, redirecting home to student: ${singleStudentId}`
-      );
-      return `/student/${singleStudentId}`;
-    }
-
-    return originalPath;
-  } catch (error) {
-    console.error('Error in single student navigation:', error);
-    return originalPath;
   }
 }
 

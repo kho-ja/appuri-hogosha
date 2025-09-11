@@ -40,8 +40,28 @@ export default function Root() {
 
   // Handle deep links
   React.useEffect(() => {
+    // Helper function to get student count from AsyncStorage
+    const getStudentInfo = async (): Promise<{
+      count: number;
+      firstStudentId?: number;
+    }> => {
+      try {
+        const studentsData = await AsyncStorage.getItem('students');
+        if (studentsData) {
+          const students = JSON.parse(studentsData);
+          return {
+            count: students.length,
+            firstStudentId: students.length === 1 ? students[0].id : undefined,
+          };
+        }
+      } catch (error) {
+        console.error('Error getting student info:', error);
+      }
+      return { count: 0 };
+    };
+
     // Helper function to handle navigation with proper history
-    const handleNavigation = (
+    const handleNavigation = async (
       redirectPath: string,
       isInitial: boolean = false,
       originalUrl?: string
@@ -49,6 +69,47 @@ export default function Root() {
       console.log(
         `Handling navigation to: ${redirectPath} (initial: ${isInitial})`
       );
+
+      const studentInfo = await getStudentInfo();
+      console.log('Student info:', studentInfo);
+
+      // Special logic for single student
+      if (studentInfo.count === 1 && studentInfo.firstStudentId) {
+        // Set deep link flag to prevent auto-navigation in StudentSelector
+        await AsyncStorage.setItem('isDeepLinkNavigation', 'true');
+
+        const optimizedPath = getNavigationPathForSingleStudent(
+          redirectPath,
+          studentInfo.firstStudentId
+        );
+        console.log('Single student optimized path:', optimizedPath);
+
+        // For single student, create simple navigation history
+        const delay = isInitial ? 1000 : 0;
+        setTimeout(() => {
+          // For message links, create history: Student → Message
+          const messageMatch = optimizedPath.match(
+            /^\/student\/(\d+)\/message\/(\d+)$/
+          );
+          if (messageMatch) {
+            const [, studentId, messageId] = messageMatch;
+            console.log('Single student: Creating Student → Message history');
+            router.replace(`/student/${studentId}`);
+            setTimeout(() => {
+              router.push(`/student/${studentId}/message/${messageId}`);
+            }, 100);
+          } else {
+            // For student pages or other links, navigate directly
+            console.log('Single student: Direct navigation');
+            router.replace(optimizedPath as any);
+          }
+        }, delay);
+        return;
+      }
+
+      // Original logic for multiple students
+      // Determine if this is an HTTPS deep link (production) vs dev schemes
+      const isHttpsDeepLink = originalUrl?.startsWith('https://');
 
       // Check if it's a message deep link that needs proper navigation history
       const messageMatch = redirectPath.match(
@@ -59,44 +120,29 @@ export default function Root() {
         console.log('Creating navigation history for message deep link');
 
         // For initial URLs, add a longer delay to ensure app is fully loaded
-        const delay = isInitial ? 1500 : 0;
+        const delay = isInitial ? 1000 : 0;
 
-        setTimeout(async () => {
-          try {
-            const studentsCount = await AsyncStorage.getItem('students_count');
+        setTimeout(() => {
+          if (isHttpsDeepLink) {
+            // HTTPS deep links: Create full navigation stack Home → Student → Message
+            console.log('HTTPS deep link: Creating full navigation stack');
+            router.replace('/');
 
-            if (studentsCount && parseInt(studentsCount) > 1) {
-              console.log(
-                'Multiple students: Creating Home → Student → Message navigation'
-              );
-              // Create full navigation history: Home → Student → Message
-              router.replace('/');
-
-              setTimeout(() => {
-                router.push(`/student/${studentId}`);
-
-                setTimeout(() => {
-                  router.push(`/student/${studentId}/message/${messageId}`);
-                }, 200);
-              }, 300);
-            } else {
-              console.log(
-                'Single student: Creating Student → Message navigation'
-              );
-              // For single student: Student → Message
-              router.replace(`/student/${studentId}`);
+            setTimeout(() => {
+              router.push(`/student/${studentId}`);
 
               setTimeout(() => {
                 router.push(`/student/${studentId}/message/${messageId}`);
-              }, 300);
-            }
-          } catch (error) {
-            console.error('Error in message navigation:', error);
-            // Fallback to original logic
+              }, 100);
+            }, 50);
+          } else {
+            // Dev schemes (exp, jduapp): Use original logic
+            console.log('Dev scheme: Using replace + push logic');
             router.replace(`/student/${studentId}`);
+
             setTimeout(() => {
               router.push(`/student/${studentId}/message/${messageId}`);
-            }, 300);
+            }, 100);
           }
         }, delay);
       } else {
@@ -104,37 +150,24 @@ export default function Root() {
         const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
         if (studentMatch) {
           console.log('Deep link to student page');
-          const delay = isInitial ? 1500 : 0;
-
-          setTimeout(async () => {
-            // Check if user has multiple students - create proper navigation history
-            try {
-              const studentsCount =
-                await AsyncStorage.getItem('students_count');
-
-              if (studentsCount && parseInt(studentsCount) > 1) {
-                console.log(
-                  'Multiple students: Creating Home → Student navigation'
-                );
-                // First navigate to home, then push student page to create proper history
-                router.replace('/');
-
-                setTimeout(() => {
-                  router.push(redirectPath as any);
-                }, 300);
-              } else {
-                // Single student or unknown count: direct navigation
-                console.log('Single/unknown students: Direct navigation');
-                router.replace(redirectPath as any);
-              }
-            } catch (error) {
-              console.error('Error checking student count:', error);
+          const delay = isInitial ? 1000 : 0;
+          setTimeout(() => {
+            if (isHttpsDeepLink) {
+              // HTTPS: Create proper stack Home → Student
+              console.log('HTTPS deep link: Creating Home → Student stack');
+              router.replace('/');
+              setTimeout(() => {
+                router.push(redirectPath as any);
+              }, 50);
+            } else {
+              // Dev schemes: Direct replace
+              console.log('Dev scheme: Direct replace to student');
               router.replace(redirectPath as any);
             }
           }, delay);
         } else {
           // For other deep links, navigate directly
-          const delay = isInitial ? 1500 : 0;
+          const delay = isInitial ? 1000 : 0;
           const navigationMethod = isInitial ? router.replace : router.push;
           setTimeout(() => {
             navigationMethod(redirectPath as any);
@@ -149,18 +182,10 @@ export default function Root() {
         const initialURL = await Linking.getInitialURL();
         if (initialURL) {
           console.log('App opened with initial URL:', initialURL);
-
-          // Set deeplink flag to prevent auto-navigation
-          await AsyncStorage.setItem('is_deeplink_navigation', 'true');
-
-          let redirectPath = redirectSystemPath({
+          const redirectPath = redirectSystemPath({
             path: initialURL,
             initial: true,
           });
-
-          // Check if we need to handle single student case
-          redirectPath = await getNavigationPathForSingleStudent(redirectPath);
-
           if (redirectPath !== '/unexpected-error') {
             handleNavigation(redirectPath, true, initialURL);
           }
@@ -173,19 +198,12 @@ export default function Root() {
     handleInitialURL();
 
     // Handle deep links when app is already running
-    const subscription = Linking.addEventListener('url', async ({ url }) => {
+    const subscription = Linking.addEventListener('url', ({ url }) => {
       console.log('Deep link received:', url);
-
-      // Set deeplink flag to prevent auto-navigation
-      await AsyncStorage.setItem('is_deeplink_navigation', 'true');
-
-      let redirectPath = redirectSystemPath({
+      const redirectPath = redirectSystemPath({
         path: url,
         initial: false,
       });
-
-      // Check if we need to handle single student case
-      redirectPath = await getNavigationPathForSingleStudent(redirectPath);
 
       if (redirectPath !== '/unexpected-error') {
         handleNavigation(redirectPath, false, url);

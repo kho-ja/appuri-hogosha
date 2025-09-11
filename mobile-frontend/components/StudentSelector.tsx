@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -21,6 +22,19 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       React.useState(false);
     const { theme } = useTheme();
     const textColor = useThemeColor({}, 'text');
+
+    // Check if we're in a deep link navigation scenario
+    React.useEffect(() => {
+      const checkDeepLinkFlag = async () => {
+        const isDeepLink = await AsyncStorage.getItem('isDeepLinkNavigation');
+        setIsDeepLinkNavigation(isDeepLink === 'true');
+        if (isDeepLink === 'true') {
+          // Clear the flag after reading
+          await AsyncStorage.removeItem('isDeepLinkNavigation');
+        }
+      };
+      checkDeepLinkFlag();
+    }, []);
 
     const handleStudentSelect = useCallback(
       (student: Student, autoNavigation = false) => {
@@ -46,39 +60,13 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       [router, students]
     );
 
-    // Check if we're in a deeplink navigation scenario
-    React.useEffect(() => {
-      const checkDeepLinkNavigation = async () => {
-        try {
-          const { default: AsyncStorage } = await import(
-            '@react-native-async-storage/async-storage'
-          );
-          const deepLinkFlag = await AsyncStorage.getItem(
-            'is_deeplink_navigation'
-          );
-          setIsDeepLinkNavigation(deepLinkFlag === 'true');
-
-          // Clear the flag after reading it
-          if (deepLinkFlag === 'true') {
-            await AsyncStorage.removeItem('is_deeplink_navigation');
-          }
-        } catch (error) {
-          console.error('Error checking deeplink flag:', error);
-          setIsDeepLinkNavigation(false);
-        }
-      };
-
-      checkDeepLinkNavigation();
-    }, []);
-
-    // Auto-navigate if there's only one student (restored functionality)
+    // Auto-navigate if there's only one student (only once) and not in deep link scenario
     React.useEffect(() => {
       if (
         students?.length === 1 &&
         !hasAutoNavigated &&
         !isDeepLinkNavigation
       ) {
-        console.log('Auto-navigating to single student (not deeplink)');
         setHasAutoNavigated(true);
         handleStudentSelect(students[0], true);
       } else if (students?.length !== 1) {
