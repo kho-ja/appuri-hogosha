@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useStudents } from '@/contexts/student-context';
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -16,7 +17,9 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
   ({ students }) => {
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
+    const { isLoading } = useStudents();
     const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
+    const [navigationAttempted, setNavigationAttempted] = React.useState(false);
     const { theme } = useTheme();
     const textColor = useThemeColor({}, 'text');
 
@@ -46,13 +49,30 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
 
     // Auto-navigate if there's only one student (only once)
     React.useEffect(() => {
+      if (isLoading || navigationAttempted) {
+        return;
+      }
       if (students?.length === 1 && !hasAutoNavigated) {
         setHasAutoNavigated(true);
-        handleStudentSelect(students[0], true);
-      } else if (students?.length !== 1) {
+        setNavigationAttempted(true);
+        
+        setTimeout(() => {
+          handleStudentSelect(students[0], true);
+        }, 100);
+      } 
+      else if (students && students.length > 1) {
         setHasAutoNavigated(false);
+        setNavigationAttempted(true);
       }
-    }, [students, handleStudentSelect, hasAutoNavigated]);
+      else if (students && students.length === 0) {
+        setHasAutoNavigated(false);
+        setNavigationAttempted(true);
+      }
+    }, [students, handleStudentSelect, hasAutoNavigated, isLoading, navigationAttempted]);
+    React.useEffect(() => {
+      setNavigationAttempted(false);
+      setHasAutoNavigated(false);
+    }, [students?.length]);
     const avatarColors = [
       '#fc958d',
       '#fc9abc',
@@ -76,10 +96,13 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       const index = Math.abs(hash % avatarColors.length);
       return avatarColors[index];
     };
+    if (isLoading || !students) {
+      return null;
+    }
 
     return (
       <View style={styles.studentList}>
-        {students?.map(student => (
+        {students.map(student => (
           <React.Fragment key={student.id}>
             <Pressable
               style={[
