@@ -815,7 +815,9 @@
     "invalid_group_names": "Invalid group name(s)",
     "group_members_not_found": "Group members not found",
     "export": "Export",
-    "back": "Back"
+    "back": "Back",
+    "csv_is_empty_but_valid": "CSV is empty but valid",
+    "missing_required_headers": "Missing required headers"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",

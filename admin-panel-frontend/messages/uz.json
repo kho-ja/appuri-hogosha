@@ -814,7 +814,9 @@
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
     "export": "Yuklab olish",
-    "back": "Orqaga"
+    "back": "Orqaga",
+    "csv_is_empty_but_valid": "CSV bo'sh, lekin yaroqli",
+    "missing_required_headers": "Majburiy sarlavhalar yetishmayapti"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",

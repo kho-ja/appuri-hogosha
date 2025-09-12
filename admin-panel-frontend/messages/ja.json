@@ -814,7 +814,9 @@
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
     "export": "ファイルに書き出す",
-    "back": "戻る"
+    "back": "戻る",
+    "csv_is_empty_but_valid": "CSVは空ですが有効です",
+    "missing_required_headers": "必要なヘッダーが不足しています"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",

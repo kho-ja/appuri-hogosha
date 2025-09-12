@@ -810,7 +810,9 @@
     "invalid_group_names": "Неверное название(я) группы",
     "group_members_not_found": "Члены группы не найдены",
     "export": "Экспорт",
-    "back": "Назад"
+    "back": "Назад",
+    "csv_is_empty_but_valid": "CSV пустой, но действительный",
+    "missing_required_headers": "Отсутствуют обязательные заголовки"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
