@@ -815,8 +815,7 @@
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
     "export": "ファイルに書き出す",
     "back": "戻る",
-    "csv_is_empty_but_valid": "CSVは空ですが有効です",
-    "missing_required_headers": "必要なヘッダーが不足しています"
+    "csv_is_empty_but_valid": "CSVは空ですが有効です"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -954,7 +953,8 @@
     "invalid_or_missing_description": "無効または存在しない説明",
     "invalid_or_missing_priority": "無効または存在しない優先度",
     "invalid_image_format": "無効な画像フォーマットです。Base64エンコードされていることを確認してください。",
-    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）"
+    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）",
+    "missing_required_headers": "必要なヘッダーが不足しています"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "ドキュメントの準備",

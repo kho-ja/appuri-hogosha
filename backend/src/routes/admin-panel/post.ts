@@ -146,9 +146,9 @@ class PostController implements IController {
             ];
 
             const normalize = (str: string | undefined | null) =>
-                (str || '').toString().trim().toLowerCase();
+                (str || '').trim().toLowerCase();
 
-            const csvHeadersNorm = (csvHeaders || []).map(normalize);
+            const csvHeadersNorm = csvHeaders.map(normalize);
             const requiredHeadersNorm = requiredHeaders.map(normalize);
 
             const missingHeaders = requiredHeadersNorm.filter(

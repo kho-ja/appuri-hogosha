@@ -816,8 +816,7 @@
     "group_members_not_found": "Group members not found",
     "export": "Export",
     "back": "Back",
-    "csv_is_empty_but_valid": "CSV is empty but valid",
-    "missing_required_headers": "Missing required headers"
+    "csv_is_empty_but_valid": "CSV is empty but valid"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -955,7 +954,8 @@
     "invalid_or_missing_description": "Invalid or missing description",
     "invalid_or_missing_priority": "Invalid or missing priority",
     "invalid_image_format": "Invalid image format. Make sure it is Base64 encoded.",
-    "image_size_too_large": "Image size is too large (max 10MB)"
+    "image_size_too_large": "Image size is too large (max 10MB)",
+    "missing_required_headers": "Missing required headers"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Preparing the document",
