@@ -59,12 +59,11 @@ export const verifyToken = async (
             }
         }
 
+        // Match admin by verified email only. Federated (Google) and native users can have different sub IDs.
         const admins = await DB.query(
-            `SELECT * FROM Admin as ad
-            WHERE ad.email = :email and ad.cognito_sub_id = :sub_id`,
+            `SELECT * FROM Admin as ad WHERE ad.email = :email`,
             {
                 email: userData.email,
-                sub_id: userData.sub_id,
             }
         );
 

@@ -354,7 +354,9 @@ class AuthController implements IController {
             // Build Cognito Hosted UI URL with Google identity provider
             const cognitoDomain = process.env.COGNITO_DOMAIN; // e.g., https://yourapp-admin.auth.us-east-1.amazoncognito.com
             const clientId = process.env.ADMIN_CLIENT_ID;
-            const callbackUrl = `${process.env.BACKEND_URL}/google/callback`;
+            // Derive callback URL from current request host to avoid port/env mismatch in dev
+            const baseUrl = `${req.protocol}://${req.get('host')}/admin-panel`;
+            const callbackUrl = `${baseUrl}/google/callback`;
             const frontendUrl =
                 process.env.FRONTEND_URL || 'http://localhost:3000';
 
@@ -398,8 +400,11 @@ class AuthController implements IController {
             }
 
             // Exchange authorization code for tokens with Cognito
+            const baseUrl = `${req.protocol}://${req.get('host')}/admin-panel`;
+            const redirectUri = `${baseUrl}/google/callback`;
             const tokenResponse = await this.exchangeCodeForTokens(
-                code as string
+                code as string,
+                redirectUri
             );
 
             if (!tokenResponse.access_token) {
@@ -432,17 +437,7 @@ class AuthController implements IController {
 
             const admin = admins[0];
 
-            // Ensure the DB cognito_sub_id matches the token's sub for future verifications
-            try {
-                if (admin.cognito_sub_id !== userData.sub_id) {
-                    await DB.query(
-                        'UPDATE Admin SET cognito_sub_id = :sub WHERE id = :id',
-                        { sub: userData.sub_id, id: admin.id }
-                    );
-                }
-            } catch {
-                console.error('Failed to sync cognito_sub_id for admin');
-            }
+            // Do not overwrite cognito_sub_id for Google logins; validate by email.
 
             // Update last login
             await DB.query(
@@ -537,11 +532,11 @@ class AuthController implements IController {
         };
     }
 
-    private async exchangeCodeForTokens(code: string) {
+    private async exchangeCodeForTokens(code: string, redirectUri: string) {
         const cognitoDomain = process.env.COGNITO_DOMAIN;
         const clientId = process.env.ADMIN_CLIENT_ID;
         const clientSecret = process.env.ADMIN_CLIENT_SECRET;
-        const callbackUrl = `${process.env.BACKEND_URL}/google/callback`;
+        const callbackUrl = redirectUri; // already constructed by caller based on request
 
         const tokenUrl = `${cognitoDomain}/oauth2/token`;
 
