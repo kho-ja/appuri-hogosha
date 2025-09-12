@@ -2,6 +2,12 @@
   "applinks": {
     "details": [
       {
+        "appID": "7CL4TN5VC6.com.jduapp.parentnotification.dev",
+        "paths": [
+          "/parentnotification/*"
+        ]
+      },
+      {
         "appID": "7CL4TN5VC6.com.jduapp.parentnotification.preview",
         "paths": [
           "/parentnotification/*"
