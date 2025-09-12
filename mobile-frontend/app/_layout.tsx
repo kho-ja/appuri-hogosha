@@ -13,6 +13,7 @@ import AppWithNotifications from './AppWithNotifications';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
+import { View } from 'react-native';
 import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
@@ -23,6 +24,7 @@ setupNotificationHandler();
 
 export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
+  const [isDeepLinkNavigating, setIsDeepLinkNavigating] = React.useState(false);
 
   React.useEffect(() => {
     // Load saved theme
@@ -88,7 +90,7 @@ export default function Root() {
         const isHttpsDeepLink = originalUrl?.startsWith('https://');
 
         // For single student, different logic for HTTPS vs dev schemes
-        const delay = isInitial ? 1000 : 0;
+        const delay = isInitial ? 50 : 0; // Уменьшаем задержку для начального запуска
         setTimeout(() => {
           // For message links
           const messageMatch = optimizedPath.match(
@@ -96,25 +98,29 @@ export default function Root() {
           );
           if (messageMatch) {
             const [, studentId, messageId] = messageMatch;
+            console.log('Single student: Creating navigation for message');
 
-            if (isHttpsDeepLink) {
+            if (isInitial) {
+              // App starting fresh - мгновенное создание истории
               console.log(
-                'HTTPS single student: Simple navigation to avoid double student pages'
+                'Fresh app start: Creating Student → Message history instantly'
               );
-              // For HTTPS, use simple navigation to avoid Student→Student→Message
+              // Скрываем интерфейс во время навигации
+              setIsDeepLinkNavigating(true);
+              // Мгновенно создаем историю без видимых переходов
+              router.replace(`/student/${studentId}`);
+              // Сразу же переходим к сообщению (без задержки)
+              router.push(`/student/${studentId}/message/${messageId}`);
+              // Показываем интерфейс после навигации
+              setTimeout(() => {
+                setIsDeepLinkNavigating(false);
+              }, 50);
+            } else {
+              // App already running - direct navigation to avoid extra pages
+              console.log('App running: Direct navigation to message');
               router.replace(
                 `/student/${studentId}/message/${messageId}` as any
               );
-            } else {
-              console.log(
-                'Dev scheme single student: Creating proper navigation history'
-              );
-              // For dev schemes, for single student: Student → Message (not Home → Student → Message)
-              // because single student has no home page, student page IS the home
-              router.replace(`/student/${studentId}`);
-              setTimeout(() => {
-                router.push(`/student/${studentId}/message/${messageId}`);
-              }, 100);
             }
           } else {
             // For student pages
@@ -272,7 +278,21 @@ export default function Root() {
               />
               <NetworkProvider>
                 <I18nProvider>
-                  <AppWithNotifications />
+                  {isDeepLinkNavigating ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        backgroundColor:
+                          themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {/* Empty screen during navigation */}
+                    </View>
+                  ) : (
+                    <AppWithNotifications />
+                  )}
                 </I18nProvider>
               </NetworkProvider>
             </StatusBarBackground>
