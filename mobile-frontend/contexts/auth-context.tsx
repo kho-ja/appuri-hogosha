@@ -49,6 +49,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
   const queryClient = useQueryClient();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const previousSessionRef = React.useRef<string | null>(session);
+  const [isSigningIn, setIsSigningIn] = React.useState(false);
 
   // Initialize demo mode state on mount
   React.useEffect(() => {
@@ -80,10 +81,36 @@ export function SessionProvider(props: React.PropsWithChildren) {
     }
     previousSessionRef.current = session;
   }, [session, queryClient]);
+
+  // Helper function to completely clear all data
+  const clearAllData = React.useCallback(async () => {
+    try {
+      // Clear all React Query cache
+      queryClient.clear();
+
+      await db.execAsync('DELETE FROM user');
+      await db.execAsync('DELETE FROM student');
+      await db.execAsync('DELETE FROM message');
+
+      await AsyncStorage.removeItem('students');
+      await AsyncStorage.removeItem('studentId');
+      await AsyncStorage.removeItem('selectedStudent');
+
+      console.log('[Auth] All data cleared successfully');
+    } catch (error) {
+      console.error('Error clearing data:', error);
+    }
+  }, [db, queryClient]);
+
   return (
     <AuthContext.Provider
       value={{
         signIn: async (country, phoneNumber, password) => {
+          setIsSigningIn(true);
+
+          try {
+            await clearAllData();
+            router.dismissAll();
           phoneNumber = phoneNumber.startsWith('0')
             ? phoneNumber.slice(1)
             : phoneNumber;
@@ -116,7 +143,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
             );
 
             // Clear existing user data and insert demo user
-            await db.execAsync('DELETE FROM user');
             await db.runAsync(
               'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
               [
@@ -135,7 +161,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
-          try {
             await registerForPushNotificationsAsync().then(async token => {
               const response = await fetch(`${apiUrl}/login`, {
                 method: 'POST',
@@ -182,6 +207,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
             } else {
               console.error('An unknown error occurred');
             }
+          } finally {
+            setIsSigningIn(false);
           }
         },
         refreshToken: async () => {
@@ -206,23 +233,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
               }),
             });
             if (!response.ok) {
-              try {
-                // Clear specific queries instead of all cache
-                queryClient.removeQueries({ queryKey: ['messages'] });
-
-                await db.execAsync('DELETE FROM user');
-                // Don't delete student data - keep it for next login
-                // await db.execAsync('DELETE FROM student');
-                await db.execAsync('DELETE FROM message');
-              } catch (error) {
-                console.error('Error during sign out:', error);
-              } finally {
+              await clearAllData();
                 setSession(null);
-              }
-            }
+              } else {
             const data: Session = await response.json();
             setSession(data.access_token);
             await AsyncStorage.setItem('refresh_token', data.refresh_token);
+            }
           } catch (error) {
             console.error('Error refreshing token:', error);
           }
@@ -235,13 +252,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
               setIsDemoMode(false);
             }
 
-            // Clear specific queries instead of all cache
-            queryClient.removeQueries({ queryKey: ['messages'] });
-
-            await db.execAsync('DELETE FROM user');
-            // Don't delete student data - keep it for next login
-            // await db.execAsync('DELETE FROM student');
-            await db.execAsync('DELETE FROM message');
+            await clearAllData();
 
             if (!isDemoMode) {
               const refreshToken = await AsyncStorage.getItem('refresh_token');
@@ -259,10 +270,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
             await AsyncStorage.removeItem('country');
             await AsyncStorage.removeItem('password');
             await AsyncStorage.removeItem('refresh_token');
-            // Student-related cache
-            await AsyncStorage.removeItem('students');
-            await AsyncStorage.removeItem('studentId');
-            await AsyncStorage.removeItem('selectedStudent');
           } catch (error) {
             console.error('Error during sign out:', error);
           } finally {
@@ -271,7 +278,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
         },
         session,
         setSession,
-        isLoading,
+        isLoading: isLoading || isSigningIn,
         isDemoMode,
       }}
     >
