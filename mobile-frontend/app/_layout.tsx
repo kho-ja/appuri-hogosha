@@ -84,22 +84,61 @@ export default function Root() {
         );
         console.log('Single student optimized path:', optimizedPath);
 
-        // For single student, create simple navigation history
+        // Determine if this is an HTTPS deep link vs dev schemes
+        const isHttpsDeepLink = originalUrl?.startsWith('https://');
+
+        // For single student, different logic for HTTPS vs dev schemes
         const delay = isInitial ? 1000 : 0;
         setTimeout(() => {
-          // For message links, create direct navigation to message (no extra student page)
+          // For message links
           const messageMatch = optimizedPath.match(
             /^\/student\/(\d+)\/message\/(\d+)$/
           );
           if (messageMatch) {
             const [, studentId, messageId] = messageMatch;
-            console.log('Single student: Direct navigation to message');
-            // Direct navigation to message - this will create proper history automatically
-            router.replace(`/student/${studentId}/message/${messageId}` as any);
+
+            if (isHttpsDeepLink) {
+              console.log(
+                'HTTPS single student: Simple navigation to avoid double student pages'
+              );
+              // For HTTPS, use simple navigation to avoid Student→Student→Message
+              router.replace(
+                `/student/${studentId}/message/${messageId}` as any
+              );
+            } else {
+              console.log(
+                'Dev scheme single student: Creating proper navigation history'
+              );
+              // For dev schemes, for single student: Student → Message (not Home → Student → Message)
+              // because single student has no home page, student page IS the home
+              router.replace(`/student/${studentId}`);
+              setTimeout(() => {
+                router.push(`/student/${studentId}/message/${messageId}`);
+              }, 100);
+            }
           } else {
-            // For student pages or other links, navigate directly
-            console.log('Single student: Direct navigation');
-            router.replace(optimizedPath as any);
+            // For student pages
+            const studentMatch = optimizedPath.match(/^\/student\/(\d+)$/);
+            if (studentMatch) {
+              if (isHttpsDeepLink) {
+                console.log(
+                  'HTTPS single student: Simple navigation to student page'
+                );
+                // For HTTPS, direct navigation to avoid complex history
+                router.replace(optimizedPath as any);
+              } else {
+                console.log(
+                  'Dev scheme single student: Creating history for student page'
+                );
+                // For dev schemes, for single student: direct to student page
+                // because student page IS the home for single student
+                router.replace(optimizedPath as any);
+              }
+            } else {
+              // For other links, navigate directly
+              console.log('Single student: Direct navigation');
+              router.replace(optimizedPath as any);
+            }
           }
         }, delay);
         return;
