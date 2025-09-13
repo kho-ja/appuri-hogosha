@@ -778,6 +778,7 @@
     "groupsUploaded": "Groups Uploaded Successfully",
     "createPostsFromCsv": "Create Posts from CSV",
     "createPosts": "Create Posts",
+    "downloadTemplate": "Download Template",
     "postsschema": "Posts Schema",
     "errorsInPosts": "Errors in posts",
     "postsCreated": "Posts Created Successfully",

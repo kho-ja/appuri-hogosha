@@ -773,6 +773,7 @@
     "groupsUploaded": "Группы загружены",
     "createPostsFromCsv": "Создать сообщения из CSV",
     "createPosts": "Создать сообщения",
+    "downloadTemplate": "Скачать шаблон",
     "postsschema": "Схема сообщений",
     "errorsInPosts": "Ошибки в сообщениях",
     "postsCreated": "Сообщения успешно созданы",

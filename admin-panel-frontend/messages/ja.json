@@ -775,6 +775,7 @@
     "groupsUploaded": "グループがアップロードされました",
     "createPostsFromCsv": "CSVから投稿を作成",
     "createPosts": "投稿を作成",
+    "downloadTemplate": "テンプレートをダウンロード",
     "postsschema": "投稿スキーマ",
     "errorsInPosts": "投稿のエラー",
     "postsCreated": "投稿が正常に作成されました",

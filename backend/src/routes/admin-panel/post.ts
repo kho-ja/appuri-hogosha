@@ -38,7 +38,7 @@ class PostController implements IController {
             upload.single('file'),
             this.uploadPostsFromCSV
         );
-
+        this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/:id', verifyToken, this.postView);
         this.router.put('/:id', verifyToken, this.postUpdate);
         this.router.put('/:id/sender', verifyToken, this.postUpdateSender);
@@ -2386,6 +2386,39 @@ class PostController implements IController {
                     })
                     .end();
             }
+        }
+    };
+
+    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const headers = [
+                'title',
+                'description',
+                'priority',
+                'group_names',
+                'student_numbers',
+            ];
+
+            stringify([headers], (err, output) => {
+                if (err) {
+                    console.error('CSV generation error:', err);
+                    return res
+                        .status(500)
+                        .json({ error: 'csv_generation_error' });
+                }
+
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                res.setHeader(
+                    'Content-Disposition',
+                    'attachment; filename="message_template.csv"'
+                );
+
+                const bom = '\uFEFF';
+                res.send(bom + output);
+            });
+        } catch (e: any) {
+            console.error('Error generating CSV template:', e);
+            return res.status(500).json({ error: 'internal_server_error' });
         }
     };
 }
