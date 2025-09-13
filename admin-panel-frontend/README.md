@@ -42,8 +42,9 @@ npm install
 ```.env.local
 AUTH_SECRET="your_secret_key" # Added by `npx auth`. Read more: https://cli.authjs.dev `npm exec auth secret`
 AUTH_URL=http://localhost:3000
-BACKEND_URL=http://localhost:3001
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+# Include the base path because admin routes are mounted at /admin-panel
+BACKEND_URL=http://localhost:3001/admin-panel
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001/admin-panel
 NEXT_PUBLIC_CALLIBRATE_HOURS=0
 NEXT_PUBLIC_IMAGES_URL=http://localhost:3001
 ```

@@ -23,7 +23,19 @@
     "Contains at least 1 number": "Contains at least 1 number",
     "Contains at least 1 lowercase letter": "Contains at least 1 lowercase letter",
     "Contains at least 1 uppercase letter": "Contains at least 1 uppercase letter",
-    "Contains at least 1 special character": "Contains at least 1 special character"
+    "Contains at least 1 special character": "Contains at least 1 special character",
+    "oauthError": "OAuth error. Please try again.",
+    "oauthSignInFailed": "Sign in failed during OAuth. Please try again.",
+    "oauthProcessingFailed": "Could not process OAuth response.",
+    "userNotFound": "Your Google account is not registered as an admin.",
+    "oauthMissingParams": "Missing OAuth parameters.",
+    "callbackError": "Login failed during callback. Please try again.",
+    "oauth_error": "OAuth error. Please try again.",
+    "oauth_signin_failed": "Sign in failed during OAuth. Please try again.",
+    "oauth_processing_failed": "Could not process OAuth response.",
+    "user_not_found": "Your Google account is not registered as an admin.",
+    "oauth_missing_params": "Missing OAuth parameters.",
+    "callback_error": "Login failed during callback. Please try again."
   },
   "ForgotPasswordPage": {
     "title": "Forgot Password",

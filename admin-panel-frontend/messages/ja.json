@@ -24,7 +24,19 @@
     "Contains at least 1 number": "少なくとも1文字が数字である必要があります",
     "Contains at least 1 lowercase letter": "少なくとも1つの小文字を含む",
     "Contains at least 1 uppercase letter": "少なくとも1つの大文字を含む",
-    "Contains at least 1 special character": "少なくとも1つの特殊文字を含む"
+    "Contains at least 1 special character": "少なくとも1つの特殊文字を含む",
+    "oauthError": "OAuth エラーが発生しました。もう一度お試しください。",
+    "oauthSignInFailed": "OAuth サインインに失敗しました。もう一度お試しください。",
+    "oauthProcessingFailed": "OAuth 応答を処理できませんでした。",
+    "userNotFound": "ご利用の Google アカウントは管理者として登録されていません。",
+    "oauthMissingParams": "OAuth パラメータが不足しています。",
+    "callbackError": "コールバック処理中にエラーが発生しました。もう一度お試しください。",
+    "oauth_error": "OAuth エラーが発生しました。もう一度お試しください。",
+    "oauth_signin_failed": "OAuth サインインに失敗しました。もう一度お試しください。",
+    "oauth_processing_failed": "OAuth 応答を処理できませんでした。",
+    "user_not_found": "ご利用の Google アカウントは管理者として登録されていません。",
+    "oauth_missing_params": "OAuth パラメータが不足しています。",
+    "callback_error": "コールバック処理中にエラーが発生しました。もう一度お試しください。"
   },
   "ForgotPasswordPage": {
     "title": "パスワードをお忘れですか？",
