@@ -26,6 +26,18 @@ export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
   const [isDeepLinkNavigating, setIsDeepLinkNavigating] = React.useState(false);
 
+  // Protection mechanism: reset loading state after 5 seconds
+  React.useEffect(() => {
+    if (isDeepLinkNavigating) {
+      const fallbackTimer = setTimeout(() => {
+        console.warn('Fallback: Resetting navigation state after timeout');
+        setIsDeepLinkNavigating(false);
+      }, 5000);
+
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [isDeepLinkNavigating]);
+
   React.useEffect(() => {
     // Load saved theme
     AsyncStorage.getItem('themeMode').then(savedMode => {
@@ -98,29 +110,85 @@ export default function Root() {
           );
           if (messageMatch) {
             const [, studentId, messageId] = messageMatch;
+
+            // validation
+            if (
+              !studentId ||
+              !messageId ||
+              isNaN(Number(studentId)) ||
+              isNaN(Number(messageId))
+            ) {
+              console.error('Invalid studentId or messageId:', {
+                studentId,
+                messageId,
+              });
+              setIsDeepLinkNavigating(false);
+              return;
+            }
+
             console.log('Single student: Creating navigation for message');
 
             if (isInitial) {
-              // App starting fresh - мгновенное создание истории
+              // App starting fresh - safe full stack creation
               console.log(
-                'Fresh app start: Creating Student → Message history instantly'
+                'Fresh app start: Creating Student → Message history safely'
               );
               // Скрываем интерфейс во время навигации
               setIsDeepLinkNavigating(true);
-              // Мгновенно создаем историю без видимых переходов
-              router.replace(`/student/${studentId}`);
-              // Сразу же переходим к сообщению (без задержки)
-              router.push(`/student/${studentId}/message/${messageId}`);
-              // Показываем интерфейс после навигации
-              setTimeout(() => {
+
+              try {
+                // First we switch to the student and wait for completion
+                router.replace(`/student/${studentId}`);
+
+                // wait a bit to ensure navigation is processed
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+
+                  // show interface shortly after navigation
+                  setTimeout(() => {
+                    setIsDeepLinkNavigating(false);
+                  }, 100);
+                }, 100);
+              } catch (error) {
+                console.error('Navigation error:', error);
+                // Fallback: show interface even on error
                 setIsDeepLinkNavigating(false);
-              }, 50);
+              }
             } else {
-              // App already running - direct navigation to avoid extra pages
-              console.log('App running: Direct navigation to message');
-              router.replace(
-                `/student/${studentId}/message/${messageId}` as any
-              );
+              // App already running - разная логика для HTTPS vs dev схем
+              if (isHttpsDeepLink) {
+                // HTTPS: создаем историю для работающего приложения
+                console.log(
+                  'HTTPS app running: Creating navigation history for message'
+                );
+
+                try {
+                  // Создаем историю для HTTPS когда приложение работает
+                  router.replace(`/student/${studentId}`);
+
+                  // Небольшая задержка, затем переходим к сообщению
+                  setTimeout(() => {
+                    router.push(`/student/${studentId}/message/${messageId}`);
+                  }, 50);
+                } catch (error) {
+                  console.error(
+                    'HTTPS navigation error in running app:',
+                    error
+                  );
+                  // Fallback: прямая навигация при ошибке
+                  router.replace(
+                    `/student/${studentId}/message/${messageId}` as any
+                  );
+                }
+              } else {
+                // Dev schemes (jduapp): прямая навигация без лишних страниц
+                console.log(
+                  'Dev scheme app running: Direct navigation to message'
+                );
+                router.replace(
+                  `/student/${studentId}/message/${messageId}` as any
+                );
+              }
             }
           } else {
             // For student pages
@@ -163,7 +231,13 @@ export default function Root() {
         console.log('Creating navigation history for message deep link');
 
         // For initial URLs, add a longer delay to ensure app is fully loaded
-        const delay = isInitial ? 1000 : 0;
+        // Но для dev схем используем меньшую задержку
+        const delay = isInitial ? (isHttpsDeepLink ? 1000 : 50) : 0;
+
+        // Для всех схем при закрытом приложении скрываем интерфейс во время навигации
+        if (isInitial) {
+          setIsDeepLinkNavigating(true);
+        }
 
         setTimeout(() => {
           if (isHttpsDeepLink) {
@@ -179,13 +253,36 @@ export default function Root() {
               }, 100);
             }, 50);
           } else {
-            // Dev schemes (exp, jduapp): Use original logic
-            console.log('Dev scheme: Using replace + push logic');
-            router.replace(`/student/${studentId}`);
+            // Dev schemes (exp, jduapp): Разная логика для закрытого/открытого приложения
+            if (isInitial) {
+              // Приложение закрыто: создаем полную историю Home → Student → Message
+              console.log(
+                'Dev scheme (app closed): Creating full navigation stack Home → Student → Message'
+              );
+              router.replace('/');
 
-            setTimeout(() => {
-              router.push(`/student/${studentId}/message/${messageId}`);
-            }, 100);
+              setTimeout(() => {
+                router.push(`/student/${studentId}`);
+
+                setTimeout(() => {
+                  router.push(`/student/${studentId}/message/${messageId}`);
+                  // Показываем интерфейс после завершения навигации
+                  setTimeout(() => {
+                    setIsDeepLinkNavigating(false);
+                  }, 100);
+                }, 100);
+              }, 50);
+            } else {
+              // Приложение открыто: прямая навигация Student → Message
+              console.log(
+                'Dev scheme (app open): Creating Student → Message navigation'
+              );
+              router.replace(`/student/${studentId}`);
+
+              setTimeout(() => {
+                router.push(`/student/${studentId}/message/${messageId}`);
+              }, 100);
+            }
           }
         }, delay);
       } else {
@@ -203,9 +300,23 @@ export default function Root() {
                 router.push(redirectPath as any);
               }, 50);
             } else {
-              // Dev schemes: Direct replace
-              console.log('Dev scheme: Direct replace to student');
-              router.replace(redirectPath as any);
+              // Dev schemes: Разная логика для закрытого/открытого приложения
+              if (isInitial) {
+                // Приложение закрыто: создаем историю Home → Student
+                console.log(
+                  'Dev scheme (app closed): Creating Home → Student stack'
+                );
+                router.replace('/');
+                setTimeout(() => {
+                  router.push(redirectPath as any);
+                }, 50);
+              } else {
+                // Приложение открыто: прямая навигация к студенту
+                console.log(
+                  'Dev scheme (app open): Direct navigation to student'
+                );
+                router.replace(redirectPath as any);
+              }
             }
           }, delay);
         } else {
