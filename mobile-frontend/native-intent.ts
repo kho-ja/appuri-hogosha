@@ -1,3 +1,32 @@
+// Function to get navigation path optimized for single student
+export function getNavigationPathForSingleStudent(
+  originalPath: string,
+  studentId: number
+): string {
+  console.log('Optimizing navigation for single student:', studentId);
+
+  // Check if the original path is a message link
+  const messageMatch = originalPath.match(/^\/student\/\d+\/message\/(\d+)$/);
+  if (messageMatch) {
+    const messageId = messageMatch[1];
+    return `/student/${studentId}/message/${messageId}`;
+  }
+
+  // Check if it's a student page
+  const studentMatch = originalPath.match(/^\/student\/\d+$/);
+  if (studentMatch) {
+    return `/student/${studentId}`;
+  }
+
+  // For home or root paths, go directly to student page
+  if (originalPath === '/' || originalPath === '/home') {
+    return `/student/${studentId}`;
+  }
+
+  // For other paths, keep as is
+  return originalPath;
+}
+
 export function redirectSystemPath({
   path,
   initial: _initial,
