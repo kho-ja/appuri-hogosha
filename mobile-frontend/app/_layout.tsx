@@ -102,7 +102,7 @@ export default function Root() {
         const isHttpsDeepLink = originalUrl?.startsWith('https://');
 
         // For single student, different logic for HTTPS vs dev schemes
-        const delay = isInitial ? 50 : 0; // Уменьшаем задержку для начального запуска
+        const delay = isInitial ? 50 : 0;
         setTimeout(() => {
           // For message links
           const messageMatch = optimizedPath.match(
@@ -133,7 +133,7 @@ export default function Root() {
               console.log(
                 'Fresh app start: Creating Student → Message history safely'
               );
-              // Скрываем интерфейс во время навигации
+              // Hide interface during navigation
               setIsDeepLinkNavigating(true);
 
               try {
@@ -155,18 +155,18 @@ export default function Root() {
                 setIsDeepLinkNavigating(false);
               }
             } else {
-              // App already running - разная логика для HTTPS vs dev схем
+              // App already running - different logic for HTTPS vs dev schemes
               if (isHttpsDeepLink) {
-                // HTTPS: создаем историю для работающего приложения
+                // HTTPS: create navigation history for running app
                 console.log(
                   'HTTPS app running: Creating navigation history for message'
                 );
 
                 try {
-                  // Создаем историю для HTTPS когда приложение работает
+                  // Create history for HTTPS when app is running
                   router.replace(`/student/${studentId}`);
 
-                  // Небольшая задержка, затем переходим к сообщению
+                  // Small delay, then navigate to message
                   setTimeout(() => {
                     router.push(`/student/${studentId}/message/${messageId}`);
                   }, 50);
@@ -175,13 +175,13 @@ export default function Root() {
                     'HTTPS navigation error in running app:',
                     error
                   );
-                  // Fallback: прямая навигация при ошибке
+                  // Fallback: direct navigation on error
                   router.replace(
                     `/student/${studentId}/message/${messageId}` as any
                   );
                 }
               } else {
-                // Dev schemes (jduapp): прямая навигация без лишних страниц
+                // Dev schemes (jduapp): direct navigation without extra pages
                 console.log(
                   'Dev scheme app running: Direct navigation to message'
                 );
@@ -231,10 +231,10 @@ export default function Root() {
         console.log('Creating navigation history for message deep link');
 
         // For initial URLs, add a longer delay to ensure app is fully loaded
-        // Но для dev схем используем меньшую задержку
+        // But for dev schemes use smaller delay
         const delay = isInitial ? (isHttpsDeepLink ? 1000 : 50) : 0;
 
-        // Для всех схем при закрытом приложении скрываем интерфейс во время навигации
+        // For all schemes when app is closed, hide interface during navigation
         if (isInitial) {
           setIsDeepLinkNavigating(true);
         }
@@ -253,9 +253,9 @@ export default function Root() {
               }, 100);
             }, 50);
           } else {
-            // Dev schemes (exp, jduapp): Разная логика для закрытого/открытого приложения
+            // Dev schemes (exp, jduapp): Different logic for closed/open app
             if (isInitial) {
-              // Приложение закрыто: создаем полную историю Home → Student → Message
+              // App closed: create full navigation history Home → Student → Message
               console.log(
                 'Dev scheme (app closed): Creating full navigation stack Home → Student → Message'
               );
@@ -266,14 +266,14 @@ export default function Root() {
 
                 setTimeout(() => {
                   router.push(`/student/${studentId}/message/${messageId}`);
-                  // Показываем интерфейс после завершения навигации
+                  // Show interface after navigation completion
                   setTimeout(() => {
                     setIsDeepLinkNavigating(false);
                   }, 100);
                 }, 100);
               }, 50);
             } else {
-              // Приложение открыто: прямая навигация Student → Message
+              // App open: direct navigation Student → Message
               console.log(
                 'Dev scheme (app open): Creating Student → Message navigation'
               );
@@ -300,9 +300,9 @@ export default function Root() {
                 router.push(redirectPath as any);
               }, 50);
             } else {
-              // Dev schemes: Разная логика для закрытого/открытого приложения
+              // Dev schemes: Different logic for closed/open app
               if (isInitial) {
-                // Приложение закрыто: создаем историю Home → Student
+                // App closed: create navigation history Home → Student
                 console.log(
                   'Dev scheme (app closed): Creating Home → Student stack'
                 );
@@ -311,7 +311,7 @@ export default function Root() {
                   router.push(redirectPath as any);
                 }, 50);
               } else {
-                // Приложение открыто: прямая навигация к студенту
+                // App open: direct navigation to student
                 console.log(
                   'Dev scheme (app open): Direct navigation to student'
                 );
