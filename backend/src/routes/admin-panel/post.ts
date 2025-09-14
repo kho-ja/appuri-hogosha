@@ -38,7 +38,7 @@ class PostController implements IController {
             upload.single('file'),
             this.uploadPostsFromCSV
         );
-
+        this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/:id', verifyToken, this.postView);
         this.router.put('/:id', verifyToken, this.postUpdate);
         this.router.put('/:id/sender', verifyToken, this.postUpdateSender);
@@ -108,6 +108,8 @@ class PostController implements IController {
             const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
             const stream = Readable.from(decodedContent);
 
+            let csvHeaders: string[] = [];
+
             await new Promise((resolve, reject) => {
                 stream
                     .pipe(csvParser())
@@ -118,7 +120,7 @@ class PostController implements IController {
                         ) {
                             headers[0] = headers[0].slice(1);
                         }
-                        headers = headers.map((header: string) =>
+                        csvHeaders = headers.map((header: string) =>
                             header.trim()
                         );
                     })
@@ -134,6 +136,42 @@ class PostController implements IController {
                     .on('end', resolve)
                     .on('error', reject);
             });
+
+            const requiredHeaders = [
+                'title',
+                'description',
+                'priority',
+                'group_names',
+                'student_numbers',
+            ];
+
+            const normalize = (str: string | undefined | null) =>
+                (str || '').trim().toLowerCase();
+
+            const csvHeadersNorm = csvHeaders.map(normalize);
+            const requiredHeadersNorm = requiredHeaders.map(normalize);
+
+            const missingHeaders = requiredHeadersNorm.filter(
+                header => !csvHeadersNorm.includes(header)
+            );
+
+            if (missingHeaders.length > 0) {
+                return res.status(400).json({
+                    error: 'missing_required_headers',
+                    details: 'Missing required headers',
+                    missingHeaders: missingHeaders,
+                    receivedHeaders: csvHeaders,
+                });
+            }
+
+            if (!results || results.length === 0) {
+                return res.status(200).json({
+                    message: 'csv_is_empty_but_valid',
+                    details: 'CSV file contains valid headers but no data rows',
+                    inserted: [],
+                    results: [],
+                });
+            }
 
             const validResults: any[] = [];
             const existingTitlesInCSV: any = [];
@@ -2348,6 +2386,39 @@ class PostController implements IController {
                     })
                     .end();
             }
+        }
+    };
+
+    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const headers = [
+                'title',
+                'description',
+                'priority',
+                'group_names',
+                'student_numbers',
+            ];
+
+            stringify([headers], (err, output) => {
+                if (err) {
+                    console.error('CSV generation error:', err);
+                    return res
+                        .status(500)
+                        .json({ error: 'csv_generation_error' });
+                }
+
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                res.setHeader(
+                    'Content-Disposition',
+                    'attachment; filename="message_template.csv"'
+                );
+
+                const bom = '\uFEFF';
+                res.send(bom + output);
+            });
+        } catch (e: any) {
+            console.error('Error generating CSV template:', e);
+            return res.status(500).json({ error: 'internal_server_error' });
         }
     };
 }

@@ -777,6 +777,7 @@
     "groupsUploaded": "Guruhlar yukladi",
     "createPostsFromCsv": "CSV dan Postlar yaratish",
     "createPosts": "Postlar yaratish",
+    "downloadTemplate": "Shablonni yuklab olish",
     "postsschema": "Postlar sxemasi",
     "errorsInPosts": "Postlardagi xatolar",
     "postsCreated": "Postlar muvaffaqiyatli yaratildi",
@@ -814,7 +815,8 @@
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
     "export": "Yuklab olish",
-    "back": "Orqaga"
+    "back": "Orqaga",
+    "csv_is_empty_but_valid": "CSV bo'sh, lekin yaroqli"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -951,7 +953,8 @@
     "kintone_token_required": "API token majburiy",
     "kintone_token_too_short": "API token kamida 10 belgidan iborat bo'lishi kerak",
     "kintone_token_too_long": "API token juda uzun (maksimal 100 belgi)",
-    "field_required": "Bu maydon majburiy"
+    "field_required": "Bu maydon majburiy",
+    "missing_required_headers": "Majburiy sarlavhalar yetishmayapti"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Hujjatni tayyorlash",

@@ -775,6 +775,7 @@
     "groupsUploaded": "グループがアップロードされました",
     "createPostsFromCsv": "CSVから投稿を作成",
     "createPosts": "投稿を作成",
+    "downloadTemplate": "テンプレートをダウンロード",
     "postsschema": "投稿スキーマ",
     "errorsInPosts": "投稿のエラー",
     "postsCreated": "投稿が正常に作成されました",
@@ -814,7 +815,8 @@
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
     "export": "ファイルに書き出す",
-    "back": "戻る"
+    "back": "戻る",
+    "csv_is_empty_but_valid": "CSVは空ですが有効です"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -952,7 +954,8 @@
     "invalid_or_missing_description": "無効または存在しない説明",
     "invalid_or_missing_priority": "無効または存在しない優先度",
     "invalid_image_format": "無効な画像フォーマットです。Base64エンコードされていることを確認してください。",
-    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）"
+    "image_size_too_large": "画像サイズが大きすぎます（最大10MB）",
+    "missing_required_headers": "必要なヘッダーが不足しています"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "ドキュメントの準備",
