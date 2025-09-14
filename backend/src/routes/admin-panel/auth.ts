@@ -400,13 +400,13 @@ class AuthController implements IController {
             // Build Cognito Hosted UI URL with Google identity provider
             const cognitoDomain = process.env.COGNITO_DOMAIN; // e.g., https://yourapp-admin.auth.us-east-1.amazoncognito.com
             const clientId = process.env.ADMIN_CLIENT_ID;
-            // Derive callback URL from current request host to avoid port/env mismatch in dev
-            const baseUrl = `${req.protocol}://${req.get('host')}/admin-panel`;
-            const callbackUrl = `${baseUrl}/google/callback`;
+            // Use BACKEND_URL env for callback
+            const callbackUrl = `${process.env.BACKEND_URL}/admin-panel/google/callback`;
+
             const frontendUrl =
                 process.env.FRONTEND_URL || 'http://localhost:3000';
 
-            if (!cognitoDomain || !clientId) {
+            if (!cognitoDomain || !clientId || !process.env.BACKEND_URL) {
                 throw { status: 500, message: 'Cognito configuration missing' };
             }
 
@@ -418,8 +418,6 @@ class AuthController implements IController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `state=${encodeURIComponent(frontendUrl)}`;
-
-            // Redirect to Cognito Hosted UI for Google login
 
             // Redirect user to Cognito Hosted UI with Google
             return res.redirect(cognitoUrl);
@@ -448,8 +446,7 @@ class AuthController implements IController {
             }
 
             // Exchange authorization code for tokens with Cognito
-            const baseUrl = `${req.protocol}://${req.get('host')}/admin-panel`;
-            const redirectUri = `${baseUrl}/google/callback`;
+            const redirectUri = `${process.env.BACKEND_URL}/admin-panel/google/callback`;
             const tokenResponse = await this.exchangeCodeForTokens(
                 code as string,
                 redirectUri
