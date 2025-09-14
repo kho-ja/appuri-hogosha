@@ -6,6 +6,43 @@ import { MockCognitoClient } from '../../utils/mock-cognito-client';
 import DB from '../../utils/db-client';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 
+// Allowed frontend base URLs for redirects (comma-separated env override supported)
+const DEFAULT_FRONTEND_URL =
+    process.env.FRONTEND_URL || 'http://localhost:3000';
+const VALID_FRONTEND_URLS: string[] = (
+    process.env.ALLOWED_FRONTEND_URLS
+        ? process.env.ALLOWED_FRONTEND_URLS.split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+        : [DEFAULT_FRONTEND_URL]
+) as string[];
+
+// Returns a safe frontend base URL. Falls back to the default if the provided state is not allowed.
+function getSafeFrontendUrl(state: any): string {
+    const value = Array.isArray(state) ? state[0] : state;
+    if (typeof value === 'string') {
+        // Allow exact match of a known base or a URL that begins with a known base + '/'
+        if (
+            VALID_FRONTEND_URLS.some(
+                base => value === base || value.startsWith(base + '/')
+            )
+        ) {
+            return value;
+        }
+        // As an extra precaution, reject data URLs and javascript: schemes even if misconfigured
+        try {
+            const parsed = new URL(value);
+            // Only allow http(s)
+            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                return DEFAULT_FRONTEND_URL;
+            }
+        } catch {
+            // Not a valid URL string — fall through to default
+        }
+    }
+    return DEFAULT_FRONTEND_URL;
+}
+
 class AuthController implements IController {
     public router: Router = Router();
     public cognitoClient: any;
@@ -391,7 +428,7 @@ class AuthController implements IController {
 
             if (error) {
                 console.error('Google OAuth error');
-                const frontendUrl = state || 'http://localhost:3000';
+                const frontendUrl = getSafeFrontendUrl(state);
                 return res.redirect(`${frontendUrl}/login?error=oauth_error`);
             }
 
@@ -429,7 +466,7 @@ class AuthController implements IController {
 
             if (admins.length <= 0) {
                 console.error('Admin not found for email');
-                const frontendUrl = state || 'http://localhost:3000';
+                const frontendUrl = getSafeFrontendUrl(state);
                 return res.redirect(
                     `${frontendUrl}/login?error=user_not_found`
                 );
@@ -447,7 +484,7 @@ class AuthController implements IController {
 
             // Create a session token or redirect with tokens
             // For simplicity, we'll redirect to frontend with tokens in URL (not recommended for production)
-            const frontendUrl = state || 'http://localhost:3000';
+            const frontendUrl = getSafeFrontendUrl(state);
 
             // In production, you should:
             // 1. Store tokens in secure HTTP-only cookies, or
@@ -460,7 +497,7 @@ class AuthController implements IController {
             return res.redirect(redirectUrl);
         } catch {
             console.error('Google callback error');
-            const frontendUrl = req.query.state || 'http://localhost:3000';
+            const frontendUrl = getSafeFrontendUrl(req.query.state);
             return res.redirect(`${frontendUrl}/login?error=callback_error`);
         }
     };
