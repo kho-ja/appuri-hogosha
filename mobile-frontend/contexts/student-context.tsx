@@ -13,6 +13,7 @@ import { useNetwork } from './network-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsFromDB } from '@/utils/queries';
 import DemoModeService from '@/services/demo-mode-service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -142,6 +143,10 @@ export function StudentProvider(props: PropsWithChildren) {
   useEffect(() => {
     if (isSuccess && data) {
       setStudents(data);
+      // Save students to AsyncStorage for deeplink navigation
+      AsyncStorage.setItem('students', JSON.stringify(data)).catch(error => {
+        console.error('Error saving students to AsyncStorage:', error);
+      });
     }
   }, [isSuccess, data, isDemoMode]);
 
