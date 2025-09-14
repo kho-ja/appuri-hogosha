@@ -17,30 +17,39 @@ const VALID_FRONTEND_URLS: string[] = (
         : [DEFAULT_FRONTEND_URL]
 ) as string[];
 
-// Returns a safe frontend base URL. Falls back to the default if the provided state is not allowed.
-function getSafeFrontendUrl(state: any): string {
-    const value = Array.isArray(state) ? state[0] : state;
-    if (typeof value === 'string') {
-        // Allow exact match of a known base or a URL that begins with a known base + '/'
-        if (
-            VALID_FRONTEND_URLS.some(
-                base => value === base || value.startsWith(base + '/')
-            )
-        ) {
-            return value;
-        }
-        // As an extra precaution, reject data URLs and javascript: schemes even if misconfigured
-        try {
-            const parsed = new URL(value);
-            // Only allow http(s)
-            if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-                return DEFAULT_FRONTEND_URL;
-            }
-        } catch {
-            // Not a valid URL string — fall through to default
-        }
+// Precompute allowed origins and their canonical bases
+const ALLOWED_FRONTEND_ORIGINS: string[] = VALID_FRONTEND_URLS.map(v => {
+    try {
+        return new URL(v).origin;
+    } catch {
+        return '';
     }
-    return DEFAULT_FRONTEND_URL;
+}).filter(Boolean);
+
+// Resolve a canonical allowed frontend base URL by matching the origin from the provided state.
+// If no match, return the default. Never return the raw state string.
+function getAllowedFrontendBase(state: any): string {
+    const defaultBase = DEFAULT_FRONTEND_URL;
+    const candidate = Array.isArray(state) ? state[0] : state;
+    if (typeof candidate !== 'string' || candidate.length === 0) {
+        return defaultBase;
+    }
+
+    try {
+        // Use defaultBase as base to support relative candidates without throwing
+        const parsed = new URL(candidate, defaultBase);
+        if (
+            (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+            ALLOWED_FRONTEND_ORIGINS.includes(parsed.origin)
+        ) {
+            // Return the canonical allowed base that corresponds to this origin
+            const idx = ALLOWED_FRONTEND_ORIGINS.indexOf(parsed.origin);
+            return VALID_FRONTEND_URLS[idx];
+        }
+    } catch {
+        // ignore and fall back
+    }
+    return defaultBase;
 }
 
 class AuthController implements IController {
@@ -428,8 +437,10 @@ class AuthController implements IController {
 
             if (error) {
                 console.error('Google OAuth error');
-                const frontendUrl = getSafeFrontendUrl(state);
-                return res.redirect(`${frontendUrl}/login?error=oauth_error`);
+                const base = getAllowedFrontendBase(state);
+                const url = new URL('/login', base);
+                url.searchParams.set('error', 'oauth_error');
+                return res.redirect(url.toString());
             }
 
             if (!code) {
@@ -466,10 +477,10 @@ class AuthController implements IController {
 
             if (admins.length <= 0) {
                 console.error('Admin not found for email');
-                const frontendUrl = getSafeFrontendUrl(state);
-                return res.redirect(
-                    `${frontendUrl}/login?error=user_not_found`
-                );
+                const base = getAllowedFrontendBase(state);
+                const url = new URL('/login', base);
+                url.searchParams.set('error', 'user_not_found');
+                return res.redirect(url.toString());
             }
 
             const admin = admins[0];
@@ -484,21 +495,38 @@ class AuthController implements IController {
 
             // Create a session token or redirect with tokens
             // For simplicity, we'll redirect to frontend with tokens in URL (not recommended for production)
-            const frontendUrl = getSafeFrontendUrl(state);
+            const base = getAllowedFrontendBase(state);
 
             // In production, you should:
             // 1. Store tokens in secure HTTP-only cookies, or
             //2. Store in server-side session, or
             // 3. Use a secure token exchange mechanism
 
-            const redirectUrl = `${frontendUrl}/?access_token=${tokenResponse.access_token}&refresh_token=${tokenResponse.refresh_token || ''}&user=${encodeURIComponent(JSON.stringify(admin))}`;
+            const redirectUrlObj = new URL('/', base);
+            redirectUrlObj.searchParams.set(
+                'access_token',
+                tokenResponse.access_token
+            );
+            if (tokenResponse.refresh_token) {
+                redirectUrlObj.searchParams.set(
+                    'refresh_token',
+                    tokenResponse.refresh_token
+                );
+            }
+            redirectUrlObj.searchParams.set(
+                'user',
+                encodeURIComponent(JSON.stringify(admin))
+            );
+            const redirectUrl = redirectUrlObj.toString();
 
             // Google login successful, redirecting to frontend
             return res.redirect(redirectUrl);
         } catch {
             console.error('Google callback error');
-            const frontendUrl = getSafeFrontendUrl(req.query.state);
-            return res.redirect(`${frontendUrl}/login?error=callback_error`);
+            const base = getAllowedFrontendBase(req.query.state);
+            const url = new URL('/login', base);
+            url.searchParams.set('error', 'callback_error');
+            return res.redirect(url.toString());
         }
     };
 
