@@ -30,14 +30,40 @@ export const verifyToken = async (
         process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
 
     try {
-        const userData = await cognitoClient.accessToken(token);
+        let userData;
+        try {
+            userData = await cognitoClient.accessToken(token);
+        } catch (err: any) {
+            // Fallback for OAuth access tokens from Cognito Hosted UI (Google): use userInfo endpoint
+            if (err?.status === 401) {
+                const resp = await fetch(
+                    `${process.env.COGNITO_DOMAIN}/oauth2/userInfo`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (!resp.ok) {
+                    throw err;
+                }
+                const data = await resp.json();
+                userData = {
+                    email: data.email ?? '',
+                    sub_id: data.sub ?? '',
+                    phone_number: data.phone_number ?? '',
+                };
+            } else {
+                throw err;
+            }
+        }
 
+        // Match admin by verified email only. Federated (Google) and native users can have different sub IDs.
         const admins = await DB.query(
-            `SELECT * FROM Admin as ad
-            WHERE ad.email = :email and ad.cognito_sub_id = :sub_id`,
+            `SELECT * FROM Admin as ad WHERE ad.email = :email`,
             {
                 email: userData.email,
-                sub_id: userData.sub_id,
             }
         );
 
