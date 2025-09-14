@@ -60,7 +60,8 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
       [router, students]
     );
 
-    // Auto-navigate if there's only one student (only once) and not in deep link scenario
+    // Auto-navigate if there's only one student (only once)
+    // Skip auto-navigation during deep link scenarios
     React.useEffect(() => {
       if (
         students?.length === 1 &&

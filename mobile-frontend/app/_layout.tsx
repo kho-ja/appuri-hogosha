@@ -111,7 +111,7 @@ export default function Root() {
           if (messageMatch) {
             const [, studentId, messageId] = messageMatch;
 
-            // validation
+            // Validate student and message IDs
             if (
               !studentId ||
               !messageId ||
@@ -140,11 +140,11 @@ export default function Root() {
                 // First we switch to the student and wait for completion
                 router.replace(`/student/${studentId}`);
 
-                // wait a bit to ensure navigation is processed
+                // Wait a bit to ensure navigation is processed
                 setTimeout(() => {
                   router.push(`/student/${studentId}/message/${messageId}`);
 
-                  // show interface shortly after navigation
+                  // Show interface shortly after navigation
                   setTimeout(() => {
                     setIsDeepLinkNavigating(false);
                   }, 100);
