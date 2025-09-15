@@ -145,13 +145,14 @@ export default function ForgotPasswordScreen() {
 
     setIsLoading(true);
     try {
-      let sendPhone = phoneNumber.replaceAll(' ', '');
-      if (sendPhone.startsWith('0')) {
-        sendPhone = sendPhone.substring(1);
-      }
+      const fullPhoneNumber = normalizePhoneNumber(
+        phoneNumber,
+        selectedCountry?.callingCode || '+1'
+      );
+
       await sendVerificationCode(
         selectedCountry?.callingCode || '+1',
-        sendPhone
+        fullPhoneNumber.replace(selectedCountry?.callingCode || '+1', '')
       );
 
       setIsLoading(false);
@@ -307,7 +308,10 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
     try {
       // Build full phone number with country code
-      const fullPhoneNumber = normalizePhoneNumber(phoneNumber,selectedCountry?.callingCode || '+1');
+      const fullPhoneNumber = normalizePhoneNumber(
+        phoneNumber,
+        selectedCountry?.callingCode || '+1'
+      );
 
       await resetPassword(
         fullPhoneNumber,
