@@ -417,6 +417,7 @@ class AuthController implements IController {
                 `client_id=${clientId}&` +
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
+                `prompt=select_account&` +
                 `state=${encodeURIComponent(frontendUrl)}`;
 
             // Redirect user to Cognito Hosted UI with Google
