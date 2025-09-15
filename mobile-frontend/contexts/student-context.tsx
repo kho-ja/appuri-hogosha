@@ -13,6 +13,7 @@ import { useNetwork } from './network-context';
 import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsFromDB } from '@/utils/queries';
 import DemoModeService from '@/services/demo-mode-service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -48,6 +49,17 @@ export function StudentProvider(props: PropsWithChildren) {
   const db = useSQLiteContext();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
+  const previousSessionRef = React.useRef<string | null>(session);
+  
+  React.useEffect(() => {
+    if (previousSessionRef.current !== session) {
+      console.log('[StudentContext] Session changed, resetting student state');
+      setStudents(null);
+      setActiveStudent(null);
+      previousSessionRef.current = session;
+    }
+  }, [session]);
+
   const saveStudentsToDB = useCallback(
     async (studentList: Student[]) => {
       const statement = await db.prepareAsync(
@@ -81,7 +93,7 @@ export function StudentProvider(props: PropsWithChildren) {
     refetch,
     isFetching: isLoading,
   } = useQuery<Student[], Error>({
-    queryKey: ['students'],
+    queryKey: ['students', session],
     queryFn: async () => {
       if (isDemoMode) {
         await DemoModeService.simulateNetworkDelay(300, 800);
@@ -141,7 +153,11 @@ export function StudentProvider(props: PropsWithChildren) {
 
   useEffect(() => {
     if (isSuccess && data) {
+      console.log('[StudentContext] Setting new student data:', data.length, 'students');
       setStudents(data);
+      AsyncStorage.setItem('students', JSON.stringify(data)).catch(error => {
+        console.error('Error saving students to AsyncStorage:', error);
+      });
     }
   }, [isSuccess, data, isDemoMode]);
 
@@ -151,6 +167,13 @@ export function StudentProvider(props: PropsWithChildren) {
       setStudents(null);
     }
   }, [isError, error]);
+
+  useEffect(() => {
+    if (activeStudent && students && !students.find(s => s.id === activeStudent.id)) {
+      console.log('[StudentContext] Active student no longer exists, clearing');
+      setActiveStudent(null);
+    }
+  }, [students, activeStudent]);
 
   return (
     <StudentContext.Provider

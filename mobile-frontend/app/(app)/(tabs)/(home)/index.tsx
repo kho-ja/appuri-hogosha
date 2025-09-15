@@ -12,21 +12,17 @@ import { useTheme } from '@rneui/themed';
 import { useFocusEffect } from '@react-navigation/native';
 import { RefreshControl, ScrollView } from 'react-native-gesture-handler';
 import NoStudentsScreen from '@/components/NoStudentsScreen';
-import { useSession } from '@/contexts/auth-context';
 
 const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { students, refetch, isLoading } = useStudents();
   const { theme } = useTheme();
-  const { session } = useSession();
   const backgroundColor = theme.colors.background;
 
   useFocusEffect(
     useCallback(() => {
-      if (session) {
-        refetch();
-      }
-    }, [refetch, session])
+      refetch(); // ✅ triggers fetch again when screen is focused
+    }, [refetch])
   );
 
   const onRefresh = async () => {
@@ -39,14 +35,6 @@ const HomeScreen = () => {
       setRefreshing(false);
     }
   };
-  if (!session) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size='large' color='#adb5bd' />
-        <ThemedText>Authenticating...</ThemedText>
-      </View>
-    );
-  }
 
   // Show loading spinner while initially loading
   if (isLoading && !students) {
