@@ -23,7 +23,19 @@
     "Contains at least 1 number": "Содержит по крайней мере 1 цифру",
     "Contains at least 1 lowercase letter": "Содержит по крайней мере 1 строчную букву",
     "Contains at least 1 uppercase letter": "Содержит по крайней мере 1 прописную букву",
-    "Contains at least 1 special character": "Содержит по крайней мере 1 специальный символ"
+    "Contains at least 1 special character": "Содержит по крайней мере 1 специальный символ",
+    "oauthError": "Ошибка OAuth. Пожалуйста, попробуйте еще раз.",
+    "oauthSignInFailed": "Не удалось войти через OAuth. Пожалуйста, попробуйте снова.",
+    "oauthProcessingFailed": "Не удалось обработать ответ OAuth.",
+    "userNotFound": "Ваш аккаунт Google не зарегистрирован как админ.",
+    "oauthMissingParams": "Отсутствуют параметры OAuth.",
+    "callbackError": "Ошибка при обработке callback. Пожалуйста, попробуйте еще раз.",
+    "oauth_error": "Ошибка OAuth. Пожалуйста, попробуйте еще раз.",
+    "oauth_signin_failed": "Не удалось войти через OAuth. Пожалуйста, попробуйте снова.",
+    "oauth_processing_failed": "Не удалось обработать ответ OAuth.",
+    "user_not_found": "Ваш аккаунт Google не зарегистрирован как админ.",
+    "oauth_missing_params": "Отсутствуют параметры OAuth.",
+    "callback_error": "Ошибка при обработке callback. Пожалуйста, попробуйте еще раз."
   },
   "ForgotPasswordPage": {
     "title": "Забыли пароль?",
@@ -773,6 +785,7 @@
     "groupsUploaded": "Группы загружены",
     "createPostsFromCsv": "Создать сообщения из CSV",
     "createPosts": "Создать сообщения",
+    "downloadTemplate": "Скачать шаблон",
     "postsschema": "Схема сообщений",
     "errorsInPosts": "Ошибки в сообщениях",
     "postsCreated": "Сообщения успешно созданы",
@@ -810,7 +823,8 @@
     "invalid_group_names": "Неверное название(я) группы",
     "group_members_not_found": "Члены группы не найдены",
     "export": "Экспорт",
-    "back": "Назад"
+    "back": "Назад",
+    "csv_is_empty_but_valid": "CSV пустой, но действительный"
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -949,7 +963,8 @@
     "invalid_or_missing_description": "Неверное или отсутствующее описание",
     "invalid_or_missing_priority": "Неверный или отсутствующий приоритет",
     "invalid_image_format": "Неверный формат изображения. Убедитесь, что оно закодировано в Base64.",
-    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)"
+    "image_size_too_large": "Размер изображения слишком велик (максимум 10MB)",
+    "missing_required_headers": "Отсутствуют обязательные заголовки"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Подготовка документа",

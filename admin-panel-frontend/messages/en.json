@@ -23,7 +23,19 @@
     "Contains at least 1 number": "Contains at least 1 number",
     "Contains at least 1 lowercase letter": "Contains at least 1 lowercase letter",
     "Contains at least 1 uppercase letter": "Contains at least 1 uppercase letter",
-    "Contains at least 1 special character": "Contains at least 1 special character"
+    "Contains at least 1 special character": "Contains at least 1 special character",
+    "oauthError": "OAuth error. Please try again.",
+    "oauthSignInFailed": "Sign in failed during OAuth. Please try again.",
+    "oauthProcessingFailed": "Could not process OAuth response.",
+    "userNotFound": "Your Google account is not registered as an admin.",
+    "oauthMissingParams": "Missing OAuth parameters.",
+    "callbackError": "Login failed during callback. Please try again.",
+    "oauth_error": "OAuth error. Please try again.",
+    "oauth_signin_failed": "Sign in failed during OAuth. Please try again.",
+    "oauth_processing_failed": "Could not process OAuth response.",
+    "user_not_found": "Your Google account is not registered as an admin.",
+    "oauth_missing_params": "Missing OAuth parameters.",
+    "callback_error": "Login failed during callback. Please try again."
   },
   "ForgotPasswordPage": {
     "title": "Forgot Password",
@@ -778,6 +790,7 @@
     "groupsUploaded": "Groups Uploaded Successfully",
     "createPostsFromCsv": "Create Posts from CSV",
     "createPosts": "Create Posts",
+    "downloadTemplate": "Download Template",
     "postsschema": "Posts Schema",
     "errorsInPosts": "Errors in posts",
     "postsCreated": "Posts Created Successfully",
@@ -815,7 +828,8 @@
     "invalid_group_names": "Invalid group name(s)",
     "group_members_not_found": "Group members not found",
     "export": "Export",
-    "back": "Back"
+    "back": "Back",
+    "csv_is_empty_but_valid": "CSV is empty but valid"
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -953,7 +967,8 @@
     "invalid_or_missing_description": "Invalid or missing description",
     "invalid_or_missing_priority": "Invalid or missing priority",
     "invalid_image_format": "Invalid image format. Make sure it is Base64 encoded.",
-    "image_size_too_large": "Image size is too large (max 10MB)"
+    "image_size_too_large": "Image size is too large (max 10MB)",
+    "missing_required_headers": "Missing required headers"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Preparing the document",
