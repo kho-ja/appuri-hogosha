@@ -41,7 +41,7 @@ export default function useFormMutation<T>(
     onError: (error) => {
       toast({
         title: t("wentWrong"),
-        description: error.message,
+        description: t(error.message),
         variant: "destructive",
       });
     },

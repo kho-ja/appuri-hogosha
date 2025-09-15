@@ -155,6 +155,8 @@ export function StudentProvider(props: PropsWithChildren) {
     if (isSuccess && data) {
       console.log('[StudentContext] Setting new student data:', data.length, 'students');
       setStudents(data);
+
+      // Save students to AsyncStorage for deeplink navigation
       AsyncStorage.setItem('students', JSON.stringify(data)).catch(error => {
         console.error('Error saving students to AsyncStorage:', error);
       });

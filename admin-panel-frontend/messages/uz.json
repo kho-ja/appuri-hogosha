@@ -24,7 +24,19 @@
     "Contains at least 1 number": "kamida 1ta raqamdan iborat",
     "Contains at least 1 lowercase letter": "kamida 1ta kichik harfdan iborat",
     "Contains at least 1 uppercase letter": "kamida 1ta katta harfdan iborat",
-    "Contains at least 1 special character": "kamida 1ta maxsus belgidan iborat"
+    "Contains at least 1 special character": "kamida 1ta maxsus belgidan iborat",
+    "oauthError": "OAuth xatosi. Iltimos, qayta urinib ko'ring.",
+    "oauthSignInFailed": "OAuth orqali kirishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    "oauthProcessingFailed": "OAuth javobini qayta ishlab bo'lmadi.",
+    "userNotFound": "Sizning Google akkauntingiz admin sifatida ro'yxatdan o'tmagan.",
+    "oauthMissingParams": "OAuth parametrlari yetishmayapti.",
+    "callbackError": "Callback vaqtida kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring.",
+    "oauth_error": "OAuth xatosi. Iltimos, qayta urinib ko'ring.",
+    "oauth_signin_failed": "OAuth orqali kirishda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.",
+    "oauth_processing_failed": "OAuth javobini qayta ishlab bo'lmadi.",
+    "user_not_found": "Sizning Google akkauntingiz admin sifatida ro'yxatdan o'tmagan.",
+    "oauth_missing_params": "OAuth parametrlari yetishmayapti.",
+    "callback_error": "Callback vaqtida kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring."
   },
   "ForgotPasswordPage": {
     "title": "Parolni unutdingizmi?",
@@ -777,6 +789,7 @@
     "groupsUploaded": "Guruhlar yukladi",
     "createPostsFromCsv": "CSV dan Postlar yaratish",
     "createPosts": "Postlar yaratish",
+    "downloadTemplate": "Shablonni yuklab olish",
     "postsschema": "Postlar sxemasi",
     "errorsInPosts": "Postlardagi xatolar",
     "postsCreated": "Postlar muvaffaqiyatli yaratildi",
@@ -814,7 +827,8 @@
     "invalid_group_names": "Noto‘g‘ri guruh nomi(lari)",
     "group_members_not_found": "Guruh a'zolari topilmadi",
     "export": "Yuklab olish",
-    "back": "Orqaga"
+    "back": "Orqaga",
+    "csv_is_empty_but_valid": "CSV bo'sh, lekin yaroqli"
   },
   "fromKintone": {
     "uploadStudent": "Talaba yuklab olish",
@@ -951,7 +965,8 @@
     "kintone_token_required": "API token majburiy",
     "kintone_token_too_short": "API token kamida 10 belgidan iborat bo'lishi kerak",
     "kintone_token_too_long": "API token juda uzun (maksimal 100 belgi)",
-    "field_required": "Bu maydon majburiy"
+    "field_required": "Bu maydon majburiy",
+    "missing_required_headers": "Majburiy sarlavhalar yetishmayapti"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Hujjatni tayyorlash",

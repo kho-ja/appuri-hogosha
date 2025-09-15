@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface StudentSelectorProps {
   students: Student[] | null;
@@ -17,8 +18,23 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     const router = useRouter();
     const { language, i18n } = useContext(I18nContext);
     const [hasAutoNavigated, setHasAutoNavigated] = React.useState(false);
+    const [isDeepLinkNavigation, setIsDeepLinkNavigation] =
+      React.useState(false);
     const { theme } = useTheme();
     const textColor = useThemeColor({}, 'text');
+
+    // Check if we're in a deep link navigation scenario
+    React.useEffect(() => {
+      const checkDeepLinkFlag = async () => {
+        const isDeepLink = await AsyncStorage.getItem('isDeepLinkNavigation');
+        setIsDeepLinkNavigation(isDeepLink === 'true');
+        if (isDeepLink === 'true') {
+          // Clear the flag after reading
+          await AsyncStorage.removeItem('isDeepLinkNavigation');
+        }
+      };
+      checkDeepLinkFlag();
+    }, []);
 
     const handleStudentSelect = useCallback(
       (student: Student, autoNavigation = false) => {
@@ -45,14 +61,19 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
     );
 
     // Auto-navigate if there's only one student (only once)
+    // Skip auto-navigation during deep link scenarios
     React.useEffect(() => {
-      if (students?.length === 1 && !hasAutoNavigated) {
+      if (
+        students?.length === 1 &&
+        !hasAutoNavigated &&
+        !isDeepLinkNavigation
+      ) {
         setHasAutoNavigated(true);
         handleStudentSelect(students[0], true);
       } else if (students?.length !== 1) {
         setHasAutoNavigated(false);
       }
-    }, [students, handleStudentSelect, hasAutoNavigated]);
+    }, [students, handleStudentSelect, hasAutoNavigated, isDeepLinkNavigation]);
     const avatarColors = [
       '#fc958d',
       '#fc9abc',

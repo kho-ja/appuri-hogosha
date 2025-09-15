@@ -28,6 +28,11 @@ class App {
             })
         );
 
+        // Lightweight health check endpoint
+        this.app.get('/health', (_req, res) => {
+            res.json({ status: 'ok', time: new Date().toISOString() });
+        });
+
         routes.forEach(route => {
             if (route.path) {
                 this.app.use(route.path, route.router);
