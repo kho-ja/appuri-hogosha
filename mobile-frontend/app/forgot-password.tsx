@@ -62,6 +62,33 @@ const validatePassword = (password: string) => {
   };
 };
 
+const normalizePhoneNumber = (
+  rawPhone: string,
+  callingCode: string
+): string => {
+  if (!rawPhone) return callingCode;
+
+  let phone = rawPhone.replace(/\s+/g, '').replace(/-/g, ''); // bo'shliq va chiziqlarni olib tashlash
+
+  // Agar 00 bilan boshlangan bo‘lsa → + ga o‘zgartiramiz
+  if (phone.startsWith('00')) {
+    phone = `+${phone.slice(2)}`;
+  }
+
+  // Agar + bilan boshlangan bo‘lsa → to‘g‘ridan-to‘g‘ri qaytaramiz
+  if (phone.startsWith('+')) {
+    return phone;
+  }
+
+  // Agar 0 bilan boshlangan bo‘lsa → uni olib tashlaymiz
+  if (phone.startsWith('0')) {
+    phone = phone.slice(1);
+  }
+
+  // Oxirida country code ni oldiga qo‘shamiz
+  return `${callingCode}${phone}`;
+};
+
 export default function ForgotPasswordScreen() {
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
@@ -118,13 +145,14 @@ export default function ForgotPasswordScreen() {
 
     setIsLoading(true);
     try {
-      let sendPhone = phoneNumber.replaceAll(' ', '');
-      if (sendPhone.startsWith('0')) {
-        sendPhone = sendPhone.substring(1);
-      }
+      const fullPhoneNumber = normalizePhoneNumber(
+        phoneNumber,
+        selectedCountry?.callingCode || '+1'
+      );
+
       await sendVerificationCode(
         selectedCountry?.callingCode || '+1',
-        sendPhone
+        fullPhoneNumber.replace(selectedCountry?.callingCode || '+1', '')
       );
 
       setIsLoading(false);
@@ -280,7 +308,10 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
     try {
       // Build full phone number with country code
-      const fullPhoneNumber = `${selectedCountry?.callingCode || '+1'}${phoneNumber.replaceAll(' ', '')}`;
+      const fullPhoneNumber = normalizePhoneNumber(
+        phoneNumber,
+        selectedCountry?.callingCode || '+1'
+      );
 
       await resetPassword(
         fullPhoneNumber,

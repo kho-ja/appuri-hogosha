@@ -80,6 +80,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
     }
     previousSessionRef.current = session;
   }, [session, queryClient]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -207,15 +208,19 @@ export function SessionProvider(props: React.PropsWithChildren) {
             });
             if (!response.ok) {
               try {
-                // Clear specific queries instead of all cache
-                queryClient.removeQueries({ queryKey: ['messages'] });
+                // Clear all cached data
+                queryClient.clear();
 
                 await db.execAsync('DELETE FROM user');
-                // Don't delete student data - keep it for next login
-                // await db.execAsync('DELETE FROM student');
+                await db.execAsync('DELETE FROM student');
                 await db.execAsync('DELETE FROM message');
+
+                // Clear AsyncStorage student cache
+                await AsyncStorage.removeItem('students');
+                await AsyncStorage.removeItem('studentId');
+                await AsyncStorage.removeItem('selectedStudent');
               } catch (error) {
-                console.error('Error during sign out:', error);
+                console.error('Error during token refresh cleanup:', error);
               } finally {
                 setSession(null);
               }
@@ -235,12 +240,12 @@ export function SessionProvider(props: React.PropsWithChildren) {
               setIsDemoMode(false);
             }
 
-            // Clear specific queries instead of all cache
-            queryClient.removeQueries({ queryKey: ['messages'] });
+            // Clear ALL cached queries to prevent old data from showing
+            queryClient.clear();
 
+            // Delete all user-related data from database
             await db.execAsync('DELETE FROM user');
-            // Don't delete student data - keep it for next login
-            // await db.execAsync('DELETE FROM student');
+            await db.execAsync('DELETE FROM student');
             await db.execAsync('DELETE FROM message');
 
             if (!isDemoMode) {
@@ -255,14 +260,16 @@ export function SessionProvider(props: React.PropsWithChildren) {
             }
 
             // Clear AsyncStorage
-            await AsyncStorage.removeItem('phoneNumber');
-            await AsyncStorage.removeItem('country');
-            await AsyncStorage.removeItem('password');
-            await AsyncStorage.removeItem('refresh_token');
-            // Student-related cache
-            await AsyncStorage.removeItem('students');
-            await AsyncStorage.removeItem('studentId');
-            await AsyncStorage.removeItem('selectedStudent');
+            await AsyncStorage.multiRemove([
+              'phoneNumber',
+              'country',
+              'password',
+              'refresh_token',
+              'students',
+              'studentId',
+              'selectedStudent',
+              'isDeepLinkNavigation',
+            ]);
           } catch (error) {
             console.error('Error during sign out:', error);
           } finally {
