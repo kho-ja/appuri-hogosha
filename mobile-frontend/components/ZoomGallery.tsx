@@ -87,7 +87,7 @@ export default function ZoomGallery({
 
       // Native download
       const filename = `image-${Date.now()}.jpg`;
-      const localPath = (FileSystem.cacheDirectory || '') + filename;
+      const localPath = FileSystem.Paths.cache.toString() + filename;
 
       // Download the image
       const downloadResult = await FileSystem.downloadAsync(

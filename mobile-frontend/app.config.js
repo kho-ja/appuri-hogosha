@@ -52,6 +52,7 @@ console.log(`Using variant: ${variant}`);
 module.exports = ({ config }) => {
   return {
     ...config,
+    sdkVersion: '54.0.0',
     runtimeVersion: packageJson.version,
     name: variantConfig.name,
     slug: 'parent-notification',
