@@ -902,7 +902,9 @@ class ParentController implements IController {
                             },
                         });
                     } else {
-                        const phone_number = `+${row.phone_number}`;
+                        const phone_number = row.phone_number.startsWith('+')
+                            ? row.phone_number
+                            : `+${row.phone_number}`;
                         const parent = await this.cognitoClient.register(
                             phone_number,
                             row.email,
