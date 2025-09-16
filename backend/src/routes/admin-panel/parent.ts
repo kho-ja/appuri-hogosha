@@ -902,10 +902,11 @@ class ParentController implements IController {
                             },
                         });
                     } else {
+                        const phone_number = `+${row.phone_number}`;
                         const parent = await this.cognitoClient.register(
-                            row.phone_number,
+                            phone_number,
                             row.email,
-                            row.phone_number
+                            phone_number
                         );
                         const parentInsert = await DB.execute(
                             `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
