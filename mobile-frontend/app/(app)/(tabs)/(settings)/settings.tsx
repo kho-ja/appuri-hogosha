@@ -14,14 +14,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useSession } from '@/contexts/auth-context';
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
 import { I18nContext } from '@/contexts/i18n-context';
 import { Button, useTheme } from '@rneui/themed';
 import { User } from '@/constants/types';
@@ -116,7 +113,8 @@ export default function SettingsScreen() {
   const [user, setUser] = useState<User | null>(null);
   const { theme } = useTheme();
   const isDark = theme.mode === 'dark';
-  const [, setIsOpen] = useState(false);
+  const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
+  const [isFontSizeModalVisible, setIsFontSizeModalVisible] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === 'en'
       ? 'English'
@@ -126,18 +124,8 @@ export default function SettingsScreen() {
           ? 'Русский'
           : "O'zbekcha"
   );
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = ['40%', '50%'];
 
   const { multiplier } = useFontSize();
-  const dynamicFontSizeSnapPoints = useMemo(() => {
-    if (multiplier >= 2.0) {
-      return ['50%', '55%'];
-    } else {
-      return ['40%', '50%'];
-    }
-  }, [multiplier]);
 
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
@@ -154,17 +142,14 @@ export default function SettingsScreen() {
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);
-    bottomSheetModalRef.current?.dismiss();
+    setIsLanguageModalVisible(false);
   };
   const handlePresentModal = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-    setTimeout(() => {
-      setIsOpen(true);
-    }, 100);
+    setIsLanguageModalVisible(true);
   }, []);
 
   const handlePresentFontSizeModal = useCallback(() => {
-    fontSizeBottomSheetRef.current?.present();
+    setIsFontSizeModalVisible(true);
   }, []);
 
   useEffect(() => {
@@ -197,25 +182,14 @@ export default function SettingsScreen() {
         },
       ]
     );
-  }, [signOut, i18n, language]);
-
   const backgroundColor = theme.colors.background;
-
-  const handleOutsidePress = useCallback(() => {
-    bottomSheetModalRef.current?.dismiss();
-  }, []);
-
-  const handleFontSizeOutsidePress = useCallback(() => {
-    fontSizeBottomSheetRef.current?.dismiss();
-  }, []);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <BottomSheetModalProvider>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 16 }}
-        >
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 16 }}
+      >
           <View style={styles.infoCard}>
             <ThemedText style={styles.sectionTitle}>
               {i18n[language].personalInfo}
@@ -304,37 +278,30 @@ export default function SettingsScreen() {
             </Pressable>
             <ThemeSwitcher />
           </View>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={1}
-            snapPoints={snapPoints}
-            backgroundStyle={{ backgroundColor: '#eee' }}
-            onDismiss={() => setIsOpen(false)}
-            backdropComponent={() => (
-              <Pressable
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                onPress={handleOutsidePress}
-              />
-            )}
-          >
-            <ThemedView style={styles.contentContainer}>
-              <ThemedText
-                style={{
-                  marginTop: 18,
-                  marginBottom: 18,
-                  fontSize: 18,
-                  alignSelf: 'flex-start',
-                }}
-              >
-                {i18n[language].language}
-              </ThemedText>
-              <ThemedView style={{ width: '100%' }}>
+        </ScrollView>
+        
+        {/* Language Selection Modal */}
+        <Modal
+          visible={isLanguageModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setIsLanguageModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable 
+              style={styles.modalBackdrop} 
+              onPress={() => setIsLanguageModalVisible(false)}
+            />
+            <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText style={styles.modalTitle}>
+                  {i18n[language].language}
+                </ThemedText>
+                <Pressable onPress={() => setIsLanguageModalVisible(false)} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={theme.colors.grey1} />
+                </Pressable>
+              </View>
+              <View style={styles.modalBody}>
                 {languageData.map(l => (
                   <LanguageSelection
                     key={l.language}
@@ -345,82 +312,85 @@ export default function SettingsScreen() {
                     isDark={isDark}
                   />
                 ))}
-              </ThemedView>
-            </ThemedView>
-          </BottomSheetModal>
-          <BottomSheetModal
-            ref={fontSizeBottomSheetRef}
-            index={1}
-            snapPoints={dynamicFontSizeSnapPoints}
-            backgroundStyle={{ backgroundColor: '#eee' }}
-            onDismiss={() => setIsOpen(false)}
-            backdropComponent={() => (
-              <Pressable
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                onPress={handleFontSizeOutsidePress}
-              />
-            )}
-          >
-            <ThemedView style={styles.contentContainer}>
-              <ThemedView style={styles.row}></ThemedView>
-              <ThemedView style={styles.fontSizeContainer}>
-                <View style={styles.sliderWithLabels}>
-                  <ThemedText
-                    style={{
-                      fontSize: 14,
-                      color: '#8E8E93',
-                      fontWeight: '500',
-                    }}
-                  >
-                    A
-                  </ThemedText>
-                  <View style={styles.sliderFixedContainer}>
-                    <FontSizeSlider />
-                  </View>
-                  <ThemedText
-                    style={{
-                      fontSize: 24,
-                      color: '#8E8E93',
-                      fontWeight: '600',
-                    }}
-                  >
-                    A
-                  </ThemedText>
-                </View>
-
-                <SampleText
-                  text={
-                    translation[language as keyof typeof translation]
-                      ?.sampleText ||
-                    'Choose the text size that suits you best for a more comfortable reading experience.'
-                  }
-                />
-              </ThemedView>
-            </ThemedView>
-          </BottomSheetModal>
-          <View style={{ marginTop: 40, marginBottom: 20 }}>
-            <Button
-              buttonStyle={[
-                styles.submitButton,
-                { backgroundColor: theme.colors.background },
-              ]}
-              onPress={handlePress}
-              title={i18n[language].logout}
-              titleStyle={styles.text}
-              icon={
-                <Ionicons name='log-out-outline' size={30} color='#FF4444' />
-              }
-            />
+              </View>
+            </View>
           </View>
-        </ScrollView>
-      </BottomSheetModalProvider>
-    </SafeAreaView>
+        </Modal>
+
+        {/* Font Size Modal */}
+        <Modal
+          visible={isFontSizeModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setIsFontSizeModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Pressable 
+              style={styles.modalBackdrop} 
+              onPress={() => setIsFontSizeModalVisible(false)}
+            />
+            <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText style={styles.modalTitle}>
+                  {i18n[language].textSize}
+                </ThemedText>
+                <Pressable onPress={() => setIsFontSizeModalVisible(false)} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={theme.colors.grey1} />
+                </Pressable>
+              </View>
+              <View style={styles.modalBody}>
+                <View style={styles.fontSizeContainer}>
+                  <View style={styles.sliderWithLabels}>
+                    <ThemedText
+                      style={{
+                        fontSize: 14,
+                        color: '#8E8E93',
+                        fontWeight: '500',
+                      }}
+                    >
+                      A
+                    </ThemedText>
+                    <View style={styles.sliderFixedContainer}>
+                      <FontSizeSlider />
+                    </View>
+                    <ThemedText
+                      style={{
+                        fontSize: 24,
+                        color: '#8E8E93',
+                        fontWeight: '600',
+                      }}
+                    >
+                      A
+                    </ThemedText>
+                  </View>
+                  <SampleText
+                    text={
+                      translation[language as keyof typeof translation]
+                        ?.sampleText ||
+                      'Choose the text size that suits you best for a more comfortable reading experience.'
+                    }
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        <View style={{ marginTop: 40, marginBottom: 20 }}>
+          <Button
+            buttonStyle={[
+              styles.submitButton,
+              { backgroundColor: theme.colors.background },
+            ]}
+            onPress={handlePress}
+            title={i18n[language].logout}
+            titleStyle={styles.text}
+            icon={
+              <Ionicons name='log-out-outline' size={30} color='#FF4444' />
+            }
+          />
+        </View>
+      </SafeAreaView>
   );
 }
 
@@ -544,5 +514,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 10,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '60%',
+    minHeight: '40%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  modalBody: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
 });
