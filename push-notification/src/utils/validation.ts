@@ -32,6 +32,7 @@ export const getUzbekistanOperatorRouting = (
     const operatorCode = cleanNumber.substring(3, 5);
     const operators: Record<string, { name: string; usePlayMobile: boolean }> =
         {
+            '33': { name: 'Uzbekistan Mobile', usePlayMobile: true }, // Use PlayMobile for operator 33
             '90': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
             '91': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
             '93': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)

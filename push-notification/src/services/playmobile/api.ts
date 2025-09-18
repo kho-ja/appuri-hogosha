@@ -54,14 +54,12 @@ export class PlayMobileService {
             if (formattedPhone.startsWith('+998')) {
                 formattedPhone = formattedPhone.substring(1);
             } else if (formattedPhone.startsWith('+')) {
-                // Handle international numbers gracefully
-                const countryCode = formattedPhone.substring(0, 3);
-                console.warn(
-                    `⚠️ International number detected: ${phoneNumber} (${countryCode}). PlayMobile only supports Uzbekistan (+998). Please route this number to AWS SMS instead.`
+                console.error(
+                    `❌ Invalid country code: ${phoneNumber}. Only Uzbekistan (+998) supported`
                 );
                 return {
                     success: false,
-                    reason: `International number (${countryCode}) should be routed to AWS SMS, not PlayMobile`,
+                    reason: 'Only Uzbekistan numbers supported',
                 };
             }
 
@@ -69,34 +67,12 @@ export class PlayMobileService {
                 formattedPhone.length !== 12 ||
                 !formattedPhone.startsWith('998')
             ) {
-                // Check if this might be an international number without + prefix
-                if (
-                    formattedPhone.startsWith('33') &&
-                    formattedPhone.length >= 10
-                ) {
-                    console.warn(
-                        `⚠️ Possible France number detected: ${phoneNumber}. This should be formatted as +${formattedPhone} and routed to AWS SMS instead.`
-                    );
-                    return {
-                        success: false,
-                        reason: 'Possible international number should be routed to AWS SMS with + prefix',
-                    };
-                } else if (!formattedPhone.startsWith('998')) {
-                    console.warn(
-                        `⚠️ Non-Uzbekistan number detected: ${phoneNumber}. Only Uzbekistan numbers (998xxxxxxxxx) are supported by PlayMobile.`
-                    );
-                    return {
-                        success: false,
-                        reason: 'Non-Uzbekistan number should be routed to AWS SMS',
-                    };
-                }
-
                 console.error(
-                    `❌ Invalid phone format: ${phoneNumber}. Must be 998xxxxxxxxx (12 digits)`
+                    `❌ Invalid phone format: ${phoneNumber}. Must be 998xxxxxxxxx`
                 );
                 return {
                     success: false,
-                    reason: 'Invalid phone number format - must be 998xxxxxxxxx',
+                    reason: 'Invalid phone number format',
                 };
             }
 
