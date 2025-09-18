@@ -36,6 +36,7 @@ class GroupController implements IController {
             upload.single('file'),
             this.uploadGroupsFromCSV
         );
+        this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportGroupsToCSV);
 
         this.router.get('/:id', verifyToken, this.groupView);
@@ -1104,6 +1105,28 @@ class GroupController implements IController {
                     })
                     .end();
             }
+        }
+    };
+
+    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const headers = ['name', 'student_numbers'];
+
+            const csvContent = stringify([headers], {
+                header: false,
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="group_template.csv"'
+            );
+
+            const bom = '\uFEFF';
+            res.send(bom + csvContent);
+        } catch (e: any) {
+            console.error('Error generating CSV template:', e);
+            return res.status(500).json({ error: 'internal_server_error' });
         }
     };
 }

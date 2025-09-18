@@ -45,6 +45,7 @@ class StudentController implements IController {
             verifyToken,
             this.kintoneUploadStudentsFromCSV
         );
+        this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportStudentsToCSV);
 
         this.router.get('/:id', verifyToken, this.studentView);
@@ -1494,6 +1495,34 @@ class StudentController implements IController {
                     })
                     .end();
             }
+        }
+    };
+
+    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const headers = [
+                'email',
+                'phone_number',
+                'given_name',
+                'family_name',
+                'student_number',
+            ];
+
+            const csvContent = stringify([headers], {
+                header: false,
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="student_template.csv"'
+            );
+
+            const bom = '\uFEFF';
+            res.send(bom + csvContent);
+        } catch (e: any) {
+            console.error('Error generating CSV template:', e);
+            return res.status(500).json({ error: 'internal_server_error' });
         }
     };
 }

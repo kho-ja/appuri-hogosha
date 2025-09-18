@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
 import useFormMutation from "@/lib/useFormMutation";
+import useFileMutation from "@/lib/useFileMutation";
 import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { File as FileIcon, Info } from "lucide-react";
+import { File as FileIcon, Info, Download } from "lucide-react";
 import {
   Select,
   SelectItem,
@@ -51,7 +52,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Student from "@/types/student";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
-import PageHeader  from "@/components/PageHeader";
+import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
   csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
@@ -103,13 +104,28 @@ export default function CreateFromCsv() {
     mutate(formData);
   };
 
+  const { mutate: downloadTemplate, isPending: isDownloading } =
+    useFileMutation<Blob>("student/template", ["downloadTemplate"]);
+
   const errors = (error?.body ?? []) as Upload<Student>;
 
   return (
     <main className="space-y-4">
       <PageHeader title={t("createFromCsv")}>
-        <BackButton href={`/students/create`} />
-      </PageHeader>  
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => downloadTemplate()}
+            disabled={isDownloading}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {isDownloading ? "Downloading..." : t("downloadTemplate")}
+          </Button>
+          <BackButton href={`/students/create`} />
+        </div>
+      </PageHeader>
       <Card className="p-5 space-y-2">
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>

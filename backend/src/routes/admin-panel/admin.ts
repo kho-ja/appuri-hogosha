@@ -39,6 +39,7 @@ class AdminController implements IController {
             upload.single('file'),
             this.uploadAdminsFromCSV
         );
+        this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportAdminsToCSV);
         this.router.get('/:id', verifyToken, this.adminView);
         this.router.post('/get-details', verifyToken, this.adminViewSecure); // Secure POST endpoint for sensitive data
@@ -922,6 +923,33 @@ class AdminController implements IController {
                     })
                     .end();
             }
+        }
+    };
+
+    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const headers = [
+                'email',
+                'phone_number',
+                'given_name',
+                'family_name',
+            ];
+
+            const csvContent = stringify([headers], {
+                header: false,
+            });
+
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename="admin_template.csv"'
+            );
+
+            const bom = '\uFEFF';
+            res.send(bom + csvContent);
+        } catch (e: any) {
+            console.error('Error generating CSV template:', e);
+            return res.status(500).json({ error: 'internal_server_error' });
         }
     };
 }
