@@ -115,13 +115,13 @@ export default function CreateFromCsv() {
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => downloadTemplate()}
-            disabled={isDownloading}
-            className="flex items-center gap-2"
+            isLoading={isDownloading}
+            icon={<Download className="h-4 w-4" />}
+            className="w-full sm:w-auto"
           >
-            <Download className="h-4 w-4" />
-            {isDownloading ? "Downloading..." : t("downloadTemplate")}
+            {t("downloadTemplate")}
           </Button>
           <BackButton href={`/students/create`} />
         </div>
