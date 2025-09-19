@@ -86,18 +86,38 @@ export default function SignIn() {
     mutationFn: async () =>
       await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
     onError: error => {
-      Toast.show(i18n[language].loginFailed, {
-        duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      // Check if this is a notification permission error
+      if (
+        error instanceof Error &&
+        (error.name === 'NotificationPermissionError' ||
+          error.message === 'NOTIFICATION_PERMISSION_DENIED')
+      ) {
+        Toast.show(i18n[language].loginFailedNotifications, {
+          duration: Toast.durations.LONG,
+          position: Toast.positions.BOTTOM,
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+          textColor: 'white',
+          containerStyle: {
+            backgroundColor: 'red',
+            borderRadius: 5,
+          },
+        });
+      } else {
+        Toast.show(i18n[language].loginFailed, {
+          duration: Toast.durations.LONG,
+          position: Toast.positions.BOTTOM,
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+          textColor: 'white',
+          containerStyle: {
+            backgroundColor: 'red',
+            borderRadius: 5,
+          },
+        });
+      }
     },
     onSuccess: async () => {
       await AsyncStorage.setItem('hasEverLoggedIn', 'true');

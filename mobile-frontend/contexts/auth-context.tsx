@@ -179,6 +179,19 @@ export function SessionProvider(props: React.PropsWithChildren) {
           } catch (error) {
             console.error('Error during sign in:', error);
             if (error instanceof Error) {
+              // Check if error is related to push notifications
+              if (
+                error.message.includes('Permission not granted') ||
+                error.message.includes('push notification') ||
+                error.message.includes('notification')
+              ) {
+                // Create a custom error for notification permission issues
+                const notificationError = new Error(
+                  'NOTIFICATION_PERMISSION_DENIED'
+                );
+                notificationError.name = 'NotificationPermissionError';
+                throw notificationError;
+              }
               throw error;
             } else {
               console.error('An unknown error occurred');
