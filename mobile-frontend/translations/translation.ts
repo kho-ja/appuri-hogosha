@@ -16,6 +16,8 @@ export default {
     noaccount: "Don't have an account?",
     justregister: 'Register',
     loginFailed: 'Invalid phone number or password',
+    loginFailedNotifications:
+      'Please enable notifications to continue. Check your device settings.',
     loginSuccess: 'Logged in successfully',
     /*sign in page*/
 
@@ -262,6 +264,8 @@ export default {
     noaccount: 'アカウントをお持ちでないですか？',
     justregister: '登録',
     loginFailed: '無効な電話番号またはパスワード',
+    loginFailedNotifications:
+      '続行するには通知を有効にしてください。デバイスの設定を確認してください。',
     loginSuccess: 'ログインに成功しました',
     /*sign in page*/
 
@@ -510,6 +514,8 @@ export default {
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
     loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
+    loginFailedNotifications:
+      'Davom etish uchun bildirishnomalarni yoqing. Qurilma sozlamalarini tekshiring.',
     loginSuccess: 'Muvaffaqiyatli kirdingiz',
     /*sign in page*/
 
@@ -758,6 +764,8 @@ export default {
     noaccount: 'Нет аккаунта?',
     justregister: 'Зарегистрируйтесь',
     loginFailed: 'Введен неверный номер телефона или пароль',
+    loginFailedNotifications:
+      'Для продолжения включите уведомления. Проверьте настройки устройства.',
     loginSuccess: 'Вы успешно вошли',
     /*sign in page*/
 

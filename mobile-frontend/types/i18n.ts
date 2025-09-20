@@ -13,6 +13,7 @@ export type TranslationKeys = {
   noaccount: string;
   justregister: string;
   loginFailed: string;
+  loginFailedNotifications: string;
   loginSuccess: string;
 
   // Forgot password pages
