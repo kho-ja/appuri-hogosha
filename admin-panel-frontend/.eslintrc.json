@@ -23,6 +23,25 @@
     "@typescript-eslint/no-explicit-any": "warn",
     "react-hooks/exhaustive-deps": "warn"
   },
+  "overrides": [
+    {
+      "files": ["components/ui/*.tsx"],
+      "rules": {
+        "@typescript-eslint/consistent-type-imports": [
+          "error",
+          {
+            "prefer": "type-imports",
+            "disallowTypeAnnotations": false,
+            "fixStyle": "separate-type-imports"
+          }
+        ],
+        "react/display-name": "error",
+        "@typescript-eslint/no-empty-interface": "off",
+        "prefer-const": "error",
+        "no-var": "error"
+      }
+    }
+  ],
   "ignorePatterns": [
     "node_modules/**",
     ".next/**",
