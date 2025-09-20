@@ -250,7 +250,7 @@ export default function Info() {
           <Checkbox
             checked={isAllSelectedScheduled()}
             onCheckedChange={(checked) =>
-              handleSelectAllScheduledChange(Boolean(checked))
+              handleSelectAllChangeScheduled(Boolean(checked))
             }
           />
         );

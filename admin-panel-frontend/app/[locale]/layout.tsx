@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/theme-provider";
 import { NextIntlClientProvider } from "next-intl";
@@ -11,8 +10,6 @@ import { auth } from "@/auth";
 import TimezoneDetector from "@/components/TimezoneDetector";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export async function generateMetadata() {
   const session = await auth();
@@ -39,7 +36,7 @@ export default async function RootLayout({
   const messages = await getMessages();
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className="font-sans">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider
             attribute="class"
