@@ -27,7 +27,6 @@ import TableApi from '@/components/TableApi';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import useSMSQuery from '@/lib/useSMSQuery';
 import useSMSMutation from '@/lib/useSMSMutation';
 import SMS from '@/types/sms';
 import { FormatDateTime } from '@/lib/utils';
@@ -84,8 +83,8 @@ const testSMSData: SMS[] = [
 
 export default function SMSPage() {
   const t = useTranslations('sms');
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [, setPage] = useState(1);
+  const [, setSearch] = useState('');
   // const { data } = useSMSQuery(page, search);
   const data = {
     sms: testSMSData,

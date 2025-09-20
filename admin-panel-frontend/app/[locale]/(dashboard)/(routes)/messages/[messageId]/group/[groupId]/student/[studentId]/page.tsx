@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Student from '@/types/student';
 import Parent from '@/types/parent';
-import { Link } from '@/navigation';
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
 import Group from '@/types/group';

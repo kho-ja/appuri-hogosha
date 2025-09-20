@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { usePathname, Link } from '@/navigation';
+import { Link } from '@/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { FormatDateTime } from '@/lib/utils';
@@ -41,7 +41,7 @@ export default function ScheduledMessagePage({
     messageId,
   ]);
 
-  const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
+  const { data: recieverData } = useApiQuery<any>(
     `schedule/${messageId}/recievers`,
     ['scheduled-recievers', messageId]
   );

@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/navigation';
 
 declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData, TValue> {
     notClickable?: boolean;
   }

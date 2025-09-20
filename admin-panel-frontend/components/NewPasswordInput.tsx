@@ -14,7 +14,6 @@ interface NewPasswordInputProps {
 export default function NewPasswordInput({
   value,
   onChange,
-  error,
 }: NewPasswordInputProps) {
   const t = useTranslations('LoginForm');
   const [isFocused, setIsFocused] = useState(false);
@@ -42,10 +41,6 @@ export default function NewPasswordInput({
       test: (pw: string) => /[\^$*.[\]{}()?"!@#%&/\\><':;|_~`+=]/.test(pw),
     },
   ];
-
-  const isValid = () => {
-    return requirements.every(req => req.test(value));
-  };
 
   return (
     <div className="grid gap-2">

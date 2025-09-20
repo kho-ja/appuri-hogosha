@@ -1,5 +1,4 @@
 'use client';
-import { useState, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Image from 'next/image';
@@ -22,13 +21,7 @@ import imageSrc17 from '@/public/assets/image (16).png';
 import imageSrc18 from '@/public/assets/image (17).png';
 import imageSrc19 from '@/public/assets/image (18).png';
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import DocsPreparing from '@/components/docsPreparing';
-import { toast } from '@/components/ui/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
-import useFormMutation from '@/lib/useFormMutation';
 import localImageLoader from '@/lib/localImageLoader';
 
 export default function Instruction() {

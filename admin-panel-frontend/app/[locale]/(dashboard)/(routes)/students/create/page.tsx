@@ -64,7 +64,7 @@ export default function CreateStudent() {
   });
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
   const router = useRouter();
-  const { mutate, isPending } = useApiMutation<{ student: Student }>(
+  const { mutate } = useApiMutation<{ student: Student }>(
     `student/create`,
     'POST',
     ['createStudent'],

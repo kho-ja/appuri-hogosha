@@ -43,7 +43,7 @@ export default function CreateGroup() {
     },
   });
 
-  const { isPending, mutate } = useApiMutation<{ group: Group }>(
+  const { mutate } = useApiMutation<{ group: Group }>(
     `group/create`,
     'POST',
     ['createGroup'],

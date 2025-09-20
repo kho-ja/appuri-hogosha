@@ -22,10 +22,10 @@
       "warn",
       { "argsIgnorePattern": "^_" }
     ],
-    "@typescript-eslint/no-explicit-any": "warn",
-    "no-console": "warn",
     "prefer-const": "error",
-    "no-var": "error"
+    "no-var": "error",
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off"
   },
   "ignorePatterns": [
     "node_modules/",

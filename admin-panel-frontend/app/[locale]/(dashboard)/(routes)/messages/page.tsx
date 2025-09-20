@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogContent,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -68,7 +67,6 @@ export default function Info() {
     ['scheduledPosts', page, search, perPage]
   );
 
-  const [postId, setPostId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const deleteMultiple = useApiMutation<
@@ -174,7 +172,6 @@ export default function Info() {
       accessorKey: 'select',
       header: () => {
         const checkboxRef = useRef<HTMLButtonElement>(null);
-
         useEffect(() => {
           if (checkboxRef.current) {
             const input = checkboxRef.current.querySelector('input');
@@ -257,7 +254,6 @@ export default function Info() {
       accessorKey: 'select',
       header: () => {
         const checkboxRef = useRef<HTMLButtonElement>(null);
-
         useEffect(() => {
           if (checkboxRef.current) {
             const input = checkboxRef.current.querySelector('input');

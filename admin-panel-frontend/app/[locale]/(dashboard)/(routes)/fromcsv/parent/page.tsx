@@ -130,7 +130,7 @@ export default function CreateFromCsv() {
             <FormField
               control={form.control}
               name="csvFile"
-              render={({ field: { onChange, value, ...rest } }) => (
+              render={({ field: { onChange, value: _value, ...rest } }) => (
                 <FormItem>
                   <FormLabel>{t('createParent')}</FormLabel>
                   <FormControl>

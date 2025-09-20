@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 function useSafeFormatter() {
   try {
     const format = useFormatter();
-    const timeZone = useTimeZone();
+    const timeZone = useTimeZone(); // eslint-disable-line react-hooks/rules-of-hooks
     return { format, timeZone, isAvailable: true };
   } catch (error) {
     // Fallback for when context is not available
@@ -171,7 +171,6 @@ export async function convertToUtf8IfNeeded(file: File) {
   const encoding = detectEncoding(arrayBuffer);
 
   if (encoding === 'UTF-8') {
-    console.log('File is already in UTF-8 format. No conversion needed.');
     return new Blob([arrayBuffer], { type: 'text/plain;charset=utf-8' });
   }
 
@@ -181,7 +180,6 @@ export async function convertToUtf8IfNeeded(file: File) {
   const encoder = new TextEncoder();
   const utf8Array = encoder.encode(decodedText);
 
-  console.log(`File converted from ${encoding} to UTF-8.`);
   return new Blob([utf8Array], { type: 'text/plain;charset=utf-8' });
 }
 

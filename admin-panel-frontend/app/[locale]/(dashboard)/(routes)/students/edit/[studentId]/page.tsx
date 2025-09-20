@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/navigation';
+import { useRouter } from '@/navigation';
 import { z } from 'zod';
 import {
   Form,

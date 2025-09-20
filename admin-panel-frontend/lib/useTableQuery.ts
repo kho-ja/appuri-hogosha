@@ -50,7 +50,7 @@ export default function useTableQuery(defaultPerPage = 10) {
 
   useEffect(() => {
     if (page > 1) setPage(1);
-  }, [perPage, search]);
+  }, [perPage, search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     page,

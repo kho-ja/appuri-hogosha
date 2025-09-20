@@ -20,7 +20,6 @@ const NavLink: React.FC<NavLinkProps> = ({
   Icon,
   name,
   isMenuOpen,
-  badge,
   onLinkClick,
 }) => {
   const pathname = usePathname();

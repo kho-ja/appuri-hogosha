@@ -23,6 +23,7 @@ export default function TimezoneDetector() {
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Failed to detect timezone:', error);
     }
   }, []);

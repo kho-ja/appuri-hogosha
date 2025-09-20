@@ -2,15 +2,6 @@
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
@@ -23,7 +14,7 @@ import {
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useRouter } from '@/navigation';
+import { useRouter } from '@/navigation';
 import { useMakeZodI18nMap } from '@/lib/zodIntl';
 import { useEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
@@ -38,7 +29,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import Image from 'next/image';
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Trash2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { BackButton } from '@/components/ui/BackButton';

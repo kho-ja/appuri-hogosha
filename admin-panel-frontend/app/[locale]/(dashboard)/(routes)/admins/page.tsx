@@ -23,7 +23,6 @@ import { DialogDescription } from '@radix-ui/react-dialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import useApiQuery from '@/lib/useApiQuery';
 import useApiPostQuery from '@/lib/useApiPostQuery';
 import AdminApi from '@/types/adminApi';
 import useApiMutation from '@/lib/useApiMutation';

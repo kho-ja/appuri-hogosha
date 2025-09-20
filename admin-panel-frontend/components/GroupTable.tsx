@@ -122,9 +122,7 @@ export function GroupTable({
       },
       {
         accessorKey: 'member_count',
-        header: ({ column }) => (
-          <div className="capitalize">{t('studentCount')}</div>
-        ),
+        header: () => <div className="capitalize">{t('studentCount')}</div>,
         cell: ({ row }) => (
           <div className="lowercase">{row.getValue('member_count')}</div>
         ),

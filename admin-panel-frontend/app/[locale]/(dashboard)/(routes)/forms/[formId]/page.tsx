@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { Link } from '@/navigation';
 import { Button } from '@/components/ui/button';
 import { FormatDate, FormatDateTime } from '@/lib/server/utils';
@@ -8,7 +8,6 @@ import { auth } from '@/auth';
 import { getTranslations } from 'next-intl/server';
 import DisplayProperty from '@/components/DisplayProperty';
 import NotFound from '@/components/NotFound';
-import Form from '@/types/form';
 
 export default async function ThisForm({
   params: { formId },

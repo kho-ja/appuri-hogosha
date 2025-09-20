@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StudentTable } from '@/components/StudentTable';
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/navigation';
+import { useRouter } from '@/navigation';
 import Student from '@/types/student';
 import { toast } from '@/components/ui/use-toast';
 import NotFound from '@/components/NotFound';

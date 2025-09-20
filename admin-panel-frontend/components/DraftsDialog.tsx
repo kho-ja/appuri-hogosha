@@ -62,11 +62,12 @@ export default function DraftsDialog({
     return (await res.json()) as number[];
   };
 
-  const {
-    data: groupList,
-    isLoading: isGroupsLoading,
-    error,
-  } = useQuery<any, HttpError, any, [string, { selectedGroups: any }]>({
+  const { data: groupList, isLoading: isGroupsLoading } = useQuery<
+    any,
+    HttpError,
+    any,
+    [string, { selectedGroups: any }]
+  >({
     queryKey: ['groups', { selectedGroups }],
     queryFn: async () =>
       queryFunction('group/ids', { groupIds: selectedGroups }),
@@ -74,11 +75,12 @@ export default function DraftsDialog({
     retry: 1,
   });
 
-  const {
-    data: studentList,
-    isLoading: isStudentsLoading,
-    error: studentsError,
-  } = useQuery<any, HttpError, any, [string, { selectedStudents: any }]>({
+  const { data: studentList, isLoading: isStudentsLoading } = useQuery<
+    any,
+    HttpError,
+    any,
+    [string, { selectedStudents: any }]
+  >({
     queryKey: ['students', { selectedStudents }],
     queryFn: async () =>
       queryFunction('student/ids', { studentIds: selectedStudents }),
@@ -102,7 +104,7 @@ export default function DraftsDialog({
       });
       localStorage.setItem('DraftsData', JSON.stringify(updatedDrafts));
     }
-  }, [studentList, groupList]);
+  }, [studentList, groupList]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const draftsLocal = localStorage.getItem('DraftsData');
