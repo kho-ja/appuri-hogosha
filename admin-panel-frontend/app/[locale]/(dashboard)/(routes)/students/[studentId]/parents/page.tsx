@@ -50,7 +50,7 @@ export default function EditParents({
     <div>
       <PageHeader title={t("editStudentParents")}>
         <BackButton href={`/students/${studentId}`} />
-      </PageHeader> 
+      </PageHeader>
       <form
         onSubmit={(event) => {
           event.preventDefault();

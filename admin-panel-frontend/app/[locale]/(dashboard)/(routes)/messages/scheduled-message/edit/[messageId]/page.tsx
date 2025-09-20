@@ -42,7 +42,7 @@ const formSchema = z.object({
   description: z.string().min(1),
   priority: z.enum(["high", "medium", "low"]),
   image: z.string().optional(),
-  scheduled_at: z.string().min(1), 
+  scheduled_at: z.string().min(1),
 });
 
 export default function SendMessagePage({
@@ -62,7 +62,7 @@ export default function SendMessagePage({
       description: "",
       priority: "low",
       image: "",
-      scheduled_at: "", 
+      scheduled_at: "",
     },
   });
   const router = useRouter();
@@ -130,7 +130,7 @@ export default function SendMessagePage({
               priority: values.priority,
               image: values.image,
               scheduled_at: values.scheduled_at,
-            } as any); 
+            } as any);
           })}
           className="space-y-4"
         >

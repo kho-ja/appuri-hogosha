@@ -229,7 +229,7 @@ export default function ForgotPasswordPage() {
                     value={newPassword}
                     onChange={(value) => {
                       setNewPassword(value);
-                      setNewPasswordError(null); 
+                      setNewPasswordError(null);
                     }}
                     error={newPasswordError}
                   />

@@ -33,13 +33,13 @@ const authMiddleware = auth((req) => {
 
   // Treat OAuth callback with tokens in query as public so the home page can process and sign in
   const hasOAuthParams =
-    req.nextUrl.searchParams.has('access_token') &&
-    req.nextUrl.searchParams.has('user');
+    req.nextUrl.searchParams.has("access_token") &&
+    req.nextUrl.searchParams.has("user");
   if (hasOAuthParams) {
     // Redirect all OAuth callbacks to a server route that completes sign-in
-  const redirectUrl = new URL('/api/oauth/complete', req.nextUrl.origin);
-  const paramsArray = Array.from(req.nextUrl.searchParams.entries());
-  paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
+    const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
+    const paramsArray = Array.from(req.nextUrl.searchParams.entries());
+    paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
     return Response.redirect(redirectUrl);
   }
 
@@ -47,7 +47,7 @@ const authMiddleware = auth((req) => {
     const path = req.nextUrl.pathname;
     if (
       path.startsWith("/parentnotification") ||
-      locales.some(locale => path.startsWith(`/${locale}/parentnotification`))
+      locales.some((locale) => path.startsWith(`/${locale}/parentnotification`))
     ) {
       isPublicPage = true;
     }

@@ -62,10 +62,10 @@ export default function ThisStudent({
   return (
     <div className="space-y-4">
       <PageHeader title={t("posts")}>
-          <BackButton href={`/students/`} />
-          <Link href={`/students/edit/${studentId}`}>
-            <Button>{t("EditStudent")}</Button>
-          </Link>
+        <BackButton href={`/students/`} />
+        <Link href={`/students/edit/${studentId}`}>
+          <Button>{t("EditStudent")}</Button>
+        </Link>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>

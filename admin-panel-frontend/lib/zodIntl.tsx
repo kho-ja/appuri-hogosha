@@ -204,8 +204,8 @@ export const useMakeZodI18nMap: MakeZodI18nMap = (option) => {
             issue.exact
               ? "exact"
               : issue.inclusive
-              ? "inclusive"
-              : "not_inclusive"
+                ? "inclusive"
+                : "not_inclusive"
           }`,
           {
             minimum:
@@ -232,8 +232,8 @@ export const useMakeZodI18nMap: MakeZodI18nMap = (option) => {
             issue.exact
               ? "exact"
               : issue.inclusive
-              ? "inclusive"
-              : "not_inclusive"
+                ? "inclusive"
+                : "not_inclusive"
           }`,
           {
             maximum:

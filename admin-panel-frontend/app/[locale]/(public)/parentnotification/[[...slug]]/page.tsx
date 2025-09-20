@@ -27,8 +27,8 @@ export default function ParentNotificationPage({
       variant === "development"
         ? "jduapp-dev"
         : variant === "preview"
-        ? "jduapp-preview"
-        : "jduapp";
+          ? "jduapp-preview"
+          : "jduapp";
     const path = slugPath || "home";
     const appUrl = `${scheme}://${path}`;
 
@@ -36,8 +36,8 @@ export default function ParentNotificationPage({
     const storeUrl = /android/i.test(userAgent)
       ? androidLink
       : /iPad|iPhone|iPod/.test(userAgent)
-      ? iosLink
-      : undefined;
+        ? iosLink
+        : undefined;
 
     const timer = setTimeout(() => {
       if (storeUrl) {

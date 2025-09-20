@@ -36,10 +36,10 @@ export default function ScheduledMessagePage({
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
 
-  const { data, isError } = useApiQuery<any>(
-    `schedule/each/${messageId}`,
-    ["scheduled-message", messageId]
-  );
+  const { data, isError } = useApiQuery<any>(`schedule/each/${messageId}`, [
+    "scheduled-message",
+    messageId,
+  ]);
 
   const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
     `schedule/${messageId}/recievers`,

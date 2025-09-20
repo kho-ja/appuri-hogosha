@@ -102,7 +102,7 @@ export default function DraftsDialog({
       });
       localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
     }
-  }, [studentList, groupList]);
+  }, [studentList, groupList, selectedDraft.id]);
 
   useEffect(() => {
     let draftsLocal = localStorage.getItem("DraftsData");
@@ -254,7 +254,9 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
                 {isGroupsLoading ? (
-                  <div className="dark:text-white text-black">{t("loading")}</div>
+                  <div className="dark:text-white text-black">
+                    {t("loading")}
+                  </div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {groupsFromBackend.length > 0 ? (
@@ -272,7 +274,9 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
                 {isStudentsLoading ? (
-                  <div className="dark:text-white text-black">{t("loading")}</div>
+                  <div className="dark:text-white text-black">
+                    {t("loading")}
+                  </div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {studentsFromBackend.length > 0 ? (

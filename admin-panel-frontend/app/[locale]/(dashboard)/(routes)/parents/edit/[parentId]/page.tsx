@@ -156,8 +156,7 @@ export default function EditParent({
                       />
                     </FormControl>
                     <FormMessage>
-                      {formState.errors.email &&
-                        "Parent email is required"}
+                      {formState.errors.email && "Parent email is required"}
                     </FormMessage>
                   </FormItem>
                 )}

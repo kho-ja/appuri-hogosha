@@ -7,11 +7,5 @@ export default function useSMSMutation<T>(
   method: string,
   options: MutationOptions<T, HttpError, any, unknown> = {}
 ) {
-  return useApiMutation<T>(
-    `sms/${smsId}`,
-    method,
-    ["sms"],
-    options
-  );
+  return useApiMutation<T>(`sms/${smsId}`, method, ["sms"], options);
 }
-

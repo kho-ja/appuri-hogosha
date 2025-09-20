@@ -164,11 +164,11 @@ export default function ThisMessage({
   return (
     <div className="flex flex-col gap-2">
       <PageHeader title={t("ViewMessage")}>
-          <BackButton href={`/messages`} />
+        <BackButton href={`/messages`} />
 
-          <Link href={`/messages/edit/${messageId}`} passHref>
-            <Button>{t("editMessage")}</Button>
-          </Link>
+        <Link href={`/messages/edit/${messageId}`} passHref>
+          <Button>{t("editMessage")}</Button>
+        </Link>
       </PageHeader>
       <Card className="space-y-8 p-4">
         <div>

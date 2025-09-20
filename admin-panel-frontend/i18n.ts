@@ -10,14 +10,14 @@ export default getRequestConfig(async ({ locale }) => {
 
   // Detect user's timezone using multiple methods
   const cookieStore = cookies();
-  const clientTimezone = cookieStore.get('user-timezone')?.value;
+  const clientTimezone = cookieStore.get("user-timezone")?.value;
 
   // Fallback to Vercel's IP-based detection
   const headersList = headers();
-  const vercelTimezone = headersList.get('x-vercel-ip-timezone');
+  const vercelTimezone = headersList.get("x-vercel-ip-timezone");
 
   // Final fallback to UTC
-  const timeZone = clientTimezone || vercelTimezone || 'UTC';
+  const timeZone = clientTimezone || vercelTimezone || "UTC";
 
   return {
     // Prevent hydration mismatches

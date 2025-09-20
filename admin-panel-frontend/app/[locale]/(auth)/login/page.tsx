@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMessages, useTranslations } from "next-intl";
@@ -96,7 +95,7 @@ export default function LoginForm() {
         window.history.replaceState({}, document.title, url.toString());
       }
     }
-  }, [searchParams]);
+  }, [searchParams, allMessages?.LoginForm, t, toast]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     toast({
