@@ -1,5 +1,5 @@
-import pagination from "./pagination";
-import SMS from "./sms";
+import pagination from './pagination';
+import SMS from './sms';
 
 type SMSApi = {
   sms: SMS[];
@@ -7,4 +7,3 @@ type SMSApi = {
 };
 
 export default SMSApi;
-

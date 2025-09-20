@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export default function TimezoneDetector() {
   useEffect(() => {
     try {
       const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const currentCookie = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("user-timezone="))
-        ?.split("=")[1];
+        .split('; ')
+        .find(row => row.startsWith('user-timezone='))
+        ?.split('=')[1];
 
       if (currentCookie !== detectedTimezone) {
         // Set timezone cookie with 365 day expiry
@@ -23,7 +23,7 @@ export default function TimezoneDetector() {
         }
       }
     } catch (error) {
-      console.warn("Failed to detect timezone:", error);
+      console.warn('Failed to detect timezone:', error);
     }
   }, []);
 

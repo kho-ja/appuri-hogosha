@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -7,9 +7,9 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "./ui/pagination";
-import pagination from "@/types/pagination";
-import { useRouter, usePathname } from "@/navigation";
+} from './ui/pagination';
+import pagination from '@/types/pagination';
+import { useRouter, usePathname } from '@/navigation';
 
 const PaginationApi = ({
   data,
@@ -35,13 +35,14 @@ const PaginationApi = ({
       if (containerRef.current) {
         const container = containerRef.current;
         const paginationContent = container.querySelector('ul');
-        
+
         if (!paginationContent) return;
 
         const BUFFER = 20;
         const isMobileByWidth = window.innerWidth < 640; // sm breakpoint
-        const isOverflowing = paginationContent.scrollWidth > container.clientWidth + BUFFER;
-        
+        const isOverflowing =
+          paginationContent.scrollWidth > container.clientWidth + BUFFER;
+
         setUseMobileLayout(isMobileByWidth || isOverflowing);
       }
     };
@@ -52,10 +53,10 @@ const PaginationApi = ({
     };
 
     checkLayout();
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener('resize', handleResize);
       clearTimeout(resizeTimeout.current);
     };
   }, [data]);
@@ -81,24 +82,26 @@ const PaginationApi = ({
                   onClick={() => handlePageChange(data.prev_page || 1)}
                 />
               </PaginationItem>
-              
+
               <PaginationItem className="flex items-center px-1">
                 <span className="text-sm font-medium">
                   {data.current_page} / {data.links[data.links.length - 1]}
                 </span>
               </PaginationItem>
-              
+
               <PaginationItem className="sm:hidden">
                 <PaginationNext
                   className="cursor-pointer"
-                  onClick={() => data.next_page && handlePageChange(data.next_page)}
+                  onClick={() =>
+                    data.next_page && handlePageChange(data.next_page)
+                  }
                 />
               </PaginationItem>
             </>
           ) : (
             data.links.map((page, index) => (
               <PaginationItem key={`page-${index}-${page}`}>
-                {page === "..." ? (
+                {page === '...' ? (
                   <PaginationEllipsis />
                 ) : (
                   <PaginationLink

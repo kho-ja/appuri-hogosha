@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Home,
   LineChart,
@@ -10,18 +10,18 @@ import {
   ShieldCheck,
   MessageSquare,
   Settings,
-} from "lucide-react";
-import { onlyAdminPathNameRegex } from "@/middleware";
-import NavLink from "./NavLink";
-import { useTranslations } from "next-intl";
-import { User } from "next-auth";
+} from 'lucide-react';
+import { onlyAdminPathNameRegex } from '@/middleware';
+import NavLink from './NavLink';
+import { useTranslations } from 'next-intl';
+import { User } from 'next-auth';
 
 const navLinks = [
   {
     id: 1,
-    href: "/dashboard",
+    href: '/dashboard',
     icon: Home,
-    nameKey: "dashboard",
+    nameKey: 'dashboard',
   },
   // {
   //   id: 2,
@@ -32,39 +32,39 @@ const navLinks = [
   // },
   {
     id: 3,
-    href: "/permissions",
+    href: '/permissions',
     icon: Users,
-    nameKey: "permissions",
+    nameKey: 'permissions',
   },
   {
     id: 4,
-    href: "/messages",
+    href: '/messages',
     icon: MessageCircle,
-    nameKey: "messages",
+    nameKey: 'messages',
   },
   {
     id: 5,
-    href: "/students",
+    href: '/students',
     icon: GraduationCap,
-    nameKey: "students",
+    nameKey: 'students',
   },
   {
     id: 6,
-    href: "/groups",
+    href: '/groups',
     icon: Users,
-    nameKey: "groups",
+    nameKey: 'groups',
   },
   {
     id: 7,
-    href: "/parents",
+    href: '/parents',
     icon: Contact,
-    nameKey: "parents",
+    nameKey: 'parents',
   },
   {
     id: 8,
-    href: "/admins",
+    href: '/admins',
     icon: ShieldCheck,
-    nameKey: "admins",
+    nameKey: 'admins',
   },
   /* {
     id: 9,
@@ -80,9 +80,9 @@ const navLinks = [
   // },
   {
     id: 11,
-    href: "/settings",
+    href: '/settings',
     icon: Settings,
-    nameKey: "settings",
+    nameKey: 'settings',
   },
 ];
 
@@ -95,13 +95,13 @@ const NavLinks = ({
   onLinkClick?: () => void;
   isMenuOpen: boolean;
 }) => {
-  const t = useTranslations("nav");
+  const t = useTranslations('nav');
 
   return (
     <>
-      {navLinks.map((link) => {
+      {navLinks.map(link => {
         const isAdminPath = onlyAdminPathNameRegex.test(link.href);
-        if (isAdminPath && user?.role !== "admin") {
+        if (isAdminPath && user?.role !== 'admin') {
           return null;
         }
         return (

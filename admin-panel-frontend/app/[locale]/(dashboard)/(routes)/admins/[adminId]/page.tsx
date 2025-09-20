@@ -1,16 +1,16 @@
-import { Card, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Link } from "@/navigation";
-import { Button } from "@/components/ui/button";
-import DisplayProperty from "@/components/DisplayProperty";
-import { FormatDateTime } from "@/lib/server/utils";
-import { getTranslations } from "next-intl/server";
-import { auth } from "@/auth";
-import { signIn } from "next-auth/react";
-import NotFound from "@/components/NotFound";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
-import ResendPasswordDialog from "@/components/ResendPasswordDialog";
+import { Card, CardHeader } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Link } from '@/navigation';
+import { Button } from '@/components/ui/button';
+import DisplayProperty from '@/components/DisplayProperty';
+import { FormatDateTime } from '@/lib/server/utils';
+import { getTranslations } from 'next-intl/server';
+import { auth } from '@/auth';
+import { signIn } from 'next-auth/react';
+import NotFound from '@/components/NotFound';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
+import ResendPasswordDialog from '@/components/ResendPasswordDialog';
 
 export default async function ThisAdmin({
   params: { adminId },
@@ -24,9 +24,9 @@ export default async function ThisAdmin({
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/${adminId}`,
     {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${session?.sessionToken}`,
       },
     }
@@ -34,22 +34,22 @@ export default async function ThisAdmin({
 
   if (!response.ok) {
     if (response.status === 404) return <NotFound />;
-    throw new Error("An error occurred while fetching the data");
+    throw new Error('An error occurred while fetching the data');
   }
 
   const adminData = await response.json();
 
-  const t = await getTranslations("ThisAdmin");
-  const tName = await getTranslations("names");
+  const t = await getTranslations('ThisAdmin');
+  const tName = await getTranslations('names');
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("AdminView")}>
+      <PageHeader title={t('AdminView')}>
         <BackButton href={`/admins`} />
         {adminData && (
           <ResendPasswordDialog
             id={adminData.admin.id}
-            name={tName("name", { ...adminData.admin } as any)}
+            name={tName('name', { ...adminData.admin } as any)}
             identifier={adminData.admin.email}
             type="admin"
             variant="button"
@@ -57,29 +57,29 @@ export default async function ThisAdmin({
           />
         )}
         <Link href={`/admins/edit/${adminId}`}>
-          <Button>{t("editAdmin")}</Button>
+          <Button>{t('editAdmin')}</Button>
         </Link>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty
-            property={t("adminGivenName")}
+            property={t('adminGivenName')}
             value={adminData?.admin?.given_name}
           />
           <DisplayProperty
-            property={t("adminFamilyName")}
+            property={t('adminFamilyName')}
             value={adminData?.admin?.family_name}
           />
           <DisplayProperty
-            property={t("adminEmail")}
+            property={t('adminEmail')}
             value={adminData?.admin?.email}
           />
           <DisplayProperty
-            property={t("adminPhoneNumber")}
+            property={t('adminPhoneNumber')}
             value={adminData?.admin?.phone_number}
           />
           <DisplayProperty
-            property={t("adminCreationDate")}
+            property={t('adminCreationDate')}
             value={await FormatDateTime(adminData?.admin?.created_at)}
           />
         </CardHeader>

@@ -1,9 +1,9 @@
-import React from "react";
-import dynamic from "next/dynamic";
-import "react-quill/dist/quill.snow.css";
+import React from 'react';
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
 
 // Dynamically import ReactQuill to disable SSR
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 interface RichTextEditorProps {
   value: string; // Controlled value
@@ -24,10 +24,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onChange={onChange} // Trigger onChange from props
         modules={
           modules || {
-            toolbar: [["bold", "italic", "underline"], ["link"], ["clean"]],
+            toolbar: [['bold', 'italic', 'underline'], ['link'], ['clean']],
           }
         }
-        formats={["bold", "italic", "underline", "link"]}
+        formats={['bold', 'italic', 'underline', 'link']}
         placeholder="Type something here..."
       />
     </div>

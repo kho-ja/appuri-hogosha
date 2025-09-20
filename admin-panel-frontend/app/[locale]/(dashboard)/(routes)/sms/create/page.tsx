@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -9,15 +9,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { z } from "zod";
-import { Input } from "@/components/ui/input";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslations } from "next-intl";
-import RichTextEditor from "@/components/RichTextEditor";
+} from '@/components/ui/form';
+import { useMakeZodI18nMap } from '@/lib/zodIntl';
+import { z } from 'zod';
+import { Input } from '@/components/ui/input';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
+import RichTextEditor from '@/components/RichTextEditor';
 import {
   Dialog,
   DialogContent,
@@ -25,49 +25,49 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import parse from "html-react-parser";
+} from '@/components/ui/dialog';
+import parse from 'html-react-parser';
 
 const formSchema = z.object({
-  recipient: z.string().min(1, "Recipient is required."),
-  title: z.string().min(1, "Title is required."),
-  message: z.string().min(1, "Message is required."),
+  recipient: z.string().min(1, 'Recipient is required.'),
+  title: z.string().min(1, 'Title is required.'),
+  message: z.string().min(1, 'Message is required.'),
   Cc: z.string().optional(),
   Bcc: z.string().optional(),
 });
 
 export default function CreateSMS() {
-  const t = useTranslations("sms");
+  const t = useTranslations('sms');
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      recipient: "",
-      title: "",
-      message: "",
-      Cc: "",
-      Bcc: "",
+      recipient: '',
+      title: '',
+      message: '',
+      Cc: '',
+      Bcc: '',
     },
   });
 
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
-  const handleDialogToggle = () => setDialogOpen((prev) => !prev);
+  const handleDialogToggle = () => setDialogOpen(prev => !prev);
 
   const handleSubmit = (data: any) => {
-    console.log("Form Data:", data);
+    console.log('Form Data:', data);
     setDialogOpen(false); // Close dialog after submission
   };
 
   return (
     <div>
-      <h1 className="text-3xl w-2/4 font-bold">{t("CreateSMS")}</h1>
+      <h1 className="text-3xl w-2/4 font-bold">{t('CreateSMS')}</h1>
 
       <Card className="mt-5">
         <CardHeader className="text-xl w-2/4 font-bold">
-          {t("NewMessage")}
+          {t('NewMessage')}
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -78,9 +78,9 @@ export default function CreateSMS() {
                 name="recipient"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("recipient")}</FormLabel>
+                    <FormLabel>{t('recipient')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("typeRecipient")} />
+                      <Input {...field} placeholder={t('typeRecipient')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,9 +93,9 @@ export default function CreateSMS() {
                 name="Cc"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("Cc")}</FormLabel>
+                    <FormLabel>{t('Cc')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("typeRecipientCc")} />
+                      <Input {...field} placeholder={t('typeRecipientCc')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -108,9 +108,9 @@ export default function CreateSMS() {
                 name="Bcc"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("Bcc")}</FormLabel>
+                    <FormLabel>{t('Bcc')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("typeRecipientBcc")} />
+                      <Input {...field} placeholder={t('typeRecipientBcc')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -123,9 +123,9 @@ export default function CreateSMS() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("title")}</FormLabel>
+                    <FormLabel>{t('title')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("typeTitle")} />
+                      <Input {...field} placeholder={t('typeTitle')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,11 +138,11 @@ export default function CreateSMS() {
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("message")}</FormLabel>
+                    <FormLabel>{t('message')}</FormLabel>
                     <FormControl>
                       <RichTextEditor
-                        value={field.value || ""}
-                        onChange={(value) => form.setValue("message", value)}
+                        value={field.value || ''}
+                        onChange={value => form.setValue('message', value)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -170,11 +170,11 @@ export default function CreateSMS() {
                       htmlFor="to"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {t("recipient")}:
+                      {t('recipient')}:
                     </label>
                     <Input
                       id="to"
-                      value={form.getValues("recipient")}
+                      value={form.getValues('recipient')}
                       readOnly
                       className="mb-4"
                     />
@@ -183,11 +183,11 @@ export default function CreateSMS() {
                       htmlFor="cc"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {t("Cc")}:
+                      {t('Cc')}:
                     </label>
                     <Input
                       id="cc"
-                      value={form.getValues("Cc")}
+                      value={form.getValues('Cc')}
                       readOnly
                       className="mb-4"
                     />
@@ -196,11 +196,11 @@ export default function CreateSMS() {
                       htmlFor="cc"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {t("Bcc")}:
+                      {t('Bcc')}:
                     </label>
                     <Input
                       id="cc"
-                      value={form.getValues("Bcc")}
+                      value={form.getValues('Bcc')}
                       readOnly
                       className="mb-4"
                     />
@@ -209,11 +209,11 @@ export default function CreateSMS() {
                       htmlFor="cc"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      {t("title")}:
+                      {t('title')}:
                     </label>
                     <Input
                       id="cc"
-                      value={form.getValues("title")}
+                      value={form.getValues('title')}
                       readOnly
                       className="mb-4"
                     />
@@ -225,7 +225,7 @@ export default function CreateSMS() {
                       Message:
                     </label>
                     <div className="border border-gray-40 rounded p-1.5 pl-3">
-                      {parse(form.getValues("message"))}
+                      {parse(form.getValues('message'))}
                     </div>
                   </div>
                   <DialogFooter>

@@ -1,8 +1,8 @@
-import { toast } from "@/components/ui/use-toast";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import HttpError from "./HttpError";
+import { toast } from '@/components/ui/use-toast';
+import { MutationOptions, useMutation } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import HttpError from './HttpError';
 
 export default function useFormMutation<T>(
   mutationUrl: string,
@@ -11,7 +11,7 @@ export default function useFormMutation<T>(
   options: MutationOptions<T, HttpError, any> = {}
 ) {
   const { data: session } = useSession();
-  const t = useTranslations("errors");
+  const t = useTranslations('errors');
 
   return useMutation<T, HttpError, FormData>({
     mutationKey,
@@ -34,15 +34,15 @@ export default function useFormMutation<T>(
     },
     onMutate: () => {
       toast({
-        title: t("loading"),
-        description: t("loadingDescription"),
+        title: t('loading'),
+        description: t('loadingDescription'),
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
-        title: t("wentWrong"),
+        title: t('wentWrong'),
         description: t(error.message),
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
     ...options,

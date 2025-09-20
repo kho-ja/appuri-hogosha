@@ -1,19 +1,19 @@
-import React from "react";
+import React from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./ui/card";
+} from './ui/card';
 import {
   FormatDate,
   FormatDateTime,
   FormatTimeOnly,
   FormatDateOnly,
   FormatRelativeTime,
-} from "@/lib/utils";
-import DisplayProperty from "./DisplayProperty";
+} from '@/lib/utils';
+import DisplayProperty from './DisplayProperty';
 
 interface TimezoneFormatterDemoProps {
   form: {
@@ -71,7 +71,7 @@ export function TimezoneFormatterDemo({ form }: TimezoneFormatterDemoProps) {
             {/* Long date format */}
             <DisplayProperty
               property="Long date format"
-              value={FormatDate(form.date, { dateStyle: "full" })}
+              value={FormatDate(form.date, { dateStyle: 'full' })}
             />
           </div>
         </div>

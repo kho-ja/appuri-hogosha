@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write ."
+    
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -60,8 +63,13 @@
     "@types/react-linkify": "^1.0.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
     "postcss": "^8",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.5.4",
     "typescript": "^5"
   },
   "overrides": {

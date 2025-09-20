@@ -10,7 +10,9 @@ export async function GET(req: Request) {
   const userParam = url.searchParams.get('user');
 
   if (!accessToken || !userParam) {
-    return NextResponse.redirect(new URL('/login?error=oauth_missing_params', origin));
+    return NextResponse.redirect(
+      new URL('/login?error=oauth_missing_params', origin)
+    );
   }
 
   try {
@@ -25,6 +27,8 @@ export async function GET(req: Request) {
       redirectTo: '/dashboard',
     });
   } catch {
-    return NextResponse.redirect(new URL('/login?error=oauth_processing_failed', origin));
+    return NextResponse.redirect(
+      new URL('/login?error=oauth_processing_failed', origin)
+    );
   }
 }

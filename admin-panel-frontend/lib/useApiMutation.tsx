@@ -1,8 +1,8 @@
-import { toast } from "@/components/ui/use-toast";
-import { MutationOptions, useMutation } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import HttpError from "./HttpError";
+import { toast } from '@/components/ui/use-toast';
+import { MutationOptions, useMutation } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import HttpError from './HttpError';
 
 export default function useApiMutation<TResponse, TInput = void>(
   mutationUrl: string,
@@ -11,7 +11,7 @@ export default function useApiMutation<TResponse, TInput = void>(
   options: MutationOptions<TResponse, HttpError, TInput, unknown> = {}
 ) {
   const { data: session } = useSession();
-  const t = useTranslations("errors");
+  const t = useTranslations('errors');
 
   return useMutation<TResponse, HttpError, TInput>({
     mutationKey,
@@ -21,7 +21,7 @@ export default function useApiMutation<TResponse, TInput = void>(
         {
           method,
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${session?.sessionToken}`,
           },
           body: JSON.stringify(data),
@@ -35,18 +35,17 @@ export default function useApiMutation<TResponse, TInput = void>(
     },
     onMutate: () => {
       toast({
-        title: t("loading"),
-        description: t("loadingDescription"),
+        title: t('loading'),
+        description: t('loadingDescription'),
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
-        title: t("wentWrong"),
+        title: t('wentWrong'),
         description: t(error.message),
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
     ...options,
   });
 }
-  

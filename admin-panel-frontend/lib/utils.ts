@@ -1,7 +1,7 @@
-import { type ClassValue, clsx } from "clsx";
-import { useFormatter, useTimeZone } from "next-intl";
-import { twMerge } from "tailwind-merge";
-import { DateTimeFormatOptions } from "use-intl";
+import { type ClassValue, clsx } from 'clsx';
+import { useFormatter, useTimeZone } from 'next-intl';
+import { twMerge } from 'tailwind-merge';
+import { DateTimeFormatOptions } from 'use-intl';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -23,12 +23,12 @@ function useSafeFormatter() {
 export function FormatDate(
   date: string | Date,
   style: DateTimeFormatOptions | undefined = {
-    dateStyle: "long",
+    dateStyle: 'long',
   }
 ) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
@@ -49,13 +49,13 @@ export function FormatDate(
 export function FormatDateTime(
   date: string | Date,
   style: DateTimeFormatOptions | undefined = {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }
 ) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
@@ -78,7 +78,7 @@ export function FormatDateTime(
 export function FormatRelativeTime(date: string | Date) {
   const { format, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
@@ -93,7 +93,7 @@ export function FormatRelativeTime(date: string | Date) {
 export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
@@ -105,7 +105,7 @@ export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   }
 
   return format.dateTime(dateObject, {
-    timeStyle: "short",
+    timeStyle: 'short',
     hour12: !use24Hour,
     timeZone,
   });
@@ -114,7 +114,7 @@ export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
 export function FormatDateOnly(date: string | Date) {
   const { format, timeZone, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   const dateObject = typeof date === 'string' ? new Date(date) : date;
 
@@ -124,7 +124,7 @@ export function FormatDateOnly(date: string | Date) {
   }
 
   return format.dateTime(dateObject, {
-    dateStyle: "medium",
+    dateStyle: 'medium',
     timeZone,
   });
 }
@@ -133,7 +133,7 @@ export function FormatDateOnly(date: string | Date) {
 export function FormatDateTimeForDisplay(date: Date | null): string {
   const { format, timeZone, isAvailable } = useSafeFormatter();
 
-  if (!date) return "";
+  if (!date) return '';
 
   if (!isAvailable || !format) {
     // Fallback formatting when context is not available
@@ -147,11 +147,11 @@ export function FormatDateTimeForDisplay(date: Date | null): string {
   }
 
   return format.dateTime(date, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
     hour12: false,
     timeZone,
   });
@@ -171,7 +171,7 @@ export async function convertToUtf8IfNeeded(file: File) {
   const encoding = detectEncoding(arrayBuffer);
 
   if (encoding === 'UTF-8') {
-    console.log("File is already in UTF-8 format. No conversion needed.");
+    console.log('File is already in UTF-8 format. No conversion needed.');
     return new Blob([arrayBuffer], { type: 'text/plain;charset=utf-8' });
   }
 
@@ -202,24 +202,26 @@ export function detectEncoding(arrayBuffer: ArrayBuffer) {
   }
 }
 
-export function download(bufferData: any, filename: string = "") {
+export function download(bufferData: any, filename: string = '') {
   let buffer: Buffer;
 
-  if (bufferData.type === "Buffer" && Array.isArray(bufferData.data)) {
+  if (bufferData.type === 'Buffer' && Array.isArray(bufferData.data)) {
     buffer = Buffer.from(bufferData.data);
-  } else if (typeof bufferData === "string") {
+  } else if (typeof bufferData === 'string') {
     buffer = Buffer.from(bufferData);
   } else if (bufferData instanceof Buffer) {
     buffer = bufferData;
   } else {
-    throw new Error("Unsupported data type for download");
+    throw new Error('Unsupported data type for download');
   }
 
-  const blob = new Blob([new Uint8Array(buffer)], { type: "application/octet-stream" });
-  const link = document.createElement("a");
+  const blob = new Blob([new Uint8Array(buffer)], {
+    type: 'application/octet-stream',
+  });
+  const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.href = url;
-  link.download = filename || "downloaded_file";
+  link.download = filename || 'downloaded_file';
   document.body.appendChild(link);
   link.click();
 

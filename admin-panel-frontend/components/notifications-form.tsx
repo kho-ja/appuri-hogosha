@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useToast } from "@/components/ui/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -12,14 +12,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Checkbox } from "./ui/checkbox";
-import { Button } from "./ui/button";
-import { useTranslations } from "next-intl";
-import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
-import { useEffect } from "react";
-import { MessageSquareShare } from "lucide-react";
+} from '@/components/ui/form';
+import { Checkbox } from './ui/checkbox';
+import { Button } from './ui/button';
+import { useTranslations } from 'next-intl';
+import useApiMutation from '@/lib/useApiMutation';
+import useApiQuery from '@/lib/useApiQuery';
+import { useEffect } from 'react';
+import { MessageSquareShare } from 'lucide-react';
 
 const notificationsFormSchema = z.object({
   high: z.boolean(),
@@ -34,7 +34,7 @@ const defaultValues: Partial<NotificationsFormValues> = {
   high: false,
   medium: false,
   low: false,
-  title: "",
+  title: '',
 };
 
 type School = {
@@ -52,23 +52,23 @@ type School = {
 
 export function NotificationsForm() {
   const { toast } = useToast();
-  const t = useTranslations("NotificationsForm");
+  const t = useTranslations('NotificationsForm');
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation("school/sms", "POST", ["SMS"], {
+  const { data, isLoading } = useApiQuery<School>('school/sms', ['SMS']);
+  const { mutate, isPending } = useApiMutation('school/sms', 'POST', ['SMS'], {
     onSuccess: (data: any) => {
       toast({
-        title: t("NotificationSettingUpdated"),
-        description: data?.message ?? "",
+        title: t('NotificationSettingUpdated'),
+        description: data?.message ?? '',
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
-        title: t("NotificationSettingUpdateFailed"),
-        description: error?.message ?? "",
+        title: t('NotificationSettingUpdateFailed'),
+        description: error?.message ?? '',
       });
     },
   });
@@ -87,20 +87,20 @@ export function NotificationsForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values as any))}
+        onSubmit={form.handleSubmit(values => mutate(values as any))}
         className="space-y-4"
       >
         <div>
           <FormLabel className="text-lg font-medium">
-            {t("SMSHeader")}
+            {t('SMSHeader')}
           </FormLabel>
-          <FormDescription>{t("SMSDescription")}</FormDescription>
+          <FormDescription>{t('SMSDescription')}</FormDescription>
         </div>
 
         <div className="grid gap-2 pb-4">
           <FormField
             control={form.control}
-            name={"high"}
+            name={'high'}
             render={({ field }) => (
               <FormItem>
                 <div className="flex gap-2 place-items-center">
@@ -114,7 +114,7 @@ export function NotificationsForm() {
                       name="high"
                     />
                   </FormControl>
-                  <FormLabel>{t("highCheckbox")}</FormLabel>
+                  <FormLabel>{t('highCheckbox')}</FormLabel>
                   <FormMessage />
                 </div>
               </FormItem>
@@ -123,7 +123,7 @@ export function NotificationsForm() {
 
           <FormField
             control={form.control}
-            name={"medium"}
+            name={'medium'}
             render={({ field }) => (
               <FormItem>
                 <div className="flex gap-2 place-items-center">
@@ -137,7 +137,7 @@ export function NotificationsForm() {
                       name="medium"
                     />
                   </FormControl>
-                  <FormLabel>{t("mediumCheckbox")}</FormLabel>
+                  <FormLabel>{t('mediumCheckbox')}</FormLabel>
                   <FormMessage />
                 </div>
               </FormItem>
@@ -146,7 +146,7 @@ export function NotificationsForm() {
 
           <FormField
             control={form.control}
-            name={"low"}
+            name={'low'}
             render={({ field }) => (
               <FormItem>
                 <div className="flex gap-2 place-items-center">
@@ -160,7 +160,7 @@ export function NotificationsForm() {
                       name="low"
                     />
                   </FormControl>
-                  <FormLabel>{t("lowCheckbox")}</FormLabel>
+                  <FormLabel>{t('lowCheckbox')}</FormLabel>
                   <FormMessage />
                 </div>
               </FormItem>
@@ -173,7 +173,7 @@ export function NotificationsForm() {
           type="submit"
           icon={<MessageSquareShare className="h-5 w-5" />}
         >
-          {t("NotificationSettingUpdate")}
+          {t('NotificationSettingUpdate')}
         </Button>
       </form>
     </Form>

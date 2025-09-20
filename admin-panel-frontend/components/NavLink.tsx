@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
-import { Link } from "@/navigation";
-import { usePathname } from "@/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { Badge } from '@/components/ui/badge';
+import { Link } from '@/navigation';
+import { usePathname } from '@/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 
 interface NavLinkProps {
   href: string;
@@ -27,15 +27,15 @@ const NavLink: React.FC<NavLinkProps> = ({
   const { data: session } = useSession();
 
   const { data: notificationCount } = useQuery<number>({
-    queryKey: ["FormsCount", name],
+    queryKey: ['FormsCount', name],
     queryFn: async () => {
-      if (href !== "/forms") return 0;
+      if (href !== '/forms') return 0;
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/form/count`,
         {
           headers: {
             Authorization: `Bearer ${session?.sessionToken}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -55,7 +55,7 @@ const NavLink: React.FC<NavLinkProps> = ({
       className={`
         flex items-center rounded-lg px-3 py-2 text-muted-foreground 
         transition-all duration-200 hover:text-primary hover:bg-muted/50
-        ${pathname.startsWith(href) ? "bg-muted text-primary shadow-sm" : ""}
+        ${pathname.startsWith(href) ? 'bg-muted text-primary shadow-sm' : ''}
         justify-start gap-3 group relative overflow-hidden
       `}
       onClick={onLinkClick}
@@ -67,8 +67,8 @@ const NavLink: React.FC<NavLinkProps> = ({
         whitespace-nowrap transition-all duration-300 ease-in-out
         ${
           isMenuOpen
-            ? "opacity-100 translate-x-0 max-w-[200px]"
-            : "opacity-0 translate-x-2 max-w-0"
+            ? 'opacity-100 translate-x-0 max-w-[200px]'
+            : 'opacity-0 translate-x-2 max-w-0'
         }
       `}
       >
@@ -80,14 +80,14 @@ const NavLink: React.FC<NavLinkProps> = ({
         ml-auto transition-all duration-300 ease-in-out
         ${
           isMenuOpen && !!notificationCount
-            ? "opacity-100 scale-100 translate-x-0"
-            : "opacity-0 scale-75 translate-x-4"
+            ? 'opacity-100 scale-100 translate-x-0'
+            : 'opacity-0 scale-75 translate-x-4'
         }
       `}
       >
         {!!notificationCount && (
           <Badge className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs animate-pulse">
-            {notificationCount > 99 ? "99+" : notificationCount}
+            {notificationCount > 99 ? '99+' : notificationCount}
           </Badge>
         )}
       </div>

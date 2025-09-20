@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { StudentTable } from "@/components/StudentTable";
-import { useTranslations } from "next-intl";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { StudentTable } from '@/components/StudentTable';
+import { useTranslations } from 'next-intl';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Form,
   FormControl,
@@ -14,17 +14,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import Student from "@/types/student";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { Link, useRouter } from "@/navigation";
-import { useEffect, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
-import useApiMutation from "@/lib/useApiMutation";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
+} from '@/components/ui/form';
+import Student from '@/types/student';
+import { useMakeZodI18nMap } from '@/lib/zodIntl';
+import { Link, useRouter } from '@/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import NotFound from '@/components/NotFound';
+import useApiQuery from '@/lib/useApiQuery';
+import useApiMutation from '@/lib/useApiMutation';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -37,28 +37,28 @@ export default function EditGroup({
 }) {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
-  const t = useTranslations("CreateGroup");
+  const t = useTranslations('CreateGroup');
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: '',
     },
   });
   const { data, isLoading, isError } = useApiQuery<{
     group: { name: string };
     members: Student[];
-  }>(`group/${groupId}`, ["group", groupId]);
+  }>(`group/${groupId}`, ['group', groupId]);
 
   const { isPending, mutate } = useApiMutation<{ message: string }>(
     `group/${groupId}`,
-    "PUT",
-    ["editGroup"],
+    'PUT',
+    ['editGroup'],
     {
-      onSuccess: (data) => {
+      onSuccess: data => {
         toast({
-          title: t("GroupEdited"),
+          title: t('GroupEdited'),
           description: data.message,
         });
         form.reset();
@@ -70,7 +70,7 @@ export default function EditGroup({
 
   useEffect(() => {
     if (data) {
-      form.setValue("name", data.group.name);
+      form.setValue('name', data.group.name);
       setSelectedStudents(data.members);
     }
   }, [data, form]);
@@ -79,17 +79,17 @@ export default function EditGroup({
 
   return (
     <div className="flex flex-col items-center">
-      <PageHeader title={t("EditGroup")}>
+      <PageHeader title={t('EditGroup')}>
         <BackButton href={`/groups/${groupId}`} />
       </PageHeader>
       <div className="w-full mt-8">
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit((data) =>
+            onSubmit={form.handleSubmit(data =>
               mutate({
                 ...data,
-                students: selectedStudents.map((e) => e.id),
+                students: selectedStudents.map(e => e.id),
               } as any)
             )}
           >
@@ -99,9 +99,9 @@ export default function EditGroup({
                 name="name"
                 render={({ field, formState }) => (
                   <FormItem>
-                    <FormLabel>{t("GroupName")}</FormLabel>
+                    <FormLabel>{t('GroupName')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder={t("GroupName")} />
+                      <Input {...field} placeholder={t('GroupName')} />
                     </FormControl>
                     <FormMessage>{formState.errors.name?.message}</FormMessage>
                   </FormItem>
@@ -110,7 +110,7 @@ export default function EditGroup({
             </div>
 
             <FormItem>
-              <FormLabel>{t("Students")}</FormLabel>
+              <FormLabel>{t('Students')}</FormLabel>
               <FormControl>
                 <StudentTable
                   selectedStudents={selectedStudents}
@@ -119,7 +119,7 @@ export default function EditGroup({
               </FormControl>
             </FormItem>
 
-            <Button isLoading={isPending || isLoading}>{t("EditGroup")}</Button>
+            <Button isLoading={isPending || isLoading}>{t('EditGroup')}</Button>
           </form>
         </Form>
       </div>

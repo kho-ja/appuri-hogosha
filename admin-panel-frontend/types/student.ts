@@ -1,4 +1,4 @@
-import Parent from "./parent";
+import Parent from './parent';
 
 export default interface Student {
   id: number;

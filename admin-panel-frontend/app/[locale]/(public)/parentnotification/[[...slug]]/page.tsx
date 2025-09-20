@@ -1,9 +1,9 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import localImageLoader from "@/lib/localImageLoader";
-import { useEffect } from "react";
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import localImageLoader from '@/lib/localImageLoader';
+import { useEffect } from 'react';
 
 interface PageProps {
   params: { locale: string; slug?: string[] };
@@ -16,28 +16,28 @@ export default function ParentNotificationPage({
 }: PageProps) {
   const androidLink =
     process.env.NEXT_PUBLIC_ANDROID_STORE_URL ||
-    "https://play.google.com/store/apps/details?id=com.jduapp.parentnotification";
+    'https://play.google.com/store/apps/details?id=com.jduapp.parentnotification';
   const iosLink =
-    process.env.NEXT_PUBLIC_IOS_STORE_URL || "https://apps.apple.com";
+    process.env.NEXT_PUBLIC_IOS_STORE_URL || 'https://apps.apple.com';
 
   useEffect(() => {
-    const slugPath = params.slug?.join("/") ?? "";
-    const variant = searchParams.variant || "production";
+    const slugPath = params.slug?.join('/') ?? '';
+    const variant = searchParams.variant || 'production';
     const scheme =
-      variant === "development"
-        ? "jduapp-dev"
-        : variant === "preview"
-        ? "jduapp-preview"
-        : "jduapp";
-    const path = slugPath || "home";
+      variant === 'development'
+        ? 'jduapp-dev'
+        : variant === 'preview'
+          ? 'jduapp-preview'
+          : 'jduapp';
+    const path = slugPath || 'home';
     const appUrl = `${scheme}://${path}`;
 
-    const userAgent = navigator.userAgent || navigator.vendor || "";
+    const userAgent = navigator.userAgent || navigator.vendor || '';
     const storeUrl = /android/i.test(userAgent)
       ? androidLink
       : /iPad|iPhone|iPod/.test(userAgent)
-      ? iosLink
-      : undefined;
+        ? iosLink
+        : undefined;
 
     const timer = setTimeout(() => {
       if (storeUrl) {

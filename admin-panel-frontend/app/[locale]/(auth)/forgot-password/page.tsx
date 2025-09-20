@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import useApiMutation from "@/lib/useApiMutation";
-import { useTranslations } from "next-intl";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
+import useApiMutation from '@/lib/useApiMutation';
+import { useTranslations } from 'next-intl';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
+} from '@/components/ui/input-otp';
 import {
   Form,
   FormControl,
@@ -21,13 +21,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { useForm as useHookForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+} from '@/components/ui/form';
+import { useForm as useHookForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import NewPasswordInput, {
   validateNewPassword,
-} from "@/components/NewPasswordInput";
+} from '@/components/NewPasswordInput';
 
 const forgotSchema = z.object({
   email: z.string().email(),
@@ -38,11 +38,11 @@ const forgotSchema = z.object({
 type ForgotForm = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordPage() {
-  const t = useTranslations("ForgotPasswordPage");
+  const t = useTranslations('ForgotPasswordPage');
   const { toast } = useToast();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
-  const [newPassword, setNewPassword] = useState("");
+  const [newPassword, setNewPassword] = useState('');
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
 
   function isValidEmail(email: string) {
@@ -53,11 +53,11 @@ export default function ForgotPasswordPage() {
   const form = useHookForm<ForgotForm>({
     resolver: zodResolver(forgotSchema),
     defaultValues: {
-      email: "",
-      code: "",
-      confirmPassword: "",
+      email: '',
+      code: '',
+      confirmPassword: '',
     },
-    mode: "onTouched",
+    mode: 'onTouched',
   });
 
   // Custom validation for step logic (in addition to zod)
@@ -65,19 +65,19 @@ export default function ForgotPasswordPage() {
     const errors: Partial<Record<keyof ForgotForm, string>> = {};
     if (step === 1) {
       if (!values.email || !isValidEmail(values.email)) {
-        errors.email = t("InvalidEmailFormat");
+        errors.email = t('InvalidEmailFormat');
       }
     } else {
       if (!values.code || values.code.length !== 6) {
-        errors.code = t("EnterVerificationCode");
+        errors.code = t('EnterVerificationCode');
       }
       if (!newPassword || !validateNewPassword(newPassword)) {
         setNewPasswordError(
-          t("PasswordRequirementsNotMet") || t("PasswordTooWeak")
+          t('PasswordRequirementsNotMet') || t('PasswordTooWeak')
         );
       }
       if (values.confirmPassword !== newPassword || !values.confirmPassword) {
-        errors.confirmPassword = t("PasswordsDoNotMatch");
+        errors.confirmPassword = t('PasswordsDoNotMatch');
       }
     }
     return errors;
@@ -86,23 +86,23 @@ export default function ForgotPasswordPage() {
   const initiateMutation = useApiMutation<
     { message: string },
     { email: string }
-  >("forgot-password-initiate", "POST", [], {
-    onSuccess: (data) => {
-      toast({ title: t("VerificationSent"), description: data.message });
+  >('forgot-password-initiate', 'POST', [], {
+    onSuccess: data => {
+      toast({ title: t('VerificationSent'), description: data.message });
       setStep(2);
       form.reset({
-        email: form.getValues("email"),
-        code: "",
-        confirmPassword: "",
+        email: form.getValues('email'),
+        code: '',
+        confirmPassword: '',
       });
-      setNewPassword("");
+      setNewPassword('');
       setNewPasswordError(null);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
-        title: t("Error"),
-        description: error?.message || t("VerificationSendError"),
-        variant: "destructive",
+        title: t('Error'),
+        description: error?.message || t('VerificationSendError'),
+        variant: 'destructive',
       });
     },
   });
@@ -110,28 +110,28 @@ export default function ForgotPasswordPage() {
   const confirmMutation = useApiMutation<
     { message: string },
     { email: string; verification_code: string; new_password: string }
-  >("forgot-password-confirm", "POST", [], {
-    onSuccess: (data) => {
-      toast({ title: t("PasswordChanged"), description: data.message });
+  >('forgot-password-confirm', 'POST', [], {
+    onSuccess: data => {
+      toast({ title: t('PasswordChanged'), description: data.message });
       setTimeout(() => {
-        router.push("/login");
+        router.push('/login');
       }, 1200);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
-        title: t("Error"),
-        description: error?.message || t("ResetPasswordError"),
-        variant: "destructive",
+        title: t('Error'),
+        description: error?.message || t('ResetPasswordError'),
+        variant: 'destructive',
       });
     },
   });
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit = form.handleSubmit(async values => {
     const errors = stepValidate(values);
     if (Object.keys(errors).length > 0) {
       Object.entries(errors).forEach(([key, message]) => {
         form.setError(key as keyof ForgotForm, {
-          type: "manual",
+          type: 'manual',
           message,
         });
       });
@@ -150,9 +150,9 @@ export default function ForgotPasswordPage() {
   });
 
   const passwordsMatch =
-    newPassword === form.watch("confirmPassword") &&
-    form.watch("confirmPassword").length > 0;
-  const validEmail = isValidEmail(form.watch("email"));
+    newPassword === form.watch('confirmPassword') &&
+    form.watch('confirmPassword').length > 0;
+  const validEmail = isValidEmail(form.watch('email'));
   const isValidPassword = validateNewPassword(newPassword);
 
   return (
@@ -160,7 +160,7 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md shadow-lg rounded-2xl border ">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-semibold ">
-            {t("title")}
+            {t('title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -174,13 +174,13 @@ export default function ForgotPasswordPage() {
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          {t("emailLabel")}
+                          {t('emailLabel')}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="email"
-                            placeholder={t("emailPlaceholder")}
+                            placeholder={t('emailPlaceholder')}
                           />
                         </FormControl>
                         <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -192,7 +192,7 @@ export default function ForgotPasswordPage() {
                     type="submit"
                     disabled={initiateMutation.isPending || !validEmail}
                   >
-                    {t("SendVerificationCode")}
+                    {t('SendVerificationCode')}
                   </Button>
                 </div>
               ) : (
@@ -200,21 +200,21 @@ export default function ForgotPasswordPage() {
                   {/* OTP (do NOT replace with RHF) */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
-                      {t("VerificationCodeLabel")}
+                      {t('VerificationCodeLabel')}
                     </Label>
                     <InputOTP
                       maxLength={6}
-                      value={form.watch("code")}
+                      value={form.watch('code')}
                       onChange={(val: string) => {
                         if (/^\d*$/.test(val)) {
-                          form.setValue("code", val, { shouldValidate: true });
+                          form.setValue('code', val, { shouldValidate: true });
                         }
                       }}
                       className="justify-center"
-                      onBlur={() => form.trigger("code")}
+                      onBlur={() => form.trigger('code')}
                     >
                       <InputOTPGroup>
-                        {[0, 1, 2, 3, 4, 5].map((i) => (
+                        {[0, 1, 2, 3, 4, 5].map(i => (
                           <InputOTPSlot key={i} index={i} />
                         ))}
                       </InputOTPGroup>
@@ -227,9 +227,9 @@ export default function ForgotPasswordPage() {
                   {/* New Password */}
                   <NewPasswordInput
                     value={newPassword}
-                    onChange={(value) => {
+                    onChange={value => {
                       setNewPassword(value);
-                      setNewPasswordError(null); 
+                      setNewPasswordError(null);
                     }}
                     error={newPasswordError}
                   />
@@ -241,13 +241,13 @@ export default function ForgotPasswordPage() {
                     render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          {t("confirmPasswordLabel")}
+                          {t('confirmPasswordLabel')}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="password"
-                            placeholder={t("confirmPasswordPlaceholder")}
+                            placeholder={t('confirmPasswordPlaceholder')}
                           />
                         </FormControl>
                         <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -261,14 +261,14 @@ export default function ForgotPasswordPage() {
                     type="submit"
                     disabled={
                       confirmMutation.isPending ||
-                      !form.watch("code") ||
-                      form.watch("code").length !== 6 ||
+                      !form.watch('code') ||
+                      form.watch('code').length !== 6 ||
                       !newPassword ||
                       !passwordsMatch ||
                       !isValidPassword
                     }
                   >
-                    {t("ResetPassword")}
+                    {t('ResetPassword')}
                   </Button>
                 </div>
               )}
