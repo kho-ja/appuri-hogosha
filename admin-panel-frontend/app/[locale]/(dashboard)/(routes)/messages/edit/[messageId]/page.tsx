@@ -60,7 +60,7 @@ export default function SendMessagePage({
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
-  const [image, setImage] = useState<String>("");
+  const [image, setImage] = useState<string>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

@@ -7,24 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Helper function to safely get formatter and timezone
-function useSafeFormatter() {
-  let format = null;
-  let timeZone = "UTC";
-  let isAvailable = false;
-
-  try {
-    format = useFormatter();
-    timeZone = useTimeZone();
-    isAvailable = true;
-  } catch (error) {
-    // Fallback for when context is not available
-    isAvailable = false;
-  }
-
-  return { format, timeZone, isAvailable };
-}
-
 // MODERN APPROACH: Use next-intl's automatic timezone handling
 export function FormatDate(
   date: string | Date,
@@ -32,23 +14,16 @@ export function FormatDate(
     dateStyle: "long",
   }
 ) {
-  const { format, timeZone, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
+  const timeZone = useTimeZone();
 
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
 
-  if (!isAvailable || !format) {
-    // Fallback formatting when context is not available
-    return dateObject.toLocaleDateString("en-US", {
-      dateStyle: "long" as any,
-    });
-  }
-
-  // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
-    timeZone, // Explicitly use the configured timezone
+    timeZone,
   });
 }
 
@@ -59,56 +34,36 @@ export function FormatDateTime(
     timeStyle: "short",
   }
 ) {
-  const { format, timeZone, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
+  const timeZone = useTimeZone();
 
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
 
-  if (!isAvailable || !format) {
-    // Fallback formatting when context is not available
-    return dateObject.toLocaleDateString("en-US", {
-      dateStyle: "medium" as any,
-      timeStyle: "short" as any,
-    });
-  }
-
-  // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
     ...style,
-    timeZone, // Explicitly use the configured timezone
+    timeZone,
   });
 }
 
-// NEW: Specialized formatters for common use cases
 export function FormatRelativeTime(date: string | Date) {
-  const { format, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
 
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
-
-  if (!isAvailable || !format) {
-    // Simple fallback
-    return dateObject.toLocaleDateString();
-  }
 
   return format.relativeTime(dateObject);
 }
 
 export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
-  const { format, timeZone, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
+  const timeZone = useTimeZone();
 
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
-
-  if (!isAvailable || !format) {
-    // Fallback formatting when context is not available
-    return dateObject.toLocaleTimeString("en-US", {
-      hour12: !use24Hour,
-    });
-  }
 
   return format.dateTime(dateObject, {
     timeStyle: "short",
@@ -118,16 +73,12 @@ export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
 }
 
 export function FormatDateOnly(date: string | Date) {
-  const { format, timeZone, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
+  const timeZone = useTimeZone();
 
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
-
-  if (!isAvailable || !format) {
-    // Fallback formatting when context is not available
-    return dateObject.toLocaleDateString("en-US");
-  }
 
   return format.dateTime(dateObject, {
     dateStyle: "medium",
@@ -137,20 +88,10 @@ export function FormatDateOnly(date: string | Date) {
 
 // IMPROVED: Better display format for date picker
 export function FormatDateTimeForDisplay(date: Date | null): string {
-  const { format, timeZone, isAvailable } = useSafeFormatter();
+  const format = useFormatter();
+  const timeZone = useTimeZone();
 
   if (!date) return "";
-
-  if (!isAvailable || !format) {
-    // Fallback formatting when context is not available
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hour = String(date.getHours()).padStart(2, "0");
-    const minute = String(date.getMinutes()).padStart(2, "0");
-
-    return `${year}-${month}-${day} ${hour}:${minute}`;
-  }
 
   return format.dateTime(date, {
     year: "numeric",

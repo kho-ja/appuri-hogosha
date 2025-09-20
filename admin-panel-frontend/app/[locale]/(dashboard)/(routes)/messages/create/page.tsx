@@ -142,8 +142,8 @@ export default function SendMessagePage() {
   }, [form]);
 
   useEffect(() => {
-    let draftsLocal = localStorage.getItem("DraftsData");
-    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    const draftsLocal = localStorage.getItem("DraftsData");
+    const parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
     setDraftsData(parsedDrafts);
   }, []);
 
@@ -189,7 +189,7 @@ export default function SendMessagePage() {
     e.preventDefault();
     const data = form.getValues();
 
-    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
+    const draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
     const parsedData = {
       id: draftsLocal.length || 0,
       ...data,

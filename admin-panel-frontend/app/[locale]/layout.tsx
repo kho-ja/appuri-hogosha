@@ -16,7 +16,7 @@ const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export async function generateMetadata() {
   const session = await auth();
-  let metadata: Metadata = {
+  const metadata: Metadata = {
     title: {
       default: "Create Next App",
       template: "%s | Create Next App",

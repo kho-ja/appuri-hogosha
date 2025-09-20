@@ -77,7 +77,7 @@ export default function ParentNotificationPage({
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
               Stay Connected
               <br />
-              with Your Child's Education
+              with Your Child&apos;s Education
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
               Real-time updates on university activities, grades, and

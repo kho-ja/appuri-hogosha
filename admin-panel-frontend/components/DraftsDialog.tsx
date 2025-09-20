@@ -105,8 +105,8 @@ export default function DraftsDialog({
   }, [studentList, groupList, selectedDraft.id]);
 
   useEffect(() => {
-    let draftsLocal = localStorage.getItem("DraftsData");
-    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    const draftsLocal = localStorage.getItem("DraftsData");
+    const parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
     setDraftsData(parsedDrafts);
   }, []);
 
@@ -116,7 +116,7 @@ export default function DraftsDialog({
 
   const handleDeleteDraft = (draft: any) => {
     if (draft) {
-      let drafts = draftsData.filter((d) => {
+      const drafts = draftsData.filter((d) => {
         if (
           !(
             d.title === draft.title &&
@@ -140,7 +140,7 @@ export default function DraftsDialog({
   };
 
   const handleSelectedDraftFunction = (data: any) => {
-    let draft = {
+    const draft = {
       title: data?.title,
       description: data?.description,
       priority: data?.priority,
@@ -158,8 +158,8 @@ export default function DraftsDialog({
     setSelectedStudents(draft.students.map((s: any) => s.id));
     setIsDialogOpen(true);
     setSelectedDraft(draft);
-    let studentsToMutate = draft.students.map((s: any) => s.id);
-    let groupsToMutate = draft.groups.map((g: any) => g.id);
+    const studentsToMutate = draft.students.map((s: any) => s.id);
+    const groupsToMutate = draft.groups.map((g: any) => g.id);
 
     if (studentsToMutate.length <= 0) {
       setStudentsFromBackend([]);

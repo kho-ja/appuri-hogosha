@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -173,20 +173,8 @@ export default function Info() {
     {
       accessorKey: "select",
       header: () => {
-        const checkboxRef = useRef<HTMLButtonElement>(null);
-
-        useEffect(() => {
-          if (checkboxRef.current) {
-            const input = checkboxRef.current.querySelector("input");
-            if (input) {
-              input.indeterminate = isIndeterminate();
-            }
-          }
-        }, [data, selectedPosts, page]);
-
         return (
           <Checkbox
-            ref={checkboxRef}
             checked={isAllSelected()}
             onCheckedChange={(checked) =>
               handleSelectAllChange(Boolean(checked))
@@ -258,23 +246,11 @@ export default function Info() {
     {
       accessorKey: "select",
       header: () => {
-        const checkboxRef = useRef<HTMLButtonElement>(null);
-
-        useEffect(() => {
-          if (checkboxRef.current) {
-            const input = checkboxRef.current.querySelector("input");
-            if (input) {
-              input.indeterminate = isIndeterminateScheduled();
-            }
-          }
-        }, [scheduledPosts, selectedScheduledPosts, page]);
-
         return (
           <Checkbox
-            ref={checkboxRef}
             checked={isAllSelectedScheduled()}
             onCheckedChange={(checked) =>
-              handleSelectAllChangeScheduled(Boolean(checked))
+              handleSelectAllScheduledChange(Boolean(checked))
             }
           />
         );
