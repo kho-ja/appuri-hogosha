@@ -65,4 +65,4 @@ npm run dev
 
 2. Open http://localhost:3000 with your browser to see the result.
 
-school21
+School21
