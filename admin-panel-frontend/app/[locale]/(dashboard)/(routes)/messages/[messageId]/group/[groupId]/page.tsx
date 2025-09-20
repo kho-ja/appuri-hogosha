@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import Student from "@/types/student";
-import { Link } from "@/navigation";
-import { Button } from "@/components/ui/button";
-import { ColumnDef } from "@tanstack/react-table";
-import PaginationApi from "@/components/PaginationApi";
+import { useTranslations } from 'next-intl';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import Student from '@/types/student';
+import { Link } from '@/navigation';
+import { Button } from '@/components/ui/button';
+import { ColumnDef } from '@tanstack/react-table';
+import PaginationApi from '@/components/PaginationApi';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Bell, Check, CheckCheck } from "lucide-react";
-import { usePathname, useRouter } from "@/navigation";
-import TableApi from "@/components/TableApi";
-import { useState } from "react";
-import DisplayProperty from "@/components/DisplayProperty";
-import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
-import Group from "@/types/group";
-import pagination from "@/types/pagination";
+} from '@/components/ui/hover-card';
+import { Bell, Check, CheckCheck } from 'lucide-react';
+import { usePathname, useRouter } from '@/navigation';
+import TableApi from '@/components/TableApi';
+import { useState } from 'react';
+import DisplayProperty from '@/components/DisplayProperty';
+import NotFound from '@/components/NotFound';
+import useApiQuery from '@/lib/useApiQuery';
+import Group from '@/types/group';
+import pagination from '@/types/pagination';
 import {
   Dialog,
   DialogTrigger,
@@ -31,25 +31,25 @@ import {
   DialogDescription,
   DialogClose,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
-import useApiMutation from "@/lib/useApiMutation";
-import { BackButton } from "@/components/ui/BackButton";
+} from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
+import useApiMutation from '@/lib/useApiMutation';
+import { BackButton } from '@/components/ui/BackButton';
 
 export default function ThisGroup({
   params: { messageId, groupId },
 }: {
   params: { messageId: string; groupId: string };
 }) {
-  const t = useTranslations("ThisGroup");
-  const tName = useTranslations("names");
+  const t = useTranslations('ThisGroup');
+  const tName = useTranslations('names');
   const [studentPage, setStudentPage] = useState(1);
   const { data: groupData, isError } = useApiQuery<{
     group: Group;
     pagination: pagination;
     students: Student[];
   }>(`post/${messageId}/group/${groupId}?page=${studentPage}`, [
-    "group",
+    'group',
     messageId,
     groupId,
     studentPage,
@@ -57,12 +57,12 @@ export default function ThisGroup({
   const pathname = usePathname();
   const { mutate } = useApiMutation<{ message: string }>(
     `post/${messageId}/groups/${groupId}`,
-    "POST",
-    ["group", messageId, groupId],
+    'POST',
+    ['group', messageId, groupId],
     {
-      onSuccess: (data) => {
+      onSuccess: data => {
         toast({
-          title: t("notificationReSent"),
+          title: t('notificationReSent'),
           description: t(data.message),
         });
       },
@@ -71,76 +71,76 @@ export default function ThisGroup({
 
   const studentColumns: ColumnDef<Student>[] = [
     {
-      accessorKey: "given_name",
-      header: t("studentGivenName"),
+      accessorKey: 'given_name',
+      header: t('studentGivenName'),
       cell: ({ row }) => (
         <Link href={`${pathname}/student/${row.original.id}`}>
-          {row.getValue("given_name")}
+          {row.getValue('given_name')}
         </Link>
       ),
     },
     {
-      accessorKey: "family_name",
-      header: t("Family_name"),
+      accessorKey: 'family_name',
+      header: t('Family_name'),
       cell: ({ row }) => (
         <Link href={`${pathname}/student/${row.original.id}`}>
-          {row.getValue("family_name")}
+          {row.getValue('family_name')}
         </Link>
       ),
     },
     {
-      accessorKey: "email",
-      header: t("Email"),
+      accessorKey: 'email',
+      header: t('Email'),
       cell: ({ row }) => (
         <Link href={`${pathname}/student/${row.original.id}`}>
-          {row.getValue("email")}
+          {row.getValue('email')}
         </Link>
       ),
     },
     {
-      accessorKey: "phone_number",
-      header: t("Phone_number"),
+      accessorKey: 'phone_number',
+      header: t('Phone_number'),
       cell: ({ row }) => (
         <Link href={`${pathname}/student/${row.original.id}`}>
-          {row.getValue("phone_number")}
+          {row.getValue('phone_number')}
         </Link>
       ),
     },
     {
-      accessorKey: "student_number",
-      header: t("Ststudent_number"),
+      accessorKey: 'student_number',
+      header: t('Ststudent_number'),
       cell: ({ row }) => (
         <Link href={`${pathname}/student/${row.original.id}`}>
-          {row.getValue("student_number")}
+          {row.getValue('student_number')}
         </Link>
       ),
     },
     {
-      accessorKey: "parents",
-      header: t("Parents"),
+      accessorKey: 'parents',
+      header: t('Parents'),
       meta: {
         notClickable: true,
       },
       cell: ({ row }) => {
         const parents = row.original?.parents || [];
-        const anyViewed = parents.some((parent) => parent.viewed_at);
+        const anyViewed = parents.some(parent => parent.viewed_at);
 
         return (
           <HoverCard>
             <HoverCardTrigger asChild>
               <Link href={`${pathname}/student/${row.original.id}`}>
                 <Bell
-                  className={anyViewed ? "text-green-500" : "text-red-500"}
+                  className={anyViewed ? 'text-green-500' : 'text-red-500'}
                 />
               </Link>
             </HoverCardTrigger>
             <HoverCardContent>
               {row.original?.parents?.length
-                ? row.original?.parents.map((parent) => (
+                ? row.original?.parents.map(parent => (
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName('name', { ...parent } as any)}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>
@@ -149,7 +149,7 @@ export default function ThisGroup({
                       )}
                     </div>
                   ))
-                : t("noParents")}
+                : t('noParents')}
             </HoverCardContent>
           </HoverCard>
         );
@@ -162,26 +162,26 @@ export default function ThisGroup({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between w-full gap-2">
-        <h1 className="text-3xl font-bold">{t("GroupView")}</h1>
+        <h1 className="text-3xl font-bold">{t('GroupView')}</h1>
         <div className="flex flex-wrap gap-2">
           <BackButton href={`/messages/${messageId}`} />
-          <Dialog key={"resendStudent"}>
+          <Dialog key={'resendStudent'}>
             <DialogTrigger asChild>
-              <Button>{t("resend")}</Button>
+              <Button>{t('resend')}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{groupData?.group.name}</DialogTitle>
                 <DialogDescription>
-                  <div>{t("doYouReSendNotification")}</div>
+                  <div>{t('doYouReSendNotification')}</div>
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
+                  <Button variant={'secondary'}>{t('cancel')}</Button>
                 </DialogClose>
                 <DialogClose asChild>
-                  <Button onClick={() => mutate()}>{t("resend")}</Button>
+                  <Button onClick={() => mutate()}>{t('resend')}</Button>
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
@@ -191,20 +191,20 @@ export default function ThisGroup({
       <Card className="space-y-4">
         <CardHeader>
           <DisplayProperty
-            property={t("groupName")}
+            property={t('groupName')}
             value={groupData?.group.name}
           />
         </CardHeader>
         <Separator />
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center justify-between w-full gap-2">
-            <h2 className="text-2xl font-bold">{t("students")}</h2>
-              <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-                <PaginationApi
-                  data={groupData?.pagination ?? null}
-                  setPage={setStudentPage}
-                />
-              </div>
+            <h2 className="text-2xl font-bold">{t('students')}</h2>
+            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+              <PaginationApi
+                data={groupData?.pagination ?? null}
+                setPage={setStudentPage}
+              />
+            </div>
           </div>
           <div className="rounded-md border">
             <TableApi

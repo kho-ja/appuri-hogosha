@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { useTranslations } from "next-intl";
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+} from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -18,16 +18,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import Group from "@/types/group";
-import { useSession } from "next-auth/react";
-import GroupApi from "@/types/groupApi";
-import PaginationApi from "./PaginationApi";
-import { Badge } from "./ui/badge";
-import { Trash2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { SkeletonLoader } from "./TableApi";
-import useApiQuery from "@/lib/useApiQuery";
+} from '@/components/ui/table';
+import Group from '@/types/group';
+import { useSession } from 'next-auth/react';
+import GroupApi from '@/types/groupApi';
+import PaginationApi from './PaginationApi';
+import { Badge } from './ui/badge';
+import { Trash2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { SkeletonLoader } from './TableApi';
+import useApiQuery from '@/lib/useApiQuery';
 
 export function GroupTable({
   selectedGroups,
@@ -36,23 +36,23 @@ export function GroupTable({
   selectedGroups: Group[];
   setSelectedGroups: React.Dispatch<React.SetStateAction<Group[]>>;
 }) {
-  const t = useTranslations("GroupTable");
+  const t = useTranslations('GroupTable');
   const { data: session } = useSession();
   const [page, setPage] = useState(1);
-  const [searchName, setSearchName] = useState("");
+  const [searchName, setSearchName] = useState('');
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${searchName}`,
-    ["groups", page, searchName]
+    ['groups', page, searchName]
   );
 
   const selectedGroupIds = useMemo(
-    () => new Set(selectedGroups.map((group) => group.id)),
+    () => new Set(selectedGroups.map(group => group.id)),
     [selectedGroups]
   );
 
   const rowSelection = useMemo(() => {
     const selection: Record<string, boolean> = {};
-    selectedGroupIds.forEach((id) => {
+    selectedGroupIds.forEach(id => {
       selection[id] = true;
     });
     return selection;
@@ -61,7 +61,7 @@ export function GroupTable({
   const { data: selectedGroupData } = useQuery<{
     groupList: Group[];
   }>({
-    queryKey: ["selectedGroups", Array.from(selectedGroupIds)],
+    queryKey: ['selectedGroups', Array.from(selectedGroupIds)],
     queryFn: async () => {
       if (selectedGroupIds.size === 0) {
         return { groupList: [] };
@@ -70,9 +70,9 @@ export function GroupTable({
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/ids`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${session?.sessionToken}`,
           },
           body: JSON.stringify(data),
@@ -92,23 +92,21 @@ export function GroupTable({
   const columns: ColumnDef<Group>[] = useMemo(
     () => [
       {
-        id: "select",
+        id: 'select',
         header: ({ table }) => (
           <Checkbox
             checked={
               table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
+              (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
+            onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onCheckedChange={value => row.toggleSelected(!!value)}
             aria-label="Select row"
           />
         ),
@@ -116,19 +114,19 @@ export function GroupTable({
         enableHiding: false,
       },
       {
-        accessorKey: "name",
-        header: t("groupName"),
+        accessorKey: 'name',
+        header: t('groupName'),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("name")}</div>
+          <div className="capitalize">{row.getValue('name')}</div>
         ),
       },
       {
-        accessorKey: "member_count",
+        accessorKey: 'member_count',
         header: ({ column }) => (
-          <div className="capitalize">{t("studentCount")}</div>
+          <div className="capitalize">{t('studentCount')}</div>
         ),
         cell: ({ row }) => (
-          <div className="lowercase">{row.getValue("member_count")}</div>
+          <div className="lowercase">{row.getValue('member_count')}</div>
         ),
       },
     ],
@@ -136,26 +134,27 @@ export function GroupTable({
   );
 
   const table = useReactTable({
-    data: useMemo(() => 
-      (data?.groups ?? []).filter((group) => (group.member_count ?? 0) > 0), 
-    [data]),
+    data: useMemo(
+      () => (data?.groups ?? []).filter(group => (group.member_count ?? 0) > 0),
+      [data]
+    ),
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: (updater) => {
-      if (typeof updater === "function") {
+    onRowSelectionChange: updater => {
+      if (typeof updater === 'function') {
         const newSelection = updater(rowSelection);
         const newSelectedGroups =
-          data?.groups.filter((group) => newSelection[group.id]) || [];
-        setSelectedGroups((prev) => {
-          const prevIds = new Set(prev.map((g) => g.id));
+          data?.groups.filter(group => newSelection[group.id]) || [];
+        setSelectedGroups(prev => {
+          const prevIds = new Set(prev.map(g => g.id));
           return [
-            ...prev.filter((g) => newSelection[g.id]),
-            ...newSelectedGroups.filter((g) => !prevIds.has(g.id)),
+            ...prev.filter(g => newSelection[g.id]),
+            ...newSelectedGroups.filter(g => !prevIds.has(g.id)),
           ];
         });
       }
     },
-    getRowId: (row) => row.id.toString(),
+    getRowId: row => row.id.toString(),
     state: {
       rowSelection,
     },
@@ -163,18 +162,18 @@ export function GroupTable({
 
   const handleDeleteGroup = useCallback(
     (group: Group) => {
-      setSelectedGroups((prev) => prev.filter((g) => g.id !== group.id));
+      setSelectedGroups(prev => prev.filter(g => g.id !== group.id));
     },
     [setSelectedGroups]
   );
 
   useEffect(() => {
     if (selectedGroupData) {
-      setSelectedGroups((prevSelected) => {
+      setSelectedGroups(prevSelected => {
         const newSelectedMap = new Map(
-          selectedGroupData.groupList.map((g) => [g.id, g])
+          selectedGroupData.groupList.map(g => [g.id, g])
         );
-        return prevSelected.map((g) => newSelectedMap.get(g.id) || g);
+        return prevSelected.map(g => newSelectedMap.get(g.id) || g);
       });
     }
   }, [selectedGroupData, setSelectedGroups]);
@@ -183,7 +182,7 @@ export function GroupTable({
     <div className="w-full space-y-4 mt-4">
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2 items-start content-start">
-          {selectedGroups.map((group) => (
+          {selectedGroups.map(group => (
             <Badge
               key={group.id}
               className="cursor-pointer"
@@ -196,7 +195,7 @@ export function GroupTable({
         </div>
         <div className="flex items-center">
           <Input
-            placeholder={t("filter")}
+            placeholder={t('filter')}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearchName(e.target.value);
               setPage(1);
@@ -208,9 +207,9 @@ export function GroupTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+                {headerGroup.headers.map(header => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -229,12 +228,12 @@ export function GroupTable({
             {!data ? (
               <SkeletonLoader columnCount={columns.length} rowCount={5} />
             ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map(cell => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -250,7 +249,7 @@ export function GroupTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {t("noResults")}
+                  {t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -259,7 +258,7 @@ export function GroupTable({
       </div>
       <div className="flex justify-end flex-wrap gap-2 sm:flex-row sm:justify-between sm:items-center">
         <div className="flex-1 text-sm text-muted-foreground w-full sm:w-auto">
-          {t("rowsSelected", {
+          {t('rowsSelected', {
             count: table.getFilteredSelectedRowModel().rows.length,
             total: table.getFilteredRowModel().rows.length,
           })}

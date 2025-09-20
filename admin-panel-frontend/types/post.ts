@@ -1,4 +1,4 @@
-import Admin from "./admin";
+import Admin from './admin';
 
 export default interface Post {
   id: number;

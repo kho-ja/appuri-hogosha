@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogClose,
@@ -10,20 +10,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
-import { useTranslations } from "next-intl";
-import useApiMutation from "@/lib/useApiMutation";
-import { toast } from "@/components/ui/use-toast";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import useApiMutation from '@/lib/useApiMutation';
+import { toast } from '@/components/ui/use-toast';
 
 interface ResendPasswordDialogProps {
   id: number;
   name: string;
   identifier: string;
-  type: "parent" | "admin";
-  variant?: "icon" | "button";
-  size?: "sm" | "default";
+  type: 'parent' | 'admin';
+  variant?: 'icon' | 'button';
+  size?: 'sm' | 'default';
 }
 
 const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
@@ -31,10 +31,10 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
   name,
   identifier,
   type,
-  variant = "icon",
-  size = "default",
+  variant = 'icon',
+  size = 'default',
 }) => {
-  const t = useTranslations("ResendPasswordDialog");
+  const t = useTranslations('ResendPasswordDialog');
   const [isOpen, setIsOpen] = useState(false);
 
   const { mutate, isPending } = useApiMutation<{
@@ -42,39 +42,39 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
     parent_name?: string;
     admin_name?: string;
     email: string;
-  }>(`${type}/${id}/resend-password`, "POST", [`resend-password-${type}`, id], {
-    onSuccess: (data) => {
+  }>(`${type}/${id}/resend-password`, 'POST', [`resend-password-${type}`, id], {
+    onSuccess: data => {
       toast({
-        title: t("resendPasswordSuccess"),
+        title: t('resendPasswordSuccess'),
         description: `${data.message} - ${data.email}`,
       });
       setIsOpen(false);
     },
     onError: (error: any) => {
-      let errorMessage = t("resendPasswordError");
+      let errorMessage = t('resendPasswordError');
 
-      console.error("Error resending password:", error);
+      console.error('Error resending password:', error);
 
       if (error.message) {
         // Handle specific error messages
         if (
           error.message ===
-          "User has already activated their account. No temporary password needed."
+          'User has already activated their account. No temporary password needed.'
         ) {
-          errorMessage = t("userAlreadyActive");
-        } else if (error.message === "User not found") {
-          errorMessage = "User not found in the system.";
+          errorMessage = t('userAlreadyActive');
+        } else if (error.message === 'User not found') {
+          errorMessage = 'User not found in the system.';
         } else {
-          errorMessage = error.message || t("resendPasswordError");
+          errorMessage = error.message || t('resendPasswordError');
         }
       }
 
-      console.error("Resend password error:", errorMessage);
+      console.error('Resend password error:', errorMessage);
 
       toast({
-        title: t("resendPasswordError"),
+        title: t('resendPasswordError'),
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -92,23 +92,23 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
           disabled={isPending}
           icon={<RefreshCcw className="h-4 w-4" />}
         >
-          {variant !== "icon" ? t("resendPassword") : null}
+          {variant !== 'icon' ? t('resendPassword') : null}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("resendPassword")}</DialogTitle>
+          <DialogTitle>{t('resendPassword')}</DialogTitle>
           <DialogDescription className="space-y-2">
             <strong>{name}</strong>
             <br />
             {identifier}
             <br />
-            {type === "parent"
-              ? t("resendPasswordDescriptionPhone")
-              : t("resendPasswordDescription")}
+            {type === 'parent'
+              ? t('resendPasswordDescriptionPhone')
+              : t('resendPasswordDescription')}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex text-sm">{t("resendPasswordConfirm")}</div>
+        <div className="flex text-sm">{t('resendPasswordConfirm')}</div>
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="secondary" disabled={isPending}>
@@ -116,7 +116,7 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
             </Button>
           </DialogClose>
           <Button onClick={handleResend} isLoading={isPending}>
-            {t("resendPassword")}
+            {t('resendPassword')}
           </Button>
         </DialogFooter>
       </DialogContent>

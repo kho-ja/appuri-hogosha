@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Edit3, File, Trash2Icon } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import Student from "@/types/student";
-import StudentApi from "@/types/studentApi";
-import PaginationApi from "@/components/PaginationApi";
-import { Input } from "@/components/ui/input";
-import { Link } from "@/navigation";
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Edit3, File, Trash2Icon } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import Student from '@/types/student';
+import StudentApi from '@/types/studentApi';
+import PaginationApi from '@/components/PaginationApi';
+import { Input } from '@/components/ui/input';
+import { Link } from '@/navigation';
 import {
   Dialog,
   DialogClose,
@@ -19,39 +19,39 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import TableApi from "@/components/TableApi";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import useApiQuery from "@/lib/useApiQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
-import useApiMutation from "@/lib/useApiMutation";
-import useFileMutation from "@/lib/useFileMutation";
-import { Plus } from "lucide-react";
-import useTableQuery from "@/lib/useTableQuery";
-import PageHeader from "@/components/PageHeader";
+} from '@/components/ui/dialog';
+import TableApi from '@/components/TableApi';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import useApiQuery from '@/lib/useApiQuery';
+import useApiPostQuery from '@/lib/useApiPostQuery';
+import useApiMutation from '@/lib/useApiMutation';
+import useFileMutation from '@/lib/useFileMutation';
+import { Plus } from 'lucide-react';
+import useTableQuery from '@/lib/useTableQuery';
+import PageHeader from '@/components/PageHeader';
 
 export default function Students() {
-  const t = useTranslations("students");
-  const tName = useTranslations("names");
+  const t = useTranslations('students');
+  const tName = useTranslations('names');
   const { page, setPage, search, setSearch } = useTableQuery();
   const { data: studentData } = useApiPostQuery<StudentApi>(
-    "student/list",
-    ["students", page, search],
+    'student/list',
+    ['students', page, search],
     { page, name: search }
   );
   const queryClient = useQueryClient();
   const [studentId, setStudentId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
     `student/${studentId}`,
-    "DELETE",
-    ["deleteStudent"],
+    'DELETE',
+    ['deleteStudent'],
     {
-      onSuccess: (data) => {
-        queryClient.invalidateQueries({ queryKey: ["students"] });
+      onSuccess: data => {
+        queryClient.invalidateQueries({ queryKey: ['students'] });
         toast({
-          title: t("studentDeleted"),
+          title: t('studentDeleted'),
           description: t(data.message),
         });
       },
@@ -59,29 +59,29 @@ export default function Students() {
   );
   const { mutate: exportStudents } = useFileMutation<{ message: string }>(
     `student/export`,
-    ["exportStudents"]
+    ['exportStudents']
   );
 
   const columns: ColumnDef<Student>[] = [
     {
-      accessorKey: "name",
-      header: t("name"),
-      cell: ({ row }) => tName("name", { ...row?.original, parents: "" }),
+      accessorKey: 'name',
+      header: t('name'),
+      cell: ({ row }) => tName('name', { ...row?.original, parents: '' }),
     },
     {
-      accessorKey: "email",
-      header: t("email"),
+      accessorKey: 'email',
+      header: t('email'),
     },
     {
-      accessorKey: "student_number",
-      header: t("studentId"),
+      accessorKey: 'student_number',
+      header: t('studentId'),
     },
     {
-      accessorKey: "phone_number",
-      header: t("phoneNumber"),
+      accessorKey: 'phone_number',
+      header: t('phoneNumber'),
     },
     {
-      header: t("action"),
+      header: t('action'),
       meta: {
         notClickable: true,
       },
@@ -97,14 +97,14 @@ export default function Students() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {tName("name", { ...row?.original, parents: "" })}
+                  {tName('name', { ...row?.original, parents: '' })}
                 </DialogTitle>
                 <DialogDescription>{row.original.email}</DialogDescription>
               </DialogHeader>
-              <div>{t("DouYouDeleteStudent")}</div>
+              <div>{t('DouYouDeleteStudent')}</div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
+                  <Button variant={'secondary'}>{t('cancel')}</Button>
                 </DialogClose>
                 <Button
                   onClick={() => {
@@ -112,7 +112,7 @@ export default function Students() {
                     mutate();
                   }}
                 >
-                  {t("confirm")}
+                  {t('confirm')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -124,16 +124,16 @@ export default function Students() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("students")} variant="list">
+      <PageHeader title={t('students')} variant="list">
         <Link href={`/students/create`}>
           <Button icon={<Plus className="h-5 w-5" />}>
-            {t("createstudent")}
+            {t('createstudent')}
           </Button>
         </Link>
       </PageHeader>
       <div className="flex flex-col sm:flex-row justify-between w-full">
         <Input
-          placeholder={t("filter")}
+          placeholder={t('filter')}
           value={search}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
             setSearch(e.target.value);
@@ -157,7 +157,7 @@ export default function Students() {
             className="h-7 gap-1 text-sm"
           >
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">{t("export")}</span>
+            <span className="sr-only sm:not-sr-only">{t('export')}</span>
           </Button>
         </div>
         <Card>

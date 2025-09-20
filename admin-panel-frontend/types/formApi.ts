@@ -1,5 +1,5 @@
-import pagination from "./pagination";
-import Form from "./form";
+import pagination from './pagination';
+import Form from './form';
 
 type FormApi = {
   forms: Form[];

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { useTranslations } from 'next-intl';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -9,81 +9,81 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { usePathname, Link } from "@/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { FormatDateTime } from "@/lib/utils";
-import TableApi from "@/components/TableApi";
-import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
-import ReactLinkify from "react-linkify";
-import Image from "next/image";
-import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
+} from '@/components/ui/table';
+import { usePathname, Link } from '@/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { FormatDateTime } from '@/lib/utils';
+import TableApi from '@/components/TableApi';
+import NotFound from '@/components/NotFound';
+import useApiQuery from '@/lib/useApiQuery';
+import ReactLinkify from 'react-linkify';
+import Image from 'next/image';
+import { Dialog, DialogDescription } from '@radix-ui/react-dialog';
 import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
+} from '@/components/ui/dialog';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
 
 export default function ScheduledMessagePage({
   params: { messageId },
 }: {
   params: { messageId: string };
 }) {
-  const t = useTranslations("ThisMessage");
-  const tName = useTranslations("names");
+  const t = useTranslations('ThisMessage');
+  const tName = useTranslations('names');
 
-  const { data, isError } = useApiQuery<any>(
-    `schedule/each/${messageId}`,
-    ["scheduled-message", messageId]
-  );
+  const { data, isError } = useApiQuery<any>(`schedule/each/${messageId}`, [
+    'scheduled-message',
+    messageId,
+  ]);
 
   const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
     `schedule/${messageId}/recievers`,
-    ["scheduled-recievers", messageId]
+    ['scheduled-recievers', messageId]
   );
 
   const studentColumns = [
     {
-      accessorKey: "name",
-      header: t("name"),
-      cell: ({ row }: any) => tName("name", { ...row?.original, parents: "" }),
+      accessorKey: 'name',
+      header: t('name'),
+      cell: ({ row }: any) => tName('name', { ...row?.original, parents: '' }),
     },
     {
-      accessorKey: "email",
-      header: t("email"),
+      accessorKey: 'email',
+      header: t('email'),
     },
     {
-      accessorKey: "student_number",
-      header: t("studentId"),
+      accessorKey: 'student_number',
+      header: t('studentId'),
     },
     {
-      accessorKey: "phone_number",
-      header: t("phoneNumber"),
+      accessorKey: 'phone_number',
+      header: t('phoneNumber'),
     },
   ];
 
   const groupColumns = [
     {
-      accessorKey: "name",
-      header: t("name"),
+      accessorKey: 'name',
+      header: t('name'),
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const scheduled_atDate = FormatDateTime(data?.post?.scheduled_at ?? "");
+  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? '');
+  const scheduled_atDate = FormatDateTime(data?.post?.scheduled_at ?? '');
 
   if (isError) return <NotFound />;
 
   return (
     <div className="flex flex-col gap-2">
-      <PageHeader title={t("ViewScheduledMessage")}>
+      <PageHeader title={t('ViewScheduledMessage')}>
         <BackButton href={`/messages/`} />
         <Link href={`/messages/scheduled-message/edit/${messageId}`} passHref>
-          <Button>{t("editMessage")}</Button>
+          <Button>{t('editMessage')}</Button>
         </Link>
       </PageHeader>
       <Card className="space-y-8 p-4">
@@ -130,9 +130,9 @@ export default function ScheduledMessagePage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("EditedAt")}</TableHead>
-              <TableHead>{t("ScheduledAt")}</TableHead>
-              <TableHead>{t("Priority.default")}</TableHead>
+              <TableHead>{t('EditedAt')}</TableHead>
+              <TableHead>{t('ScheduledAt')}</TableHead>
+              <TableHead>{t('Priority.default')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -150,14 +150,14 @@ export default function ScheduledMessagePage({
       <Tabs defaultValue="groups" className="w-full">
         <div className="flex flex-wrap gap-2 justify-between">
           <TabsList>
-            <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
-            <TabsTrigger value="students">{t("Students")}</TabsTrigger>
+            <TabsTrigger value="groups">{t('Groups')}</TabsTrigger>
+            <TabsTrigger value="students">{t('Students')}</TabsTrigger>
           </TabsList>
           <Link
             href={`/messages/scheduled-message/${messageId}/recievers`}
             passHref
           >
-            <Button>{t("editRecivers")}</Button>
+            <Button>{t('editRecivers')}</Button>
           </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">

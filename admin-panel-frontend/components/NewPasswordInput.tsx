@@ -1,9 +1,9 @@
-"use client";
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CircleCheckBig, CircleX } from "lucide-react";
+'use client';
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 
 interface NewPasswordInputProps {
   value: string;
@@ -16,41 +16,41 @@ export default function NewPasswordInput({
   onChange,
   error,
 }: NewPasswordInputProps) {
-  const t = useTranslations("LoginForm");
+  const t = useTranslations('LoginForm');
   const [isFocused, setIsFocused] = useState(false);
 
   const requirements = [
     {
-      text: t("8-character minimum length"),
+      text: t('8-character minimum length'),
       test: (pw: string) => pw.length >= 8,
     },
     {
-      text: t("Contains at least 1 number"),
+      text: t('Contains at least 1 number'),
       test: (pw: string) => /\d/.test(pw),
     },
     {
-      text: t("Contains at least 1 lowercase letter"),
+      text: t('Contains at least 1 lowercase letter'),
       test: (pw: string) => /[a-z]/.test(pw),
     },
     {
-      text: t("Contains at least 1 uppercase letter"),
+      text: t('Contains at least 1 uppercase letter'),
       test: (pw: string) => /[A-Z]/.test(pw),
     },
     {
-      text: t("Contains at least 1 special character"),
+      text: t('Contains at least 1 special character'),
       subText: `^ $ * . { } ( ) ? \" ! @ # % & / \\ > < ' : ; | _ ~ \` + = `,
       test: (pw: string) => /[\^$*.[\]{}()?"!@#%&/\\><':;|_~`+=]/.test(pw),
     },
   ];
 
   const isValid = () => {
-    return requirements.every((req) => req.test(value));
+    return requirements.every(req => req.test(value));
   };
 
   return (
     <div className="grid gap-2">
       <div className="flex items-center">
-        <Label htmlFor="newPassword">{t("newPasswordLabel")}</Label>
+        <Label htmlFor="newPassword">{t('newPasswordLabel')}</Label>
       </div>
       <div
         className="relative space-y-4"
@@ -62,14 +62,14 @@ export default function NewPasswordInput({
           type="password"
           name="newPassword"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           required
         />
-        <div className="text-red-500">{t("OTPError")}</div>
+        <div className="text-red-500">{t('OTPError')}</div>
         {isFocused && (
           <div className="absolute left-0 bottom-[130%] translate-y-0 shadow-lg rounded-md border-border border-2 w-full text-foreground">
             <div className="relative z-50 bg-muted p-2 rounded-sm ">
-              <div>{t("requirements")}</div>
+              <div>{t('requirements')}</div>
               {requirements.map((req, index) => (
                 <div key={index} className="flex items-start">
                   {req.test(value) ? (
@@ -82,7 +82,7 @@ export default function NewPasswordInput({
                     </span>
                   )}
                   <span className="ml-1 text-xs">
-                    {req.text} <br /> {req.subText ? `${req.subText}` : ""}
+                    {req.text} <br /> {req.subText ? `${req.subText}` : ''}
                   </span>
                 </div>
               ))}
@@ -107,5 +107,5 @@ export const validateNewPassword = (password: string) => {
     (pw: string) => /[\^$*.[\]{}()?"!@#%&/\\><':;|_~`+=]/.test(pw),
   ];
 
-  return requirements.every((req) => req(password));
+  return requirements.every(req => req(password));
 };

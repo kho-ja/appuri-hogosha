@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
-import HttpError from "./HttpError";
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import HttpError from './HttpError';
 
 export default function useApiQuery<T>(queryUrl: string, queryKey: unknown[]) {
   const { data: session } = useSession();
@@ -10,9 +10,9 @@ export default function useApiQuery<T>(queryUrl: string, queryKey: unknown[]) {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/${queryUrl}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${session?.sessionToken}`,
           },
         }

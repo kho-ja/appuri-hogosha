@@ -1,22 +1,22 @@
-"use client";
-import { Link, useRouter } from "@/navigation";
-import { Button } from "@/components/ui/button";
+'use client';
+import { Link, useRouter } from '@/navigation';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { useMessages, useTranslations } from "next-intl";
-import { login } from "@/login";
-import LanguageSelect from "@/components/LanguageSelect";
-import { ToggleMode } from "@/components/toggle-mode";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useMessages, useTranslations } from 'next-intl';
+import { login } from '@/login';
+import LanguageSelect from '@/components/LanguageSelect';
+import { ToggleMode } from '@/components/toggle-mode';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Form,
   FormControl,
@@ -24,16 +24,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
+} from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMakeZodI18nMap } from '@/lib/zodIntl';
 import NewPasswordInput, {
   validateNewPassword,
-} from "@/components/NewPasswordInput";
-import Image from "next/image";
-import localImageLoader from "@/lib/localImageLoader";
+} from '@/components/NewPasswordInput';
+import Image from 'next/image';
+import localImageLoader from '@/lib/localImageLoader';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -47,9 +47,9 @@ export default function LoginForm() {
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState<boolean>(false);
   const router = useRouter();
-  const t = useTranslations("LoginForm");
+  const t = useTranslations('LoginForm');
   const { toast } = useToast();
-  const [feedbackPassword, setFeedbackPassword] = useState("");
+  const [feedbackPassword, setFeedbackPassword] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
   const searchParams = useSearchParams();
   const [googleError, setGoogleError] = useState<string | null>(null);
@@ -60,39 +60,39 @@ export default function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const handleGoogleLogin = () => {
     setGoogleLoading(true);
-    toast({ title: t("LoggingIn"), description: t("wait") });
+    toast({ title: t('LoggingIn'), description: t('wait') });
     // Redirect to backend Google login endpoint
     window.location.href = `${
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/admin-panel"
+      process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001/admin-panel'
     }/google`;
   };
 
   useEffect(() => {
-    const error = searchParams.get("error");
+    const error = searchParams.get('error');
     if (error) {
       const ns = (allMessages?.LoginForm ?? {}) as Record<string, string>;
       const keyToUse = Object.prototype.hasOwnProperty.call(ns, error)
         ? error
-        : ("AuthError" as const);
+        : ('AuthError' as const);
       const message = t(keyToUse as any);
       setGoogleError(message);
       setGoogleLoading(false);
       toast({
-        title: t("loginFailed"),
+        title: t('loginFailed'),
         description: message,
-        variant: "destructive",
+        variant: 'destructive',
       });
       // Clean the URL to remove the error param without re-navigation
-      if (typeof window !== "undefined") {
+      if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
-        url.searchParams.delete("error");
+        url.searchParams.delete('error');
         window.history.replaceState({}, document.title, url.toString());
       }
     }
@@ -100,49 +100,49 @@ export default function LoginForm() {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     toast({
-      title: t("LoggingIn"),
-      description: t("wait"),
+      title: t('LoggingIn'),
+      description: t('wait'),
     });
 
     const { email, password } = values;
-    const newPasswordValue = newPassword ? feedbackPassword : "";
+    const newPasswordValue = newPassword ? feedbackPassword : '';
 
     try {
       const response = await login(email, password, newPasswordValue);
 
-      if (typeof response === "string") {
-        router.push("/");
+      if (typeof response === 'string') {
+        router.push('/');
         toast({
-          title: t("loginSuccess"),
-          description: t("loginSuccessDescription"),
+          title: t('loginSuccess'),
+          description: t('loginSuccessDescription'),
         });
       } else {
-        if (response.error === "InvalidCredentialsError") {
+        if (response.error === 'InvalidCredentialsError') {
           toast({
-            title: t("loginFailed"),
-            description: t("InvalidCredentialsError"),
-            variant: "destructive",
+            title: t('loginFailed'),
+            description: t('InvalidCredentialsError'),
+            variant: 'destructive',
           });
 
           if (newPassword) {
             setNewPasswordError(response.error);
           }
-        } else if (response.error === "OTPError") {
+        } else if (response.error === 'OTPError') {
           toast({
-            title: t("loginNewPassword"),
-            description: t("OTPError"),
+            title: t('loginNewPassword'),
+            description: t('OTPError'),
           });
           setNewPassword(true);
         } else {
           toast({
-            title: t("loginFailed"),
-            description: t("AuthError"),
-            variant: "destructive",
+            title: t('loginFailed'),
+            description: t('AuthError'),
+            variant: 'destructive',
           });
         }
       }
     } catch (error) {
-      console.error("Login failed", error);
+      console.error('Login failed', error);
     }
   };
 
@@ -155,8 +155,8 @@ export default function LoginForm() {
         </div>
         <Card className="mx-auto max-w-sm">
           <CardHeader>
-            <CardTitle className="text-2xl">{t("title")}</CardTitle>
-            <CardDescription>{t("description")}</CardDescription>
+            <CardTitle className="text-2xl">{t('title')}</CardTitle>
+            <CardDescription>{t('description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -169,11 +169,11 @@ export default function LoginForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("emailLabel")}</FormLabel>
+                      <FormLabel>{t('emailLabel')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder={t("emailPlaceholder")}
+                          placeholder={t('emailPlaceholder')}
                           {...field}
                         />
                       </FormControl>
@@ -188,12 +188,12 @@ export default function LoginForm() {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center">
-                        <FormLabel>{t("passwordLabel")}</FormLabel>
+                        <FormLabel>{t('passwordLabel')}</FormLabel>
                         <Link
                           href="/forgot-password"
                           className="ml-auto inline-block text-sm underline"
                         >
-                          {t("forgotPassword")}
+                          {t('forgotPassword')}
                         </Link>
                       </div>
                       <FormControl>
@@ -224,7 +224,7 @@ export default function LoginForm() {
                     newPassword && !validateNewPassword(feedbackPassword)
                   }
                 >
-                  {t("loginButton")}
+                  {t('loginButton')}
                 </Button>
                 <Button
                   type="button"
@@ -243,7 +243,7 @@ export default function LoginForm() {
                   }
                   disabled={googleLoading}
                 >
-                  {t("loginWithGoogle")}
+                  {t('loginWithGoogle')}
                 </Button>
                 {googleError && (
                   <p className="text-sm text-red-500 text-center">

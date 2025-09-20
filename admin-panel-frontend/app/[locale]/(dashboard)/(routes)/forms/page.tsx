@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import PaginationApi from "@/components/PaginationApi";
-import FormCard from "@/components/FormCard";
-import NothingHere from "@/components/NothingHere";
-import { Link, usePathname } from "@/navigation";
-import { Button } from "@/components/ui/button";
-import SkeletonFormCard from "@/components/SkeletonFormCard";
-import { useState } from "react";
-import useApiQuery from "@/lib/useApiQuery";
-import FormApi from "@/types/formApi";
+import { useTranslations } from 'next-intl';
+import PaginationApi from '@/components/PaginationApi';
+import FormCard from '@/components/FormCard';
+import NothingHere from '@/components/NothingHere';
+import { Link, usePathname } from '@/navigation';
+import { Button } from '@/components/ui/button';
+import SkeletonFormCard from '@/components/SkeletonFormCard';
+import { useState } from 'react';
+import useApiQuery from '@/lib/useApiQuery';
+import FormApi from '@/types/formApi';
 
 export default function DashboardPage() {
-  const t = useTranslations("forms");
+  const t = useTranslations('forms');
   const pathName = usePathname();
   const [page, setPage] = useState(1);
   const { data } = useApiQuery<FormApi>(`form/list?page=${page}&status=wait`, [
-    "forms",
+    'forms',
     page,
   ]);
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between">
-        <h1 className="text-3xl w-2/4 font-bold">{t("forms")}</h1>
+        <h1 className="text-3xl w-2/4 font-bold">{t('forms')}</h1>
         <Link href={`${pathName}/list`}>
-          <Button>{t("allForms")}</Button>
+          <Button>{t('allForms')}</Button>
         </Link>
       </div>
 

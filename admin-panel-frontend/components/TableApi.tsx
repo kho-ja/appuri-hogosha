@@ -5,18 +5,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTranslations } from "next-intl";
-import { useRouter } from "@/navigation";
+} from '@tanstack/react-table';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/navigation';
 
-declare module "@tanstack/react-table" {
+declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     notClickable?: boolean;
   }
@@ -32,10 +32,10 @@ interface TableApiProps<T> {
 const TableApi = <T,>({
   data,
   columns,
-  linkPrefix = "",
-  linkSuffixRowName = "id",
+  linkPrefix = '',
+  linkSuffixRowName = 'id',
 }: TableApiProps<T>) => {
-  const t = useTranslations("table");
+  const t = useTranslations('table');
   const router = useRouter();
   const table = useReactTable({
     data: data ?? [],
@@ -45,9 +45,9 @@ const TableApi = <T,>({
 
   const renderTableHeader = () => (
     <TableHeader>
-      {table.getHeaderGroups().map((headerGroup) => (
+      {table.getHeaderGroups().map(headerGroup => (
         <TableRow key={headerGroup.id}>
-          {headerGroup.headers.map((header) => (
+          {headerGroup.headers.map(header => (
             <TableHead key={header.id}>
               {header.isPlaceholder
                 ? null
@@ -71,19 +71,19 @@ const TableApi = <T,>({
       return (
         <TableRow>
           <TableCell colSpan={columns.length} className="h-24 text-center">
-            {t("noResults")}
+            {t('noResults')}
           </TableCell>
         </TableRow>
       );
     }
 
-    return table.getRowModel().rows.map((row) => {
+    return table.getRowModel().rows.map(row => {
       const rowId = row.original[linkSuffixRowName as keyof T];
-      const rowLink = linkPrefix && rowId ? `${linkPrefix}/${rowId}` : "";
+      const rowLink = linkPrefix && rowId ? `${linkPrefix}/${rowId}` : '';
 
       return (
-        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-          {row.getVisibleCells().map((cell) =>
+        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+          {row.getVisibleCells().map(cell =>
             linkPrefix && !cell.column.columnDef.meta?.notClickable ? (
               <TableCell
                 key={cell.id}

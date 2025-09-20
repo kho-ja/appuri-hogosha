@@ -20,7 +20,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
   if (!url || typeof url !== 'string' || url.length === 0) {
     return {
       isValid: false,
-      errorKey: 'kintone_url_required'
+      errorKey: 'kintone_url_required',
     };
   }
 
@@ -28,7 +28,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
   if (url.length > 2048) {
     return {
       isValid: false,
-      errorKey: 'kintone_url_too_long'
+      errorKey: 'kintone_url_too_long',
     };
   }
 
@@ -42,7 +42,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
     if (parsedUrl.protocol !== 'https:') {
       return {
         isValid: false,
-        errorKey: 'kintone_url_https_only'
+        errorKey: 'kintone_url_https_only',
       };
     }
 
@@ -50,7 +50,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
     if (!parsedUrl.hostname || parsedUrl.hostname.length === 0) {
       return {
         isValid: false,
-        errorKey: 'kintone_url_invalid_hostname'
+        errorKey: 'kintone_url_invalid_hostname',
       };
     }
 
@@ -58,7 +58,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
     if (parsedUrl.username || parsedUrl.password) {
       return {
         isValid: false,
-        errorKey: 'kintone_url_auth_not_allowed'
+        errorKey: 'kintone_url_auth_not_allowed',
       };
     }
 
@@ -66,7 +66,7 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
     if (parsedUrl.port && parsedUrl.port !== '443' && parsedUrl.port !== '') {
       return {
         isValid: false,
-        errorKey: 'kintone_url_invalid_port'
+        errorKey: 'kintone_url_invalid_port',
       };
     }
 
@@ -80,12 +80,14 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
       /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]?\.cybozu-dev\.com$/,
     ];
 
-    const isValidDomain = validKintonePatterns.some(pattern => pattern.test(hostname));
+    const isValidDomain = validKintonePatterns.some(pattern =>
+      pattern.test(hostname)
+    );
 
     if (!isValidDomain) {
       return {
         isValid: false,
-        errorKey: 'kintone_url_invalid_domain'
+        errorKey: 'kintone_url_invalid_domain',
       };
     }
 
@@ -95,25 +97,27 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
     if (ipMatch) {
       return {
         isValid: false,
-        errorKey: 'kintone_url_ip_not_allowed'
+        errorKey: 'kintone_url_ip_not_allowed',
       };
     }
 
     // Validate path structure - must be Kintone API endpoints
     const validPathPatterns = [
-      /^\/k\/v1\/records\.json$/,                    // Get/Update records
-      /^\/k\/v1\/record\.json$/,                     // Get specific record
-      /^\/k\/v1\/preview\/app\/views\.json$/,        // Get views (pre-live)
+      /^\/k\/v1\/records\.json$/, // Get/Update records
+      /^\/k\/v1\/record\.json$/, // Get specific record
+      /^\/k\/v1\/preview\/app\/views\.json$/, // Get views (pre-live)
       /^\/k\/v1\/preview\/app\/form\/fields\.json$/, // Get form fields (pre-live)
-      /^\/k\/guest\/\d+\/v1\/records\.json$/,        // Guest space records
-      /^\/k\/guest\/\d+\/v1\/record\.json$/,         // Guest space specific record
+      /^\/k\/guest\/\d+\/v1\/records\.json$/, // Guest space records
+      /^\/k\/guest\/\d+\/v1\/record\.json$/, // Guest space specific record
     ];
 
-    const isValidPath = validPathPatterns.some(pattern => pattern.test(parsedUrl.pathname));
+    const isValidPath = validPathPatterns.some(pattern =>
+      pattern.test(parsedUrl.pathname)
+    );
     if (!isValidPath) {
       return {
         isValid: false,
-        errorKey: 'kintone_url_invalid_path'
+        errorKey: 'kintone_url_invalid_path',
       };
     }
 
@@ -125,10 +129,10 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
       /file:/i,
       /ftp:/i,
       /<script/i,
-      /\.\./,     // Path traversal
-      /\0/,       // Null bytes
-      /%00/i,     // URL encoded null bytes
-      /%2e%2e/i,  // URL encoded path traversal
+      /\.\./, // Path traversal
+      /\0/, // Null bytes
+      /%00/i, // URL encoded null bytes
+      /%2e%2e/i, // URL encoded path traversal
     ];
 
     const fullUrl = url.toLowerCase();
@@ -136,20 +140,19 @@ export function validateKintoneUrl(url: string): KintoneUrlValidationResult {
       if (pattern.test(fullUrl)) {
         return {
           isValid: false,
-          errorKey: 'kintone_url_malicious_content'
+          errorKey: 'kintone_url_malicious_content',
         };
       }
     }
 
     return {
-      isValid: true
+      isValid: true,
     };
-
   } catch (error) {
     // Any parsing error should result in rejection
     return {
       isValid: false,
-      errorKey: 'kintone_url_invalid_format'
+      errorKey: 'kintone_url_invalid_format',
     };
   }
 }

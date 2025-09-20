@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { useTranslations } from 'next-intl';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -9,111 +9,111 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { usePathname, Link } from "@/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import postView from "@/types/postView";
-import { Button } from "@/components/ui/button";
-import StudentApi from "@/types/studentApi";
-import { Bell, Check, CheckCheck, Edit3Icon } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import Student from "@/types/student";
-import { Input } from "@/components/ui/input";
-import PaginationApi from "@/components/PaginationApi";
+} from '@/components/ui/table';
+import { usePathname, Link } from '@/navigation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import postView from '@/types/postView';
+import { Button } from '@/components/ui/button';
+import StudentApi from '@/types/studentApi';
+import { Bell, Check, CheckCheck, Edit3Icon } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import Student from '@/types/student';
+import { Input } from '@/components/ui/input';
+import PaginationApi from '@/components/PaginationApi';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Separator } from "@/components/ui/separator";
-import GroupApi from "@/types/groupApi";
-import Group from "@/types/group";
-import { FormatDateTime } from "@/lib/utils";
-import TableApi from "@/components/TableApi";
-import { useState } from "react";
-import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
-import ReactLinkify from "react-linkify";
-import Image from "next/image";
-import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
+} from '@/components/ui/hover-card';
+import { Separator } from '@/components/ui/separator';
+import GroupApi from '@/types/groupApi';
+import Group from '@/types/group';
+import { FormatDateTime } from '@/lib/utils';
+import TableApi from '@/components/TableApi';
+import { useState } from 'react';
+import NotFound from '@/components/NotFound';
+import useApiQuery from '@/lib/useApiQuery';
+import ReactLinkify from 'react-linkify';
+import Image from 'next/image';
+import { Dialog, DialogDescription } from '@radix-ui/react-dialog';
 import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
+} from '@/components/ui/dialog';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
 
 export default function ThisMessage({
   params: { messageId },
 }: {
   params: { messageId: string };
 }) {
-  const t = useTranslations("ThisMessage");
-  const tName = useTranslations("names");
+  const t = useTranslations('ThisMessage');
+  const tName = useTranslations('names');
   const pathname = usePathname();
   const { data } = useApiQuery<postView>(`post/${messageId}`, [
-    "message",
+    'message',
     messageId,
   ]);
   const [studentPage, setStudentPage] = useState(1);
-  const [studentSearch, setStudentSearch] = useState("");
+  const [studentSearch, setStudentSearch] = useState('');
   const { data: studentData, isError: isStudentError } =
     useApiQuery<StudentApi>(
       `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
-      ["student", messageId, studentPage, studentSearch]
+      ['student', messageId, studentPage, studentSearch]
     );
   const [groupPage, setGroupPage] = useState(1);
-  const [groupSearch, setGroupSearch] = useState("");
+  const [groupSearch, setGroupSearch] = useState('');
   const { data: groupData, isError } = useApiQuery<GroupApi>(
     `post/${messageId}/groups?page=${groupPage}&name=${groupSearch}`,
-    ["group", messageId, groupPage, groupSearch]
+    ['group', messageId, groupPage, groupSearch]
   );
 
   const studentColumns: ColumnDef<Student>[] = [
     {
-      accessorKey: "name",
-      header: t("name"),
-      cell: ({ row }) => tName("name", { ...row?.original, parents: "" }),
+      accessorKey: 'name',
+      header: t('name'),
+      cell: ({ row }) => tName('name', { ...row?.original, parents: '' }),
     },
     {
-      accessorKey: "email",
-      header: t("email"),
+      accessorKey: 'email',
+      header: t('email'),
     },
     {
-      accessorKey: "student_number",
-      header: t("studentId"),
+      accessorKey: 'student_number',
+      header: t('studentId'),
     },
     {
-      accessorKey: "phone_number",
-      header: t("phoneNumber"),
+      accessorKey: 'phone_number',
+      header: t('phoneNumber'),
     },
     {
-      accessorKey: "parents",
-      header: t("Parents"),
+      accessorKey: 'parents',
+      header: t('Parents'),
       meta: {
         notClickable: true,
       },
       cell: ({ row }) => {
         const parents = row.original?.parents || [];
-        const anyViewed = parents.some((parent) => parent.viewed_at);
+        const anyViewed = parents.some(parent => parent.viewed_at);
 
         return (
           <HoverCard>
             <HoverCardTrigger asChild>
               <Link href={`${pathname}/student/${row.original.id}`}>
                 <Bell
-                  className={anyViewed ? "text-green-500" : "text-red-500"}
+                  className={anyViewed ? 'text-green-500' : 'text-red-500'}
                 />
               </Link>
             </HoverCardTrigger>
             <HoverCardContent>
               {row.original?.parents?.length
-                ? row.original?.parents.map((parent) => (
+                ? row.original?.parents.map(parent => (
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName('name', { ...parent } as any)}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>
@@ -122,7 +122,7 @@ export default function ThisMessage({
                       )}
                     </div>
                   ))
-                : t("noParents")}
+                : t('noParents')}
             </HoverCardContent>
           </HoverCard>
         );
@@ -132,19 +132,19 @@ export default function ThisMessage({
 
   const groupColumns: ColumnDef<Group>[] = [
     {
-      accessorKey: "name",
-      header: t("name"),
+      accessorKey: 'name',
+      header: t('name'),
     },
     {
-      accessorKey: "viewed_count",
-      header: t("viewed_count"),
+      accessorKey: 'viewed_count',
+      header: t('viewed_count'),
     },
     {
-      accessorKey: "not_viewed_count",
-      header: t("not_viewed_count"),
+      accessorKey: 'not_viewed_count',
+      header: t('not_viewed_count'),
     },
     {
-      header: t("Actions"),
+      header: t('Actions'),
       meta: {
         notClickable: true,
       },
@@ -156,19 +156,19 @@ export default function ThisMessage({
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const sent_atDate = FormatDateTime(data?.post?.sent_at ?? "");
+  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? '');
+  const sent_atDate = FormatDateTime(data?.post?.sent_at ?? '');
 
   if (isError && isStudentError) return <NotFound />;
 
   return (
     <div className="flex flex-col gap-2">
-      <PageHeader title={t("ViewMessage")}>
-          <BackButton href={`/messages`} />
+      <PageHeader title={t('ViewMessage')}>
+        <BackButton href={`/messages`} />
 
-          <Link href={`/messages/edit/${messageId}`} passHref>
-            <Button>{t("editMessage")}</Button>
-          </Link>
+        <Link href={`/messages/edit/${messageId}`} passHref>
+          <Button>{t('editMessage')}</Button>
+        </Link>
       </PageHeader>
       <Card className="space-y-8 p-4">
         <div>
@@ -214,11 +214,11 @@ export default function ThisMessage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("EditedAt")}</TableHead>
-              <TableHead>{t("SentAt")}</TableHead>
-              <TableHead>{t("ReadCount")}</TableHead>
-              <TableHead>{t("UnReadCount")}</TableHead>
-              <TableHead>{t("Priority.default")}</TableHead>
+              <TableHead>{t('EditedAt')}</TableHead>
+              <TableHead>{t('SentAt')}</TableHead>
+              <TableHead>{t('ReadCount')}</TableHead>
+              <TableHead>{t('UnReadCount')}</TableHead>
+              <TableHead>{t('Priority.default')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -238,17 +238,17 @@ export default function ThisMessage({
       <Tabs defaultValue="groups" className="w-full">
         <div className="flex flex-wrap gap-2 justify-between">
           <TabsList>
-            <TabsTrigger value="groups">{t("Groups")}</TabsTrigger>
-            <TabsTrigger value="students">{t("Students")}</TabsTrigger>
+            <TabsTrigger value="groups">{t('Groups')}</TabsTrigger>
+            <TabsTrigger value="students">{t('Students')}</TabsTrigger>
           </TabsList>
           <Link href={`/messages/${messageId}/recievers`} passHref>
-            <Button>{t("editRecivers")}</Button>
+            <Button>{t('editRecivers')}</Button>
           </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
           <div className="flex flex-wrap sm:flex-nowrap items-center justify-between w-full gap-2">
             <Input
-              placeholder={t("filterEmail")}
+              placeholder={t('filterEmail')}
               onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setGroupSearch(e.target.value);
                 setGroupPage(1);
@@ -274,7 +274,7 @@ export default function ThisMessage({
         <TabsContent value="students" className="space-y-4">
           <div className="flex flex-wrap items-center justify-between w-full gap-2">
             <Input
-              placeholder={t("filterEmail")}
+              placeholder={t('filterEmail')}
               onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setStudentSearch(e.target.value);
                 setStudentPage(1);

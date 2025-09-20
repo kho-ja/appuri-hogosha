@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { CalendarIcon } from "@radix-ui/react-icons";
-import { cn, FormatDateTimeForDisplay } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import * as React from 'react';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { cn, FormatDateTimeForDisplay } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useTimeZone } from "next-intl";
+} from '@/components/ui/popover';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useTimeZone } from 'next-intl';
 
 type DateTimePicker24hProps = {
   value: Date | null;
@@ -33,12 +33,12 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
     }
   };
 
-  const handleTimeChange = (type: "hour" | "minute", val: string) => {
+  const handleTimeChange = (type: 'hour' | 'minute', val: string) => {
     if (value) {
       const newDate = new Date(value);
-      if (type === "hour") {
+      if (type === 'hour') {
         newDate.setHours(parseInt(val));
-      } else if (type === "minute") {
+      } else if (type === 'minute') {
         newDate.setMinutes(parseInt(val));
       }
       newDate.setSeconds(0);
@@ -55,8 +55,8 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal",
-            !value && "text-muted-foreground"
+            'w-full justify-start text-left font-normal',
+            !value && 'text-muted-foreground'
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -84,7 +84,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
           <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
             <ScrollArea className="w-64 sm:w-auto">
               <div className="flex sm:flex-col p-2">
-                {hours.map((hour) => {
+                {hours.map(hour => {
                   const now = new Date();
                   const isToday =
                     value &&
@@ -99,13 +99,13 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
                       key={hour}
                       size="icon"
                       variant={
-                        value && value.getHours() === hour ? "default" : "ghost"
+                        value && value.getHours() === hour ? 'default' : 'ghost'
                       }
                       className="sm:w-full shrink-0 aspect-square"
-                      onClick={() => handleTimeChange("hour", hour.toString())}
+                      onClick={() => handleTimeChange('hour', hour.toString())}
                       disabled={isPastHour}
                     >
-                      {hour.toString().padStart(2, "0")}
+                      {hour.toString().padStart(2, '0')}
                     </Button>
                   );
                 })}
@@ -114,7 +114,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
             </ScrollArea>
             <ScrollArea className="w-64 sm:w-auto">
               <div className="flex sm:flex-col p-2">
-                {minutes.map((minute) => {
+                {minutes.map(minute => {
                   const now = new Date();
                   const isToday =
                     value &&
@@ -136,16 +136,16 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
                       size="icon"
                       variant={
                         value && value.getMinutes() === minute
-                          ? "default"
-                          : "ghost"
+                          ? 'default'
+                          : 'ghost'
                       }
                       className="sm:w-full shrink-0 aspect-square"
                       onClick={() =>
-                        handleTimeChange("minute", minute.toString())
+                        handleTimeChange('minute', minute.toString())
                       }
                       disabled={isPastMinute}
                     >
-                      {minute.toString().padStart(2, "0")}
+                      {minute.toString().padStart(2, '0')}
                     </Button>
                   );
                 })}

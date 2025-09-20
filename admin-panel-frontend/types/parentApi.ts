@@ -1,5 +1,5 @@
-import Parent from "./parent";
-import pagination from "./pagination";
+import Parent from './parent';
+import pagination from './pagination';
 
 type ParentApi = {
   parents: Parent[];

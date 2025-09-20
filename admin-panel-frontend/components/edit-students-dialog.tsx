@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { StudentTable } from "@/components/StudentTable";
-import { useTranslations } from "next-intl";
-import Student from "@/types/student";
-import useApiMutation from "@/lib/useApiMutation";
-import { toast } from "@/components/ui/use-toast";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { StudentTable } from '@/components/StudentTable';
+import { useTranslations } from 'next-intl';
+import Student from '@/types/student';
+import useApiMutation from '@/lib/useApiMutation';
+import { toast } from '@/components/ui/use-toast';
 
 interface EditStudentsDialogProps {
   isOpen: boolean;
@@ -26,19 +26,19 @@ export default function EditStudentsDialog({
   messageId,
   currentStudents,
 }: EditStudentsDialogProps) {
-  const t = useTranslations("EditStudentsDialog");
+  const t = useTranslations('EditStudentsDialog');
   const [selectedStudents, setSelectedStudents] =
     useState<Student[]>(currentStudents);
 
   const { mutate, isPending } = useApiMutation<{ success: boolean }>(
     `post/${messageId}/sender`,
-    "PUT",
-    ["message", messageId],
+    'PUT',
+    ['message', messageId],
     {
       onSuccess: () => {
         toast({
-          title: t("studentsUpdated"),
-          description: t("studentsUpdatedDescription"),
+          title: t('studentsUpdated'),
+          description: t('studentsUpdatedDescription'),
         });
         onClose();
       },
@@ -47,7 +47,7 @@ export default function EditStudentsDialog({
 
   const handleSave = () => {
     mutate({
-      students: selectedStudents.map((student) => student.id),
+      students: selectedStudents.map(student => student.id),
     } as any);
   };
 
@@ -55,7 +55,7 @@ export default function EditStudentsDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[80%] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("editStudents")}</DialogTitle>
+          <DialogTitle>{t('editStudents')}</DialogTitle>
         </DialogHeader>
         <StudentTable
           selectedStudents={selectedStudents}
@@ -63,10 +63,10 @@ export default function EditStudentsDialog({
         />
         <DialogFooter>
           <Button onClick={onClose} variant="secondary">
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? t("saving") : t("save")}
+            {isPending ? t('saving') : t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

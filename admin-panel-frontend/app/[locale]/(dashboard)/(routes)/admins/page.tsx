@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
-import { Edit3Icon, File, Trash2Icon } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import PaginationApi from "@/components/PaginationApi";
-import { Input } from "@/components/ui/input";
-import { Link } from "@/navigation";
-import { Button } from "@/components/ui/button";
-import Admin from "@/types/admin";
+import { useTranslations } from 'next-intl';
+import { Card } from '@/components/ui/card';
+import { Edit3Icon, File, Trash2Icon } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import PaginationApi from '@/components/PaginationApi';
+import { Input } from '@/components/ui/input';
+import { Link } from '@/navigation';
+import { Button } from '@/components/ui/button';
+import Admin from '@/types/admin';
 import {
   Dialog,
   DialogClose,
@@ -17,68 +17,68 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import TableApi from "@/components/TableApi";
-import { DialogDescription } from "@radix-ui/react-dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import useApiQuery from "@/lib/useApiQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
-import AdminApi from "@/types/adminApi";
-import useApiMutation from "@/lib/useApiMutation";
-import useFileMutation from "@/lib/useFileMutation";
-import useTableQuery from "@/lib/useTableQuery";
-import { Plus } from "lucide-react";
-import PageHeader from "@/components/PageHeader";
+} from '@/components/ui/dialog';
+import TableApi from '@/components/TableApi';
+import { DialogDescription } from '@radix-ui/react-dialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import useApiQuery from '@/lib/useApiQuery';
+import useApiPostQuery from '@/lib/useApiPostQuery';
+import AdminApi from '@/types/adminApi';
+import useApiMutation from '@/lib/useApiMutation';
+import useFileMutation from '@/lib/useFileMutation';
+import useTableQuery from '@/lib/useTableQuery';
+import { Plus } from 'lucide-react';
+import PageHeader from '@/components/PageHeader';
 
 export default function Admins() {
-  const t = useTranslations("admins");
-  const tName = useTranslations("names");
+  const t = useTranslations('admins');
+  const tName = useTranslations('names');
   const { page, setPage, search, setSearch } = useTableQuery();
   const { data } = useApiPostQuery<AdminApi>(
-    "admin/list",
-    ["admins", page, search],
+    'admin/list',
+    ['admins', page, search],
     { page, name: search }
   );
   const queryClient = useQueryClient();
   const [adminId, setAdminId] = useState<number | null>(null);
   const { mutate } = useApiMutation<{ message: string }>(
     `admin/${adminId}`,
-    "DELETE",
-    ["deleteAdmin"],
+    'DELETE',
+    ['deleteAdmin'],
     {
-      onSuccess: (data) => {
+      onSuccess: data => {
         queryClient.invalidateQueries({
-          queryKey: ["admins"],
+          queryKey: ['admins'],
         });
         toast({
-          title: t("adminDeleted"),
+          title: t('adminDeleted'),
           description: t(data?.message),
         });
       },
     }
   );
   const { mutate: exportAdmins } = useFileMutation(`admin/export`, [
-    "exportAdmins",
+    'exportAdmins',
   ]);
 
   const adminColumns: ColumnDef<Admin>[] = [
     {
-      accessorKey: "name",
-      header: t("adminName"),
-      cell: ({ row }) => tName("name", { ...row?.original }),
+      accessorKey: 'name',
+      header: t('adminName'),
+      cell: ({ row }) => tName('name', { ...row?.original }),
     },
     {
-      accessorKey: "email",
-      header: t("Email"),
+      accessorKey: 'email',
+      header: t('Email'),
     },
     {
-      accessorKey: "phone_number",
-      header: t("Phone_number"),
+      accessorKey: 'phone_number',
+      header: t('Phone_number'),
     },
     {
-      header: t("action"),
+      header: t('action'),
       meta: {
         notClickable: true,
       },
@@ -93,13 +93,13 @@ export default function Admins() {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{tName("name", { ...row?.original })}</DialogTitle>
+                <DialogTitle>{tName('name', { ...row?.original })}</DialogTitle>
                 <DialogDescription>{row.original.email}</DialogDescription>
               </DialogHeader>
-              <div className="flex">{t("doYouDeleteAdmin")}</div>
+              <div className="flex">{t('doYouDeleteAdmin')}</div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("close")}</Button>
+                  <Button variant={'secondary'}>{t('close')}</Button>
                 </DialogClose>
                 <Button
                   onClick={() => {
@@ -107,7 +107,7 @@ export default function Admins() {
                     mutate();
                   }}
                 >
-                  {t("confirm")}
+                  {t('confirm')}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -120,16 +120,16 @@ export default function Admins() {
   return (
     <div className="w-full">
       <div className="space-y-4">
-        <PageHeader title={t("admins")} variant="list">
+        <PageHeader title={t('admins')} variant="list">
           <Link href={`./admins/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
-              {t("createadmin")}
+              {t('createadmin')}
             </Button>
           </Link>
         </PageHeader>
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
-            placeholder={t("filter")}
+            placeholder={t('filter')}
             value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
@@ -149,7 +149,7 @@ export default function Admins() {
             className="h-7 gap-1 text-sm"
           >
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">{t("export")}</span>
+            <span className="sr-only sm:not-sr-only">{t('export')}</span>
           </Button>
         </div>
         <Card x-chunk="dashboard-05-chunk-3">

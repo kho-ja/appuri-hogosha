@@ -1,11 +1,11 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+'use client';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogClose,
@@ -15,12 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import Group from "@/types/group";
-import { GroupTable } from "@/components/GroupTable";
-import Student from "@/types/student";
-import { StudentTable } from "@/components/StudentTable";
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import Group from '@/types/group';
+import { GroupTable } from '@/components/GroupTable';
+import Student from '@/types/student';
+import { StudentTable } from '@/components/StudentTable';
 import {
   Form,
   FormControl,
@@ -28,37 +28,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { z } from "zod";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useRouter } from "@/navigation";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { toast } from "@/components/ui/use-toast";
-import Post from "@/types/post";
-import ReactLinkify from "react-linkify";
-import useApiMutation from "@/lib/useApiMutation";
-import DraftsDialog from "@/components/DraftsDialog";
-import { X, Send } from "lucide-react";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { DateTimePicker24h } from "@/components/DateTimePicker24h";
-import { Switch } from "@/components/ui/switch";
+} from '@/components/ui/form';
+import { z } from 'zod';
+import { useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Link, useRouter } from '@/navigation';
+import { useMakeZodI18nMap } from '@/lib/zodIntl';
+import { toast } from '@/components/ui/use-toast';
+import Post from '@/types/post';
+import ReactLinkify from 'react-linkify';
+import useApiMutation from '@/lib/useApiMutation';
+import DraftsDialog from '@/components/DraftsDialog';
+import { X, Send } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { DateTimePicker24h } from '@/components/DateTimePicker24h';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
+  priority: z.enum(['high', 'medium', 'low']),
   image: z.string().optional(),
 });
 
 export default function SendMessagePage() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
-  const t = useTranslations("sendmessage");
-  const tName = useTranslations("names");
+  const t = useTranslations('sendmessage');
+  const tName = useTranslations('names');
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const [draftsData, setDraftsData] = useState<any[]>([]);
@@ -66,92 +66,92 @@ export default function SendMessagePage() {
   const formRef = React.useRef<HTMLFormElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      title: "",
-      description: "",
-      priority: "low",
-      image: "",
+      title: '',
+      description: '',
+      priority: 'low',
+      image: '',
     },
   });
   const formValues = useWatch({ control: form.control });
   const router = useRouter();
   const { mutate, isPending } = useApiMutation<{ post: Post }>(
     `post/create`,
-    "POST",
-    ["sendMessage"],
+    'POST',
+    ['sendMessage'],
     {
-      onSuccess: (data) => {
+      onSuccess: data => {
         toast({
-          title: t("messageSent"),
+          title: t('messageSent'),
           description: data.post.title,
         });
         setSelectedStudents([]);
         setSelectedGroups([]);
         form.reset();
-        localStorage.removeItem("formDataMessages");
-        router.push("/messages");
+        localStorage.removeItem('formDataMessages');
+        router.push('/messages');
       },
     }
   );
-  const priority = form.watch("priority");
+  const priority = form.watch('priority');
 
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
   const scheduleMutation = useApiMutation<{ post: Post }>(
     `schedule`,
-    "POST",
-    ["scheduledPosts"],
+    'POST',
+    ['scheduledPosts'],
     {
-      onSuccess: (data) => {
+      onSuccess: data => {
         if (data?.post?.title) {
           toast({
-            title: t("scheduledSuccessfully"),
+            title: t('scheduledSuccessfully'),
             description: data.post.title,
           });
         } else {
           toast({
-            title: t("scheduledSuccessfully"),
-            description: t("noTitleAvailable"),
+            title: t('scheduledSuccessfully'),
+            description: t('noTitleAvailable'),
           });
         }
         setSelectedStudents([]);
         setSelectedGroups([]);
         form.reset();
-        router.push("/messages?tab=scheduled");
+        router.push('/messages?tab=scheduled');
       },
     }
   );
 
   useEffect(() => {
-    form.setValue("priority", priority);
+    form.setValue('priority', priority);
   }, [priority, form]);
 
   useEffect(() => {
-    const savedFormData = localStorage.getItem("formDataMessages");
+    const savedFormData = localStorage.getItem('formDataMessages');
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
     if (parsedFormData) {
       form.reset(parsedFormData);
     }
 
-    const subscription = form.watch((values) => {
-      localStorage.setItem("formDataMessages", JSON.stringify(values));
+    const subscription = form.watch(values => {
+      localStorage.setItem('formDataMessages', JSON.stringify(values));
     });
     return () => subscription.unsubscribe();
   }, [form]);
 
   useEffect(() => {
-    let draftsLocal = localStorage.getItem("DraftsData");
-    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    const draftsLocal = localStorage.getItem('DraftsData');
+    const parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
     setDraftsData(parsedDrafts);
   }, []);
 
   const handleFormSubmit = (data: z.infer<typeof formSchema>) => {
     if (selectedStudents.length === 0 && selectedGroups.length === 0) {
       toast({
-        title: t("error"),
-        description: t("selectAtLeastOne"),
+        title: t('error'),
+        description: t('selectAtLeastOne'),
       });
       return;
     }
@@ -159,16 +159,16 @@ export default function SendMessagePage() {
       title: data.title,
       description: data.description,
       priority: data.priority,
-      students: selectedStudents.map((student) => student.id),
-      groups: selectedGroups.map((group) => group.id),
+      students: selectedStudents.map(student => student.id),
+      groups: selectedGroups.map(group => group.id),
       image: data.image,
     };
 
     if (scheduleEnabled) {
       if (!scheduledAt) {
         toast({
-          title: t("error"),
-          description: t("selectDateTime"),
+          title: t('error'),
+          description: t('selectDateTime'),
         });
         return;
       }
@@ -189,7 +189,7 @@ export default function SendMessagePage() {
     e.preventDefault();
     const data = form.getValues();
 
-    let draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
+    const draftsLocal = JSON.parse(localStorage.getItem('DraftsData') || '[]');
     const parsedData = {
       id: draftsLocal.length || 0,
       ...data,
@@ -201,23 +201,23 @@ export default function SendMessagePage() {
       draftsLocal.push(parsedData);
     }
 
-    localStorage.setItem("DraftsData", JSON.stringify(draftsLocal));
+    localStorage.setItem('DraftsData', JSON.stringify(draftsLocal));
     setDraftsData(draftsLocal);
 
     setSelectedStudents([]);
     setSelectedGroups([]);
-    setFileKey((prev) => prev + 1);
+    setFileKey(prev => prev + 1);
     form.reset({
-      title: "",
-      description: "",
-      priority: "low",
-      image: "",
+      title: '',
+      description: '',
+      priority: 'low',
+      image: '',
     });
     toast({
-      title: t("draftSaved"),
+      title: t('draftSaved'),
       description: parsedData?.title,
     });
-    localStorage.removeItem("formDataMessages");
+    localStorage.removeItem('formDataMessages');
   };
 
   const handleSelectedDraft = (draft: any) => {
@@ -228,14 +228,14 @@ export default function SendMessagePage() {
       image: draft.image,
     });
 
-    setFileKey((prev) => prev + 1);
+    setFileKey(prev => prev + 1);
     setSelectedGroups(draft.groups || []);
     setSelectedStudents(draft.student || []);
   };
 
   const handleRemoveImg = () => {
-    form.setValue("image", "");
-    setFileKey((prev) => prev + 1);
+    form.setValue('image', '');
+    setFileKey(prev => prev + 1);
   };
 
   return (
@@ -246,13 +246,13 @@ export default function SendMessagePage() {
           ref={formRef}
           className="space-y-4"
         >
-          <PageHeader title={t("sendMessage")} variant="create">
+          <PageHeader title={t('sendMessage')} variant="create">
             <DraftsDialog
               draftsDataProp={draftsData}
               handleSelectedDraft={handleSelectedDraft}
             />
             <Link href="/fromcsv/message">
-              <Button variant={"secondary"}>{t("createFromCSV")}</Button>
+              <Button variant={'secondary'}>{t('createFromCSV')}</Button>
             </Link>
             <BackButton href={`/messages`} />
           </PageHeader>
@@ -261,13 +261,13 @@ export default function SendMessagePage() {
             name="title"
             render={({ field, formState }) => (
               <FormItem>
-                <FormLabel>{t("title")}</FormLabel>
+                <FormLabel>{t('title')}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder={t("typeTitle")} />
+                  <Input {...field} placeholder={t('typeTitle')} />
                 </FormControl>
                 <FormMessage>
                   {formState.errors.title &&
-                    "Title is required. Title should be more than 5 characters"}
+                    'Title is required. Title should be more than 5 characters'}
                 </FormMessage>
               </FormItem>
             )}
@@ -277,17 +277,17 @@ export default function SendMessagePage() {
             name="description"
             render={({ field, formState }) => (
               <FormItem>
-                <FormLabel>{t("yourMessage")}</FormLabel>
+                <FormLabel>{t('yourMessage')}</FormLabel>
                 <FormControl>
                   <Textarea
                     rows={5}
-                    placeholder={t("typeMessage")}
+                    placeholder={t('typeMessage')}
                     {...field}
                   />
                 </FormControl>
                 <FormMessage>
                   {formState.errors.description &&
-                    "Message is required. Message should be more than 10 characters"}
+                    'Message is required. Message should be more than 10 characters'}
                 </FormMessage>
               </FormItem>
             )}
@@ -297,7 +297,7 @@ export default function SendMessagePage() {
             name="priority"
             render={({ field, formState }) => (
               <FormItem>
-                <FormLabel>{t("choosePriority")}</FormLabel>
+                <FormLabel>{t('choosePriority')}</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -306,21 +306,21 @@ export default function SendMessagePage() {
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="high" id="high" />
-                      <Label htmlFor="high">{t("high")}</Label>
+                      <Label htmlFor="high">{t('high')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="medium" id="medium" />
-                      <Label htmlFor="medium">{t("medium")}</Label>
+                      <Label htmlFor="medium">{t('medium')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="low" id="low" />
-                      <Label htmlFor="low">{t("low")}</Label>
+                      <Label htmlFor="low">{t('low')}</Label>
                     </div>
                   </RadioGroup>
                 </FormControl>
                 <FormMessage>
                   {formState.errors.priority &&
-                    "You should select one priority"}
+                    'You should select one priority'}
                 </FormMessage>
               </FormItem>
             )}
@@ -330,19 +330,19 @@ export default function SendMessagePage() {
             name="image"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t("picture")}</FormLabel>
+                <FormLabel>{t('picture')}</FormLabel>
                 <FormControl>
                   <Input
                     type="file"
                     accept="image/*"
                     key={fileKey}
-                    onChange={(e) => {
+                    onChange={e => {
                       const file = e.target.files?.[0];
                       if (file) {
                         field.onChange(file.name); // Save file name
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          form.setValue("image", reader.result as string);
+                          form.setValue('image', reader.result as string);
                         };
                         reader.readAsDataURL(file);
                       }
@@ -350,7 +350,7 @@ export default function SendMessagePage() {
                   />
                 </FormControl>
                 <FormMessage />
-                {form.getValues("image") && (
+                {form.getValues('image') && (
                   <div className="flex justify-start">
                     <div className="relative mt-2">
                       <div
@@ -360,7 +360,7 @@ export default function SendMessagePage() {
                         <X className="h-7 w-7 bg-red-500 rounded-full cursor-pointer hover:bg-red-600 aspect-square p-1 font-bold" />
                       </div>
                       <Image
-                        src={form.getValues("image") ?? ""}
+                        src={form.getValues('image') ?? ''}
                         alt="Selected image"
                         width={200}
                         height={200}
@@ -375,8 +375,8 @@ export default function SendMessagePage() {
 
           <Tabs defaultValue="group">
             <TabsList>
-              <TabsTrigger value="group">{t("groups")}</TabsTrigger>
-              <TabsTrigger value="student">{t("students")}</TabsTrigger>
+              <TabsTrigger value="group">{t('groups')}</TabsTrigger>
+              <TabsTrigger value="student">{t('students')}</TabsTrigger>
             </TabsList>
             <TabsContent value="group">
               <GroupTable
@@ -394,7 +394,7 @@ export default function SendMessagePage() {
           <div className="flex flex-col gap-4 border p-4 rounded-md bg-muted/40">
             <div className="flex items-center justify-between">
               <Label className="text-base font-medium">
-                {t("doYouWantSchedule")}
+                {t('doYouWantSchedule')}
               </Label>
               <div className="flex items-center gap-2">
                 <Switch
@@ -403,7 +403,7 @@ export default function SendMessagePage() {
                   id="schedule-switch"
                 />
                 <Label htmlFor="schedule-switch" className="ml-2">
-                  {scheduleEnabled ? t("yes") : t("no")}
+                  {scheduleEnabled ? t('yes') : t('no')}
                 </Label>
               </div>
             </div>
@@ -425,7 +425,7 @@ export default function SendMessagePage() {
                   disabled={!isFormValid || !hasRecipients}
                   icon={<Send className="h-4 w-4" />}
                 >
-                  {t("sendMessage")}
+                  {t('sendMessage')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[80%] max-h-max">
@@ -439,14 +439,14 @@ export default function SendMessagePage() {
                     </DialogDescription>
                     <div className="flex w-full">
                       <div className="bg-slate-500 px-4 py-1 rounded ">
-                        {t("priority")}:{" "}
+                        {t('priority')}:{' '}
                         {formValues.priority && t(formValues.priority)}
                       </div>
                     </div>
-                    {form.getValues("image") && (
+                    {form.getValues('image') && (
                       <div className="mt-4">
                         <Image
-                          src={form.getValues("image") ?? ""}
+                          src={form.getValues('image') ?? ''}
                           alt="Selected image"
                           width={300}
                           height={200}
@@ -456,44 +456,44 @@ export default function SendMessagePage() {
                     )}
                     {scheduleEnabled && scheduledAt && (
                       <div className="mt-2 text-left text-sm">
-                        {t("scheduledAt")}:{" "}
+                        {t('scheduledAt')}:{' '}
                         {scheduledAt &&
                           scheduledAt
-                            .toLocaleString("uz-UZ", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
+                            .toLocaleString('uz-UZ', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
                               hour12: false,
                             })
-                            .replace(",", "")}
+                            .replace(',', '')}
                       </div>
                     )}
                   </DialogHeader>
                   <div className="sm:w-1 sm:h-full bg-slate-600"></div>
                   <div className="flex flex-wrap gap-4 items-start content-start sm:max-w-[40%]">
                     <div className="flex flex-col gap-1">
-                      <b>{t("groups")}</b>
+                      <b>{t('groups')}</b>
                       <div className="flex flex-wrap gap-2 items-start content-start ">
-                        {selectedGroups.map((group) => (
+                        {selectedGroups.map(group => (
                           <Badge key={group.id}>{group?.name}</Badge>
                         ))}
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <b>{t("students")}</b>
+                      <b>{t('students')}</b>
                       <div className="flex flex-wrap gap-2 items-start content-start ">
-                        {selectedStudents.map((e) => (
+                        {selectedStudents.map(e => (
                           <Badge key={e.id}>
-                            {tName("name", { ...e, parents: "" })}
+                            {tName('name', { ...e, parents: '' })}
                           </Badge>
                         ))}
                       </div>
                     </div>
                     {!hasRecipients && (
                       <div className="w-full text-destructive text-center font-semibold">
-                        {t("selectatleastone")}
+                        {t('selectatleastone')}
                       </div>
                     )}
                   </div>
@@ -501,7 +501,7 @@ export default function SendMessagePage() {
                 <DialogFooter className="flex flex-wrap justify-end gap-2">
                   <DialogClose asChild>
                     <Button type="button" variant="secondary">
-                      {t("close")}
+                      {t('close')}
                     </Button>
                   </DialogClose>
                   <DialogClose asChild>
@@ -512,12 +512,12 @@ export default function SendMessagePage() {
                       onClick={() => {
                         if (formRef.current) {
                           formRef.current.dispatchEvent(
-                            new Event("submit", { bubbles: true })
+                            new Event('submit', { bubbles: true })
                           );
                         }
                       }}
                     >
-                      {t("confirm")}
+                      {t('confirm')}
                     </Button>
                   </DialogClose>
                   <DialogClose asChild></DialogClose>
@@ -525,11 +525,11 @@ export default function SendMessagePage() {
               </DialogContent>
             </Dialog>
             <Button
-              variant={"secondary"}
+              variant={'secondary'}
               disabled={isPending || !isFormValid || !hasRecipients}
-              onClick={(e) => handleSaveDraft(e)}
+              onClick={e => handleSaveDraft(e)}
             >
-              {t("saveToDraft")}
+              {t('saveToDraft')}
             </Button>
           </div>
         </form>

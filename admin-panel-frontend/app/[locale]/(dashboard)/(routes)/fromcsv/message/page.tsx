@@ -1,19 +1,19 @@
-"use client";
-import { useTranslations } from "next-intl";
-import { useQueryClient } from "@tanstack/react-query";
-import useFormMutation from "@/lib/useFormMutation";
-import useFileMutation from "@/lib/useFileMutation";
-import { toast } from "@/components/ui/use-toast";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Link, useRouter } from "@/navigation";
+'use client';
+import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
+import useFormMutation from '@/lib/useFormMutation';
+import useFileMutation from '@/lib/useFileMutation';
+import { toast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Link, useRouter } from '@/navigation';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -21,15 +21,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { File as FileIcon, Info } from "lucide-react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
+} from '@/components/ui/hover-card';
+import { File as FileIcon, Info } from 'lucide-react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
 import {
   Form,
   FormControl,
@@ -38,42 +38,42 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import Upload from "@/types/csvfile";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Post from "@/types/post";
-import { convertToUtf8IfNeeded, download } from "@/lib/utils";
-import { BackButton } from "@/components/ui/BackButton";
-import PageHeader from "@/components/PageHeader";
-import { Download } from "lucide-react";
+} from '@/components/ui/form';
+import Upload from '@/types/csvfile';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Post from '@/types/post';
+import { convertToUtf8IfNeeded, download } from '@/lib/utils';
+import { BackButton } from '@/components/ui/BackButton';
+import PageHeader from '@/components/PageHeader';
+import { Download } from 'lucide-react';
 
 export default function MessageFromCSV() {
-  const t = useTranslations("fromcsv");
+  const t = useTranslations('fromcsv');
   const formSchema = z.object({
-    csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
+    csvFile: z.instanceof(File).refine(file => file.name.endsWith('.csv')),
   });
 
   const queryClient = useQueryClient();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
   const { mutate, error, isPending } = useFormMutation<{ message: string }>(
     `post/upload`,
-    "POST",
-    ["uploadPosts"],
+    'POST',
+    ['uploadPosts'],
     {
       onSuccess(data) {
         queryClient.invalidateQueries({
-          queryKey: ["posts"],
+          queryKey: ['posts'],
         });
         form.reset();
         toast({
-          title: t("postsUploaded"),
+          title: t('postsUploaded'),
           description: t(data?.message),
         });
-        router.push("/messages");
+        router.push('/messages');
       },
     }
   );
@@ -84,21 +84,21 @@ export default function MessageFromCSV() {
 
     const utf8Blob = await convertToUtf8IfNeeded(file);
 
-    formData.append("file", utf8Blob);
-    formData.append("throwInError", "false");
-    formData.append("withCSV", "true");
+    formData.append('file', utf8Blob);
+    formData.append('throwInError', 'false');
+    formData.append('withCSV', 'true');
 
     mutate(formData);
   };
 
   const { mutate: downloadTemplate, isPending: isDownloading } =
-    useFileMutation<Blob>("post/template", ["downloadTemplate"]);
+    useFileMutation<Blob>('post/template', ['downloadTemplate']);
 
   const errors = (error?.body ?? []) as Upload<Post>;
 
   return (
     <main className="space-y-4">
-      <PageHeader title={t("createPostsFromCsv")}>
+      <PageHeader title={t('createPostsFromCsv')}>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -108,7 +108,7 @@ export default function MessageFromCSV() {
             icon={<Download className="h-4 w-4" />}
             className="w-full sm:w-auto"
           >
-            {t("downloadTemplate")}
+            {t('downloadTemplate')}
           </Button>
           <BackButton href={`/messages/create`} />
         </div>
@@ -121,12 +121,12 @@ export default function MessageFromCSV() {
               name="csvFile"
               render={({ field: { onChange, value, ...rest } }) => (
                 <FormItem>
-                  <FormLabel>{t("createPosts")}</FormLabel>
+                  <FormLabel>{t('createPosts')}</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
                       accept=".csv"
-                      onChange={(e) => {
+                      onChange={e => {
                         const file = e.target?.files?.[0];
                         if (file) {
                           onChange(file);
@@ -135,39 +135,39 @@ export default function MessageFromCSV() {
                       {...rest}
                     />
                   </FormControl>
-                  <FormDescription>{t("Upload csv file")}</FormDescription>
+                  <FormDescription>{t('Upload csv file')}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
             <Button type="submit" isLoading={isPending}>
-              {t("Upload csv file")}
+              {t('Upload csv file')}
             </Button>
           </form>
         </Form>
-        <div>{t("newHere?")}</div>
+        <div>{t('newHere?')}</div>
         <Link href="/instruction" className="text-blue-600">
-          {t("howToCreateFromCSV")}
+          {t('howToCreateFromCSV')}
         </Link>
       </Card>
 
       <Card x-chunk="dashboard-05-chunk-3">
         <CardHeader className="flex flex-row justify-between items-center ">
           <div>
-            <CardTitle>{t("postsschema")}</CardTitle>
-            <CardDescription>{t("errorsInPosts")}</CardDescription>
+            <CardTitle>{t('postsschema')}</CardTitle>
+            <CardDescription>{t('errorsInPosts')}</CardDescription>
           </div>
           <Button
             size="sm"
             variant="outline"
             onClick={() =>
-              errors?.csvFile && download(errors?.csvFile, "errors.csv")
+              errors?.csvFile && download(errors?.csvFile, 'errors.csv')
             }
             className="h-7 gap-1 text-sm"
           >
             <FileIcon className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only">{t("export")}</span>
+            <span className="sr-only sm:not-sr-only">{t('export')}</span>
           </Button>
         </CardHeader>
         <CardContent>
@@ -211,24 +211,24 @@ export default function MessageFromCSV() {
         <div>
           {errors.inserted?.length > 0 && (
             <ErrorTable
-              title={t("postsCreated")}
-              description={t("postsCreatedDescription")}
+              title={t('postsCreated')}
+              description={t('postsCreatedDescription')}
               errors={errors}
               name="inserted"
             />
           )}
           {errors.updated?.length > 0 && (
             <ErrorTable
-              title={t("postsUpdated")}
-              description={t("postsUpdatedDescription")}
+              title={t('postsUpdated')}
+              description={t('postsUpdatedDescription')}
               errors={errors}
               name="updated"
             />
           )}
           {errors.deleted?.length > 0 && (
             <ErrorTable
-              title={t("postsDeleted")}
-              description={t("postsDeletedDescription")}
+              title={t('postsDeleted')}
+              description={t('postsDeletedDescription')}
               errors={errors}
               name="deleted"
             />
@@ -243,16 +243,16 @@ const ErrorCell = ({
   name,
   error,
 }: {
-  name: keyof Upload<Post>["errors"][0]["row"];
-  error: Upload<Post>["errors"][0];
+  name: keyof Upload<Post>['errors'][0]['row'];
+  error: Upload<Post>['errors'][0];
 }) => {
-  const t = useTranslations("fromcsv");
+  const t = useTranslations('fromcsv');
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
         <span>
           {Array.isArray(error?.row[name])
-            ? (error?.row[name] as any)?.join(", ")
+            ? (error?.row[name] as any)?.join(', ')
             : (error?.row[name] as string)}
         </span>
       )}
@@ -262,7 +262,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {t(error.errors[name] || "")}
+            {t(error.errors[name] || '')}
           </HoverCardContent>
         </HoverCard>
       )}
@@ -279,7 +279,7 @@ const ErrorTable = ({
   title: string;
   description: string;
   errors: Upload<Post>;
-  name: "inserted" | "updated" | "deleted";
+  name: 'inserted' | 'updated' | 'deleted';
 }) => {
   return (
     <Card x-chunk="dashboard-05-chunk-4">
@@ -313,14 +313,14 @@ const ErrorTable = ({
                 <TableCell>
                   <span>
                     {Array.isArray(post?.group_names)
-                      ? post?.group_names.join(", ")
+                      ? post?.group_names.join(', ')
                       : post?.group_names}
                   </span>
                 </TableCell>
                 <TableCell>
                   <span>
                     {Array.isArray(post?.student_numbers)
-                      ? post?.student_numbers.join(", ")
+                      ? post?.student_numbers.join(', ')
                       : post?.student_numbers}
                   </span>
                 </TableCell>

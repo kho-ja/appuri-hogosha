@@ -1,11 +1,11 @@
-import NextAuth, { AuthError } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth, { AuthError } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
 class OTPError extends AuthError {
   error;
   constructor(message: string, error: { error: string; status: number }) {
     super(message);
-    this.name = "OTPError";
+    this.name = 'OTPError';
     this.error = error;
   }
 }
@@ -14,7 +14,7 @@ class InvalidCredentialsError extends AuthError {
   error;
   constructor(message: string, error: { error: string; status: number }) {
     super(message);
-    this.name = "InvalidCredentialsError";
+    this.name = 'InvalidCredentialsError';
     this.error = error;
   }
 }
@@ -27,18 +27,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: {},
         password: {},
-        newPassword: { type: "password" },
+        newPassword: { type: 'password' },
         accessToken: {}, // For OAuth callback
         refreshToken: {}, // For OAuth callback
         userJson: {}, // For OAuth callback - serialized user object
       },
-      authorize: async (credentials) => {
+      authorize: async credentials => {
         try {
           // Handle OAuth callback scenario
           if (credentials?.accessToken && !credentials?.password) {
             // This is an OAuth callback, we already have the tokens
             // Try using userJson first; if missing, get user info using the access token
-            const backendUrl = process.env.BACKEND_URL || "http://localhost:3001/admin-panel";
+            const backendUrl =
+              process.env.BACKEND_URL || 'http://localhost:3001/admin-panel';
             if (credentials.userJson) {
               const parsed = JSON.parse(credentials.userJson as string);
               return {
@@ -54,11 +55,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             const userInfoResponse = await fetch(`${backendUrl}/user-info`, {
               headers: {
-                'Authorization': `Bearer ${credentials.accessToken}`,
-                'Content-Type': 'application/json'
-              }
+                Authorization: `Bearer ${credentials.accessToken}`,
+                'Content-Type': 'application/json',
+              },
             });
-            
+
             if (userInfoResponse.ok) {
               const userData = await userInfoResponse.json();
               return {
@@ -82,8 +83,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             authData = (await fetch(
               `${process.env.BACKEND_URL}/change-temp-password`,
               {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   email: credentials.email,
                   temp_password: credentials.password,
@@ -93,8 +94,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             )) as Response;
           } else {
             authData = (await fetch(`${process.env.BACKEND_URL}/login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(credentials),
             })) as Response;
           }
@@ -104,14 +105,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           authData = await authData.json();
 
           if (authData?.error && status === 403) {
-            throw new OTPError("OTPError", {
+            throw new OTPError('OTPError', {
               error: authData?.error,
               status: status,
             });
           }
 
           if (authData?.error && status === 401) {
-            throw new InvalidCredentialsError("InvalidCredentialsError", {
+            throw new InvalidCredentialsError('InvalidCredentialsError', {
               error: authData?.error,
               status: status,
             });
@@ -147,7 +148,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       }
 
-      if (trigger === "update" && session) {
+      if (trigger === 'update' && session) {
         if (session.schoolName) token.schoolName = session.schoolName;
 
         return {
@@ -167,7 +168,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.expires = new Date(token?.accessTokenExpires as number) as Date &
         string;
       session.schoolName = token?.schoolName as string;
-      session.error = (token?.error ?? "") as string;
+      session.error = (token?.error ?? '') as string;
 
       session.user.given_name = token?.given_name as string;
       session.user.family_name = token?.family_name as string;
@@ -176,7 +177,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
 });
 
@@ -184,9 +185,9 @@ async function refreshAccessToken(token: any) {
   try {
     const response = await fetch(`${process.env.BACKEND_URL}/refresh-token`, {
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify({
         refresh_token: token.refreshToken,
       }),
@@ -203,14 +204,14 @@ async function refreshAccessToken(token: any) {
       accessToken: refreshedTokens.access_token,
       accessTokenExpires: Date.now() + 60 * 60 * 24 * 1000,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken, // Fall back to old refresh token
-      error: "",
+      error: '',
     };
   } catch (error) {
     console.error(error);
 
     return {
       ...token,
-      error: "RefreshAccessTokenError",
+      error: 'RefreshAccessTokenError',
     };
   }
 }

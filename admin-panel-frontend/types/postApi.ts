@@ -1,5 +1,5 @@
-import pagination from "./pagination";
-import Post from "./post";
+import pagination from './pagination';
+import Post from './post';
 
 type PostApi = {
   posts: Post[];

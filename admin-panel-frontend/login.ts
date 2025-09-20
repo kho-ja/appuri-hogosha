@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { signIn } from "@/auth";
-import { AuthError } from "next-auth";
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
 
 export const login = async (
   email: string,
@@ -9,7 +9,7 @@ export const login = async (
   newPassword: string
 ) => {
   try {
-    const response = await signIn("credentials", {
+    const response = await signIn('credentials', {
       email,
       password,
       newPassword,

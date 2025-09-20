@@ -1,19 +1,19 @@
-import React from "react";
+import React from 'react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/navigation";
+} from './ui/select';
+import { useLocale, useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/navigation';
 
 const LanguageSelect = () => {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const t = useTranslations("app");
+  const t = useTranslations('app');
 
   const handleLanguageChange = (lang: string): void => {
     router.push(pathname, { locale: lang });
@@ -22,7 +22,7 @@ const LanguageSelect = () => {
   return (
     <Select defaultValue={locale} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder={t("language")} />
+        <SelectValue placeholder={t('language')} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="en">English</SelectItem>
