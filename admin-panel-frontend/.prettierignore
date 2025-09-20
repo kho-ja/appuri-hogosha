@@ -1,0 +1,34 @@
+# Ignore specific config files to prevent unnecessary formatting changes
+tsconfig.json
+package.json
+package-lock.json
+
+# Build output
+dist/
+.next/
+out/
+node_modules/
+
+# Environment files
+.env*
+
+# Public assets that shouldn't be formatted
+public/
+
+# Logs
+*.log
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
