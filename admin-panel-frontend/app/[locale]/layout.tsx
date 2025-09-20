@@ -9,6 +9,8 @@ import ReactQueryProvider from "@/contexts/ReactQueryProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import TimezoneDetector from "@/components/TimezoneDetector";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -54,6 +56,8 @@ export default async function RootLayout({
           </ThemeProvider>
           <Toaster />
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
