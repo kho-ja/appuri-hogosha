@@ -108,11 +108,55 @@ const SessionDependentPushTokenHandler: React.FC<{
 const AppWithNotifications: React.FC = () => {
   const { language, i18n } = useContext(I18nContext);
   const [pushToken, setPushToken] = React.useState<string | null>(null);
+  const [permissionDenied, setPermissionDenied] = React.useState(false);
+  const [shouldShowBatteryAlert, setShouldShowBatteryAlert] =
+    React.useState(false);
+  const hasInitialized = React.useRef(false);
+  const permissionAlertShown = React.useRef(false);
 
   useUpdateAlerts();
 
-  // Initialize push notifications once
+  // Separate effect to show permission denied alert with current language (only once)
   React.useEffect(() => {
+    if (permissionDenied && !permissionAlertShown.current) {
+      permissionAlertShown.current = true;
+      setTimeout(() => {
+        Alert.alert(
+          i18n[language].notificationsDisabled,
+          i18n[language].notificationsDisabledMessage,
+          [
+            { text: i18n[language].ok, style: 'cancel' },
+            {
+              text: i18n[language].openSettings,
+              onPress: async () => {
+                try {
+                  await Linking.openSettings();
+                } catch (error) {
+                  console.error('Failed to open settings:', error);
+                }
+              },
+            },
+          ]
+        );
+      }, 3000);
+    }
+  }, [permissionDenied, language, i18n]);
+
+  // Separate effect to show battery optimization alert
+  React.useEffect(() => {
+    if (shouldShowBatteryAlert) {
+      setTimeout(() => showBatteryOptimizationAlert(i18n, language), 5000);
+      setShouldShowBatteryAlert(false);
+    }
+  }, [shouldShowBatteryAlert, language, i18n]);
+
+  // Initialize push notifications once (without language dependencies)
+  React.useEffect(() => {
+    if (hasInitialized.current) {
+      return;
+    }
+    hasInitialized.current = true;
+
     // Set up notification handler FIRST (critical for iOS foreground notifications)
     setupNotificationHandler();
 
@@ -129,26 +173,7 @@ const AppWithNotifications: React.FC = () => {
         }
       } else if (result.status === 'denied') {
         console.log('[Push] User denied permission');
-
-        setTimeout(() => {
-          Alert.alert(
-            i18n[language].notificationsDisabled,
-            i18n[language].notificationsDisabledMessage,
-            [
-              { text: i18n[language].ok, style: 'cancel' },
-              {
-                text: i18n[language].openSettings,
-                onPress: async () => {
-                  try {
-                    await Linking.openSettings();
-                  } catch (error) {
-                    console.error('Failed to open settings:', error);
-                  }
-                },
-              },
-            ]
-          );
-        }, 3000);
+        setPermissionDenied(true);
       } else if (result.status === 'device_unsupported') {
         console.log('[Push] Running in simulator - notifications disabled');
       } else if (result.status === 'error') {
@@ -161,7 +186,7 @@ const AppWithNotifications: React.FC = () => {
           'battery_opt_alert_shown'
         );
         if (!shouldShowAlert) {
-          setTimeout(() => showBatteryOptimizationAlert(i18n, language), 5000);
+          setShouldShowBatteryAlert(true);
           await AsyncStorage.setItem('battery_opt_alert_shown', 'true');
         }
       }
@@ -176,7 +201,7 @@ const AppWithNotifications: React.FC = () => {
     });
 
     return () => sub.remove();
-  }, [language, i18n]);
+  }, []);
 
   useNotificationObserver();
 
