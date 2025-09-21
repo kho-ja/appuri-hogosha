@@ -137,45 +137,51 @@ export function SessionProvider(props: React.PropsWithChildren) {
           await AsyncStorage.setItem('country', JSON.stringify(country));
           await AsyncStorage.setItem('password', password);
           try {
-            await registerForPushNotificationsAsync().then(async token => {
-              const response = await fetch(`${apiUrl}/login`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  phone_number:
-                    country?.callingCode + phoneNumber.replaceAll(' ', ''),
-                  password,
-                  token,
-                }),
-              });
-              if (response.status === 403) {
-                await AsyncStorage.setItem('phoneNumber', phoneNumber);
-                await AsyncStorage.setItem('temp_password', password);
-                return router.push('/new-psswd');
-              }
-              if (!response.ok) {
-                const errorData = await response.json();
-                throw Error(errorData.error || 'Internal server error');
-              }
-              const data: Session = await response.json();
-              setSession(data.access_token);
-              await AsyncStorage.setItem('refresh_token', data.refresh_token);
+            // First, check and request push notification permissions
+            const token = await registerForPushNotificationsAsync();
 
-              // Clear existing user data and insert new
-              await db.execAsync('DELETE FROM user');
-              await db.runAsync(
-                'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
-                [
-                  data.user.given_name,
-                  data.user.family_name,
-                  data.user.phone_number,
-                  data.user.email,
-                ]
-              );
-              router.replace('/');
+            // If we get here, notifications are enabled and we have a token
+            // Now proceed with login request
+            const response = await fetch(`${apiUrl}/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                phone_number:
+                  country?.callingCode + phoneNumber.replaceAll(' ', ''),
+                password,
+                token,
+              }),
             });
+
+            if (response.status === 403) {
+              await AsyncStorage.setItem('phoneNumber', phoneNumber);
+              await AsyncStorage.setItem('temp_password', password);
+              return router.push('/new-psswd');
+            }
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw Error(errorData.error || 'Internal server error');
+            }
+
+            const data: Session = await response.json();
+            setSession(data.access_token);
+            await AsyncStorage.setItem('refresh_token', data.refresh_token);
+
+            // Clear existing user data and insert new
+            await db.execAsync('DELETE FROM user');
+            await db.runAsync(
+              'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
+              [
+                data.user.given_name,
+                data.user.family_name,
+                data.user.phone_number,
+                data.user.email,
+              ]
+            );
+            router.replace('/');
           } catch (error) {
             console.error('Error during sign in:', error);
             if (error instanceof Error) {
@@ -194,7 +200,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
               }
               throw error;
             } else {
-              console.error('An unknown error occurred');
+              throw new Error('An unknown error occurred');
             }
           }
         },
