@@ -68,7 +68,7 @@ export default function Info() {
     ["scheduledPosts", page, search, perPage]
   );
 
-  const [postId, setPostId] = useState<number | null>(null);
+  const [_postId, _setPostId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const deleteMultiple = useApiMutation<

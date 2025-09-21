@@ -14,7 +14,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Bell, Check, CheckCheck } from "lucide-react";
-import { usePathname, useRouter } from "@/navigation";
+import { usePathname } from "@/navigation";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import DisplayProperty from "@/components/DisplayProperty";

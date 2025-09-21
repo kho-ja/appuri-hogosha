@@ -122,7 +122,9 @@ export function StudentTable({
       },
       {
         accessorKey: "email",
-        header: ({ column }) => <div className="text-left">{t("email")}</div>,
+        header: ({ column: _column }) => (
+          <div className="text-left">{t("email")}</div>
+        ),
         cell: ({ row }) => (
           <div className="lowercase">{row.getValue("email")}</div>
         ),

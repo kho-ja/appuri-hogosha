@@ -7,11 +7,13 @@ This project uses ESLint and Prettier to ensure consistent code formatting acros
 ### When adding new shadcn components:
 
 1. **Add the component normally:**
+
    ```bash
    npx shadcn@latest add [component-name]
    ```
 
 2. **Automatically format the new component:**
+
    ```bash
    npm run format:ui
    ```
@@ -57,8 +59,9 @@ git commit -m "Add avatar component"
 ## Prettier Configuration
 
 Our Prettier config is optimized for shadcn components:
+
 - Semi-colons: `true`
-- Double quotes: `true` 
+- Double quotes: `true`
 - Trailing commas: `es5`
 - Print width: `80`
 - Tab width: `2`
