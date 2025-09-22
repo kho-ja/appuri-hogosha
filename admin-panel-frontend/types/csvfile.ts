@@ -1,5 +1,14 @@
 export default interface Upload<T> {
-  message: string; // Type should be string, not a specific message
+  success: boolean;
+  message: string;
+  summary?: {
+    total: number;
+    processed: number;
+    errors: number;
+    inserted: number;
+    updated: number;
+    deleted: number;
+  };
   updated: T[];
   deleted: T[];
   inserted: T[];
@@ -9,5 +18,5 @@ export default interface Upload<T> {
       [key in keyof T]: string;
     };
   }[];
-  csvFile: Buffer;
+  csvFile?: Buffer;
 }

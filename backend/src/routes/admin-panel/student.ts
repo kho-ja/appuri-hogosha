@@ -1,7 +1,11 @@
-import multer from 'multer';
-import csv from 'csv-parser';
-import { Readable } from 'stream';
-import iconv from 'iconv-lite';
+import {
+    createBaseResponse,
+    parseCSVBuffer,
+    finalizeResponse,
+    bumpSummary,
+    handleCSVUpload,
+} from '../../utils/csv-upload';
+import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 import { IController } from '../../utils/icontroller';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { Response, Router } from 'express';
@@ -20,8 +24,7 @@ import process from 'node:process';
 import { stringify } from 'csv-stringify/sync';
 import { syncronizePosts } from '../../utils/messageHelper';
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// CSV upload handled by shared middleware
 
 class StudentController implements IController {
     public router: Router = Router();
@@ -37,7 +40,7 @@ class StudentController implements IController {
         this.router.post(
             '/upload',
             verifyToken,
-            upload.single('file'),
+            handleCSVUpload,
             this.uploadStudentsFromCSV
         );
         this.router.post(
@@ -422,292 +425,167 @@ class StudentController implements IController {
         const { throwInError, action, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
-
-        const results: any[] = [];
-        const errors: any[] = [];
-        const inserted: any[] = [];
-        const updated: any[] = [];
-        const deleted: any[] = [];
-
+        if (!req.file || !req.file.buffer) {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
+        const response = createBaseResponse<any>();
         try {
-            if (!req.file || !req.file.buffer) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Bad Request',
-                        details: 'File is missing or invalid',
-                    })
-                    .end();
+            const rows = await parseCSVBuffer(req.file.buffer);
+            if (rows.length === 0) {
+                response.message = ErrorKeys.csv_is_empty_but_valid;
+                return res.status(200).json(response).end();
             }
 
-            const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
-            const stream = Readable.from(decodedContent);
+            const valid: any[] = [];
+            const errors: any[] = [];
+            const seenEmails = new Set<string>();
+            const seenNumbers = new Set<string>();
 
-            await new Promise((resolve, reject) => {
-                stream
-                    .pipe(csv())
-                    .on('headers', (headers: any) => {
-                        if (
-                            headers.length > 0 &&
-                            headers[0].charCodeAt(0) === 0xfeff
-                        ) {
-                            headers[0] = headers[0].slice(1);
-                        }
-                        headers = headers.map((header: string) =>
-                            header.trim()
-                        );
-                    })
-                    .on('data', (data: any) => {
-                        if (
-                            Object.values(data).some(
-                                (value: any) => value.trim() !== ''
-                            )
-                        ) {
-                            results.push(data);
-                        }
-                    })
-                    .on('end', resolve)
-                    .on('error', reject);
-            });
+            for (const raw of rows) {
+                const normalized = {
+                    email: String(raw.email || '').trim(),
+                    phone_number: String(raw.phone_number || '').trim(),
+                    given_name: String(raw.given_name || '').trim(),
+                    family_name: String(raw.family_name || '').trim(),
+                    student_number: String(raw.student_number || '').trim(),
+                };
+                const rowErrors: Record<string, string> = {};
+                if (!isValidEmail(normalized.email))
+                    rowErrors.email = ErrorKeys.invalid_email;
+                if (!isValidPhoneNumber(normalized.phone_number))
+                    rowErrors.phone_number = ErrorKeys.invalid_phone_number;
+                if (!isValidString(normalized.given_name))
+                    rowErrors.given_name = ErrorKeys.invalid_given_name;
+                if (!isValidString(normalized.family_name))
+                    rowErrors.family_name = ErrorKeys.invalid_family_name;
+                if (!isValidStudentNumber(normalized.student_number))
+                    rowErrors.student_number = ErrorKeys.invalid_student_number;
+                if (seenEmails.has(normalized.email))
+                    rowErrors.email = ErrorKeys.email_already_exists;
+                if (seenNumbers.has(normalized.student_number))
+                    rowErrors.student_number =
+                        ErrorKeys.student_number_already_exists;
 
-            const validResults: any[] = [];
-            const existingEmailsInCSV: string[] = [];
-            const existingStudentNumbersInCSV: string[] = [];
-            for (const row of results) {
-                const {
-                    email,
-                    phone_number,
-                    given_name,
-                    family_name,
-                    student_number,
-                } = row;
-                const rowErrors: any = {};
-                const normalizedEmail = String(email).trim();
-                const normalizedPhoneNumber = String(phone_number).trim();
-                const normalizedGiven = String(given_name).trim();
-                const normalizedFamily = String(family_name).trim();
-                const normalizedStudent = String(student_number).trim();
-
-                if (!isValidEmail(normalizedEmail))
-                    rowErrors.email = 'invalid_email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber))
-                    rowErrors.phone_number = 'invalid_phone_number';
-                if (!isValidString(normalizedGiven))
-                    rowErrors.given_name = 'invalid_given_name';
-                if (!isValidString(normalizedFamily))
-                    rowErrors.family_name = 'invalid_family_name';
-                if (!isValidStudentNumber(normalizedStudent))
-                    rowErrors.student_number = 'invalid_student_number';
-                if (existingEmailsInCSV.includes(normalizedEmail)) {
-                    rowErrors.email = 'email_already_exists';
-                }
-                if (existingStudentNumbersInCSV.includes(normalizedStudent)) {
-                    rowErrors.student_number = 'student_number_already_exists';
-                }
-
-                if (Object.keys(rowErrors).length > 0) {
-                    errors.push({ row, errors: rowErrors });
+                if (Object.keys(rowErrors).length) {
+                    errors.push({ row: normalized, errors: rowErrors });
                 } else {
-                    row.email = normalizedEmail;
-                    row.phone_number = normalizedPhoneNumber;
-                    row.given_name = normalizedGiven;
-                    row.family_name = normalizedFamily;
-                    row.student_number = normalizedStudent;
-                    existingEmailsInCSV.push(row.email);
-                    existingStudentNumbersInCSV.push(row.student_number);
-
-                    validResults.push(row);
+                    seenEmails.add(normalized.email);
+                    seenNumbers.add(normalized.student_number);
+                    valid.push(normalized);
                 }
             }
 
-            if (errors.length > 0 && throwInErrorBool) {
-                return res.status(400).json({ errors: errors }).end();
+            if (errors.length) {
+                if (throwInErrorBool) {
+                    response.errors = errors;
+                    response.summary.errors = errors.length;
+                    return res.status(400).json(response).end();
+                }
+                response.errors.push(...errors);
             }
 
-            const emails = validResults.map(row => row.email);
-            if (emails.length === 0) {
+            if (!action || !['create', 'update', 'delete'].includes(action)) {
                 return res
                     .status(400)
-                    .json({
-                        errors: errors,
-                        message: 'all_data_invalid',
-                    })
+                    .json(
+                        createErrorResponse(
+                            ErrorKeys.server_error,
+                            'invalid_action'
+                        )
+                    )
                     .end();
             }
-            const existingStudents =
-                emails?.length > 0
-                    ? await DB.query(
-                          'SELECT email FROM Student WHERE email IN (:emails)',
-                          {
-                              emails,
-                          }
-                      )
-                    : [];
-            const existingStudentsNumbers =
-                emails?.length > 0
-                    ? await DB.query(
-                          'SELECT student_number FROM Student WHERE student_number IN (:studentNumbers)',
-                          {
-                              studentNumbers: validResults.map(
-                                  row => row.student_number
-                              ),
-                          }
-                      )
-                    : [];
-            const existingStudentNumbers = existingStudentsNumbers.map(
-                (student: any) => student.student_number
+
+            const existingStudents = await DB.query(
+                'SELECT email, student_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns)',
+                {
+                    emails: valid.map(v => v.email),
+                    sns: valid.map(v => v.student_number),
+                }
             );
-            const existingEmails = existingStudents.map(
-                (student: any) => student.email
+            const existingEmailSet = new Set(
+                existingStudents.map((s: any) => s.email)
+            );
+            const existingNumberSet = new Set(
+                existingStudents.map((s: any) => s.student_number)
             );
 
-            if (action === 'create') {
-                for (const row of validResults) {
-                    if (existingEmails.includes(row.email)) {
-                        errors.push({
+            for (const row of valid) {
+                if (action === 'create') {
+                    if (existingEmailSet.has(row.email)) {
+                        response.errors.push({
                             row,
-                            errors: { email: 'student_email_already_exists' },
+                            errors: {
+                                email: 'student_email_already_exists',
+                            },
                         });
-                    } else if (
-                        existingStudentNumbers.includes(row.student_number)
-                    ) {
-                        errors.push({
+                        continue;
+                    }
+                    if (existingNumberSet.has(row.student_number)) {
+                        response.errors.push({
                             row,
                             errors: {
                                 student_number: 'student_number_already_exists',
                             },
                         });
-                    } else {
-                        await DB.execute(
-                            `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
-                        VALUE (:email, :phone_number, :given_name, :family_name, :student_number, :school_id);`,
-                            {
-                                email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
-                                student_number: row.student_number,
-                                school_id: req.user.school_id,
-                            }
-                        );
-                        inserted.push(row);
+                        continue;
                     }
-                }
-            } else if (action === 'update') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'student_does_not_exist' },
-                        });
-                    } else {
-                        await DB.execute(
-                            `UPDATE Student SET
-                        phone_number = :phone_number,
-                        given_name = :given_name,
-                        family_name = :family_name,
-                        student_number = :student_number
-                        WHERE email = :email AND
-                        school_id = school_id`,
-                            {
-                                email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
-                                student_number: row.student_number,
-                                school_id: req.user.school_id,
-                            }
-                        );
-                        updated.push(row);
-                    }
-                }
-            } else if (action === 'delete') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'student_does_not_exist' },
-                        });
-                    } else {
-                        await DB.execute(
-                            'DELETE FROM Student WHERE email = :email AND school_id = :school_id',
-                            {
-                                email: row.email,
-                                school_id: req.user.school_id,
-                            }
-                        );
-                        deleted.push(row);
-                    }
-                }
-            } else {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'bad_request',
-                        details: 'invalid_action',
-                    })
-                    .end();
-            }
-
-            if (errors.length > 0) {
-                let csvFile: Buffer | null = null;
-                if (withCSVBool) {
-                    const csvData = errors.map((error: any) => ({
-                        email: error?.row?.email,
-                        phone_number: error?.row?.phone_number,
-                        given_name: error?.row?.given_name,
-                        family_name: error?.row?.family_name,
-                        student_number: error?.row?.student_number,
-                    }));
-                    const csvContent = stringify(csvData, {
-                        header: true,
-                        columns: [
-                            'email',
-                            'phone_number',
-                            'given_name',
-                            'family_name',
-                            'student_number',
-                        ],
-                    });
-                    // response headers for sending multipart files to send it with json response
-                    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                    res.setHeader(
-                        'Content-Disposition',
-                        'attachment; filename=errors.csv'
+                    await DB.execute(
+                        `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
+                         VALUE (:email, :phone_number, :given_name, :family_name, :student_number, :school_id);`,
+                        { ...row, school_id: req.user.school_id }
                     );
-
-                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8');
+                    response.inserted.push(row);
+                } else if (action === 'update') {
+                    if (!existingEmailSet.has(row.email)) {
+                        response.errors.push({
+                            row,
+                            errors: { email: ErrorKeys.student_does_not_exist },
+                        });
+                        continue;
+                    }
+                    await DB.execute(
+                        `UPDATE Student SET
+                            phone_number = :phone_number,
+                            given_name = :given_name,
+                            family_name = :family_name,
+                            student_number = :student_number
+                         WHERE email = :email AND school_id = :school_id`,
+                        { ...row, school_id: req.user.school_id }
+                    );
+                    response.updated.push(row);
+                } else if (action === 'delete') {
+                    if (!existingEmailSet.has(row.email)) {
+                        response.errors.push({
+                            row,
+                            errors: { email: ErrorKeys.student_does_not_exist },
+                        });
+                        continue;
+                    }
+                    await DB.execute(
+                        'DELETE FROM Student WHERE email = :email AND school_id = :school_id',
+                        { email: row.email, school_id: req.user.school_id }
+                    );
+                    response.deleted.push(row);
                 }
-
-                return res
-                    .status(400)
-                    .json({
-                        message: 'csv_processed_with_errors',
-                        inserted: inserted,
-                        updated: updated,
-                        deleted: deleted,
-                        errors: errors.length > 0 ? errors : null,
-                        csvFile: csvFile,
-                    })
-                    .end();
             }
 
+            bumpSummary(response, 'inserted');
+            bumpSummary(response, 'updated');
+            bumpSummary(response, 'deleted');
+            response.summary.errors = response.errors.length;
+            finalizeResponse(response, withCSVBool);
             return res
-                .status(200)
-                .json({
-                    message: 'csv_processed_successfully',
-                    inserted: inserted,
-                    updated: updated,
-                    deleted: deleted,
-                })
+                .status(response.errors.length ? 400 : 200)
+                .json(response)
                 .end();
         } catch (e: any) {
             return res
                 .status(500)
-                .json({
-                    error: 'internal_server_error',
-                    details: e.message,
-                })
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
                 .end();
         }
     };
