@@ -124,7 +124,19 @@ export default function CreateFromKintone() {
     await mutate(values as any);
   };
 
-  const errors = (error?.body ?? []) as Upload<Parent>;
+  // Safely derive structured CSV upload result (if backend returned structured upload feedback)
+  let errors: Upload<Parent> | null = null;
+  if (error?.body && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if (
+      Array.isArray(body?.errors) &&
+      Array.isArray(body?.inserted) &&
+      Array.isArray(body?.updated) &&
+      Array.isArray(body?.deleted)
+    ) {
+      errors = body as unknown as Upload<Parent>;
+    }
+  }
 
   return (
     <main className="space-y-4">
@@ -331,7 +343,8 @@ export default function CreateFromKintone() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
+              {errors?.errors &&
+                errors.errors.length > 0 &&
                 errors.errors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>
