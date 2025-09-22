@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@/navigation";
 import {
-  Bell,
   CircleUser,
   Menu,
   Package2,

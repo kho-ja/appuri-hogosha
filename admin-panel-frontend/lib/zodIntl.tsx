@@ -2,7 +2,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import type { ZodErrorMap } from "zod";
 import { defaultErrorMap, ZodIssueCode, ZodParsedType } from "zod";
 
-const jsonStringifyReplacer = (_: string, value: any): any => {
+// Replacer used when stringifying values that may include bigint
+const jsonStringifyReplacer = (_: string, value: unknown): unknown => {
   if (typeof value === "bigint") {
     return value.toString();
   }
@@ -43,8 +44,12 @@ const getKeyAndValues = (
 
 export type MakeZodI18nMap = (option?: ZodI18nMapOption) => ZodErrorMap;
 
+// Relaxed translation function signature compatible with next-intl 't'
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TranslationFn = (key: string, values?: Record<string, any>) => string;
+
 export type ZodI18nMapOption = {
-  t?: any;
+  t?: TranslationFn;
   ns?: string | readonly string[];
   handlePath?: HandlePathOption | false;
 };
@@ -62,7 +67,15 @@ export const useMakeZodI18nMap: MakeZodI18nMap = (option) => {
   const format = useFormatter();
 
   return (issue, ctx) => {
-    const { t, ns, handlePath } = {
+    const {
+      t,
+      ns,
+      handlePath,
+    }: {
+      t: TranslationFn;
+      ns: string | readonly string[];
+      handlePath: (HandlePathOption & { context: string }) | null;
+    } = {
       t: translations,
       ns: defaultNs,
       ...option,
@@ -138,14 +151,18 @@ export const useMakeZodI18nMap: MakeZodI18nMap = (option) => {
         break;
       case ZodIssueCode.invalid_union_discriminator:
         message = t("errors.invalid_union_discriminator", {
-          options: format.list(issue.options as any[], { type: "disjunction" }),
+          options: format.list(issue.options as string[], {
+            type: "disjunction",
+          }),
           defaultValue: message,
           ...path,
         });
         break;
       case ZodIssueCode.invalid_enum_value:
         message = t("errors.invalid_enum_value", {
-          options: format.list(issue.options as any[], { type: "disjunction" }),
+          options: format.list(issue.options as string[], {
+            type: "disjunction",
+          }),
           received: issue.received,
           defaultValue: message,
           ...path,

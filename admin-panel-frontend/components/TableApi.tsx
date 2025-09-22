@@ -18,7 +18,12 @@ import { useRouter } from "@/navigation";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
+    /**
+     * When true, the cell for this column will not trigger row link navigation.
+     */
     notClickable?: boolean;
+    /** @internal Ensure generics referenced so no-unused-vars rule is satisfied */
+    __genericMarker__?: (TData & TValue) | undefined;
   }
 }
 

@@ -64,7 +64,15 @@ export default function CreateStudent() {
   });
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
   const router = useRouter();
-  const { mutate, isPending } = useApiMutation<{ student: Student }>(
+  interface CreateStudentPayload {
+    email: string;
+    phone_number: string;
+    given_name: string;
+    family_name: string;
+    student_number: string;
+    parents: number[];
+  }
+  const { mutate } = useApiMutation<{ student: Student }, CreateStudentPayload>(
     `student/create`,
     "POST",
     ["createStudent"],
@@ -74,7 +82,6 @@ export default function CreateStudent() {
           title: t("StudentCreated"),
           description: tName("name", { ...data.student, parents: "" }),
         });
-
         router.push("/students");
         form.reset();
         setSelectedParents([]);
@@ -125,10 +132,13 @@ export default function CreateStudent() {
         <form
           onSubmit={form.handleSubmit((values) =>
             mutate({
-              ...values,
+              email: values.email,
               phone_number: values.phone_number.slice(1),
+              given_name: values.given_name,
+              family_name: values.family_name,
+              student_number: values.student_number,
               parents: selectedParents.map((parent) => parent.id),
-            } as any)
+            })
           )}
           className="space-y-4"
         >

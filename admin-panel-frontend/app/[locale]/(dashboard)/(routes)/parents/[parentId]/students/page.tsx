@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StudentTable } from "@/components/StudentTable";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import Student from "@/types/student";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
@@ -24,20 +24,21 @@ export default function EditStudents({
   const { data, isLoading, isError } = useApiQuery<{
     students: Student[];
   }>(`parent/${parentId}/students`, ["editParentStudents", parentId]);
-  const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `parent/${parentId}/students`,
-    "POST",
-    ["editParentStudents", parentId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("StudentsUpdated"),
-          description: data?.message,
-        });
-        router.push(`/parents/${parentId}`);
-      },
-    }
-  );
+  interface UpdateParentStudentsPayload {
+    students: number[];
+  }
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    UpdateParentStudentsPayload
+  >(`parent/${parentId}/students`, "POST", ["editParentStudents", parentId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("StudentsUpdated"),
+        description: data?.message,
+      });
+      router.push(`/parents/${parentId}`);
+    },
+  });
 
   useEffect(() => {
     if (!data) return;
@@ -54,7 +55,7 @@ export default function EditStudents({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          mutate({ students: selectedStudents.map((e) => e.id) } as any);
+          mutate({ students: selectedStudents.map((e) => e.id) });
         }}
         className="space-y-4"
       >

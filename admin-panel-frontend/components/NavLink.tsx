@@ -20,7 +20,7 @@ const NavLink: React.FC<NavLinkProps> = ({
   Icon,
   name,
   isMenuOpen,
-  badge,
+  // badge intentionally unused currently; keep in type for potential future use
   onLinkClick,
 }) => {
   const pathname = usePathname();

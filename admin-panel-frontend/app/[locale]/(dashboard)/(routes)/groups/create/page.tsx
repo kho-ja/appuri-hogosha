@@ -43,7 +43,11 @@ export default function CreateGroup() {
     },
   });
 
-  const { isPending: _isPending, mutate } = useApiMutation<{ group: Group }>(
+  interface CreateGroupPayload {
+    name: string;
+    students: number[];
+  }
+  const { mutate } = useApiMutation<{ group: Group }, CreateGroupPayload>(
     `group/create`,
     "POST",
     ["createGroup"],
@@ -98,9 +102,9 @@ export default function CreateGroup() {
             className="space-y-4"
             onSubmit={form.handleSubmit((data) =>
               mutate({
-                ...data,
+                name: data.name,
                 students: selectedStudents.map((student) => student.id),
-              } as any)
+              })
             )}
           >
             <FormField

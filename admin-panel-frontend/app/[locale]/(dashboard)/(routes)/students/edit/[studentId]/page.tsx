@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { z } from "zod";
 import {
   Form,
@@ -64,21 +64,25 @@ export default function CreateStudent({
   const { data, isLoading, isError } = useApiQuery<{
     student: Student;
   }>(`student/${studentId}`, ["student", studentId]);
-  const { mutate, isPending } = useApiMutation<{ student: Student }>(
-    `student/${studentId}`,
-    "PUT",
-    ["editStudent", studentId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("StudentEdited"),
-          description: tName("name", { ...data?.student, parents: "" }),
-        });
-        router.push(`/students/${studentId}`);
-        form.reset();
-      },
-    }
-  );
+  interface EditStudentPayload {
+    phone_number: string;
+    given_name: string;
+    family_name: string;
+    student_number: string;
+  }
+  const { mutate, isPending } = useApiMutation<
+    { student: Student },
+    EditStudentPayload
+  >(`student/${studentId}`, "PUT", ["editStudent", studentId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("StudentEdited"),
+        description: tName("name", { ...data?.student, parents: "" }),
+      });
+      router.push(`/students/${studentId}`);
+      form.reset();
+    },
+  });
 
   useEffect(() => {
     if (data) {
@@ -100,9 +104,11 @@ export default function CreateStudent({
         <form
           onSubmit={form.handleSubmit((values) =>
             mutate({
-              ...values,
               phone_number: values.phone_number.slice(1),
-            } as any)
+              given_name: values.given_name,
+              family_name: values.family_name,
+              student_number: values.student_number,
+            })
           )}
           className="space-y-4"
         >

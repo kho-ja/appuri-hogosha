@@ -1,14 +1,11 @@
 import React from "react";
 import {
   Home,
-  LineChart,
   Users,
-  BookCheck,
   GraduationCap,
   Contact,
   MessageCircle,
   ShieldCheck,
-  MessageSquare,
   Settings,
 } from "lucide-react";
 import { onlyAdminPathNameRegex } from "@/middleware";

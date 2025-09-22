@@ -149,11 +149,16 @@ export function detectEncoding(arrayBuffer: ArrayBuffer) {
   }
 }
 
-export function download(bufferData: any, filename: string = "") {
+export function download(bufferData: unknown, filename: string = "") {
   let buffer: Buffer;
 
-  if (bufferData.type === "Buffer" && Array.isArray(bufferData.data)) {
-    buffer = Buffer.from(bufferData.data);
+  if (
+    typeof bufferData === "object" &&
+    bufferData !== null &&
+    (bufferData as { type?: string }).type === "Buffer" &&
+    Array.isArray((bufferData as { data?: unknown }).data)
+  ) {
+    buffer = Buffer.from((bufferData as { data: number[] }).data);
   } else if (typeof bufferData === "string") {
     buffer = Buffer.from(bufferData);
   } else if (bufferData instanceof Buffer) {
