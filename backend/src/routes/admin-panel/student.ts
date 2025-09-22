@@ -466,7 +466,8 @@ class StudentController implements IController {
                 if (seenEmails.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
                 if (seenNumbers.has(normalized.student_number))
-                    rowErrors.student_number = 'student_number_already_exists';
+                    rowErrors.student_number =
+                        ErrorKeys.student_number_already_exists;
 
                 if (Object.keys(rowErrors).length) {
                     errors.push({ row: normalized, errors: rowErrors });
@@ -477,10 +478,13 @@ class StudentController implements IController {
                 }
             }
 
-            if (errors.length && throwInErrorBool) {
-                response.errors = errors;
-                response.summary.errors = errors.length;
-                return res.status(400).json(response).end();
+            if (errors.length) {
+                if (throwInErrorBool) {
+                    response.errors = errors;
+                    response.summary.errors = errors.length;
+                    return res.status(400).json(response).end();
+                }
+                response.errors.push(...errors);
             }
 
             if (!action || !['create', 'update', 'delete'].includes(action)) {

@@ -812,7 +812,9 @@ class ParentController implements IController {
                         if (!emailToId.has(row.email)) {
                             response.errors.push({
                                 row,
-                                errors: { email: 'parent_does_not_exist' },
+                                errors: {
+                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                },
                             });
                             continue;
                         }
@@ -877,7 +879,9 @@ class ParentController implements IController {
                         if (!emailToId.has(row.email)) {
                             response.errors.push({
                                 row,
-                                errors: { email: 'parent_does_not_exist' },
+                                errors: {
+                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                },
                             });
                             continue;
                         }

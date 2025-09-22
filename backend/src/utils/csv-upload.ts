@@ -155,8 +155,6 @@ export function finalizeResponse<T extends CSVRowBase>(
         resp.message = 'csv_processed_successfully';
         resp.success = true;
     }
-    if (resp.errors.length === 0 && resp.summary.processed > 0)
-        resp.success = true;
     return resp;
 }
 

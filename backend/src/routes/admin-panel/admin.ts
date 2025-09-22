@@ -221,9 +221,9 @@ class AdminController implements IController {
                 if (!isValidPhoneNumber(normalized.phone_number))
                     rowErrors.phone_number = ErrorKeys.invalid_phone_number;
                 if (!isValidString(normalized.given_name))
-                    rowErrors.given_name = 'invalid_given_name';
+                    rowErrors.given_name = ErrorKeys.invalid_given_name;
                 if (!isValidString(normalized.family_name))
-                    rowErrors.family_name = 'invalid_family_name';
+                    rowErrors.family_name = ErrorKeys.invalid_family_name;
                 if (emailsInFile.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
 
@@ -235,10 +235,14 @@ class AdminController implements IController {
                 }
             }
 
-            if (errors.length > 0 && throwInErrorBool) {
-                response.errors = errors;
-                response.summary.errors = errors.length;
-                return res.status(400).json(response).end();
+            if (errors.length > 0) {
+                if (throwInErrorBool) {
+                    response.errors = errors;
+                    response.summary.errors = errors.length;
+                    return res.status(400).json(response).end();
+                }
+                // merge validation errors so client can see which rows skipped
+                response.errors.push(...errors);
             }
 
             if (!action || !['create', 'update', 'delete'].includes(action)) {
@@ -268,7 +272,7 @@ class AdminController implements IController {
                     if (existingEmailSet.has(row.email)) {
                         response.errors.push({
                             row,
-                            errors: { email: 'admin_already_exists' },
+                            errors: { email: ErrorKeys.admin_already_exists },
                         });
                         continue;
                     }
@@ -290,7 +294,7 @@ class AdminController implements IController {
                     if (!existingEmailSet.has(row.email)) {
                         response.errors.push({
                             row,
-                            errors: { email: 'admin_does_not_exist' },
+                            errors: { email: ErrorKeys.admin_does_not_exist },
                         });
                         continue;
                     }
@@ -313,7 +317,7 @@ class AdminController implements IController {
                     if (!existingEmailSet.has(row.email)) {
                         response.errors.push({
                             row,
-                            errors: { email: 'admin_does_not_exist' },
+                            errors: { email: ErrorKeys.admin_does_not_exist },
                         });
                         continue;
                     }

@@ -164,7 +164,7 @@ class GroupController implements IController {
                     for (const sn of numbers) {
                         if (!isValidStudentNumber(sn)) {
                             rowErrors.student_numbers =
-                                'invalid_student_numbers';
+                                ErrorKeys.invalid_student_numbers;
                             break;
                         }
                     }
@@ -196,10 +196,13 @@ class GroupController implements IController {
                 g.student_numbers = Array.from(new Set(g.student_numbers));
             }
 
-            if (errors.length > 0 && throwInErrorBool) {
-                response.errors = errors;
-                response.summary.errors = errors.length;
-                return res.status(400).json(response).end();
+            if (errors.length > 0) {
+                if (throwInErrorBool) {
+                    response.errors = errors;
+                    response.summary.errors = errors.length;
+                    return res.status(400).json(response).end();
+                }
+                response.errors.push(...errors);
             }
 
             if (!action || !['create', 'update', 'delete'].includes(action)) {
@@ -255,7 +258,8 @@ class GroupController implements IController {
                             response.errors.push({
                                 row: group,
                                 errors: {
-                                    student_numbers: 'invalid_student_numbers',
+                                    student_numbers:
+                                        ErrorKeys.invalid_student_numbers,
                                 },
                             });
                         }
@@ -334,7 +338,8 @@ class GroupController implements IController {
                             response.errors.push({
                                 row: group,
                                 errors: {
-                                    student_numbers: 'invalid_student_numbers',
+                                    student_numbers:
+                                        ErrorKeys.invalid_student_numbers,
                                 },
                             });
                             continue;
