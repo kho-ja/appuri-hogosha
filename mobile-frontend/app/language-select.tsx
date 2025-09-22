@@ -70,11 +70,14 @@ export default function LanguageSelect() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 24,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   innerContainer: {
     gap: 12,
+    width: '90%', // 90% width of the screen 5% padding on each side
   },
   row: {
     flexDirection: 'row',
