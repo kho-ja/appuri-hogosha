@@ -105,6 +105,53 @@ class DatabaseClient {
             this.connection = null;
         }
     }
+
+    // Transaction management methods
+    public async beginTransaction(): Promise<Connection> {
+        const db = (await this.getConnection()) as Connection;
+        await db.beginTransaction();
+        return db;
+    }
+
+    public async commitTransaction(connection: Connection): Promise<void> {
+        await connection.commit();
+    }
+
+    public async rollbackTransaction(connection: Connection): Promise<void> {
+        await connection.rollback();
+    }
+
+    // Transaction-aware query methods
+    public async queryWithConnection(
+        connection: Connection,
+        query: string,
+        params?: any
+    ): Promise<RowDataPacket[] | RowDataPacket[][] | ResultSetHeader | any> {
+        try {
+            const [results] = await connection.query(query, params);
+            return results;
+        } catch (e: any) {
+            console.log('error in queryWithConnection', e);
+            throw e;
+        }
+    }
+
+    public async executeWithConnection(
+        connection: Connection,
+        query: string,
+        params?: any
+    ): Promise<ResultSetHeader> {
+        try {
+            const [results] = await connection.execute<ResultSetHeader>(
+                query,
+                params
+            );
+            return results;
+        } catch (e: any) {
+            console.error('Error in executeWithConnection:', e.message);
+            throw new Error('Database execute failed');
+        }
+    }
 }
 
 export default new DatabaseClient();

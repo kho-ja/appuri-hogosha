@@ -4,7 +4,7 @@ import express, { Response, Router } from 'express';
 import { Parent } from '../../utils/cognito-client';
 import { MockCognitoClient } from '../../utils/mock-cognito-client';
 import DB from '../../utils/db-client';
-import iconv from 'iconv-lite';
+
 import {
     isValidString,
     isValidPhoneNumber,
@@ -15,14 +15,33 @@ import {
 } from '../../utils/validate';
 import process from 'node:process';
 import { generatePaginationLinks, parseKintoneRow } from '../../utils/helper';
-import multer from 'multer';
-import { Readable } from 'node:stream';
-import csv from 'csv-parser';
+// Removed Readable import (not used in shared parsing path)
 import { stringify } from 'csv-stringify/sync';
 import { syncronizePosts } from '../../utils/messageHelper';
+import { Connection } from 'mysql2/promise';
+import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
+import {
+    handleCSVUpload,
+    createBaseResponse,
+    parseCSVBuffer,
+    finalizeResponse,
+    bumpSummary,
+    RowError as GenericRowError,
+    CSVRowBase,
+} from '../../utils/csv-upload';
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Type definitions for better error handling
+interface ParentCSVRow extends CSVRowBase {
+    email: string;
+    phone_number: string;
+    given_name: string;
+    family_name: string;
+    student_numbers: string[];
+}
+
+type ParentRowError = GenericRowError<ParentCSVRow>;
+
+// Removed custom multer setup in favor of shared handleCSVUpload
 
 class ParentController implements IController {
     public router: Router = express.Router();
@@ -48,7 +67,7 @@ class ParentController implements IController {
         this.router.post(
             '/upload',
             verifyToken,
-            upload.single('file'),
+            handleCSVUpload,
             this.uploadParentsFromCSV
         );
         this.router.post(
@@ -621,288 +640,132 @@ class ParentController implements IController {
 
     uploadParentsFromCSV = async (req: ExtendedRequest, res: Response) => {
         const { throwInError, action, withCSV } = req.body;
-        const throwInErrorBool = throwInError === 'true';
+        const throwErrors = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
 
-        const results: any[] = [];
-        const errors: any[] = [];
-        const inserted: any[] = [];
-        const updated: any[] = [];
-        const deleted: any[] = [];
-
-        try {
-            if (!req.file || !req.file.buffer) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Bad Request',
-                        details: 'File is missing or invalid',
-                    })
-                    .end();
-            }
-
-            const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
-
-            const stream = Readable.from(decodedContent);
-            await new Promise((resolve, reject) => {
-                stream
-                    .pipe(csv())
-                    .on('headers', (headers: any) => {
-                        if (headers[0].charCodeAt(0) === 0xfeff) {
-                            headers[0] = headers[0].substring(1);
-                        }
-                    })
-                    .on('data', (data: any) => {
-                        if (
-                            Object.values(data).some(
-                                (value: any) => value.trim() !== ''
-                            )
-                        ) {
-                            results.push(data);
-                        }
-                    })
-                    .on('end', resolve)
-                    .on('error', reject);
-            });
-
-            // Validating the CSV file
-            const validResults: any[] = [];
-            const existingEmailsInCSV: string[] = [];
-            const existingPhoneNumbersInCSV: string[] = [];
-            const existingStudentNumbersInCSV: any = {};
-
-            function addToExistingStudentNumbers(
-                email: string,
-                studentNumber: string
-            ) {
-                existingStudentNumbersInCSV[email] = [
-                    ...(existingStudentNumbersInCSV[email] ?? []),
-                    studentNumber,
-                ];
-            }
-
-            for (const row of results) {
-                const {
-                    email,
-                    phone_number,
-                    given_name,
-                    family_name,
-                    student_numbers,
-                } = row;
-                const rowErrors: any = {};
-
-                // Normalize values
-                const normalizedEmail = String(email).trim();
-                const normalizedPhoneNumber = String(phone_number).trim();
-                const normalizedGivenName = String(given_name).trim();
-                const normalizedFamilyName = String(family_name).trim();
-                const normalizedStudentNumbers = String(student_numbers).trim();
-
-                // Validate fields
-                if (!isValidEmail(normalizedEmail))
-                    rowErrors.email = 'invalid_email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber))
-                    rowErrors.phone_number = 'invalid_phone_number';
-                if (!isValidString(normalizedGivenName))
-                    rowErrors.given_name = 'invalid_given_name';
-                if (!isValidString(normalizedFamilyName))
-                    rowErrors.family_name = 'invalid_family_name';
-                if (!isValidStudentNumber(normalizedStudentNumbers))
-                    rowErrors.student_numbers = 'invalid_student_number';
-
-                // Check for duplicates
-                if (existingEmailsInCSV.includes(normalizedEmail))
-                    rowErrors.email = 'email_already_exists';
-                if (existingPhoneNumbersInCSV.includes(normalizedPhoneNumber))
-                    rowErrors.phone_number = 'phone_number_already_exists';
-                if (
-                    existingStudentNumbersInCSV[normalizedEmail]?.includes(
-                        normalizedStudentNumbers
+        if (!req.file || !req.file.buffer) {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
+        if (!action || !['create', 'update', 'delete'].includes(action)) {
+            return res
+                .status(400)
+                .json(
+                    createErrorResponse(
+                        ErrorKeys.server_error,
+                        'invalid_action'
                     )
-                ) {
-                    rowErrors.student_numbers = 'student_number_already_exists';
-                }
+                )
+                .end();
+        }
 
-                // Handle validation errors
+        const response = createBaseResponse<ParentCSVRow>();
+        let connection: Connection | null = null;
+        try {
+            const rawRows = await parseCSVBuffer(req.file.buffer);
+            if (rawRows.length === 0) {
+                response.message = 'csv_is_empty_but_valid';
+                return res.status(200).json(response).end();
+            }
+
+            // Normalize + validate
+            const seenEmails = new Set<string>();
+            const seenPhones = new Set<string>();
+            const valid: ParentCSVRow[] = [];
+            const errors: ParentRowError[] = [];
+
+            for (const row of rawRows) {
+                const normalized: ParentCSVRow = {
+                    email: String(row.email || '').trim(),
+                    phone_number: String(row.phone_number || '').trim(),
+                    given_name: String(row.given_name || '').trim(),
+                    family_name: String(row.family_name || '').trim(),
+                    student_numbers: String(row.student_numbers || '')
+                        .split(',')
+                        .map((s: string) => s.trim())
+                        .filter(Boolean),
+                };
+                const rowErrors: Record<string, string> = {};
+                if (!isValidEmail(normalized.email))
+                    rowErrors.email = ErrorKeys.invalid_email;
+                if (!isValidPhoneNumber(normalized.phone_number))
+                    rowErrors.phone_number = ErrorKeys.invalid_phone_number;
+                if (!isValidString(normalized.given_name))
+                    rowErrors.given_name = ErrorKeys.invalid_name;
+                if (!isValidString(normalized.family_name))
+                    rowErrors.family_name = ErrorKeys.invalid_name;
+                // validate each student number if present
+                for (const sn of normalized.student_numbers) {
+                    if (!isValidStudentNumber(sn)) {
+                        rowErrors.student_numbers =
+                            ErrorKeys.invalid_student_number;
+                        break;
+                    }
+                }
+                if (seenEmails.has(normalized.email))
+                    rowErrors.email = ErrorKeys.email_already_exists;
+                if (seenPhones.has(normalized.phone_number))
+                    rowErrors.phone_number = ErrorKeys.phone_already_exists;
+
                 if (Object.keys(rowErrors).length > 0) {
-                    handleInvalidRow(
-                        row,
-                        rowErrors,
-                        normalizedEmail,
-                        normalizedPhoneNumber,
-                        normalizedGivenName,
-                        normalizedFamilyName,
-                        normalizedStudentNumbers
-                    );
-                    continue;
-                }
-
-                // Handle valid row
-                handleValidRow(
-                    row,
-                    normalizedEmail,
-                    normalizedPhoneNumber,
-                    normalizedGivenName,
-                    normalizedFamilyName,
-                    normalizedStudentNumbers
-                );
-            }
-
-            // Function to handle invalid rows
-            function handleInvalidRow(
-                row: any,
-                rowErrors: any,
-                email: string,
-                phone: string,
-                givenName: string,
-                familyName: string,
-                studentNumbers: string
-            ) {
-                const existingEntry = validResults.find(
-                    entry =>
-                        entry.email === email &&
-                        entry.phone_number === phone &&
-                        entry.given_name === givenName &&
-                        entry.family_name === familyName
-                );
-
-                if (existingEntry && !rowErrors.student_numbers) {
-                    existingEntry.student_numbers.push(studentNumbers);
-                    addToExistingStudentNumbers(email, studentNumbers);
-                } else if (isCompletelyInvalidExceptStudentNumbers(rowErrors)) {
-                    validResults.at(-1).student_numbers.push(studentNumbers);
-                    addToExistingStudentNumbers(email, studentNumbers);
+                    errors.push({ row: normalized, errors: rowErrors });
                 } else {
-                    addError(row, rowErrors, studentNumbers);
+                    seenEmails.add(normalized.email);
+                    seenPhones.add(normalized.phone_number);
+                    valid.push(normalized);
                 }
             }
 
-            // Function to handle valid rows
-            function handleValidRow(
-                row: any,
-                email: string,
-                phone: string,
-                givenName: string,
-                familyName: string,
-                studentNumbers: string
-            ) {
-                const existingEntry = validResults.find(
-                    entry =>
-                        entry.email === email &&
-                        entry.phone_number === phone &&
-                        entry.given_name === givenName &&
-                        entry.family_name === familyName
-                );
-
-                if (existingEntry) {
-                    existingEntry.student_numbers.push(studentNumbers);
-                    addToExistingStudentNumbers(email, studentNumbers);
-                } else {
-                    validResults.push({
-                        email,
-                        phone_number: phone,
-                        given_name: givenName,
-                        family_name: familyName,
-                        student_numbers: [studentNumbers],
-                    });
-
-                    existingEmailsInCSV.push(email);
-                    existingPhoneNumbersInCSV.push(phone);
-                    addToExistingStudentNumbers(email, studentNumbers);
-                }
+            if (errors.length && throwErrors) {
+                response.errors = errors;
+                response.summary.errors = errors.length;
+                return res.status(400).json(response).end();
             }
 
-            // Helper function to check if row is only invalid due to student numbers
-            function isCompletelyInvalidExceptStudentNumbers(errors: any) {
-                return (
-                    errors.email &&
-                    errors.phone_number &&
-                    errors.given_name &&
-                    errors.family_name &&
-                    !errors.student_numbers
-                );
-            }
+            // Transaction for DB ops
+            connection = await DB.beginTransaction();
 
-            // Function to add row to errors list
-            function addError(
-                row: any,
-                rowErrors: any,
-                studentNumbers: string
-            ) {
-                let existingError = errors.find(
-                    err =>
-                        err.row.email === row.email &&
-                        err.row.phone_number === row.phone_number &&
-                        err.row.given_name === row.given_name &&
-                        err.row.family_name === row.family_name
-                );
-
-                if (existingError) {
-                    existingError.row.student_numbers.push(studentNumbers);
-                } else {
-                    errors.push({
-                        row: { ...row, student_numbers: [studentNumbers] },
-                        errors: { student_numbers: rowErrors.student_numbers },
-                    });
-                }
-            }
-
-            if (errors.length > 0 && throwInErrorBool) {
-                return res.status(400).json({ errors: errors }).end();
-            }
-
-            const emails = validResults.map(row => row.email);
-            if (emails.length === 0) {
-                return res
-                    .status(400)
-                    .json({
-                        errors: errors,
-                        message: 'all_data_invalid',
-                    })
-                    .end();
-            }
-            const phoneNumbers = validResults.map(row => row.phone_number);
-            if (phoneNumbers.length === 0) {
-                return res
-                    .status(400)
-                    .json({
-                        errors: errors,
-                        message: 'all_data_invalid',
-                    })
-                    .end();
-            }
-            const existingParents = await DB.query(
-                'SELECT email,phone_number FROM Parent WHERE email IN (:emails) OR phone_number IN (:phoneNumbers)',
+            // Fetch existing parents (by email & phone)
+            const existing = await DB.queryWithConnection(
+                connection,
+                'SELECT id, email, phone_number FROM Parent WHERE (email IN (:emails) OR phone_number IN (:phones)) AND school_id = :sid',
                 {
-                    emails: emails,
-                    phoneNumbers: phoneNumbers,
+                    emails: valid.map(v => v.email),
+                    phones: valid.map(v => v.phone_number),
+                    sid: req.user.school_id,
                 }
             );
-            const existingEmails = existingParents.map(
-                (parent: any) => parent.email
+            const emailToId = new Map(
+                existing.map((p: any) => [p.email, p.id])
             );
-            const existingPhoneNumbers = existingParents.map(
-                (parent: any) => parent.phone_number
+            const phoneToId = new Map(
+                existing.map((p: any) => [p.phone_number, p.id])
             );
 
-            if (action === 'create') {
-                for (const row of validResults) {
-                    if (existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'parent_email_already_exists ' },
-                        });
-                    } else if (
-                        existingPhoneNumbers.includes(row.phone_number)
-                    ) {
-                        errors.push({
-                            row,
-                            errors: {
-                                phone_number:
-                                    'parent_phone_number_already_exists',
-                            },
-                        });
-                    } else {
+            for (const row of valid) {
+                try {
+                    if (action === 'create') {
+                        if (emailToId.has(row.email)) {
+                            response.errors.push({
+                                row,
+                                errors: {
+                                    email: ErrorKeys.email_already_exists,
+                                },
+                            });
+                            continue;
+                        }
+                        if (phoneToId.has(row.phone_number)) {
+                            response.errors.push({
+                                row,
+                                errors: {
+                                    phone_number:
+                                        ErrorKeys.phone_already_exists,
+                                },
+                            });
+                            continue;
+                        }
                         const phone_number = row.phone_number.startsWith('+')
                             ? row.phone_number
                             : `+${row.phone_number}`;
@@ -911,291 +774,265 @@ class ParentController implements IController {
                             row.email,
                             phone_number
                         );
-                        const parentInsert = await DB.execute(
+                        const insert = await DB.executeWithConnection(
+                            connection,
                             `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
-                            VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`,
+                             VALUES (:cid, :email, :phone, :given, :family, :sid)`,
                             {
-                                cognito_sub_id: parent.sub_id,
+                                cid: parent.sub_id,
                                 email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
-                                school_id: req.user.school_id,
+                                phone: row.phone_number,
+                                given: row.given_name,
+                                family: row.family_name,
+                                sid: req.user.school_id,
                             }
                         );
-
-                        const parentId = parentInsert.insertId;
-                        const attachedStudents: any[] = [];
-                        if (
-                            row.student_numbers &&
-                            Array.isArray(row.student_numbers) &&
-                            row.student_numbers.length > 0
-                        ) {
-                            const studentRows = await DB.query(
-                                `SELECT id
-                                    FROM Student WHERE student_number IN (:student_numbers)
-                                    GROUP BY student_number`,
-                                {
-                                    student_numbers: row.student_numbers,
-                                }
+                        const parentId = insert.insertId;
+                        if (row.student_numbers.length) {
+                            const studs = await DB.queryWithConnection(
+                                connection,
+                                'SELECT id, student_number FROM Student WHERE student_number IN (:sns)',
+                                { sns: row.student_numbers }
                             );
-
-                            if (studentRows.length > 0) {
-                                const values = studentRows
-                                    .map(
-                                        (student: any) =>
-                                            `(${student.id}, ${parentId})`
-                                    )
-                                    .join(', ');
-                                await DB.execute(
+                            if (studs.length) {
+                                const values = studs
+                                    .map((s: any) => `(${s.id}, ${parentId})`)
+                                    .join(',');
+                                await DB.executeWithConnection(
+                                    connection,
                                     `INSERT INTO StudentParent (student_id, parent_id) VALUES ${values}`
                                 );
-
-                                const studentList = await DB.query(
-                                    `SELECT st.id,st.email,st.phone_number,st.given_name,st.family_name
-                                        FROM Student as st
-                                        INNER JOIN StudentParent as sp
-                                        ON sp.student_id = st.id AND sp.parent_id = :parent_id`,
-                                    {
-                                        parent_id: parentId,
-                                    }
-                                );
-
-                                attachedStudents.push(...studentList);
-                            } else {
-                                errors.push({
-                                    row,
-                                    errors: {
-                                        student_numbers:
-                                            'invalid_student_numbers',
-                                    },
-                                });
+                                for (const s of studs) {
+                                    await syncronizePosts(parentId, s.id);
+                                }
                             }
                         }
-
-                        for (const student of attachedStudents) {
-                            await syncronizePosts(parentId, student.id);
+                        response.inserted.push(row);
+                    } else if (action === 'update') {
+                        if (!emailToId.has(row.email)) {
+                            response.errors.push({
+                                row,
+                                errors: { email: 'parent_does_not_exist' },
+                            });
+                            continue;
                         }
-
-                        inserted.push({ ...row, students: attachedStudents });
-                    }
-                }
-            } else if (action === 'update') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'parent_does_not_exist' },
-                        });
-                    } else {
-                        await DB.execute(
-                            `UPDATE Parent SET
-                            phone_number = :phone_number,
-                            given_name = :given_name,
-                            family_name = :family_name
-                        WHERE email = :email`,
+                        const pid = emailToId.get(row.email);
+                        await DB.executeWithConnection(
+                            connection,
+                            `UPDATE Parent SET phone_number = :phone, given_name = :given, family_name = :family WHERE id = :id`,
                             {
-                                email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
+                                phone: row.phone_number,
+                                given: row.given_name,
+                                family: row.family_name,
+                                id: pid,
                             }
                         );
-
-                        const attachedStudents: any[] = [];
-                        if (
-                            row.student_numbers &&
-                            Array.isArray(row.student_numbers)
-                        ) {
-                            const parentId = (
-                                await DB.query(
-                                    `SELECT id FROM Parent WHERE email = :email`,
-                                    {
-                                        email: row.email,
-                                    }
-                                )
-                            )[0].id;
-
-                            const existingStudents = await DB.query(
-                                `SELECT st.id, student_number
-                                FROM StudentParent AS sp
-                                INNER JOIN Student AS st
-                                ON sp.student_id = st.id
-                                WHERE sp.parent_id = :parent_id`,
-                                {
-                                    parent_id: parentId,
-                                }
+                        // Update student relationships (replace set)
+                        const existingStuds = await DB.queryWithConnection(
+                            connection,
+                            'SELECT st.id, st.student_number FROM StudentParent sp INNER JOIN Student st ON sp.student_id = st.id WHERE sp.parent_id = :pid',
+                            { pid }
+                        );
+                        const existingNums = new Set(
+                            existingStuds.map((s: any) => s.student_number)
+                        );
+                        const newTargets = row.student_numbers.filter(
+                            s => !existingNums.has(s)
+                        );
+                        const toRemove = existingStuds.filter(
+                            (s: any) =>
+                                !row.student_numbers.includes(s.student_number)
+                        );
+                        if (toRemove.length) {
+                            await DB.executeWithConnection(
+                                connection,
+                                `DELETE FROM StudentParent WHERE parent_id = :pid AND student_id IN (:ids)`,
+                                { pid, ids: toRemove.map((s: any) => s.id) }
                             );
-                            const futureStudents =
-                                row.student_numbers.length > 0
-                                    ? await DB.query(
-                                          `SELECT id, student_number FROM Student WHERE student_number IN (:student_numbers)`,
-                                          {
-                                              student_numbers:
-                                                  row.student_numbers,
-                                          }
-                                      )
-                                    : [];
-
-                            const deletedStudents = existingStudents.filter(
-                                (existing: any) =>
-                                    !futureStudents.some(
-                                        (future: any) =>
-                                            future.student_number ===
-                                            existing.student_number
-                                    )
+                        }
+                        if (newTargets.length) {
+                            const studs = await DB.queryWithConnection(
+                                connection,
+                                'SELECT id, student_number FROM Student WHERE student_number IN (:sns)',
+                                { sns: newTargets }
                             );
-                            const newStudents = futureStudents.filter(
-                                (future: any) =>
-                                    !existingStudents.some(
-                                        (existing: any) =>
-                                            existing.student_number ===
-                                            future.student_number
-                                    )
-                            );
-
-                            if (deletedStudents.length > 0) {
-                                for (const student of deletedStudents) {
-                                    await DB.execute(
-                                        `DELETE FROM StudentParent WHERE parent_id = :parent_id AND student_id = :student_id`,
-                                        {
-                                            parent_id: parentId,
-                                            student_id: student.id,
-                                        }
+                            if (studs.length) {
+                                const values = studs
+                                    .map((s: any) => `(${s.id}, ${pid})`)
+                                    .join(',');
+                                await DB.executeWithConnection(
+                                    connection,
+                                    `INSERT INTO StudentParent (student_id, parent_id) VALUES ${values}`
+                                );
+                                for (const s of studs) {
+                                    await syncronizePosts(
+                                        pid as number,
+                                        s.id as number
                                     );
                                 }
                             }
-
-                            if (newStudents.length > 0) {
-                                const values = newStudents
-                                    .map(
-                                        (student: any) =>
-                                            `(${student.id}, ${parentId})`
-                                    )
-                                    .join(', ');
-                                await DB.execute(
-                                    `INSERT INTO StudentParent (student_id, parent_id) VALUES ${values}`
-                                );
-                                attachedStudents.push(...newStudents);
-                            }
-
-                            if (
-                                deletedStudents.length <= 0 &&
-                                newStudents.length <= 0 &&
-                                futureStudents.length <= 0
-                            ) {
-                                errors.push({
-                                    row,
-                                    errors: {
-                                        student_numbers:
-                                            'invalid_student_numbers',
-                                    },
-                                });
-                            }
-
-                            for (const student of attachedStudents) {
-                                await syncronizePosts(parentId, student.id);
-                            }
                         }
-
-                        updated.push({ ...row, students: attachedStudents });
-                    }
-                }
-            } else if (action === 'delete') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'parent_does_not_exist' },
-                        });
-                    } else {
+                        response.updated.push(row);
+                    } else if (action === 'delete') {
+                        if (!emailToId.has(row.email)) {
+                            response.errors.push({
+                                row,
+                                errors: { email: 'parent_does_not_exist' },
+                            });
+                            continue;
+                        }
+                        const pid = emailToId.get(row.email);
                         await this.cognitoClient.delete(`+${row.phone_number}`);
-                        await DB.execute(
-                            'DELETE FROM Parent WHERE phone_number = :phone_number AND school_id = :school_id',
-                            {
-                                phone_number: row.phone_number,
-                                school_id: req.user.school_id,
-                            }
+                        await DB.executeWithConnection(
+                            connection,
+                            'DELETE FROM Parent WHERE id = :id AND school_id = :sid',
+                            { id: pid, sid: req.user.school_id }
                         );
-                        deleted.push(row);
+                        response.deleted.push(row);
                     }
-                }
-            } else {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Bad Request',
-                        details: 'Invalid action',
-                    })
-                    .end();
-            }
-
-            if (errors.length > 0) {
-                let csvFile: Buffer | null = null;
-                if (withCSVBool) {
-                    const csvData = errors.map((error: any) => ({
-                        email: error?.row?.email,
-                        phone_number: error?.row?.phone_number,
-                        given_name: error?.row?.given_name,
-                        family_name: error?.row?.family_name,
-                        student_numbers: Array.isArray(
-                            error?.row?.student_numbers
-                        )
-                            ? error?.row?.student_numbers?.join(', ')
-                            : error?.row?.student_numbers,
-                    }));
-                    const csvContent = stringify(csvData, {
-                        header: true,
-                        columns: [
-                            'email',
-                            'phone_number',
-                            'given_name',
-                            'family_name',
-                            'student_numbers',
-                        ],
+                } catch (_) {
+                    void _; // explicitly ignore
+                    response.errors.push({
+                        row,
+                        errors: { general: 'processing_error' },
                     });
-                    // response headers for sending multipart files to send it with json response
-                    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                    res.setHeader(
-                        'Content-Disposition',
-                        'attachment; filename=errors.csv'
-                    );
-
-                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8');
                 }
-
-                return res
-                    .status(400)
-                    .json({
-                        message: 'csv_processed_with_errors',
-                        inserted: inserted,
-                        updated: updated,
-                        deleted: deleted,
-                        errors: errors.length > 0 ? errors : null,
-                        csvFile: csvFile,
-                    })
-                    .end();
             }
+
+            bumpSummary(response, 'inserted');
+            bumpSummary(response, 'updated');
+            bumpSummary(response, 'deleted');
+            response.summary.errors = response.errors.length;
+            finalizeResponse(response, withCSVBool);
+
+            await DB.commitTransaction(connection);
 
             return res
-                .status(200)
-                .json({
-                    message: 'csv_processed_successfully',
-                    inserted: inserted,
-                    updated: updated,
-                    deleted: deleted,
-                })
+                .status(response.errors.length ? 400 : 200)
+                .json(response)
                 .end();
         } catch (e: any) {
+            if (connection) await DB.rollbackTransaction(connection);
             return res
                 .status(500)
-                .json({
-                    error: 'Internal server error',
-                    details: e.message,
-                })
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
                 .end();
         }
     };
+
+    private async attachStudentsToParent(
+        connection: Connection,
+        parentId: number,
+        studentNumbers: string[]
+    ): Promise<any[]> {
+        if (!studentNumbers || studentNumbers.length === 0) {
+            return [];
+        }
+
+        const studentRows = await DB.queryWithConnection(
+            connection,
+            `SELECT id FROM Student WHERE student_number IN (:student_numbers)`,
+            { student_numbers: studentNumbers }
+        );
+
+        if (studentRows.length > 0) {
+            const values = studentRows
+                .map((student: any) => `(${student.id}, ${parentId})`)
+                .join(', ');
+
+            await DB.executeWithConnection(
+                connection,
+                `INSERT INTO StudentParent (student_id, parent_id) VALUES ${values}`
+            );
+
+            // Sync posts for each attached student
+            for (const student of studentRows) {
+                await syncronizePosts(parentId, student.id);
+            }
+
+            return studentRows;
+        }
+
+        return [];
+    }
+
+    private async updateStudentRelationships(
+        connection: Connection,
+        parentId: number,
+        studentNumbers: string[]
+    ): Promise<any[]> {
+        // Get existing students
+        const existingStudents = await DB.queryWithConnection(
+            connection,
+            `SELECT st.id, student_number
+            FROM StudentParent AS sp
+            INNER JOIN Student AS st ON sp.student_id = st.id
+            WHERE sp.parent_id = :parent_id`,
+            { parent_id: parentId }
+        );
+
+        // Get future students
+        const futureStudents =
+            studentNumbers.length > 0
+                ? await DB.queryWithConnection(
+                      connection,
+                      `SELECT id, student_number FROM Student WHERE student_number IN (:student_numbers)`,
+                      { student_numbers: studentNumbers }
+                  )
+                : [];
+
+        // Find students to remove and add
+        const deletedStudents = existingStudents.filter(
+            (existing: any) =>
+                !futureStudents.some(
+                    (future: any) =>
+                        future.student_number === existing.student_number
+                )
+        );
+
+        const newStudents = futureStudents.filter(
+            (future: any) =>
+                !existingStudents.some(
+                    (existing: any) =>
+                        existing.student_number === future.student_number
+                )
+        );
+
+        // Remove students
+        if (deletedStudents.length > 0) {
+            for (const student of deletedStudents) {
+                await DB.executeWithConnection(
+                    connection,
+                    `DELETE FROM StudentParent WHERE parent_id = :parent_id AND student_id = :student_id`,
+                    {
+                        parent_id: parentId,
+                        student_id: student.id,
+                    }
+                );
+            }
+        }
+
+        // Add new students
+        if (newStudents.length > 0) {
+            const values = newStudents
+                .map((student: any) => `(${student.id}, ${parentId})`)
+                .join(', ');
+
+            await DB.executeWithConnection(
+                connection,
+                `INSERT INTO StudentParent (student_id, parent_id) VALUES ${values}`
+            );
+
+            // Sync posts for new students
+            for (const student of newStudents) {
+                await syncronizePosts(parentId, student.id);
+            }
+        }
+
+        return newStudents;
+    }
+
+    // Legacy generateErrorCSV removed; shared utility builds error CSV when needed
 
     changeParentStudents = async (req: ExtendedRequest, res: Response) => {
         try {

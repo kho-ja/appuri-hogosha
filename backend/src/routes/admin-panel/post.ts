@@ -13,14 +13,19 @@ import {
 } from '../../utils/validate';
 import process from 'node:process';
 import { generatePaginationLinks, randomImageName } from '../../utils/helper';
-import multer from 'multer';
-import iconv from 'iconv-lite';
-import { Readable } from 'node:stream';
-import csvParser from 'csv-parser';
 import { stringify } from 'csv-stringify';
+import {
+    createBaseResponse,
+    parseCSVBuffer,
+    finalizeResponse,
+    RowError,
+    CSVRowBase,
+    bumpSummary,
+    handleCSVUpload,
+} from '../../utils/csv-upload';
+import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// CSV upload now uses shared middleware (handleCSVUpload)
 
 class PostController implements IController {
     public router: Router = express.Router();
@@ -35,7 +40,7 @@ class PostController implements IController {
         this.router.post(
             '/upload',
             verifyToken,
-            upload.single('file'),
+            handleCSVUpload,
             this.uploadPostsFromCSV
         );
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
@@ -90,289 +95,111 @@ class PostController implements IController {
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
 
-        const results: any[] = [];
-        const errors: any[] = [];
-        const inserted: any[] = [];
+        if (!req.file || !req.file.buffer) {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
 
+        const response = createBaseResponse<any>();
         try {
-            if (!req.file || !req.file.buffer) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Bad Request',
-                        details: 'File is missing or invalid',
-                    })
-                    .end();
+            const rawRows = await parseCSVBuffer(req.file.buffer);
+            if (rawRows.length === 0) {
+                response.message = 'csv_is_empty_but_valid';
+                return res.status(200).json(response).end();
             }
 
-            const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
-            const stream = Readable.from(decodedContent);
+            // Validate & normalize, merging rows with same title/description/priority
+            interface PostRow extends CSVRowBase {
+                title: string;
+                description: string;
+                priority: string;
+                group_names: string[];
+                student_numbers: string[];
+            }
+            const mergedMap: Map<string, PostRow> = new Map();
+            const errors: RowError<PostRow>[] = [];
 
-            let csvHeaders: string[] = [];
+            const keyFor = (t: string, d: string, p: string) =>
+                `${t}||${d}||${p}`;
 
-            await new Promise((resolve, reject) => {
-                stream
-                    .pipe(csvParser())
-                    .on('headers', (headers: any) => {
-                        if (
-                            headers.length > 0 &&
-                            headers[0].charCodeAt(0) === 0xfeff
-                        ) {
-                            headers[0] = headers[0].slice(1);
+            for (const row of rawRows) {
+                const norm = {
+                    title: String(row.title || '').trim(),
+                    description: String(row.description || '').trim(),
+                    priority: String(row.priority || '').trim(),
+                    group_names: String(row.group_names || '')
+                        .split(',')
+                        .map((g: string) => g.trim())
+                        .filter(Boolean),
+                    student_numbers: String(row.student_numbers || '')
+                        .split(',')
+                        .map((s: string) => s.trim())
+                        .filter(Boolean),
+                } as PostRow;
+
+                const rowErrors: Record<string, string> = {};
+                if (!isValidString(norm.title))
+                    rowErrors.title = ErrorKeys.invalid_title;
+                if (!isValidString(norm.description))
+                    rowErrors.description = ErrorKeys.invalid_description;
+                if (!isValidPriority(norm.priority))
+                    rowErrors.priority = ErrorKeys.invalid_priority;
+
+                if (norm.group_names.length) {
+                    for (const gn of norm.group_names) {
+                        if (!isValidString(gn)) {
+                            rowErrors.group_names =
+                                ErrorKeys.invalid_group_names;
+
+                            break;
                         }
-                        csvHeaders = headers.map((header: string) =>
-                            header.trim()
-                        );
-                    })
-                    .on('data', (data: any) => {
-                        if (
-                            Object.values(data).some(
-                                (value: any) => value.trim() !== ''
-                            )
-                        ) {
-                            results.push(data);
-                        }
-                    })
-                    .on('end', resolve)
-                    .on('error', reject);
-            });
-
-            const requiredHeaders = [
-                'title',
-                'description',
-                'priority',
-                'group_names',
-                'student_numbers',
-            ];
-
-            const normalize = (str: string | undefined | null) =>
-                (str || '').trim().toLowerCase();
-
-            const csvHeadersNorm = csvHeaders.map(normalize);
-            const requiredHeadersNorm = requiredHeaders.map(normalize);
-
-            const missingHeaders = requiredHeadersNorm.filter(
-                header => !csvHeadersNorm.includes(header)
-            );
-
-            if (missingHeaders.length > 0) {
-                return res.status(400).json({
-                    error: 'missing_required_headers',
-                    details: 'Missing required headers',
-                    missingHeaders: missingHeaders,
-                    receivedHeaders: csvHeaders,
-                });
-            }
-
-            if (!results || results.length === 0) {
-                return res.status(200).json({
-                    message: 'csv_is_empty_but_valid',
-                    details: 'CSV file contains valid headers but no data rows',
-                    inserted: [],
-                    results: [],
-                });
-            }
-
-            const validResults: any[] = [];
-            const existingTitlesInCSV: any = [];
-
-            for (const row of results) {
-                const {
-                    title,
-                    description,
-                    priority,
-                    group_names,
-                    student_numbers,
-                } = row;
-                const rowErrors: any = {};
-
-                // Normalize fields
-                const normalizedTitle = String(title).trim();
-                const normalizedDescription = String(description).trim();
-                const normalizedPriority = String(priority).trim();
-                const normalizedGroupNames = String(group_names).trim();
-                const normalizedStudentNumbers = String(student_numbers).trim();
-
-                // Split comma-separated values into arrays
-                const groupNamesArray = normalizedGroupNames
-                    .split(',')
-                    .map(g => g.trim())
-                    .filter(Boolean);
-                const studentNumbersArray = normalizedStudentNumbers
-                    .split(',')
-                    .map(s => s.trim())
-                    .filter(Boolean);
-
-                // Validate fields (assuming these helper functions exist)
-                if (!isValidString(normalizedTitle))
-                    rowErrors.title = 'invalid_title';
-                if (!isValidString(normalizedDescription))
-                    rowErrors.description = 'invalid_description';
-                if (!isValidPriority(normalizedPriority))
-                    rowErrors.priority = 'invalid_priority';
-
-                // Validate each group name
-                for (const gn of groupNamesArray) {
-                    if (!isValidString(gn))
-                        rowErrors.group_names = 'invalid_group_names';
+                    }
                 }
+                if (norm.student_numbers.length) {
+                    for (const sn of norm.student_numbers) {
+                        if (!isValidStudentNumber(sn)) {
+                            rowErrors.student_numbers =
+                                ErrorKeys.invalid_student_numbers;
 
-                // Validate each student number
-                for (const sn of studentNumbersArray) {
-                    if (!isValidStudentNumber(sn))
-                        rowErrors.student_numbers = 'invalid_student_numbers';
+                            break;
+                        }
+                    }
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
-                    handleInvalidPost(
-                        row,
-                        rowErrors,
-                        normalizedTitle,
-                        normalizedDescription,
-                        normalizedPriority,
-                        groupNamesArray,
-                        studentNumbersArray
-                    );
+                    errors.push({ row: norm, errors: rowErrors });
                     continue;
                 }
 
-                handleValidPost(
-                    row,
-                    normalizedTitle,
-                    normalizedDescription,
-                    normalizedPriority,
-                    groupNamesArray,
-                    studentNumbersArray
-                );
-            }
-
-            function handleInvalidPost(
-                row: any,
-                rowErrors: any,
-                title: string,
-                description: string,
-                priority: string,
-                groupNamesArray: string[],
-                studentNumbersArray: string[]
-            ) {
-                // Find an existing valid post by matching title, description, and priority
-                const existingPost = validResults.find(
-                    post =>
-                        post.title === title &&
-                        post.description === description &&
-                        post.priority === priority
-                );
-
-                if (
-                    existingPost &&
-                    !rowErrors.student_numbers &&
-                    !rowErrors.group_names
-                ) {
-                    // Merge arrays into existing post
-                    existingPost.student_numbers.push(...studentNumbersArray);
-                    existingPost.group_names.push(...groupNamesArray);
-                } else if (isCompletelyInvalidExceptArrays(rowErrors)) {
-                    // If only the arrays are valid, merge into the last valid post
-                    validResults
-                        .at(-1)
-                        .student_numbers.push(...studentNumbersArray);
-                    validResults.at(-1).group_names.push(...groupNamesArray);
+                const key = keyFor(norm.title, norm.description, norm.priority);
+                if (!mergedMap.has(key)) {
+                    mergedMap.set(key, { ...norm });
                 } else {
-                    addErrorPost(
-                        row,
-                        rowErrors,
-                        groupNamesArray,
-                        studentNumbersArray
-                    );
+                    const existing = mergedMap.get(key)!;
+                    existing.group_names.push(...norm.group_names);
+                    existing.student_numbers.push(...norm.student_numbers);
                 }
-            }
-
-            function handleValidPost(
-                row: any,
-                title: string,
-                description: string,
-                priority: string,
-                groupNamesArray: string[],
-                studentNumbersArray: string[]
-            ) {
-                const existingPost = validResults.find(
-                    post =>
-                        post.title === title &&
-                        post.description === description &&
-                        post.priority === priority
-                );
-
-                if (existingPost) {
-                    existingPost.student_numbers.push(...studentNumbersArray);
-                    existingPost.group_names.push(...groupNamesArray);
-                } else {
-                    validResults.push({
-                        title,
-                        description,
-                        priority,
-                        group_names: groupNamesArray,
-                        student_numbers: studentNumbersArray,
-                    });
-                    existingTitlesInCSV.push(title);
-                }
-            }
-
-            // Checks if only the array fields (group_names and student_numbers) are valid
-            function isCompletelyInvalidExceptArrays(errors: any) {
-                return (
-                    (errors.title && errors.description && errors.priority) ||
-                    !errors.group_names ||
-                    !errors.student_numbers
-                );
-            }
-
-            function addErrorPost(
-                row: any,
-                rowErrors: any,
-                groupNamesArray: string[],
-                studentNumbersArray: string[]
-            ) {
-                let existingError = errors.find(
-                    err =>
-                        err.row.title === row.title &&
-                        err.row.description === row.description &&
-                        err.row.priority === row.priority
-                );
-                if (existingError) {
-                    existingError.row.student_numbers.push(
-                        ...studentNumbersArray
-                    );
-                    existingError.row.group_names.push(...groupNamesArray);
-                } else {
-                    errors.push({
-                        row: {
-                            ...row,
-                            student_numbers: studentNumbersArray,
-                            group_names: groupNamesArray,
-                        },
-                        errors: { ...rowErrors },
-                    });
-                }
-            }
-
-            // delete duplicate group_names and student_numbers
-            for (const post of validResults) {
-                post.group_names = Array.from(new Set(post.group_names));
-                post.student_numbers = Array.from(
-                    new Set(post.student_numbers)
-                );
             }
 
             if (errors.length > 0 && throwInErrorBool) {
-                return res.status(400).json({ errors }).end();
+                response.errors = errors;
+                response.summary.errors = errors.length;
+                return res.status(400).json(response).end();
             }
 
-            // add messages to database
-            for (const post of validResults) {
+            const validPosts = Array.from(mergedMap.values()).map(p => ({
+                ...p,
+                group_names: Array.from(new Set(p.group_names)),
+                student_numbers: Array.from(new Set(p.student_numbers)),
+            }));
+
+            // Insert posts & relations
+            for (const post of validPosts) {
                 const postInsert = await DB.execute(
-                    `
-                INSERT INTO Post (title, description, priority, admin_id, school_id)
-                    VALUE (:title, :description, :priority, :admin_id, :school_id);`,
+                    `INSERT INTO Post (title, description, priority, admin_id, school_id)
+                     VALUE (:title, :description, :priority, :admin_id, :school_id);`,
                     {
                         title: post.title,
                         description: post.description,
@@ -381,186 +208,97 @@ class PostController implements IController {
                         school_id: req.user.school_id,
                     }
                 );
-
                 const postId = postInsert.insertId;
 
-                const attachedStudents: any[] = [];
-                if (
-                    post.student_numbers &&
-                    Array.isArray(post.student_numbers) &&
-                    post.student_numbers.length > 0
-                ) {
+                // Attach students by numbers
+                if (post.student_numbers.length) {
                     const studentRows = await DB.query(
-                        `SELECT id
-                        FROM Student WHERE student_number IN (:student_numbers)
-                        GROUP BY student_number`,
-                        {
-                            student_numbers: post.student_numbers,
-                        }
+                        `SELECT id, student_number FROM Student WHERE student_number IN (:student_numbers) GROUP BY student_number`,
+                        { student_numbers: post.student_numbers }
                     );
-                    const studentsToAdd = studentRows.map((e: any) => e.id);
-
-                    for (const studentId of studentsToAdd) {
+                    for (const st of studentRows) {
                         const post_student = await DB.execute(
                             `INSERT INTO PostStudent (post_id, student_id) VALUES (:post_id, :student_id)`,
-                            {
-                                post_id: postId,
-                                student_id: studentId,
-                            }
+                            { post_id: postId, student_id: st.id }
                         );
-
-                        const studentParents = await DB.query(
-                            `SELECT parent_id FROM StudentParent WHERE student_id = :student_id`,
-                            {
-                                student_id: studentId,
-                            }
+                        const parents = await DB.query(
+                            `SELECT parent_id FROM StudentParent WHERE student_id = :sid`,
+                            { sid: st.id }
                         );
-                        if (studentParents.length > 0) {
-                            const studentParentValues = studentParents.map(
-                                (sp: any) =>
-                                    `(${post_student.insertId}, ${sp.parent_id})`
-                            );
+                        if (parents.length) {
+                            const values = parents
+                                .map(
+                                    (p: any) =>
+                                        `(${post_student.insertId}, ${p.parent_id})`
+                                )
+                                .join(',');
                             await DB.execute(
-                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${studentParentValues.join(',')}`
+                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${values}`
                             );
                         }
                     }
-
-                    attachedStudents.push(studentRows);
                 }
 
-                const attachedGroups: any[] = [];
-                if (
-                    post.group_names &&
-                    Array.isArray(post.group_names) &&
-                    post.group_names.length > 0
-                ) {
-                    const groupsList = await DB.query(
-                        `SELECT id FROM StudentGroup WHERE name IN (:group_names)`,
-                        {
-                            group_names: post.group_names,
-                        }
+                // Attach groups by names
+                if (post.group_names.length) {
+                    const groups = await DB.query(
+                        `SELECT id, name FROM StudentGroup WHERE name IN (:names) AND school_id = :sid`,
+                        { names: post.group_names, sid: req.user.school_id }
                     );
-                    const groupsToAdd = groupsList.map((e: any) => e.id);
-
-                    for (const groupId of groupsToAdd) {
-                        const groupMembers = await DB.query(
-                            `SELECT student_id FROM GroupMember WHERE group_id = :group_id`,
-                            {
-                                group_id: groupId,
-                            }
+                    for (const g of groups) {
+                        const members = await DB.query(
+                            `SELECT student_id FROM GroupMember WHERE group_id = :gid`,
+                            { gid: g.id }
                         );
-
-                        if (groupMembers.length <= 0) {
-                            throw {
-                                status: 404,
-                                message: 'group_members_not_found',
-                            };
-                        }
-
-                        for (const member of groupMembers) {
+                        for (const mem of members) {
                             const post_student = await DB.execute(
                                 `INSERT INTO PostStudent (post_id, student_id, group_id) VALUES (:post_id, :student_id, :group_id)`,
                                 {
                                     post_id: postId,
-                                    student_id: member.student_id,
-                                    group_id: groupId,
+                                    student_id: mem.student_id,
+                                    group_id: g.id,
                                 }
                             );
-                            const studentParents = await DB.query(
-                                `SELECT parent_id FROM StudentParent WHERE student_id = :student_id`,
-                                {
-                                    student_id: member.student_id,
-                                }
+                            const parents = await DB.query(
+                                `SELECT parent_id FROM StudentParent WHERE student_id = :sid`,
+                                { sid: mem.student_id }
                             );
-                            if (studentParents.length > 0) {
-                                const studentParentValues = studentParents.map(
-                                    (sp: any) =>
-                                        `(${post_student.insertId}, ${sp.parent_id})`
-                                );
+                            if (parents.length) {
+                                const values = parents
+                                    .map(
+                                        (p: any) =>
+                                            `(${post_student.insertId}, ${p.parent_id})`
+                                    )
+                                    .join(',');
                                 await DB.execute(
-                                    `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${studentParentValues.join(
-                                        ','
-                                    )}`
+                                    `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${values}`
                                 );
                             }
                         }
                     }
                 }
 
-                inserted.push({
-                    ...post,
-                    student_numbers: attachedStudents.map(
-                        e => e.student_number
-                    ),
-                    group_names: attachedGroups,
+                response.inserted.push({
+                    title: post.title,
+                    description: post.description,
+                    priority: post.priority,
+                    group_names: post.group_names,
+                    student_numbers: post.student_numbers,
                 });
             }
 
-            if (errors.length > 0) {
-                let csvFile: Buffer | null = null;
-
-                if (withCSVBool) {
-                    const csvData = errors.map(error => ({
-                        title: error?.row?.title,
-                        description: error?.row?.description,
-                        priority: error?.row?.priority,
-                        student_numbers: Array.isArray(
-                            error?.row?.student_numbers
-                        )
-                            ? error?.row?.student_numbers?.join(', ')
-                            : error?.row?.student_numbers,
-                        group_names: Array.isArray(error?.row?.group_names)
-                            ? error?.row?.group_names?.join(', ')
-                            : error?.row?.group_names,
-                    }));
-                    const csvContent = stringify(csvData, {
-                        header: true,
-                        columns: [
-                            'title',
-                            'description',
-                            'priority',
-                            'student_numbers',
-                            'group_names',
-                        ],
-                    });
-                    // response headers for sending multipart files to send it with json response
-                    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                    res.setHeader(
-                        'Content-Disposition',
-                        'attachment; filename=errors.csv'
-                    );
-
-                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8');
-                }
-
-                return res
-                    .status(400)
-                    .json({
-                        message: 'csv_processed_with_errors',
-                        inserted: inserted,
-                        errors: errors,
-                        results: validResults,
-                        csvFile: csvFile,
-                    })
-                    .end();
-            }
-
+            bumpSummary(response, 'inserted');
+            response.summary.errors = errors.length;
+            response.errors = errors;
+            finalizeResponse(response, withCSVBool);
             return res
-                .status(200)
-                .json({
-                    message: 'csv_processed_successfully',
-                    inserted: inserted,
-                    results: validResults,
-                })
+                .status(errors.length ? 400 : 200)
+                .json(response)
                 .end();
         } catch (e: any) {
             return res
                 .status(500)
-                .json({
-                    error: 'internal_server_error',
-                    details: e.message,
-                })
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
                 .end();
         }
     };

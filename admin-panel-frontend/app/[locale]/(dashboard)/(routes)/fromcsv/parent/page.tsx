@@ -28,7 +28,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { File as FileIcon, Info, Download } from "lucide-react";
+import { File as FileIcon, Info, UploadIcon, Download } from "lucide-react";
 import {
   Select,
   SelectItem,
@@ -55,7 +55,14 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 const formSchema = z.object({
-  csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
+  csvFile: z
+    .instanceof(File)
+    .refine((file) => file.name.endsWith(".csv"), {
+      message: "Only CSV files are allowed",
+    })
+    .refine((file) => file.size <= 10 * 1024 * 1024, {
+      message: "File size must be less than 10MB",
+    }),
   mode: z.enum(["create", "update", "delete"]),
 });
 
@@ -71,7 +78,7 @@ export default function CreateFromCsv() {
       csvFile: undefined,
     },
   });
-  const { mutate, error, isPending } = useFormMutation<{ message: string }>(
+  const { mutate, error, isPending } = useFormMutation<Upload<Parent>>(
     `parent/upload`,
     "POST",
     ["uploadParents"],
@@ -81,11 +88,45 @@ export default function CreateFromCsv() {
           queryKey: ["parents"],
         });
         form.reset();
+
+        // Show success/warning toast based on results
+        if (data.success && data.summary) {
+          const { inserted, updated, deleted, errors } = data.summary;
+          const totalProcessed = inserted + updated + deleted;
+
+          if (errors > 0) {
+            toast({
+              title: t("parentsUploadedWithWarnings"),
+              description: `${totalProcessed} parents processed, ${errors} errors found`,
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: t("parentsUploaded"),
+              description: `${totalProcessed} parents processed successfully`,
+            });
+          }
+        } else {
+          toast({
+            title: t("parentsUploaded"),
+            description: t(data?.message || "Upload completed"),
+          });
+        }
+
+        // Only navigate if no errors or user wants to proceed
+        if (
+          data.success &&
+          (!data.summary?.errors || data.summary.errors === 0)
+        ) {
+          router.push("/parents");
+        }
+      },
+      onError(error) {
         toast({
-          title: t("parentsUploaded"),
-          description: t(data?.message),
+          title: t("uploadFailed"),
+          description: t(error?.message || "wentWrong"),
+          variant: "destructive",
         });
-        router.push("/parents");
       },
     }
   );
@@ -191,8 +232,12 @@ export default function CreateFromCsv() {
               )}
             />
 
-            <Button type="submit" isLoading={isPending}>
-              {t("Upload csv file")}
+            <Button
+              type="submit"
+              isLoading={isPending}
+              icon={<UploadIcon size={16} />}
+            >
+              {isPending ? t("processing") : t("Upload csv file")}
             </Button>
           </form>
         </Form>
@@ -206,7 +251,23 @@ export default function CreateFromCsv() {
         <CardHeader className="flex flex-row justify-between items-center ">
           <div>
             <CardTitle>{t("parentsschema")}</CardTitle>
-            <CardDescription>{t("errorsInParents")}</CardDescription>
+            <CardDescription>
+              {errors?.summary && (
+                <div className="mt-2 space-y-1">
+                  <div>Total records: {errors.summary.total}</div>
+                  <div>Processed: {errors.summary.processed}</div>
+                  <div>Inserted: {errors.summary.inserted}</div>
+                  <div>Updated: {errors.summary.updated}</div>
+                  <div>Deleted: {errors.summary.deleted}</div>
+                  <div className="text-red-500">
+                    Errors: {errors.summary.errors}
+                  </div>
+                </div>
+              )}
+              {errors && errors?.errors?.length > 0 && (
+                <div className="text-red-500 mt-2">{t("errorsInParents")}</div>
+              )}
+            </CardDescription>
           </div>
           <Button
             size="sm"
@@ -215,6 +276,7 @@ export default function CreateFromCsv() {
               errors?.csvFile && download(errors?.csvFile, "errors.csv")
             }
             className="h-7 gap-1 text-sm"
+            disabled={!errors?.csvFile}
           >
             <FileIcon className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only">{t("export")}</span>

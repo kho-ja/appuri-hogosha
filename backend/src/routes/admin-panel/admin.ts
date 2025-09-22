@@ -3,7 +3,6 @@ import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import express, { Response, Router } from 'express';
 import { Admin } from '../../utils/cognito-client';
 import DB from '../../utils/db-client';
-import iconv from 'iconv-lite';
 import {
     isValidEmail,
     isValidId,
@@ -13,13 +12,19 @@ import {
 import process from 'node:process';
 import { generatePaginationLinks } from '../../utils/helper';
 import { MockCognitoClient } from '../../utils/mock-cognito-client';
-import multer from 'multer';
-import { Readable } from 'node:stream';
-import csv from 'csv-parser';
 import { stringify } from 'csv-stringify/sync';
+import {
+    createBaseResponse,
+    parseCSVBuffer,
+    finalizeResponse,
+    RowError,
+    CSVRowBase,
+    bumpSummary,
+    handleCSVUpload,
+} from '../../utils/csv-upload';
+import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// CSV Upload now handled by shared middleware (handleCSVUpload)
 class AdminController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
@@ -36,7 +41,7 @@ class AdminController implements IController {
         this.router.post(
             '/upload',
             verifyToken,
-            upload.single('file'),
+            handleCSVUpload,
             this.uploadAdminsFromCSV
         );
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
@@ -181,243 +186,161 @@ class AdminController implements IController {
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
 
-        const results: any[] = [];
-        const errors: any[] = [];
-        const inserted: any[] = [];
-        const updated: any[] = [];
-        const deleted: any[] = [];
+        if (!req.file || !req.file.buffer) {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
 
+        // Base response container
+        const response = createBaseResponse<any>();
         try {
-            if (!req.file || !req.file.buffer) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Bad Request',
-                        details: 'File is missing or invalid',
-                    })
-                    .end();
+            // Parse CSV
+            const rawRows = await parseCSVBuffer(req.file.buffer);
+            if (rawRows.length === 0) {
+                response.message = 'csv_is_empty_but_valid';
+                return res.status(200).json(response).end();
             }
 
-            const decodedContent = await iconv.decode(req.file.buffer, 'UTF-8');
+            // Validate & normalize
+            const valid: any[] = [];
+            const errors: RowError<CSVRowBase>[] = [];
+            const emailsInFile: Set<string> = new Set();
 
-            const stream = Readable.from(decodedContent);
-            await new Promise((resolve, reject) => {
-                stream
-                    .pipe(csv())
-                    .on('headers', (headers: any) => {
-                        if (headers[0].charCodeAt(0) === 0xfeff) {
-                            headers[0] = headers[0].substring(1);
-                        }
-                    })
-                    .on('data', (data: any) => {
-                        if (
-                            Object.values(data).some(
-                                (value: any) => value.trim() !== ''
-                            )
-                        ) {
-                            results.push(data);
-                        }
-                    })
-                    .on('end', resolve)
-                    .on('error', reject);
-            });
-
-            const validResults: any[] = [];
-            const existingEmailsInCSV: string[] = [];
-            for (const row of results) {
-                const { email, phone_number, given_name, family_name } = row;
-                const rowErrors: any = {};
-                const normalizedEmail = String(email).trim();
-                const normalizedPhoneNumber = String(phone_number).trim();
-                const normalizedGiven = String(given_name).trim();
-                const normalizedFamily = String(family_name).trim();
-
-                if (!isValidEmail(normalizedEmail))
-                    rowErrors.email = 'invalid_email';
-                if (!isValidPhoneNumber(normalizedPhoneNumber))
-                    rowErrors.phone_number = 'invalid_phone_number';
-                if (!isValidString(normalizedGiven))
+            for (const row of rawRows) {
+                const normalized = {
+                    email: String(row.email || '').trim(),
+                    phone_number: String(row.phone_number || '').trim(),
+                    given_name: String(row.given_name || '').trim(),
+                    family_name: String(row.family_name || '').trim(),
+                };
+                const rowErrors: Record<string, string> = {};
+                if (!isValidEmail(normalized.email))
+                    rowErrors.email = ErrorKeys.invalid_email;
+                if (!isValidPhoneNumber(normalized.phone_number))
+                    rowErrors.phone_number = ErrorKeys.invalid_phone_number;
+                if (!isValidString(normalized.given_name))
                     rowErrors.given_name = 'invalid_given_name';
-                if (!isValidString(normalizedFamily))
+                if (!isValidString(normalized.family_name))
                     rowErrors.family_name = 'invalid_family_name';
-                if (existingEmailsInCSV.includes(normalizedEmail)) {
-                    rowErrors.email = 'email_already_exists';
-                }
+                if (emailsInFile.has(normalized.email))
+                    rowErrors.email = ErrorKeys.email_already_exists;
 
                 if (Object.keys(rowErrors).length > 0) {
-                    errors.push({ row, errors: rowErrors });
+                    errors.push({ row: normalized, errors: rowErrors });
                 } else {
-                    row.email = normalizedEmail;
-                    row.phone_number = normalizedPhoneNumber;
-                    row.given_name = normalizedGiven;
-                    row.family_name = normalizedFamily;
-                    existingEmailsInCSV.push(row.email);
-
-                    validResults.push(row);
+                    emailsInFile.add(normalized.email);
+                    valid.push(normalized);
                 }
             }
 
             if (errors.length > 0 && throwInErrorBool) {
-                return res.status(400).json({ errors: errors }).end();
+                response.errors = errors;
+                response.summary.errors = errors.length;
+                return res.status(400).json(response).end();
             }
 
-            const emails = validResults.map(row => row.email);
-            if (emails.length === 0) {
+            if (!action || !['create', 'update', 'delete'].includes(action)) {
                 return res
                     .status(400)
-                    .json({
-                        errors: errors,
-                        message: 'all_data_invalid',
-                    })
+                    .json(
+                        createErrorResponse(
+                            ErrorKeys.server_error,
+                            'invalid_action'
+                        )
+                    )
                     .end();
             }
+
+            // Query existing
             const existingAdmins = await DB.query(
                 'SELECT email FROM Admin WHERE email IN (:emails)',
-                {
-                    emails,
-                }
+                { emails: valid.map(r => r.email) }
             );
-            const existingEmails = existingAdmins.map(
-                (admin: any) => admin.email
+            const existingEmailSet = new Set(
+                existingAdmins.map((a: any) => a.email)
             );
 
-            if (action === 'create') {
-                for (const row of validResults) {
-                    if (existingEmails.includes(row.email)) {
-                        errors.push({
+            // Perform action
+            for (const row of valid) {
+                if (action === 'create') {
+                    if (existingEmailSet.has(row.email)) {
+                        response.errors.push({
                             row,
                             errors: { email: 'admin_already_exists' },
                         });
-                    } else {
-                        const admin = await this.cognitoClient.register(
-                            row.email
-                        );
-                        await DB.execute(
-                            `INSERT INTO Admin(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
-                            VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`,
-                            {
-                                cognito_sub_id: admin.sub_id,
-                                email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
-                                school_id: req.user.school_id,
-                            }
-                        );
-                        inserted.push(row);
+                        continue;
                     }
-                }
-            } else if (action === 'update') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'admin_does_not_exist' },
-                        });
-                    } else {
-                        await DB.execute(
-                            `UPDATE Admin SET
-                        phone_number = :phone_number,
-                        given_name = :given_name,
-                        family_name = :family_name
-                        WHERE email = :email
-                        AND school_id = :school_id`,
-                            {
-                                email: row.email,
-                                phone_number: row.phone_number,
-                                given_name: row.given_name,
-                                family_name: row.family_name,
-                            }
-                        );
-                        updated.push(row);
-                    }
-                }
-            } else if (action === 'delete') {
-                for (const row of validResults) {
-                    if (!existingEmails.includes(row.email)) {
-                        errors.push({
-                            row,
-                            errors: { email: 'admin_does_not_exist' },
-                        });
-                    } else {
-                        await this.cognitoClient.delete(row.email);
-                        await DB.execute(
-                            'DELETE FROM Admin WHERE email = :email AND school_id = :school_id',
-                            {
-                                email: row.email,
-                                school_id: req.user.school_id,
-                            }
-                        );
-                        deleted.push(row);
-                    }
-                }
-            } else {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'bad_request',
-                        details: 'invalid_action',
-                    })
-                    .end();
-            }
-
-            if (errors.length > 0) {
-                let csvFile: Buffer | null = null;
-                if (withCSVBool) {
-                    const csvData = errors.map((error: any) => ({
-                        email: error?.row?.email,
-                        phone_number: error?.row?.phone_number,
-                        given_name: error?.row?.given_name,
-                        family_name: error?.row?.family_name,
-                    }));
-                    const csvContent = stringify(csvData, {
-                        header: true,
-                        columns: [
-                            'email',
-                            'phone_number',
-                            'given_name',
-                            'family_name',
-                        ],
-                    });
-                    // response headers for sending multipart files to send it with json response
-                    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-                    res.setHeader(
-                        'Content-Disposition',
-                        'attachment; filename=errors.csv'
+                    const admin = await this.cognitoClient.register(row.email);
+                    await DB.execute(
+                        `INSERT INTO Admin(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
+                        VALUE (:cognito_sub_id, :email, :phone_number, :given_name, :family_name, :school_id);`,
+                        {
+                            cognito_sub_id: admin.sub_id,
+                            email: row.email,
+                            phone_number: row.phone_number,
+                            given_name: row.given_name,
+                            family_name: row.family_name,
+                            school_id: req.user.school_id,
+                        }
                     );
-
-                    csvFile = Buffer.from('\uFEFF' + csvContent, 'utf-8');
+                    response.inserted.push(row);
+                } else if (action === 'update') {
+                    if (!existingEmailSet.has(row.email)) {
+                        response.errors.push({
+                            row,
+                            errors: { email: 'admin_does_not_exist' },
+                        });
+                        continue;
+                    }
+                    await DB.execute(
+                        `UPDATE Admin SET
+                            phone_number = :phone_number,
+                            given_name = :given_name,
+                            family_name = :family_name
+                         WHERE email = :email AND school_id = :school_id`,
+                        {
+                            email: row.email,
+                            phone_number: row.phone_number,
+                            given_name: row.given_name,
+                            family_name: row.family_name,
+                            school_id: req.user.school_id,
+                        }
+                    );
+                    response.updated.push(row);
+                } else if (action === 'delete') {
+                    if (!existingEmailSet.has(row.email)) {
+                        response.errors.push({
+                            row,
+                            errors: { email: 'admin_does_not_exist' },
+                        });
+                        continue;
+                    }
+                    await this.cognitoClient.delete(row.email);
+                    await DB.execute(
+                        'DELETE FROM Admin WHERE email = :email AND school_id = :school_id',
+                        { email: row.email, school_id: req.user.school_id }
+                    );
+                    response.deleted.push(row);
                 }
-
-                return res
-                    .status(400)
-                    .json({
-                        message: 'csv_processed_with_errors',
-                        inserted: inserted,
-                        updated: updated,
-                        deleted: deleted,
-                        errors: errors.length > 0 ? errors : null,
-                        csvFile: csvFile,
-                    })
-                    .end();
             }
 
+            // Update summary counts
+            bumpSummary(response, 'inserted');
+            bumpSummary(response, 'updated');
+            bumpSummary(response, 'deleted');
+            response.summary.errors = response.errors.length;
+
+            finalizeResponse(response, withCSVBool);
             return res
-                .status(200)
-                .json({
-                    message: 'csv_processed_successfully',
-                    inserted: inserted,
-                    updated: updated,
-                    deleted: deleted,
-                })
+                .status(response.errors.length ? 400 : 200)
+                .json(response)
                 .end();
         } catch (e: any) {
             return res
                 .status(500)
-                .json({
-                    error: 'internal_server_error',
-                    details: e.message,
-                })
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
                 .end();
         }
     };
