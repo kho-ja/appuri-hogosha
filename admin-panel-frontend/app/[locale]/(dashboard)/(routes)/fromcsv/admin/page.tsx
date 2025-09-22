@@ -105,7 +105,19 @@ export default function CreateFromCsv() {
   const { mutate: downloadTemplate, isPending: isDownloading } =
     useFileMutation<Blob>("admin/template", ["downloadTemplate"]);
 
-  const errors = (error?.body ?? []) as Upload<Admin>;
+  // Safely derive structured CSV upload result from possible error body shape
+  let errors: Upload<Admin> | null = null;
+  if (error?.body && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if (
+      Array.isArray(body?.errors) &&
+      Array.isArray(body?.inserted) &&
+      Array.isArray(body?.updated) &&
+      Array.isArray(body?.deleted)
+    ) {
+      errors = body as unknown as Upload<Admin>;
+    }
+  }
 
   return (
     <main className="space-y-4">
@@ -200,7 +212,7 @@ export default function CreateFromCsv() {
             size="sm"
             variant="outline"
             onClick={() =>
-              errors?.csvFile && download(errors?.csvFile, "errors.csv")
+              errors?.csvFile && download(errors.csvFile, "errors.csv")
             }
             className="h-7 gap-1 text-sm"
           >
@@ -219,20 +231,21 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
-                errors.errors.map((error, index) => (
+              {errors?.errors &&
+                errors.errors.length > 0 &&
+                errors.errors.map((csvError, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      <ErrorCell name="email" error={error} />
+                      <ErrorCell name="email" error={csvError} />
                     </TableCell>
                     <TableCell>
-                      <ErrorCell name="given_name" error={error} />
+                      <ErrorCell name="given_name" error={csvError} />
                     </TableCell>
                     <TableCell>
-                      <ErrorCell name="family_name" error={error} />
+                      <ErrorCell name="family_name" error={csvError} />
                     </TableCell>
                     <TableCell>
-                      <ErrorCell name="phone_number" error={error} />
+                      <ErrorCell name="phone_number" error={csvError} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -240,7 +253,6 @@ export default function CreateFromCsv() {
           </Table>
         </CardContent>
       </Card>
-
       {errors && (
         <div>
           {errors.inserted?.length > 0 && (

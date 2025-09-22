@@ -105,7 +105,19 @@ export default function CreateFromCsv() {
   const { mutate: downloadTemplate, isPending: isDownloading } =
     useFileMutation<Blob>("group/template", ["downloadTemplate"]);
 
-  const errors = (error?.body ?? []) as Upload<Group>;
+  // Safely derive structured CSV upload result from possible error body shape
+  let errors: Upload<Group> | null = null;
+  if (error?.body && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if (
+      Array.isArray(body?.errors) &&
+      Array.isArray(body?.inserted) &&
+      Array.isArray(body?.updated) &&
+      Array.isArray(body?.deleted)
+    ) {
+      errors = body as unknown as Upload<Group>;
+    }
+  }
 
   return (
     <main className="space-y-4">
@@ -217,7 +229,8 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
+              {errors?.errors &&
+                errors.errors.length > 0 &&
                 errors.errors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>
