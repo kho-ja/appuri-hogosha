@@ -38,7 +38,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (credentials?.accessToken && !credentials?.password) {
             // This is an OAuth callback, we already have the tokens
             // Try using userJson first; if missing, get user info using the access token
-            const backendUrl = process.env.BACKEND_URL || "http://localhost:3001/admin-panel";
+            const backendUrl =
+              process.env.BACKEND_URL || "http://localhost:3001/admin-panel";
             if (credentials.userJson) {
               const parsed = JSON.parse(credentials.userJson as string);
               return {
@@ -54,11 +55,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             const userInfoResponse = await fetch(`${backendUrl}/user-info`, {
               headers: {
-                'Authorization': `Bearer ${credentials.accessToken}`,
-                'Content-Type': 'application/json'
-              }
+                Authorization: `Bearer ${credentials.accessToken}`,
+                "Content-Type": "application/json",
+              },
             });
-            
+
             if (userInfoResponse.ok) {
               const userData = await userInfoResponse.json();
               return {
@@ -71,7 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 schoolName: userData.school_name,
               };
             } else {
-              console.error('Failed to get user info with access token');
+              console.error("Failed to get user info with access token");
               return null;
             }
           }

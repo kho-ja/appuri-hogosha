@@ -8,7 +8,7 @@ export default function useFormMutation<T>(
   mutationUrl: string,
   method: string,
   mutationKey: unknown[],
-  options: MutationOptions<T, HttpError, any> = {}
+  options: MutationOptions<T, HttpError, FormData> = {}
 ) {
   const { data: session } = useSession();
   const t = useTranslations("errors");

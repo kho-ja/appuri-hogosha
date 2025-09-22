@@ -27,18 +27,13 @@ const permissionsData = [
       "View Messages",
       "Send Messages",
       "Delete Messages",
-      "Edit Messages"
-    ]
+      "Edit Messages",
+    ],
   },
   {
     id: "forms-actions",
     label: "Forms Actions",
-    permissions: [
-      "View Forms",
-      "Submit Forms",
-      "Edit Forms",
-      "Delete Forms"
-    ]
+    permissions: ["View Forms", "Submit Forms", "Edit Forms", "Delete Forms"],
   },
   {
     id: "parents-actions",
@@ -47,8 +42,8 @@ const permissionsData = [
       "View Parent Information",
       "Add Parent Information",
       "Edit Parent Information",
-      "Delete Parent Information"
-    ]
+      "Delete Parent Information",
+    ],
   },
   {
     id: "group-actions",
@@ -57,8 +52,8 @@ const permissionsData = [
       "View Groups",
       "Create Groups",
       "Edit Groups",
-      "Delete Groups"
-    ]
+      "Delete Groups",
+    ],
   },
   {
     id: "admin-actions",
@@ -67,8 +62,8 @@ const permissionsData = [
       "View Admin Dashboard",
       "Manage Users",
       "Manage Settings",
-      "Generate Reports"
-    ]
+      "Generate Reports",
+    ],
   },
   {
     id: "student-actions",
@@ -77,9 +72,9 @@ const permissionsData = [
       "View Student Information",
       "Add Student Information",
       "Edit Student Information",
-      "Delete Student Information"
-    ]
-  }
+      "Delete Student Information",
+    ],
+  },
 ];
 
 export default function Permissions() {
@@ -142,35 +137,34 @@ export default function Permissions() {
         <div className="w-full p-4">
           <Label htmlFor="permissions">{t("permissions")}</Label>
           {permissionsData.map((permission) => (
-              <Accordion key={permission.id} type="single" collapsible>
-                <AccordionItem value={permission.id}>
-                  <AccordionTrigger>
-                    <div className="gap-2.5 flex">
-                      <Checkbox id={`checkbox-${permission.id}`} />
-                      <Label htmlFor={`checkbox-${permission.id}`}>
-                        {t(permission.label)}
-                      </Label>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {permission.permissions.map((perm, index) => (
-                          <div
-                              key={`${permission.id}-${index}`}
-                              className="flex items-center gap-2"
-                          >
-                            <Checkbox id={`checkbox-${permission.id}-${index}`} />
-                            <Label htmlFor={`checkbox-${permission.id}-${index}`}>
-                              {t(perm)}
-                            </Label>
-                          </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+            <Accordion key={permission.id} type="single" collapsible>
+              <AccordionItem value={permission.id}>
+                <AccordionTrigger>
+                  <div className="gap-2.5 flex">
+                    <Checkbox id={`checkbox-${permission.id}`} />
+                    <Label htmlFor={`checkbox-${permission.id}`}>
+                      {t(permission.label)}
+                    </Label>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {permission.permissions.map((perm, index) => (
+                      <div
+                        key={`${permission.id}-${index}`}
+                        className="flex items-center gap-2"
+                      >
+                        <Checkbox id={`checkbox-${permission.id}-${index}`} />
+                        <Label htmlFor={`checkbox-${permission.id}-${index}`}>
+                          {t(perm)}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           ))}
-
         </div>
       </div>
     </div>

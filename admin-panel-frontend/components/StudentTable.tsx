@@ -27,7 +27,6 @@ import { Trash2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
-import useApiQuery from "@/lib/useApiQuery";
 import useApiPostQuery from "@/lib/useApiPostQuery";
 
 export function StudentTable({
@@ -123,7 +122,9 @@ export function StudentTable({
       },
       {
         accessorKey: "email",
-        header: ({ column }) => <div className="text-left">{t("email")}</div>,
+        header: ({ column: _column }) => (
+          <div className="text-left">{t("email")}</div>
+        ),
         cell: ({ row }) => (
           <div className="lowercase">{row.getValue("email")}</div>
         ),

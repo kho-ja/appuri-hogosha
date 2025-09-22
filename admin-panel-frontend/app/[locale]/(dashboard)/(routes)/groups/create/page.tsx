@@ -43,7 +43,11 @@ export default function CreateGroup() {
     },
   });
 
-  const { isPending, mutate } = useApiMutation<{ group: Group }>(
+  interface CreateGroupPayload {
+    name: string;
+    students: number[];
+  }
+  const { mutate } = useApiMutation<{ group: Group }, CreateGroupPayload>(
     `group/create`,
     "POST",
     ["createGroup"],
@@ -76,21 +80,21 @@ export default function CreateGroup() {
   return (
     <div className="flex flex-col">
       <PageHeader title={t("CreateGroup")} variant="create">
-          <Link href="/fromcsv/group">
-            <Button variant={"secondary"}>
-              <div className="bg-gray-200 p-1 rounded-sm mr-2">
-                <svg
-                  className="w-4 h-4 text-gray-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
-                </svg>
-              </div>
-              {t("createGroupfromCSV")}
-            </Button>
-          </Link>
-          <BackButton href={`/groups`} />
+        <Link href="/fromcsv/group">
+          <Button variant={"secondary"}>
+            <div className="bg-gray-200 p-1 rounded-sm mr-2">
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M4 4h8l2 2h2a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1zm4 9V9H7v4h2zm2 0V9h1v4h-1zm3-4h1v2.5L14 9zM5 6v8h10V6H5z" />
+              </svg>
+            </div>
+            {t("createGroupfromCSV")}
+          </Button>
+        </Link>
+        <BackButton href={`/groups`} />
       </PageHeader>
       <div className="w-full mt-8">
         <Form {...form}>
@@ -98,9 +102,9 @@ export default function CreateGroup() {
             className="space-y-4"
             onSubmit={form.handleSubmit((data) =>
               mutate({
-                ...data,
+                name: data.name,
                 students: selectedStudents.map((student) => student.id),
-              } as any)
+              })
             )}
           >
             <FormField
@@ -127,7 +131,9 @@ export default function CreateGroup() {
               </FormControl>
             </FormItem>
 
-            <Button icon={<Save className="h-5 w-5" />}>{t("CreateGroup")}</Button>
+            <Button icon={<Save className="h-5 w-5" />}>
+              {t("CreateGroup")}
+            </Button>
           </form>
         </Form>
       </div>

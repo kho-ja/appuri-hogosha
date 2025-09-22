@@ -1,0 +1,42 @@
+# Dependencies
+node_modules
+
+# Build output
+.next
+out
+build
+dist
+
+# Environment files
+.env*
+
+# Logs
+*.log
+
+# Database files
+*.sql
+*.db
+*.sqlite
+
+# Cache directories
+.cache
+.parcel-cache
+
+# Temporary folders
+tmp
+temp
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

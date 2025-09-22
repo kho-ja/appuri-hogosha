@@ -7,4 +7,3 @@ type SMSApi = {
 };
 
 export default SMSApi;
-

@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:ui": "prettier --write components/ui/**/*.tsx && eslint components/ui/**/*.tsx --fix",
+    "check:ui": "prettier --check components/ui/**/*.tsx && eslint components/ui/**/*.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -60,9 +65,13 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-linkify": "^1.0.4",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "postcss": "^8",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },

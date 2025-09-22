@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ParentTable } from "@/components/ParentTable";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
@@ -50,7 +50,7 @@ export default function EditParents({
     <div>
       <PageHeader title={t("editStudentParents")}>
         <BackButton href={`/students/${studentId}`} />
-      </PageHeader> 
+      </PageHeader>
       <form
         onSubmit={(event) => {
           event.preventDefault();

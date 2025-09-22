@@ -59,11 +59,11 @@ export default function ThisGroup({
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("GroupView")} >
-          <BackButton href={`/groups`} />
-          <Link href={`/groups/edit/${groupId}`}>
-            <Button>{t("editGroup")}</Button>
-          </Link>
+      <PageHeader title={t("GroupView")}>
+        <BackButton href={`/groups`} />
+        <Link href={`/groups/edit/${groupId}`}>
+          <Button>{t("editGroup")}</Button>
+        </Link>
       </PageHeader>
       <Card className="space-y-4">
         <CardHeader>

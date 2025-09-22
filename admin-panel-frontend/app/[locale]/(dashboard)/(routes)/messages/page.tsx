@@ -15,13 +15,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogContent,
   DialogClose,
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -39,6 +38,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import ScheduledPost from "@/types/scheduledPost";
+import pagination from "@/types/pagination";
 import { FormatDateTime } from "@/lib/utils";
 
 export default function Info() {
@@ -63,12 +63,15 @@ export default function Info() {
     `post/list?page=${page}&text=${search}&perPage=${perPage}`,
     ["posts", page, search, perPage]
   );
-  const { data: scheduledPosts } = useApiQuery<any>(
+  interface ScheduledPostsResponse {
+    scheduledPosts: ScheduledPost[];
+    pagination: pagination;
+  }
+  const { data: scheduledPosts } = useApiQuery<ScheduledPostsResponse>(
     `schedule/list?page=${page}&text=${search}&perPage=${perPage}`,
     ["scheduledPosts", page, search, perPage]
   );
 
-  const [postId, setPostId] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const deleteMultiple = useApiMutation<
@@ -151,42 +154,12 @@ export default function Info() {
     );
   };
 
-  const isIndeterminate = () => {
-    const currentPagePosts = data?.posts?.map((post) => post.id) || [];
-    const selectedCount = currentPagePosts.filter((id) =>
-      selectedPosts.includes(id)
-    ).length;
-    return selectedCount > 0 && selectedCount < currentPagePosts.length;
-  };
-
-  const isIndeterminateScheduled = () => {
-    const currentPagePosts =
-      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
-      [];
-    const selectedCount = currentPagePosts.filter((id: number) =>
-      selectedScheduledPosts.includes(id)
-    ).length;
-    return selectedCount > 0 && selectedCount < currentPagePosts.length;
-  };
-
   const postColumns: ColumnDef<Post>[] = [
     {
       accessorKey: "select",
       header: () => {
-        const checkboxRef = useRef<HTMLButtonElement>(null);
-
-        useEffect(() => {
-          if (checkboxRef.current) {
-            const input = checkboxRef.current.querySelector("input");
-            if (input) {
-              input.indeterminate = isIndeterminate();
-            }
-          }
-        }, [data, selectedPosts, page]);
-
         return (
           <Checkbox
-            ref={checkboxRef}
             checked={isAllSelected()}
             onCheckedChange={(checked) =>
               handleSelectAllChange(Boolean(checked))
@@ -254,24 +227,12 @@ export default function Info() {
     },
   ];
 
-  const schedulesPostColumns: ColumnDef<Post>[] = [
+  const schedulesPostColumns: ColumnDef<ScheduledPost>[] = [
     {
       accessorKey: "select",
       header: () => {
-        const checkboxRef = useRef<HTMLButtonElement>(null);
-
-        useEffect(() => {
-          if (checkboxRef.current) {
-            const input = checkboxRef.current.querySelector("input");
-            if (input) {
-              input.indeterminate = isIndeterminateScheduled();
-            }
-          }
-        }, [scheduledPosts, selectedScheduledPosts, page]);
-
         return (
           <Checkbox
-            ref={checkboxRef}
             checked={isAllSelectedScheduled()}
             onCheckedChange={(checked) =>
               handleSelectAllChangeScheduled(Boolean(checked))
@@ -314,11 +275,6 @@ export default function Info() {
           {row.getValue("description")}
         </div>
       ),
-    },
-    {
-      accessorKey: "admin_name",
-      header: t("Admin_name"),
-      cell: ({ row }) => tName("name", { ...row?.original?.admin }),
     },
     {
       accessorKey: "priority",
@@ -376,25 +332,27 @@ export default function Info() {
                 <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
               </DialogHeader>
               <div className="max-h-48 overflow-auto border rounded p-2 my-4">
-                {(tab === "messages"
-                  ? data?.posts
-                  : scheduledPosts?.scheduledPosts
-                )
-                  ?.filter((post: ScheduledPost) =>
-                    (tab === "messages"
+                {(() => {
+                  const list =
+                    tab === "messages"
+                      ? (data?.posts ?? [])
+                      : (scheduledPosts?.scheduledPosts ?? []);
+                  const selectedIds =
+                    tab === "messages"
                       ? allSelectedIds
-                      : selectedScheduledPosts
-                    ).includes(post.id)
-                  )
-                  .map((post: ScheduledPost) => (
-                    <div
-                      key={post.id}
-                      className="py-1 border-b last:border-b-0 flex justify-between"
-                    >
-                      <span>{post.title}</span>
-                      <Trash2 className="inline-block mr-2 text-red-600" />
-                    </div>
-                  ))}
+                      : selectedScheduledPosts;
+                  return list
+                    .filter((post) => selectedIds.includes(post.id))
+                    .map((post) => (
+                      <div
+                        key={post.id}
+                        className="py-1 border-b last:border-b-0 flex justify-between"
+                      >
+                        <span>{post.title}</span>
+                        <Trash2 className="inline-block mr-2 text-red-600" />
+                      </div>
+                    ));
+                })()}
               </div>
               <DialogFooter>
                 <DialogClose asChild>

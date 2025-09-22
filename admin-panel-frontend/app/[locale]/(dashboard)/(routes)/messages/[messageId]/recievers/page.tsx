@@ -12,7 +12,7 @@ import useApiQuery from "@/lib/useApiQuery";
 import StudentApi from "@/types/studentApi";
 import GroupApi from "@/types/groupApi";
 import { toast } from "@/components/ui/use-toast";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BackButton } from "@/components/ui/BackButton";

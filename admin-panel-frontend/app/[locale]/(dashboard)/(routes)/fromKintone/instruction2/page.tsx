@@ -1,7 +1,7 @@
-"use client"
+"use client";
 import * as React from "react";
-import {useTranslations} from "next-intl";
-import {Card, CardContent, CardHeader} from "@/components/ui/card";
+import { useTranslations } from "next-intl";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function Instruction2() {
   const t = useTranslations("KintoneINstruction2");
@@ -11,7 +11,7 @@ export default function Instruction2() {
     "given_name",
     "family_name",
     "email",
-    "phone_number"
+    "phone_number",
   ];
 
   return (
@@ -26,14 +26,26 @@ export default function Instruction2() {
         </CardHeader>
         <CardContent>
           <h2 className="text-2xl">{t("subheading")}</h2>
-          {fields.map(field => (
+          {fields.map((field) => (
             <div key={field} className="space-y-2 mt-4">
               <span className="text-xl ">{t(`fields.${field}`)}</span>
               <ul>
-                <li><b>{t("purpose")}</b>{t(`p.${field}`)}</li>
-                <li><b>{t("input")}</b>{t(`i.${field}`)}</li>
-                <li><b>{t("example")}</b>{t(`e.${field}`)}</li>
-                <li><b>{t("note")}</b>{t(`n.${field}`)}</li>
+                <li>
+                  <b>{t("purpose")}</b>
+                  {t(`p.${field}`)}
+                </li>
+                <li>
+                  <b>{t("input")}</b>
+                  {t(`i.${field}`)}
+                </li>
+                <li>
+                  <b>{t("example")}</b>
+                  {t(`e.${field}`)}
+                </li>
+                <li>
+                  <b>{t("note")}</b>
+                  {t(`n.${field}`)}
+                </li>
               </ul>
             </div>
           ))}

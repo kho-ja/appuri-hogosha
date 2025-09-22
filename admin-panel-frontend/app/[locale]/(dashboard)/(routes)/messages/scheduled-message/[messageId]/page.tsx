@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePathname, Link } from "@/navigation";
+import { Link } from "@/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FormatDateTime } from "@/lib/utils";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { ColumnDef } from "@tanstack/react-table";
 
 export default function ScheduledMessagePage({
   params: { messageId },
@@ -36,21 +37,49 @@ export default function ScheduledMessagePage({
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
 
-  const { data, isError } = useApiQuery<any>(
+  interface ScheduledPostResponse {
+    post: {
+      id: number;
+      title: string;
+      description: string;
+      priority: string;
+      edited_at?: string;
+      scheduled_at?: string;
+      image?: string | null;
+    };
+  }
+  interface ReceiversResponse {
+    groups: { id: number; name: string }[];
+    students: {
+      id: number;
+      given_name: string;
+      family_name: string;
+      email: string;
+      student_number: string;
+      phone_number: string;
+    }[];
+  }
+  const { data, isError } = useApiQuery<ScheduledPostResponse>(
     `schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
-
-  const { data: recieverData, isError: isRecieverError } = useApiQuery<any>(
+  const { data: recieverData } = useApiQuery<ReceiversResponse>(
     `schedule/${messageId}/recievers`,
     ["scheduled-recievers", messageId]
   );
 
-  const studentColumns = [
+  type StudentRow = {
+    given_name: string;
+    family_name: string;
+    email: string;
+    student_number: string;
+    phone_number: string;
+  };
+  const studentColumns: ColumnDef<StudentRow>[] = [
     {
       accessorKey: "name",
       header: t("name"),
-      cell: ({ row }: any) => tName("name", { ...row?.original, parents: "" }),
+      cell: ({ row }) => tName("name", { ...row.original, parents: "" }),
     },
     {
       accessorKey: "email",

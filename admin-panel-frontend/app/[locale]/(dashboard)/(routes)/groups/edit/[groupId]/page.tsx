@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import Student from "@/types/student";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";

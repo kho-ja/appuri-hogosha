@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import HttpError from "./HttpError";
 
-export default function useApiPostQuery<T, TInput = any>(
+export default function useApiPostQuery<T, TInput = Record<string, unknown>>(
   queryUrl: string,
   queryKey: unknown[],
   postData: TInput

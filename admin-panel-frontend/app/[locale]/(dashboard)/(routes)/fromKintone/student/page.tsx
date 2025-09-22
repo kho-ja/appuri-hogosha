@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import { useQueryClient } from "@tanstack/react-query";
-import useFormMutation from "@/lib/useFormMutation";
 import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ import {
 import Upload from "@/types/csvfile";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Student from "@/types/student";
-import { convertToUtf8IfNeeded, download } from "@/lib/utils";
+import { download } from "@/lib/utils";
 import useApiMutation from "@/lib/useApiMutation";
 import { useEffect } from "react";
 import { BackButton } from "@/components/ui/BackButton";
@@ -127,7 +126,19 @@ export default function CreateFromKintone() {
     mutate(values as any);
   };
 
-  const errors = (error?.body ?? []) as Upload<Student>;
+  // Safely derive structured upload feedback from possible error body
+  let errors: Upload<Student> | null = null;
+  if (error?.body && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if (
+      Array.isArray(body?.errors) &&
+      Array.isArray(body?.inserted) &&
+      Array.isArray(body?.updated) &&
+      Array.isArray(body?.deleted)
+    ) {
+      errors = body as unknown as Upload<Student>;
+    }
+  }
 
   return (
     <main className="space-y-4">
@@ -341,7 +352,8 @@ export default function CreateFromKintone() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
+              {errors?.errors &&
+                errors.errors.length > 0 &&
                 errors.errors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>

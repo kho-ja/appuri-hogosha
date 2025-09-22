@@ -25,7 +25,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
-const GetFormSchema = (t: (key: string) => string) => {
+const GetFormSchema = (_t: (key: string) => string) => {
   return z.object({
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
@@ -156,8 +156,7 @@ export default function EditParent({
                       />
                     </FormControl>
                     <FormMessage>
-                      {formState.errors.email &&
-                        "Parent email is required"}
+                      {formState.errors.email && "Parent email is required"}
                     </FormMessage>
                   </FormItem>
                 )}

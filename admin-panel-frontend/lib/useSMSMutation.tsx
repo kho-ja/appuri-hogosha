@@ -5,13 +5,7 @@ import HttpError from "./HttpError";
 export default function useSMSMutation<T>(
   smsId: number | null,
   method: string,
-  options: MutationOptions<T, HttpError, any, unknown> = {}
+  options: MutationOptions<T, HttpError, void, unknown> = {}
 ) {
-  return useApiMutation<T>(
-    `sms/${smsId}`,
-    method,
-    ["sms"],
-    options
-  );
+  return useApiMutation<T>(`sms/${smsId}`, method, ["sms"], options);
 }
-

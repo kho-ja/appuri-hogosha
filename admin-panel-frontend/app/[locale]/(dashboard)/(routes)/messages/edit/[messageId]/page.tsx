@@ -2,15 +2,6 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -23,7 +14,7 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useRouter } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
@@ -31,14 +22,15 @@ import NotFound from "@/components/NotFound";
 import useApiQuery from "@/lib/useApiQuery";
 import Post from "@/types/post";
 import useApiMutation from "@/lib/useApiMutation";
-import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
+import Image from "next/image";
 import {
+  Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Image from "next/image";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { BackButton } from "@/components/ui/BackButton";
@@ -60,7 +52,7 @@ export default function SendMessagePage({
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
-  const [image, setImage] = useState<String>("");
+  const [image, setImage] = useState<string>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,21 +68,19 @@ export default function SendMessagePage({
     post: Post;
   }>(`post/${messageId}`, ["message", messageId]);
 
-  const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `post/${messageId}`,
-    "PUT",
-    ["editMessage", messageId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("messageEdited"),
-          description: data?.message,
-        });
-        form.reset();
-        router.push(`/messages/${messageId}`);
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    z.infer<typeof formSchema>
+  >(`post/${messageId}`, "PUT", ["editMessage", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("messageEdited"),
+        description: data?.message,
+      });
+      form.reset();
+      router.push(`/messages/${messageId}`);
+    },
+  });
   const priority = form.watch("priority");
 
   useEffect(() => {
@@ -109,7 +99,7 @@ export default function SendMessagePage({
     }
   }, [data, form]);
 
-  const handleRemoveImg = (e: any) => {
+  const handleRemoveImg = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (data) {
       setImage("");
@@ -128,7 +118,7 @@ export default function SendMessagePage({
     <div className="w-full">
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((values) => mutate(values as any))}
+          onSubmit={form.handleSubmit((values) => mutate(values))}
           className="space-y-4"
         >
           <PageHeader title={t("editMessage")}>

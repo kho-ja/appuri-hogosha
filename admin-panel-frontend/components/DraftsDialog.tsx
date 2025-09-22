@@ -20,9 +20,34 @@ import { useQuery } from "@tanstack/react-query";
 import HttpError from "@/lib/HttpError";
 import { useSession } from "next-auth/react";
 
+interface DraftDataStudent {
+  id: number;
+  name?: string;
+  [key: string]: unknown;
+}
+
+interface DraftDataGroup {
+  id: number;
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface DraftData {
+  id?: number;
+  title: string;
+  description: string;
+  priority?: string;
+  image?: string;
+  students: DraftDataStudent[];
+  groups: DraftDataGroup[];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  student?: DraftDataStudent[]; // legacy compatibility
+  [key: string]: unknown;
+}
+
 type DraftsDialogProps = {
-  handleSelectedDraft: (data: any) => void;
-  draftsDataProp: any[];
+  handleSelectedDraft: (data: DraftData) => void;
+  draftsDataProp: DraftData[];
 };
 
 export default function DraftsDialog({
@@ -30,18 +55,24 @@ export default function DraftsDialog({
   handleSelectedDraft,
 }: DraftsDialogProps) {
   const t = useTranslations("sendmessage");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedDraft, setSelectedDraft] = useState<any>(null);
-  const [draftsData, setDraftsData] = useState<any[]>([]);
-  const [studentsFromBackend, setStudentsFromBackend] = useState<any[]>([]);
-  const [groupsFromBackend, setGroupsFromBackend] = useState<any[]>([]);
   const tName = useTranslations("names");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedDraft, setSelectedDraft] = useState<DraftData | null>(null);
+  const [draftsData, setDraftsData] = useState<DraftData[]>([]);
+  const [studentsFromBackend, setStudentsFromBackend] = useState<
+    DraftDataStudent[]
+  >([]);
+  const [groupsFromBackend, setGroupsFromBackend] = useState<DraftDataGroup[]>(
+    []
+  );
   const [selectedGroups, setSelectedGroups] = useState<number[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
-
   const { data: session } = useSession();
 
-  const queryFunction = async (queryUrl: string, body: any) => {
+  const fetchIds = async <TResult,>(
+    queryUrl: string,
+    body: unknown
+  ): Promise<TResult> => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/${queryUrl}`,
       {
@@ -53,60 +84,63 @@ export default function DraftsDialog({
         body: JSON.stringify(body),
       }
     );
-
     if (!res.ok) {
       const data = await res.json();
       throw new HttpError(data.error, res.status, data);
     }
-
-    return (await res.json()) as number[];
+    return (await res.json()) as TResult;
   };
 
-  const {
-    data: groupList,
-    isLoading: isGroupsLoading,
-    error,
-  } = useQuery<any, HttpError, any, [string, { selectedGroups: any }]>({
+  const { data: groupListData, isLoading: isGroupsLoading } = useQuery<
+    { groupList: DraftDataGroup[] },
+    HttpError
+  >({
     queryKey: ["groups", { selectedGroups }],
-    queryFn: async () =>
-      queryFunction("group/ids", { groupIds: selectedGroups }),
+    queryFn: () =>
+      fetchIds<{ groupList: DraftDataGroup[] }>("group/ids", {
+        groupIds: selectedGroups,
+      }),
     enabled: !!session?.sessionToken && selectedGroups.length > 0,
     retry: 1,
   });
 
-  const {
-    data: studentList,
-    isLoading: isStudentsLoading,
-    error: studentsError,
-  } = useQuery<any, HttpError, any, [string, { selectedStudents: any }]>({
+  const { data: studentListData, isLoading: isStudentsLoading } = useQuery<
+    { studentList: DraftDataStudent[] },
+    HttpError
+  >({
     queryKey: ["students", { selectedStudents }],
-    queryFn: async () =>
-      queryFunction("student/ids", { studentIds: selectedStudents }),
+    queryFn: () =>
+      fetchIds<{ studentList: DraftDataStudent[] }>("student/ids", {
+        studentIds: selectedStudents,
+      }),
     enabled: !!session?.sessionToken && selectedStudents.length > 0,
     retry: 1,
   });
 
   useEffect(() => {
-    if (studentList || groupList) {
-      setStudentsFromBackend(studentList?.studentList || []);
-      setGroupsFromBackend(groupList?.groupList || []);
-
-      const drafts = localStorage.getItem("DraftsData");
-      const parsedDrafts = drafts ? JSON.parse(drafts) : [];
-      const updatedDrafts = parsedDrafts.map((draft: any) => {
-        if (draft.id === selectedDraft.id) {
-          draft.students = studentList?.studentList || [];
-          draft.groups = groupList?.groupList || [];
+    if (studentListData || groupListData) {
+      setStudentsFromBackend(studentListData?.studentList || []);
+      setGroupsFromBackend(groupListData?.groupList || []);
+      const draftsLocal = localStorage.getItem("DraftsData");
+      const parsedDrafts: DraftData[] = draftsLocal
+        ? JSON.parse(draftsLocal)
+        : [];
+      const updatedDrafts = parsedDrafts.map((draft) => {
+        if (draft.id === selectedDraft?.id) {
+          draft.students = studentListData?.studentList || [];
+          draft.groups = groupListData?.groupList || [];
         }
         return draft;
       });
       localStorage.setItem("DraftsData", JSON.stringify(updatedDrafts));
     }
-  }, [studentList, groupList]);
+  }, [studentListData, groupListData, selectedDraft?.id]);
 
   useEffect(() => {
-    let draftsLocal = localStorage.getItem("DraftsData");
-    let parsedDrafts = draftsLocal ? JSON.parse(draftsLocal) : [];
+    const draftsLocal = localStorage.getItem("DraftsData");
+    const parsedDrafts: DraftData[] = draftsLocal
+      ? JSON.parse(draftsLocal)
+      : [];
     setDraftsData(parsedDrafts);
   }, []);
 
@@ -114,60 +148,46 @@ export default function DraftsDialog({
     setDraftsData(draftsDataProp);
   }, [draftsDataProp]);
 
-  const handleDeleteDraft = (draft: any) => {
-    if (draft) {
-      let drafts = draftsData.filter((d) => {
-        if (
-          !(
-            d.title === draft.title &&
-            d.description === draft.description &&
-            d.priority === draft.priority &&
-            d.image === draft.image &&
-            d.students === draft.students &&
-            d.groups === draft.groups
-          )
-        ) {
-          return d;
-        }
-      });
-      setDraftsData(drafts);
-      localStorage.setItem("DraftsData", JSON.stringify(drafts));
-      toast({
-        title: t("draftDeleted"),
-        description: draft?.title,
-      });
-    }
+  const handleDeleteDraft = (draft: DraftData | null) => {
+    if (!draft) return;
+    const filtered = draftsData.filter(
+      (d) =>
+        !(
+          d.title === draft.title &&
+          d.description === draft.description &&
+          d.priority === draft.priority &&
+          d.image === draft.image &&
+          d.students === draft.students &&
+          d.groups === draft.groups
+        )
+    );
+    setDraftsData(filtered);
+    localStorage.setItem("DraftsData", JSON.stringify(filtered));
+    toast({ title: t("draftDeleted"), description: draft.title });
   };
 
-  const handleSelectedDraftFunction = (data: any) => {
-    let draft = {
-      title: data?.title,
-      description: data?.description,
-      priority: data?.priority,
-      image: data?.image,
-      groups: data?.groups || [],
-      student: data?.students || [],
+  const handleSelectedDraftFunction = (data: DraftData | null) => {
+    if (!data) return;
+    const draft: DraftData = {
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      image: data.image,
+      groups: data.groups || [],
+      students: data.students || [],
+      student: data.students || [],
     };
-
-    handleSelectedDraft(draft as any);
+    handleSelectedDraft(draft);
     setIsDialogOpen(false);
   };
 
-  const handleSelectDraft = (draft: any) => {
-    setSelectedGroups(draft.groups.map((g: any) => g.id));
-    setSelectedStudents(draft.students.map((s: any) => s.id));
+  const handleSelectDraft = (draft: DraftData) => {
+    setSelectedGroups(draft.groups.map((g) => g.id));
+    setSelectedStudents(draft.students.map((s) => s.id));
     setIsDialogOpen(true);
     setSelectedDraft(draft);
-    let studentsToMutate = draft.students.map((s: any) => s.id);
-    let groupsToMutate = draft.groups.map((g: any) => g.id);
-
-    if (studentsToMutate.length <= 0) {
-      setStudentsFromBackend([]);
-    }
-
-    if (groupsToMutate.length <= 0) {
-      setGroupsFromBackend([]);
-    }
+    if (!draft.students.length) setStudentsFromBackend([]);
+    if (!draft.groups.length) setGroupsFromBackend([]);
   };
 
   return (
@@ -254,11 +274,13 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("groups")}</b>
                 {isGroupsLoading ? (
-                  <div className="dark:text-white text-black">{t("loading")}</div>
+                  <div className="dark:text-white text-black">
+                    {t("loading")}
+                  </div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {groupsFromBackend.length > 0 ? (
-                      groupsFromBackend.map((group: any) => (
+                      groupsFromBackend.map((group: DraftDataGroup) => (
                         <Badge key={group.id}>{group?.name}</Badge>
                       ))
                     ) : (
@@ -272,11 +294,13 @@ export default function DraftsDialog({
               <div className="flex flex-col gap-1">
                 <b>{t("students")}</b>
                 {isStudentsLoading ? (
-                  <div className="dark:text-white text-black">{t("loading")}</div>
+                  <div className="dark:text-white text-black">
+                    {t("loading")}
+                  </div>
                 ) : (
                   <div className="flex flex-wrap gap-2 items-start content-start ">
                     {studentsFromBackend.length > 0 ? (
-                      studentsFromBackend.map((e: any) => (
+                      studentsFromBackend.map((e: DraftDataStudent) => (
                         <Badge key={e.id}>
                           {tName("name", { ...e, parents: "" })}
                         </Badge>

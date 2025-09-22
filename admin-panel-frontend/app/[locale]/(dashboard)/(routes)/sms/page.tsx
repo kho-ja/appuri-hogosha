@@ -9,9 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { EllipsisVertical } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import PaginationApi from "@/components/PaginationApi";
-import { Input } from "@/components/ui/input";
-import { Link, usePathname, useRouter } from "@/navigation";
+import { Link, useRouter } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +25,6 @@ import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import useSMSQuery from "@/lib/useSMSQuery";
 import useSMSMutation from "@/lib/useSMSMutation";
 import SMS from "@/types/sms";
 import { FormatDateTime } from "@/lib/utils";
@@ -84,9 +81,7 @@ const testSMSData: SMS[] = [
 
 export default function SMSPage() {
   const t = useTranslations("sms");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  // const { data } = useSMSQuery(page, search);
+  // Static test data for now; pagination/search state removed as unused
   const data = {
     sms: testSMSData,
     pagination: {
@@ -96,7 +91,8 @@ export default function SMSPage() {
       links: ["1", "2", "3"],
     },
   };
-  const pathName = usePathname();
+  // Base path constant (was derived via usePathname previously)
+  const pathName = "/sms";
   const router = useRouter();
   const queryClient = useQueryClient();
   const [smsId, setSmsId] = useState<number | null>(null);
@@ -202,17 +198,9 @@ export default function SMSPage() {
         </Link>
       </div>
       <div className="flex justify-between">
-        <Input
-          placeholder={t("filter")}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="max-w-sm"
-        />
-        <div className="">
-          <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
-        </div>
+        {/* Filter and pagination controls removed because state was unused */}
+        <div />
+        <div />
       </div>
       <Card>
         <TableApi

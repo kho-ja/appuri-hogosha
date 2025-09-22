@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@/navigation";
 import {
-  Bell,
   CircleUser,
   Menu,
   Package2,
@@ -76,13 +75,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-2 font-semibold leading-none transition-all duration-300"
               >
                 <Package2 className="h-6 w-6 flex-shrink-0 transition-transform duration-200 hover:scale-110" />
-                <span className={`
+                <span
+                  className={`
                   transition-all duration-300 ease-in-out whitespace-nowrap
-                  ${isMenuOpen 
-                    ? "opacity-100 translate-x-0 max-w-[200px]" 
-                    : "opacity-0 translate-x-4 max-w-0"
+                  ${
+                    isMenuOpen
+                      ? "opacity-100 translate-x-0 max-w-[200px]"
+                      : "opacity-0 translate-x-4 max-w-0"
                   }
-                `}>
+                `}
+                >
                   {session?.schoolName}
                 </span>
               </Link>
@@ -95,7 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       )}
-      
+
       <div
         className={`
           flex flex-col flex-1 min-w-0 transition-all duration-300 ease-in-out
@@ -134,7 +136,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </nav>
             </SheetContent>
           </Sheet>
-          
+
           <div className="hidden md:block">
             <Button
               variant="outline"
@@ -151,12 +153,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </Button>
           </div>
-          
+
           <div className="sm:flex gap-2 hidden">
             <LanguageSelect />
             <ToggleMode />
           </div>
-          
+
           <div className="flex items-center justify-end w-full gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -182,14 +184,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild className="hover:bg-muted/50 transition-colors duration-200">
+                <DropdownMenuItem
+                  asChild
+                  className="hover:bg-muted/50 transition-colors duration-200"
+                >
                   <Link href="/settings">{t("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="hover:bg-muted/50 transition-colors duration-200">
                   {t("support")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={async () => await signOut()}
                   className="hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
                 >
@@ -206,7 +211,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
           </div>
         </header>
-        
+
         <main className="flex-1 overflow-auto p-4 lg:p-6 animate-in fade-in duration-300">
           {children}
         </main>

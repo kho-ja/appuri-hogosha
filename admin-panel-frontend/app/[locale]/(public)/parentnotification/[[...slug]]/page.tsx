@@ -27,8 +27,8 @@ export default function ParentNotificationPage({
       variant === "development"
         ? "jduapp-dev"
         : variant === "preview"
-        ? "jduapp-preview"
-        : "jduapp";
+          ? "jduapp-preview"
+          : "jduapp";
     const path = slugPath || "home";
     const appUrl = `${scheme}://${path}`;
 
@@ -36,8 +36,8 @@ export default function ParentNotificationPage({
     const storeUrl = /android/i.test(userAgent)
       ? androidLink
       : /iPad|iPhone|iPod/.test(userAgent)
-      ? iosLink
-      : undefined;
+        ? iosLink
+        : undefined;
 
     const timer = setTimeout(() => {
       if (storeUrl) {
@@ -77,7 +77,7 @@ export default function ParentNotificationPage({
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
               Stay Connected
               <br />
-              with Your Child's Education
+              with Your Child&apos;s Education
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
               Real-time updates on university activities, grades, and

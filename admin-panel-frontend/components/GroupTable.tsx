@@ -124,7 +124,7 @@ export function GroupTable({
       },
       {
         accessorKey: "member_count",
-        header: ({ column }) => (
+        header: ({ column: _column }) => (
           <div className="capitalize">{t("studentCount")}</div>
         ),
         cell: ({ row }) => (
@@ -136,9 +136,11 @@ export function GroupTable({
   );
 
   const table = useReactTable({
-    data: useMemo(() => 
-      (data?.groups ?? []).filter((group) => (group.member_count ?? 0) > 0), 
-    [data]),
+    data: useMemo(
+      () =>
+        (data?.groups ?? []).filter((group) => (group.member_count ?? 0) > 0),
+      [data]
+    ),
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {

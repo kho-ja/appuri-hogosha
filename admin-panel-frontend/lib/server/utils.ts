@@ -12,7 +12,7 @@ export async function FormatDate(
 
   if (!date) return "";
 
-  const dateObject = typeof date === 'string' ? new Date(date) : date;
+  const dateObject = typeof date === "string" ? new Date(date) : date;
 
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
@@ -33,7 +33,7 @@ export async function FormatDateTime(
 
   if (!date) return "";
 
-  const dateObject = typeof date === 'string' ? new Date(date) : date;
+  const dateObject = typeof date === "string" ? new Date(date) : date;
 
   // Let next-intl handle timezone conversion automatically
   return format.dateTime(dateObject, {
@@ -43,13 +43,16 @@ export async function FormatDateTime(
 }
 
 // NEW: Server-side specialized formatters
-export async function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
+export async function FormatTimeOnly(
+  date: string | Date,
+  use24Hour: boolean = true
+) {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
 
   if (!date) return "";
 
-  const dateObject = typeof date === 'string' ? new Date(date) : date;
+  const dateObject = typeof date === "string" ? new Date(date) : date;
 
   return format.dateTime(dateObject, {
     timeStyle: "short",
@@ -64,7 +67,7 @@ export async function FormatDateOnly(date: string | Date) {
 
   if (!date) return "";
 
-  const dateObject = typeof date === 'string' ? new Date(date) : date;
+  const dateObject = typeof date === "string" ? new Date(date) : date;
 
   return format.dateTime(dateObject, {
     dateStyle: "medium",
@@ -73,7 +76,9 @@ export async function FormatDateOnly(date: string | Date) {
 }
 
 // IMPROVED: Server-side date picker display format
-export async function FormatDateTimeForDisplay(date: Date | null): Promise<string> {
+export async function FormatDateTimeForDisplay(
+  date: Date | null
+): Promise<string> {
   const format = await getFormatter();
   const timeZone = await getTimeZone();
 

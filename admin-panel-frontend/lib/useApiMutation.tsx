@@ -49,4 +49,3 @@ export default function useApiMutation<TResponse, TInput = void>(
     ...options,
   });
 }
-  

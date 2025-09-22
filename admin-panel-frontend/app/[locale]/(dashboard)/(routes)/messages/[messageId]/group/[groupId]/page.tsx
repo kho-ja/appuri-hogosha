@@ -14,7 +14,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Bell, Check, CheckCheck } from "lucide-react";
-import { usePathname, useRouter } from "@/navigation";
+import { usePathname } from "@/navigation";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import DisplayProperty from "@/components/DisplayProperty";
@@ -199,12 +199,12 @@ export default function ThisGroup({
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center justify-between w-full gap-2">
             <h2 className="text-2xl font-bold">{t("students")}</h2>
-              <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-                <PaginationApi
-                  data={groupData?.pagination ?? null}
-                  setPage={setStudentPage}
-                />
-              </div>
+            <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+              <PaginationApi
+                data={groupData?.pagination ?? null}
+                setPage={setStudentPage}
+              />
+            </div>
           </div>
           <div className="rounded-md border">
             <TableApi

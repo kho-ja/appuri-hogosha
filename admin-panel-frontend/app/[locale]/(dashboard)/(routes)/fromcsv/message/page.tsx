@@ -94,7 +94,19 @@ export default function MessageFromCSV() {
   const { mutate: downloadTemplate, isPending: isDownloading } =
     useFileMutation<Blob>("post/template", ["downloadTemplate"]);
 
-  const errors = (error?.body ?? []) as Upload<Post>;
+  // Safely derive structured CSV upload result from possible error body shape
+  let errors: Upload<Post> | null = null;
+  if (error?.body && typeof error.body === "object") {
+    const body = error.body as Record<string, unknown>;
+    if (
+      Array.isArray(body?.errors) &&
+      Array.isArray(body?.inserted) &&
+      Array.isArray(body?.updated) &&
+      Array.isArray(body?.deleted)
+    ) {
+      errors = body as unknown as Upload<Post>;
+    }
+  }
 
   return (
     <main className="space-y-4">
@@ -119,7 +131,7 @@ export default function MessageFromCSV() {
             <FormField
               control={form.control}
               name="csvFile"
-              render={({ field: { onChange, value, ...rest } }) => (
+              render={({ field: { onChange, value: _value, ...rest } }) => (
                 <FormItem>
                   <FormLabel>{t("createPosts")}</FormLabel>
                   <FormControl>
@@ -182,7 +194,8 @@ export default function MessageFromCSV() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors.errors?.length > 0 &&
+              {errors?.errors &&
+                errors.errors.length > 0 &&
                 errors.errors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>
@@ -251,9 +264,13 @@ const ErrorCell = ({
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
         <span>
-          {Array.isArray(error?.row[name])
-            ? (error?.row[name] as any)?.join(", ")
-            : (error?.row[name] as string)}
+          {(() => {
+            const value = error?.row[name];
+            if (Array.isArray(value)) {
+              return value.map((v) => String(v)).join(", ");
+            }
+            return value !== undefined ? String(value) : "";
+          })()}
         </span>
       )}
       {error?.errors[name] && (
