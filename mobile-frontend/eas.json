@@ -13,12 +13,18 @@
     "preview": {
       "distribution": "internal",
       "environment": "preview",
-      "channel": "preview"
+      "channel": "preview",
+      "android": {
+        "buildType": "aab"
+      }
     },
     "production": {
       "autoIncrement": true,
       "environment": "production",
-      "channel": "production"
+      "channel": "production",
+      "android": {
+        "buildType": "aab"
+      }
     }
   }
 }
