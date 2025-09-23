@@ -111,6 +111,9 @@ module.exports = ({ config }) => {
       package: variantConfig.androidPackage,
       googleServicesFile:
         process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+      // Support for 16 KB memory page sizes (Android 15+ requirement)
+      compileSdkVersion: 35,
+      targetSdkVersion: 35,
       statusBar: {
         barStyle: 'light-content',
         backgroundColor: '#3B81F6',
