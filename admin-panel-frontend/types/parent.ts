@@ -1,7 +1,7 @@
 export default interface Parent {
   id: number;
-  given_name: string;
-  family_name: string;
+  given_name?: string;
+  family_name?: string;
   email: string;
   phone_number: string;
   created_at?: string;

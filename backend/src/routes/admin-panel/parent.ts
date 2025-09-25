@@ -1371,16 +1371,16 @@ class ParentController implements IController {
                     message: 'invalid_or_missing_email',
                 };
             }
-            if (!given_name || !isValidString(given_name)) {
+            if (given_name && !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_given_name',
+                    message: 'invalid_given_name',
                 };
             }
-            if (!family_name || !isValidString(family_name)) {
+            if (family_name && !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_family_name',
+                    message: 'invalid_family_name',
                 };
             }
 
@@ -1909,16 +1909,16 @@ class ParentController implements IController {
                     message: 'invalid_or_missing_phone',
                 };
             }
-            if (!given_name || !isValidString(given_name)) {
+            if (given_name && !isValidString(given_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_given_name',
+                    message: 'invalid_given_name',
                 };
             }
-            if (!family_name || !isValidString(family_name)) {
+            if (family_name && !isValidString(family_name)) {
                 throw {
                     status: 401,
-                    message: 'invalid_or_missing_family_name',
+                    message: 'invalid_family_name',
                 };
             }
 

@@ -30,8 +30,8 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
+    given_name: z.string().max(50).optional().or(z.literal("")),
+    family_name: z.string().max(50).optional().or(z.literal("")),
     phone_number: z
       .string()
       .min(10)

@@ -9,7 +9,7 @@ import {
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import Form from "@/types/form";
-import { FormatDate, FormatDateTime } from "@/lib/utils";
+import { FormatDate, FormatDateTime, formatName } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import DisplayProperty from "./DisplayProperty";
 
@@ -50,7 +50,7 @@ export default function FormCard({ form }: { form: Form }) {
             <div className="space-y-1.5">
               <DisplayProperty
                 property={t("parent")}
-                value={tName("name", { ...form?.parent } as any)}
+                value={formatName(form?.parent) || "Not provided"}
               />
               <DisplayProperty property={t("event")} value={t(form?.reason)} />
               <DisplayProperty

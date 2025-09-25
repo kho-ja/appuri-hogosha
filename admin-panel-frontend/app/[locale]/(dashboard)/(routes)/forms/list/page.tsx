@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import useApiQuery from "@/lib/useApiQuery";
-import { FormatDateOnly, FormatDateTime } from "@/lib/utils";
+import { FormatDateOnly, FormatDateTime, formatName } from "@/lib/utils";
 
 export default function Forms() {
   const t = useTranslations("forms");
@@ -45,7 +45,7 @@ export default function Forms() {
     {
       accessorKey: "parent_name",
       header: t("parent_name"),
-      cell: ({ row }) => tName("name", { ...row?.original?.parent } as any),
+      cell: ({ row }) => formatName(row?.original?.parent) || "Not provided",
     },
     {
       accessorKey: "student_name",

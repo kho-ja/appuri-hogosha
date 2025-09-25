@@ -180,3 +180,29 @@ export function download(bufferData: unknown, filename: string = "") {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+// Utility function to format names, handling empty/undefined values
+export function formatName({
+  given_name,
+  family_name,
+}: {
+  given_name?: string;
+  family_name?: string;
+}) {
+  const firstName = given_name?.trim();
+  const lastName = family_name?.trim();
+
+  if (!firstName && !lastName) {
+    return "";
+  }
+
+  if (!firstName) {
+    return lastName;
+  }
+
+  if (!lastName) {
+    return firstName;
+  }
+
+  return `${firstName} ${lastName}`;
+}

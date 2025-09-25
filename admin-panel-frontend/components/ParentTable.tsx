@@ -28,6 +28,7 @@ import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
+import { formatName } from "@/lib/utils";
 
 export function ParentTable({
   selectedParents,
@@ -119,7 +120,7 @@ export function ParentTable({
         header: t("name"),
         cell: ({ row }) => (
           <div className="capitalize">
-            {tName("name", { ...row?.original } as any)}
+            {formatName(row?.original) || "Not provided"}
           </div>
         ),
       },
@@ -138,7 +139,7 @@ export function ParentTable({
         ),
       },
     ],
-    [t, tName]
+    [t]
   );
 
   const table = useReactTable({
