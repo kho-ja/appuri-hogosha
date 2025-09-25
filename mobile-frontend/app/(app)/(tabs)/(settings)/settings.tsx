@@ -34,6 +34,26 @@ import translation from '@/translations/translation';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useFontSize } from '@/contexts/FontSizeContext';
 
+// Utility function to format user names, handling empty/undefined values
+function formatUserName(given_name?: string, family_name?: string): string {
+  const firstName = given_name?.trim();
+  const lastName = family_name?.trim();
+
+  if (!firstName && !lastName) {
+    return '';
+  }
+
+  if (!firstName) {
+    return lastName || '';
+  }
+
+  if (!lastName) {
+    return firstName;
+  }
+
+  return `${firstName} ${lastName}`;
+}
+
 const languageData = [
   {
     language: "O'zbekcha",
@@ -238,7 +258,10 @@ export default function SettingsScreen() {
                     {i18n[language].name}
                   </ThemedText>
                   <ThemedText style={styles.profileText}>
-                    {user && `${user.given_name} ${user.family_name}`}
+                    {(user &&
+                      formatUserName(user.given_name, user.family_name)) ||
+                      i18n[language].notProvided ||
+                      'Not provided'}
                   </ThemedText>
                 </View>
               </View>

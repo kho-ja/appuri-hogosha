@@ -48,6 +48,7 @@ export default {
     form: 'Form',
     settings: 'Settings',
     personalInfo: 'Personal Info',
+    notProvided: 'Not provided',
     /*tab bar layout*/
 
     /*register page*/
@@ -296,6 +297,7 @@ export default {
     form: 'フォーム',
     settings: '設定',
     personalInfo: '個人情報',
+    notProvided: '未提供',
     /*tab bar layout*/
 
     /*register page*/
@@ -546,6 +548,7 @@ export default {
     form: 'Forma',
     settings: 'Sozlamalar',
     personalInfo: "Shaxsiy ma'lumotlar",
+    notProvided: "Ko'rsatilmagan",
     /*tab bar layout*/
 
     /*register page*/
@@ -797,6 +800,7 @@ export default {
     form: 'Форма',
     settings: 'Настройки',
     personalInfo: 'Личная информация',
+    notProvided: 'Не указано',
     /*tab bar layout*/
 
     /*register page*/

@@ -27,8 +27,8 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (_t: (key: string) => string) => {
   return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
+    given_name: z.string().max(50).optional().or(z.literal("")),
+    family_name: z.string().max(50).optional().or(z.literal("")),
     email: z.string().max(0).or(z.string().email()),
   });
 };
