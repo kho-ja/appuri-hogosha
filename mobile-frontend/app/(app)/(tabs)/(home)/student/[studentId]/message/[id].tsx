@@ -387,9 +387,23 @@ export default function DetailsScreen() {
         }
 
         setMessage(fullMessage);
-        // Mark message as read if it hasn't been read yet
-        if (fullMessage.read_status === 0) {
-          await markMessageAsRead(fullMessage.id, fullMessage.student_id);
+
+        // Find all messages in the same group (same title, content, sent_time) that are unread
+        const unreadGroupMessages = (await db.getAllAsync(
+          'SELECT id, read_status FROM message WHERE student_id = ? AND title = ? AND content = ? AND sent_time = ? AND read_status = 0',
+          [
+            fullMessage.student_id,
+            fullMessage.title || '',
+            fullMessage.content || '',
+            fullMessage.sent_time || '',
+          ]
+        )) as { id: number; read_status: number }[];
+
+        // Mark all unread messages in the group as read
+        if (unreadGroupMessages.length > 0) {
+          for (const unreadMsg of unreadGroupMessages) {
+            await markMessageAsRead(unreadMsg.id, fullMessage.student_id);
+          }
         }
       } catch (error) {
         console.error('Error in fetchMessage:', error);
