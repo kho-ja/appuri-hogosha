@@ -47,6 +47,11 @@ class GroupController implements IController {
         this.router.get('/:id', verifyToken, this.groupView);
         this.router.delete('/:id', verifyToken, this.groupDelete);
         this.router.put('/:id', verifyToken, this.groupEdit);
+        this.router.put(
+            '/:id/move-category',
+            verifyToken,
+            this.moveGroupToCategory
+        );
     }
 
     exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
@@ -414,7 +419,7 @@ class GroupController implements IController {
 
             const group = groupInfo[0];
 
-            const { name, students } = req.body;
+            const { name, students, group_category_id } = req.body;
 
             if (!name || !isValidString(name)) {
                 throw {
@@ -423,11 +428,37 @@ class GroupController implements IController {
                 };
             }
 
+            // Validate group category if provided
+            if (group_category_id) {
+                if (!isValidId(group_category_id)) {
+                    throw {
+                        status: 400,
+                        message: 'invalid_group_category_id',
+                    };
+                }
+
+                const categoryExists = await DB.query(
+                    `SELECT id FROM GroupCategory WHERE id = :id AND school_id = :school_id`,
+                    {
+                        id: group_category_id,
+                        school_id: req.user.school_id,
+                    }
+                );
+
+                if (categoryExists.length === 0) {
+                    throw {
+                        status: 404,
+                        message: 'group_category_not_found',
+                    };
+                }
+            }
+
             await DB.execute(
-                'UPDATE StudentGroup SET name = :name WHERE id = :id',
+                'UPDATE StudentGroup SET name = :name, group_category_id = :group_category_id WHERE id = :id',
                 {
                     id: group.id,
                     name: name,
+                    group_category_id: group_category_id || null,
                 }
             );
 
@@ -643,8 +674,15 @@ class GroupController implements IController {
                 };
             }
             const groupInfo = await DB.query(
-                `SELECT id,name,created_at FROM StudentGroup
-                WHERE id = :id AND school_id = :school_id`,
+                `SELECT 
+                    sg.id, 
+                    sg.name, 
+                    sg.created_at, 
+                    sg.group_category_id,
+                    gc.name as category_name
+                FROM StudentGroup sg
+                LEFT JOIN GroupCategory gc ON sg.group_category_id = gc.id
+                WHERE sg.id = :id AND sg.school_id = :school_id`,
                 {
                     id: groupId,
                     school_id: req.user.school_id,
@@ -771,9 +809,14 @@ class GroupController implements IController {
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
             const groupList = await DB.query(
-                `SELECT sg.id, sg.name,
-                (SELECT COUNT(*) AS total FROM GroupMember WHERE group_id = sg.id) as member_count
+                `SELECT 
+                    sg.id, 
+                    sg.name,
+                    sg.group_category_id,
+                    gc.name as category_name,
+                    (SELECT COUNT(*) AS total FROM GroupMember WHERE group_id = sg.id) as member_count
                 FROM StudentGroup as sg
+                LEFT JOIN GroupCategory gc ON sg.group_category_id = gc.id
                 WHERE sg.school_id = :school_id ${whereClause}
                 ORDER BY sg.id DESC
                 LIMIT :limit OFFSET :offset;`,
@@ -828,13 +871,38 @@ class GroupController implements IController {
 
     createGroup = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { name, students } = req.body;
+            const { name, students, group_category_id } = req.body;
 
             if (!name || !isValidString(name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_group_name',
                 };
+            }
+
+            // Validate group category if provided
+            if (group_category_id) {
+                if (!isValidId(group_category_id)) {
+                    throw {
+                        status: 400,
+                        message: 'invalid_group_category_id',
+                    };
+                }
+
+                const categoryExists = await DB.query(
+                    `SELECT id FROM GroupCategory WHERE id = :id AND school_id = :school_id`,
+                    {
+                        id: group_category_id,
+                        school_id: req.user.school_id,
+                    }
+                );
+
+                if (categoryExists.length === 0) {
+                    throw {
+                        status: 404,
+                        message: 'group_category_not_found',
+                    };
+                }
             }
 
             // Check if the group name already exists
@@ -854,11 +922,12 @@ class GroupController implements IController {
             }
 
             const groupInsert = await DB.execute(
-                `INSERT INTO StudentGroup(name, created_at, school_id)
-                VALUE (:name, NOW(), :school_id);`,
+                `INSERT INTO StudentGroup(name, created_at, school_id, group_category_id)
+                VALUE (:name, NOW(), :school_id, :group_category_id);`,
                 {
                     name: name,
                     school_id: req.user.school_id,
+                    group_category_id: group_category_id || null,
                 }
             );
 
@@ -915,6 +984,7 @@ class GroupController implements IController {
                     group: {
                         id: groupId,
                         name: name,
+                        group_category_id: group_category_id || null,
                         members: attachedMembers,
                     },
                 })
@@ -957,6 +1027,93 @@ class GroupController implements IController {
         } catch (e: any) {
             console.error('Error generating CSV template:', e);
             return res.status(500).json({ error: 'internal_server_error' });
+        }
+    };
+
+    moveGroupToCategory = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const groupId = req.params.id;
+            const { group_category_id } = req.body;
+
+            if (!groupId || !isValidId(groupId)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_or_missing_group_id',
+                };
+            }
+
+            // Check if group exists
+            const groupExists = await DB.query(
+                `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
+                {
+                    id: groupId,
+                    school_id: req.user.school_id,
+                }
+            );
+
+            if (groupExists.length === 0) {
+                throw {
+                    status: 404,
+                    message: 'group_not_found',
+                };
+            }
+
+            // Validate group category if provided
+            if (group_category_id) {
+                if (!isValidId(group_category_id)) {
+                    throw {
+                        status: 400,
+                        message: 'invalid_group_category_id',
+                    };
+                }
+
+                const categoryExists = await DB.query(
+                    `SELECT id FROM GroupCategory WHERE id = :id AND school_id = :school_id`,
+                    {
+                        id: group_category_id,
+                        school_id: req.user.school_id,
+                    }
+                );
+
+                if (categoryExists.length === 0) {
+                    throw {
+                        status: 404,
+                        message: 'group_category_not_found',
+                    };
+                }
+            }
+
+            await DB.execute(
+                'UPDATE StudentGroup SET group_category_id = :group_category_id WHERE id = :id AND school_id = :school_id',
+                {
+                    id: groupId,
+                    group_category_id: group_category_id || null,
+                    school_id: req.user.school_id,
+                }
+            );
+
+            return res
+                .status(200)
+                .json({
+                    message: 'group_moved_successfully',
+                })
+                .end();
+        } catch (e: any) {
+            if (e.status) {
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
+            } else {
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
+            }
         }
     };
 }
