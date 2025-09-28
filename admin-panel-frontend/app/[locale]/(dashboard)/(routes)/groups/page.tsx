@@ -265,7 +265,8 @@ export default function Groups() {
                 <DialogDescription>
                   {selectedGroupToMove && (
                     <>
-                      {t("moveGroupDescription")}: "{selectedGroupToMove.name}"
+                      {t("moveGroupDescription")}: &quot;
+                      {selectedGroupToMove.name}&quot;
                     </>
                   )}
                 </DialogDescription>
