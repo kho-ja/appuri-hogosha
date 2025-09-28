@@ -2,7 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, FileIcon, Trash2Icon } from "lucide-react";
+import {
+  Edit3Icon,
+  FileIcon,
+  Trash2Icon,
+  FolderPlus,
+  FolderIcon,
+} from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -23,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
@@ -30,9 +37,11 @@ import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import { GroupCategorySelect } from "@/components/GroupCategorySelect";
 
 export default function Groups() {
   const t = useTranslations("groups");
+  const tCategory = useTranslations("GroupCategory");
   const { page, setPage, search, setSearch } = useTableQuery();
 
   const { data } = useApiQuery<GroupApi>(
@@ -41,6 +50,16 @@ export default function Groups() {
   );
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
+  const [isCreateCategoryDialogOpen, setIsCreateCategoryDialogOpen] =
+    useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [selectedGroupToMove, setSelectedGroupToMove] = useState<Group | null>(
+    null
+  );
+  const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
+
   const { mutate } = useApiMutation<{ message: string }>(
     `group/${groupId}`,
     "DELETE",
@@ -55,6 +74,65 @@ export default function Groups() {
       },
     }
   );
+
+  const { mutate: createCategory, isPending: isCreatingCategory } =
+    useApiMutation<
+      { id: number; name: string },
+      { name: string; parent_category_id?: number | null }
+    >("group-category/create", "POST", ["create-category"], {
+      onSuccess: (data) => {
+        toast({
+          title: tCategory("categoryCreated"),
+          description: data.name,
+        });
+        queryClient.invalidateQueries({ queryKey: ["group-categories"] });
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+        setNewCategoryName("");
+        setSelectedParentId(null);
+        setIsCreateCategoryDialogOpen(false);
+      },
+    });
+
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) return;
+
+    createCategory({
+      name: newCategoryName.trim(),
+      parent_category_id: selectedParentId,
+    });
+  };
+
+  const { mutate: moveGroupToCategory, isPending: isMovingGroup } =
+    useApiMutation<{ message: string }, { group_category_id: number | null }>(
+      `group/${selectedGroupToMove?.id}/move-category`,
+      "PUT",
+      ["move-group-to-category"],
+      {
+        onSuccess: (data) => {
+          toast({
+            title: t("groupMoved"),
+            description: data.message,
+          });
+          queryClient.invalidateQueries({ queryKey: ["groups"] });
+          setIsMoveDialogOpen(false);
+          setSelectedGroupToMove(null);
+          setTargetCategoryId(null);
+        },
+      }
+    );
+
+  const handleMoveGroup = () => {
+    if (!selectedGroupToMove) return;
+    moveGroupToCategory({
+      group_category_id: targetCategoryId,
+    });
+  };
+
+  const openMoveDialog = (group: Group) => {
+    setSelectedGroupToMove(group);
+    setTargetCategoryId(group.group_category_id || null);
+    setIsMoveDialogOpen(true);
+  };
   const { mutate: exportGroups } = useFileMutation<{ message: string }>(
     `group/export`,
     ["exportGroups"]
@@ -80,6 +158,10 @@ export default function Groups() {
           <Link href={`/groups/edit/${row.original.id}`}>
             <Edit3Icon />
           </Link>
+          <FolderIcon
+            className="text-blue-500 cursor-pointer"
+            onClick={() => openMoveDialog(row.original)}
+          />
           <Dialog>
             <DialogTrigger asChild>
               <Trash2Icon className="text-red-500 cursor-pointer" />
@@ -116,6 +198,100 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
+          <Dialog
+            open={isCreateCategoryDialogOpen}
+            onOpenChange={setIsCreateCategoryDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                icon={<FolderPlus className="h-5 w-5" />}
+              >
+                {tCategory("createParentGroup")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{tCategory("createParentGroup")}</DialogTitle>
+                <DialogDescription>
+                  {tCategory("createParentGroupDescription")}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category-name">
+                    {tCategory("categoryName")}
+                  </Label>
+                  <Input
+                    id="category-name"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder={tCategory("enterCategoryName")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="parent-category">
+                    {tCategory("parentCategory")}
+                  </Label>
+                  <GroupCategorySelect
+                    value={selectedParentId}
+                    onChange={setSelectedParentId}
+                    placeholder={tCategory("selectParentCategory")}
+                    allowEmpty={true}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">{tCategory("cancel")}</Button>
+                </DialogClose>
+                <Button
+                  onClick={handleCreateCategory}
+                  disabled={!newCategoryName.trim() || isCreatingCategory}
+                >
+                  {isCreatingCategory
+                    ? tCategory("creating")
+                    : tCategory("create")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Move Group Dialog */}
+          <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("moveGroupToCategory")}</DialogTitle>
+                <DialogDescription>
+                  {selectedGroupToMove && (
+                    <>
+                      {t("moveGroupDescription")}: "{selectedGroupToMove.name}"
+                    </>
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>{tCategory("selectParentCategory")}</Label>
+                  <GroupCategorySelect
+                    value={targetCategoryId}
+                    onChange={setTargetCategoryId}
+                    placeholder={tCategory("selectParentCategory")}
+                    allowEmpty={true}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">{tCategory("cancel")}</Button>
+                </DialogClose>
+                <Button onClick={handleMoveGroup} disabled={isMovingGroup}>
+                  {isMovingGroup ? t("moving") : t("move")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <Link href={`/groups/create`}>
             <Button icon={<Plus className="h-5 w-5" />}>
               {t("creategroup")}

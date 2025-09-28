@@ -408,6 +408,24 @@
     "GroupEdited": "Group Edited Successfully",
     "createGroupfromCSV": "Create Group from CSV"
   },
+  "GroupCategory": {
+    "selectCategory": "Select Category",
+    "noCategory": "No Category",
+    "createCategory": "Create Category",
+    "createParentGroup": "Create Parent Group",
+    "createCategoryDescription": "Create a new category to organize your groups",
+    "createParentGroupDescription": "Create a new parent group to organize your groups in a hierarchy",
+    "categoryName": "Category Name",
+    "enterCategoryName": "Enter category name",
+    "parentCategory": "Parent Category",
+    "selectParentCategory": "Select Parent Category (Optional)",
+    "noParent": "No Parent Category",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "categoryCreated": "Category Created",
+    "category": "Category"
+  },
   "CreateParent": {
     "CreateParent": "Save Parent",
     "ParentName": "Parent Name",
@@ -515,7 +533,12 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "groupDeleted": "Group deleted Successfully",
-    "export": "Export"
+    "export": "Export",
+    "moveGroupToCategory": "Move Group to Parent Group",
+    "moveGroupDescription": "Move group",
+    "move": "Move",
+    "moving": "Moving...",
+    "groupMoved": "Group moved successfully"
   },
   "parents": {
     "parents": "Parents",
