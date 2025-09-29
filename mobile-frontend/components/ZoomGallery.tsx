@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState, useContext } from 'react';
 import { Alert, Platform, TouchableOpacity, View, Text } from 'react-native';
 import ImageViewing from 'react-native-image-viewing';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nContext } from '@/contexts/i18n-context';

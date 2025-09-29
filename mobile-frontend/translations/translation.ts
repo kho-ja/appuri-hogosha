@@ -1,6 +1,6 @@
-import type { ReasonMapping } from '@/types/i18n';
+import type { ReasonMapping, Translations } from '@/types/i18n';
 
-export default {
+const translations: Translations = {
   en: {
     /*sign in page*/
     welcome: 'Welcome Back',
@@ -962,11 +962,34 @@ export default {
 
     /*message detail*/
     detailedView: 'Подробный просмотр',
+    contractFile: 'Договор.pdf',
     /*message detail*/
 
-    /*download*/
+    /*update alerts*/
+    updateAvailable: 'Доступно обновление 🚀',
+    updateAvailableMessage:
+      'Доступна новая версия приложения. Хотите скачать её сейчас?',
     download: 'Скачать',
-    /*download*/
+    downloading: 'Загрузка...',
+    downloadingMessage: 'Пожалуйста, подождите, пока загружается обновление.',
+    updateDownloaded: 'Обновление загружено! ✅',
+    updateDownloadedMessage:
+      'Обновление успешно загружено. Перезапустить приложение для применения изменений?',
+    restartNow: 'Перезапустить сейчас',
+    restart: 'Перезапустить',
+    updateComplete: 'Обновление завершено',
+    updateCompleteMessage: 'У вас уже установлена последняя версия.',
+    downloadFailed: 'Ошибка загрузки',
+    error: 'Ошибка',
+    updateCheckFailed: 'Ошибка проверки обновлений',
+    noUpdates: 'Нет обновлений',
+    latestVersion: 'У вас установлена последняя версия!',
+    checkForUpdates: 'Проверить обновления',
+    checking: 'Проверка...',
+    updateFailed: 'Ошибка обновления',
+    manualUpdateComplete:
+      'Ручное обновление завершено. Перезапустить для применения изменений?',
+    /*update alerts*/
 
     /*image alerts*/
     imageSaved: 'Сохранено',
@@ -979,6 +1002,7 @@ export default {
     /*image alerts*/
   },
 };
+export default translations;
 
 export const reasonMapping: ReasonMapping = {
   en: {
