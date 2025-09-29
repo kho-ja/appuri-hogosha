@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +28,7 @@ import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiQuery from "@/lib/useApiQuery";
+import useTableQuery from "@/lib/useTableQuery";
 
 export function GroupTable({
   selectedGroups,
@@ -38,8 +39,14 @@ export function GroupTable({
 }) {
   const t = useTranslations("GroupTable");
   const { data: session } = useSession();
-  const [page, setPage] = useState(1);
-  const [searchName, setSearchName] = useState("");
+
+  const {
+    page,
+    setPage,
+    search: searchName,
+    setSearch: setSearchName,
+  } = useTableQuery();
+
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${searchName}`,
     ["groups", page, searchName]

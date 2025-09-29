@@ -1,11 +1,12 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function useTableQuery(defaultPerPage = 10) {
   const pathName = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const previousValues = useRef({ perPage: defaultPerPage, search: "" });
 
   const pageFromUrl = Number(searchParams.get("page")) || 1;
   const searchFromUrl = searchParams.get("search") || "";
@@ -49,7 +50,14 @@ export default function useTableQuery(defaultPerPage = 10) {
   }, [page, search, perPage, pathName, router, defaultPerPage]);
 
   useEffect(() => {
-    if (page > 1) setPage(1);
+    const prevPerPage = previousValues.current.perPage;
+    const prevSearch = previousValues.current.search;
+
+    if ((perPage !== prevPerPage || search !== prevSearch) && page > 1) {
+      setPage(1);
+    }
+
+    previousValues.current = { perPage, search };
   }, [perPage, search, page, setPage]);
 
   return {
