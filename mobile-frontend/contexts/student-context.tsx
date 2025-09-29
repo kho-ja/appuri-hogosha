@@ -50,7 +50,7 @@ export function StudentProvider(props: PropsWithChildren) {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
   const previousSessionRef = React.useRef<string | null>(session);
-  
+
   React.useEffect(() => {
     if (previousSessionRef.current !== session) {
       console.log('[StudentContext] Session changed, resetting student state');
@@ -153,7 +153,11 @@ export function StudentProvider(props: PropsWithChildren) {
 
   useEffect(() => {
     if (isSuccess && data) {
-      console.log('[StudentContext] Setting new student data:', data.length, 'students');
+      console.log(
+        '[StudentContext] Setting new student data:',
+        data.length,
+        'students'
+      );
       setStudents(data);
 
       // Save students to AsyncStorage for deeplink navigation
@@ -171,7 +175,11 @@ export function StudentProvider(props: PropsWithChildren) {
   }, [isError, error]);
 
   useEffect(() => {
-    if (activeStudent && students && !students.find(s => s.id === activeStudent.id)) {
+    if (
+      activeStudent &&
+      students &&
+      !students.find(s => s.id === activeStudent.id)
+    ) {
       console.log('[StudentContext] Active student no longer exists, clearing');
       setActiveStudent(null);
     }
