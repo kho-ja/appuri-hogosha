@@ -30,8 +30,9 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
+    // Names are optional now; allow empty strings up to 50 chars
+    given_name: z.string().max(50),
+    family_name: z.string().max(50),
     phone_number: z
       .string()
       .min(10)
@@ -49,7 +50,8 @@ export default function CreateParent() {
   const tName = useTranslations("names");
   const router = useRouter();
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
-  const form = useForm<z.infer<typeof formSchema>>({
+  type FormType = z.infer<typeof formSchema>;
+  const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       given_name: "",
@@ -58,22 +60,23 @@ export default function CreateParent() {
       email: "",
     },
   });
-  const { mutate, isPending } = useApiMutation<{ parent: Parent }>(
-    `parent/create`,
-    "POST",
-    ["createParent"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("ParentCreated"),
-          description: tName("name", { ...data.parent } as any),
-        });
-        setSelectedStudents([]);
-        form.reset();
-        router.push("/parents");
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { parent: Parent },
+    FormType & { students: number[] }
+  >(`parent/create`, "POST", ["createParent"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("ParentCreated"),
+        description: tName("name", {
+          given_name: data.parent.given_name,
+          family_name: data.parent.family_name,
+        }),
+      });
+      setSelectedStudents([]);
+      form.reset();
+      router.push("/parents");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataCreateParent");
@@ -122,7 +125,7 @@ export default function CreateParent() {
               ...values,
               phone_number: values.phone_number.slice(1),
               students: selectedStudents.map((student) => student.id),
-            } as any)
+            })
           )}
           className="space-y-4"
         >
@@ -143,8 +146,7 @@ export default function CreateParent() {
                         />
                       </FormControl>
                       <FormMessage>
-                        {formState.errors.given_name &&
-                          "Parent name is required. Parent name should be more than 5 characters"}
+                        {formState.errors.given_name && t("InvalidName")}
                       </FormMessage>
                     </FormItem>
                   )}
@@ -164,8 +166,7 @@ export default function CreateParent() {
                         />
                       </FormControl>
                       <FormMessage>
-                        {formState.errors.family_name &&
-                          "Parent family name is required. Parent family name should be more than 5 characters"}
+                        {formState.errors.family_name && t("InvalidFamilyName")}
                       </FormMessage>
                     </FormItem>
                   )}

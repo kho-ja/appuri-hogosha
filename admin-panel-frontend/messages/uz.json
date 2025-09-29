@@ -531,7 +531,9 @@
     "close": "Bekor qilish",
     "confirm": "Tasdiqlash",
     "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi",
-    "export": "Yuklab olish"
+    "export": "Yuklab olish",
+    "Students": "Talabalar",
+    "noStudents": "Talabalar yo'q"
   },
   "posts": {
     "messages": "Xabarlar",

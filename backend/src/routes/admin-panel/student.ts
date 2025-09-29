@@ -782,9 +782,13 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const studentParents = await DB.query(
-                `SELECT pa.id, pa.given_name, pa.family_name
+                `SELECT
+                    pa.id,
+                    COALESCE(NULLIF(pa.given_name, ''), st.given_name) AS given_name,
+                    COALESCE(NULLIF(pa.family_name, ''), st.family_name) AS family_name
                 FROM StudentParent AS sp
-                INNER JOIN Parent AS pa on sp.parent_id = pa.id
+                INNER JOIN Parent AS pa ON sp.parent_id = pa.id
+                INNER JOIN Student AS st ON sp.student_id = st.id
                 WHERE sp.student_id = :student_id;`,
                 {
                     student_id: student.id,
@@ -1031,10 +1035,15 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const studentParents = await DB.query(
-                `SELECT pa.id, pa.email,
-                pa.phone_number, pa.given_name, pa.family_name
+                `SELECT
+                    pa.id,
+                    pa.email,
+                    pa.phone_number,
+                    COALESCE(NULLIF(pa.given_name, ''), st.given_name) AS given_name,
+                    COALESCE(NULLIF(pa.family_name, ''), st.family_name) AS family_name
                 FROM StudentParent AS sp
-                INNER JOIN Parent AS pa on sp.parent_id = pa.id
+                INNER JOIN Parent AS pa ON sp.parent_id = pa.id
+                INNER JOIN Student AS st ON sp.student_id = st.id
                 WHERE sp.student_id = :student_id;`,
                 {
                     student_id: student.id,

@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,9 +25,11 @@ import { useSession } from "next-auth/react";
 import PaginationApi from "./PaginationApi";
 import { Trash2 } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { Link } from "@/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
+import useTableQuery from "@/lib/useTableQuery";
 
 export function ParentTable({
   selectedParents,
@@ -37,10 +39,12 @@ export function ParentTable({
   setSelectedParents: React.Dispatch<React.SetStateAction<Parent[]>>;
 }) {
   const t = useTranslations("ParentTable");
+  const tParents = useTranslations("parents");
   const tName = useTranslations("names");
   const { data: session } = useSession();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState<string>("");
+
+  const { page, setPage, search, setSearch } = useTableQuery();
+
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
@@ -115,13 +119,68 @@ export function ParentTable({
         enableHiding: false,
       },
       {
+        accessorKey: "phone_number",
+        header: t("phoneNumber"),
+        cell: ({ row }) => (
+          <div className="text-left">{row.getValue("phone_number")}</div>
+        ),
+      },
+      {
+        accessorKey: "students",
+        header: tParents("Students"),
+        cell: ({ row }) => {
+          const students = row.original.students ?? [];
+          if (!students.length) {
+            return (
+              <span className="text-xs text-muted-foreground">
+                {tParents("noStudents")}
+              </span>
+            );
+          }
+          return (
+            <div className="flex flex-wrap gap-1">
+              {students.map((s) => (
+                <Link key={s.id} href={`/students/${s.id}`}>
+                  <Badge variant="secondary">
+                    {tName("name", {
+                      given_name: s.given_name,
+                      family_name: s.family_name,
+                    })}
+                    {s.student_number ? ` · ${s.student_number}` : ""}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "name",
         header: t("name"),
-        cell: ({ row }) => (
-          <div className="capitalize">
-            {tName("name", { ...row?.original } as any)}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const given = (row.original.given_name || "").trim();
+          const family = (row.original.family_name || "").trim();
+          const hasName = given || family;
+          if (!hasName && (row.original.students?.length ?? 0) > 0) {
+            const s = row.original.students![0];
+            return (
+              <div className="capitalize">
+                {tName("name", {
+                  given_name: s.given_name,
+                  family_name: s.family_name,
+                })}
+              </div>
+            );
+          }
+          return (
+            <div className="capitalize">
+              {tName("name", {
+                given_name: row.original.given_name,
+                family_name: row.original.family_name,
+              })}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "email",
@@ -130,15 +189,8 @@ export function ParentTable({
           <div className="lowercase">{row.getValue("email")}</div>
         ),
       },
-      {
-        accessorKey: "phone_number",
-        header: t("phoneNumber"),
-        cell: ({ row }) => (
-          <div className="text-left">{row.getValue("phone_number")}</div>
-        ),
-      },
     ],
-    [t, tName]
+    [t, tParents, tName]
   );
 
   const table = useReactTable({
@@ -192,8 +244,29 @@ export function ParentTable({
               key={parent.id}
               className="cursor-pointer"
               onClick={() => handleDeleteParent(parent)}
+              title={(() => {
+                const given = (parent.given_name || "").trim();
+                const family = (parent.family_name || "").trim();
+                const hasName = given || family;
+                return hasName
+                  ? tName("name", {
+                      given_name: parent.given_name,
+                      family_name: parent.family_name,
+                    })
+                  : parent.phone_number || parent.email || String(parent.id);
+              })()}
             >
-              {tName("name", { ...parent } as any)}
+              {(() => {
+                const given = (parent.given_name || "").trim();
+                const family = (parent.family_name || "").trim();
+                const hasName = given || family;
+                return hasName
+                  ? tName("name", {
+                      given_name: parent.given_name,
+                      family_name: parent.family_name,
+                    })
+                  : parent.phone_number || parent.email || String(parent.id);
+              })()}
               <Trash2 className="h-4" />
             </Badge>
           ))}

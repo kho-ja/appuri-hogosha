@@ -1,10 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  StyleSheet,
-  ActivityIndicator,
-  SafeAreaView,
-} from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStudents } from '@/contexts/student-context';
 import { ThemedText } from '@/components/ThemedText';
 import { StudentSelector } from '@/components/StudentSelector';

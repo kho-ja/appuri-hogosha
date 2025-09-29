@@ -14,6 +14,7 @@ import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
@@ -375,40 +376,42 @@ export default function Root() {
   return (
     <RootSiblingParent>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SQLiteProvider
-          databaseName='maria.db'
-          assetSource={{ assetId: require('../assets/database/maria.db') }}
-        >
-          <ThemeProvider theme={memoizedTheme}>
-            <StatusBarBackground>
-              {/* Global status bar with blue background */}
-              <StatusBar
-                style='light'
-                backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-                translucent={false}
-              />
-              <NetworkProvider>
-                <I18nProvider>
-                  {isDeepLinkNavigating ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        backgroundColor:
-                          themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {/* Empty screen during navigation */}
-                    </View>
-                  ) : (
-                    <AppWithNotifications />
-                  )}
-                </I18nProvider>
-              </NetworkProvider>
-            </StatusBarBackground>
-          </ThemeProvider>
-        </SQLiteProvider>
+        <SafeAreaProvider>
+          <SQLiteProvider
+            databaseName='maria.db'
+            assetSource={{ assetId: require('../assets/database/maria.db') }}
+          >
+            <ThemeProvider theme={memoizedTheme}>
+              <StatusBarBackground>
+                {/* Global status bar with blue background */}
+                <StatusBar
+                  style='light'
+                  backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
+                  translucent={false}
+                />
+                <NetworkProvider>
+                  <I18nProvider>
+                    {isDeepLinkNavigating ? (
+                      <View
+                        style={{
+                          flex: 1,
+                          backgroundColor:
+                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {/* Empty screen during navigation */}
+                      </View>
+                    ) : (
+                      <AppWithNotifications />
+                    )}
+                  </I18nProvider>
+                </NetworkProvider>
+              </StatusBarBackground>
+            </ThemeProvider>
+          </SQLiteProvider>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     </RootSiblingParent>
   );
