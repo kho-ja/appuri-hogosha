@@ -54,7 +54,7 @@ export default function LoginForm() {
   const [googleError, setGoogleError] = useState<string | null>(null);
 
   // Access messages to check if an error key exists without manual mapping
-  const allMessages = useMessages() as any;
+  const allMessages = useMessages();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,7 +80,7 @@ export default function LoginForm() {
       const keyToUse = Object.prototype.hasOwnProperty.call(ns, error)
         ? error
         : ("AuthError" as const);
-      const message = t(keyToUse as any);
+      const message = t(keyToUse);
       setGoogleError(message);
       setGoogleLoading(false);
       toast({

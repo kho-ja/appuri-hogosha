@@ -87,6 +87,7 @@ export type TranslationKeys = {
   newPasswordMustBeDifferent: string;
   pleaseEnsurePasswordRequirements: string;
   textSize: string;
+  sampleText: string;
   lightMode: string;
   darkMode: string;
   batteryOptimization: string;
