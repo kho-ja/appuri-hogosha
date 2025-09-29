@@ -29,6 +29,7 @@ import useFileMutation from "@/lib/useFileMutation";
 import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
 
 export default function Info() {
   const t = useTranslations("parents");
@@ -63,17 +64,51 @@ export default function Info() {
 
   const parentColumns: ColumnDef<Parent>[] = [
     {
+      accessorKey: "phone_number",
+      header: t("Phone_number"),
+    },
+    {
+      accessorKey: "students",
+      header: t("Students"),
+      meta: { notClickable: true },
+      cell: ({ row }) => {
+        const students = row.original.students ?? [];
+        if (!students.length) {
+          return (
+            <span className="text-xs text-muted-foreground">
+              {t("noStudents")}
+            </span>
+          );
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {students.map((s) => (
+              <Link key={s.id} href={`/students/${s.id}`}>
+                <Badge variant="secondary">
+                  {tName("name", {
+                    given_name: s.given_name,
+                    family_name: s.family_name,
+                  })}
+                  {s.student_number ? ` · ${s.student_number}` : ""}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: "name",
       header: t("parentName"),
-      cell: ({ row }) => tName("name", { ...row?.original } as any),
+      cell: ({ row }) =>
+        tName("name", {
+          given_name: row.original.given_name,
+          family_name: row.original.family_name,
+        }),
     },
     {
       accessorKey: "email",
       header: t("Email"),
-    },
-    {
-      accessorKey: "phone_number",
-      header: t("Phone_number"),
     },
     {
       header: t("action"),
@@ -92,7 +127,10 @@ export default function Info() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {tName("name", { ...row?.original } as any)}
+                  {tName("name", {
+                    given_name: row.original.given_name,
+                    family_name: row.original.family_name,
+                  })}
                 </DialogTitle>
                 <DialogDescription>{row.original.email}</DialogDescription>
               </DialogHeader>

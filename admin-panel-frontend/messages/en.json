@@ -532,7 +532,9 @@
     "close": "Close",
     "confirm": "Confirm",
     "parentDeleted": "Parent Deleted Successfully",
-    "export": "Export"
+    "export": "Export",
+    "Students": "Students",
+    "noStudents": "No students"
   },
   "posts": {
     "messages": "Messages",

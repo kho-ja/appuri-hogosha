@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Alert,
   Pressable,
@@ -163,6 +169,15 @@ export default function SettingsScreen() {
 
     fetchUser();
   }, [db]);
+
+  // Compute display name and hide the name row if both parts are empty/blank
+  const displayName = useMemo(() => {
+    const given = (user?.given_name ?? '').trim();
+    const family = (user?.family_name ?? '').trim();
+    const combined = [given, family].filter(Boolean).join(' ');
+    return combined || '';
+  }, [user]);
+
   const handlePress = useCallback(() => {
     Alert.alert(
       i18n[language].confirmLogout || 'Confirm Logout',
@@ -196,24 +211,29 @@ export default function SettingsScreen() {
             {i18n[language].personalInfo}
           </ThemedText>
           <View style={styles.infoRow}>
-            <View style={styles.row}>
-              <Ionicons
-                name='person-outline'
-                size={22}
-                color={theme.colors.grey1}
-                style={styles.infoIcon}
-              />
-              <View>
-                <ThemedText
-                  style={[styles.profileInitial, { color: theme.colors.grey1 }]}
-                >
-                  {i18n[language].name}
-                </ThemedText>
-                <ThemedText style={styles.profileText}>
-                  {user && `${user.given_name} ${user.family_name}`}
-                </ThemedText>
+            {displayName ? (
+              <View style={styles.row}>
+                <Ionicons
+                  name='person-outline'
+                  size={22}
+                  color={theme.colors.grey1}
+                  style={styles.infoIcon}
+                />
+                <View>
+                  <ThemedText
+                    style={[
+                      styles.profileInitial,
+                      { color: theme.colors.grey1 },
+                    ]}
+                  >
+                    {i18n[language].name}
+                  </ThemedText>
+                  <ThemedText style={styles.profileText}>
+                    {user && `${user.given_name} ${user.family_name}`}
+                  </ThemedText>
+                </View>
               </View>
-            </View>
+            ) : null}
             <View style={styles.row}>
               <Ionicons
                 name='call-outline'
