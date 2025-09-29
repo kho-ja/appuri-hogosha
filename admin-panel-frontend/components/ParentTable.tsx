@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +28,7 @@ import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
+import useTableQuery from "@/lib/useTableQuery";
 
 export function ParentTable({
   selectedParents,
@@ -39,8 +40,9 @@ export function ParentTable({
   const t = useTranslations("ParentTable");
   const tName = useTranslations("names");
   const { data: session } = useSession();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState<string>("");
+
+  const { page, setPage, search, setSearch } = useTableQuery();
+
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
