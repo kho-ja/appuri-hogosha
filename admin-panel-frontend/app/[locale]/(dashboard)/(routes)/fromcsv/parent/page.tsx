@@ -366,11 +366,13 @@ export default function CreateFromCsv() {
   );
 }
 
+type ParentField = "email" | "given_name" | "family_name" | "phone_number";
+
 const ErrorCell = ({
   name,
   error,
 }: {
-  name: keyof Upload<Parent>["errors"][0]["row"];
+  name: ParentField;
   error: Upload<Parent>["errors"][0];
 }) => {
   const t = useTranslations("fromcsv");
