@@ -8,4 +8,10 @@ export default interface Parent {
   viewed_at?: string;
   student_numbers?: string[];
   student_number?: string;
+  students?: Array<{
+    id: number;
+    given_name: string;
+    family_name: string;
+    student_number?: string;
+  }>;
 }

@@ -528,7 +528,9 @@
     "close": "Закрыть",
     "confirm": "Подтвердить",
     "parentDeleted": "Родитель удален",
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "Students": "Студенты",
+    "noStudents": "Студентов нет"
   },
   "posts": {
     "messages": "Сообщения",

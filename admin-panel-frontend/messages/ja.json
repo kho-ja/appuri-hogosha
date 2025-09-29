@@ -529,7 +529,9 @@
     "close": "閉じる",
     "confirm": "確認する",
     "parentDeleted": "保護者が削除されました",
-    "export": "ファイルに書き出す"
+    "export": "ファイルに書き出す",
+    "Students": "学生",
+    "noStudents": "学生がいません"
   },
   "posts": {
     "messages": "メッセージ",
