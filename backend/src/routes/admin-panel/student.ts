@@ -700,7 +700,7 @@ class StudentController implements IController {
 
                         throw {
                             status: 400,
-                            message: 'parent_student_limit_exceeded',
+                            message: ErrorKeys.parent_student_limit_exceeded,
                             details: {
                                 parentsAtLimit: parentNames.map((p: any) => ({
                                     id: p.id,
