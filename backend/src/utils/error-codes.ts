@@ -34,6 +34,7 @@ export const ErrorKeys = {
     student_number_already_exists: 'student_number_already_exists',
     group_name_already_exists: 'group_name_already_exists',
     group_does_not_exist: 'group_does_not_exist',
+    parent_student_limit_exceeded: 'parent_student_limit_exceeded',
 
     // General errors
     server_error: 'server_error',
