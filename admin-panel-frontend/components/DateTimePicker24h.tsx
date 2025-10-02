@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { cn, FormatDateTimeForDisplay } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -11,16 +11,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useTimeZone } from "next-intl";
 
 type DateTimePicker24hProps = {
   value: Date | null;
   onChange: (date: Date | null) => void;
 };
 
+function formatDateTimeForDisplay(date: Date | null): string {
+  if (!date) return "";
+
+  try {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  } catch (error) {
+    return "";
+  }
+}
+
 export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const timeZone = useTimeZone();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -62,7 +77,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
           <CalendarIcon className="mr-2 h-4 w-4" />
           {value ? (
             <span>
-              {FormatDateTimeForDisplay(value)}
+              {formatDateTimeForDisplay(value)}
               <span className="ml-2 text-xs text-muted-foreground">
                 ({timeZone})
               </span>

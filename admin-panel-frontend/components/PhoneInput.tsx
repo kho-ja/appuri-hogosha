@@ -31,7 +31,13 @@ type PhoneInputProps = Omit<
 
 const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
   React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
-    ({ className, onChange, ...props }, ref) => {
+    ({ className, onChange, value, ...props }, ref) => {
+      const [internalValue, setInternalValue] = React.useState(value);
+
+      React.useEffect(() => {
+        setInternalValue(value);
+      }, [value]);
+
       return (
         <RPNInput.default
           ref={ref}
@@ -50,7 +56,11 @@ const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
            *
            * @param {E164Number | undefined} value - The entered value
            */
-          onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
+          value={internalValue || undefined}
+          onChange={(newValue) => {
+            setInternalValue(newValue);
+            onChange?.(newValue || ("" as RPNInput.Value));
+          }}
           {...props}
         />
       );
