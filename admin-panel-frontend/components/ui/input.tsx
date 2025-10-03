@@ -1,12 +1,23 @@
 import * as React from "react";
-
 import { cn } from "@/lib/utils";
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  noSpaceAccepted?: boolean;
+}
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
+  ({ className, type, noSpaceAccepted, onChange, ...props }, ref) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = noSpaceAccepted
+        ? e.target.value.replace(/\s+/g, "")
+        : e.target.value;
+      onChange?.({
+        ...e,
+        target: { ...e.target, value },
+      });
+    };
+
     return (
       <input
         type={type}
@@ -15,6 +26,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           className
         )}
         ref={ref}
+        onChange={handleChange}
         {...props}
       />
     );
