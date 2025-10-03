@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import {
@@ -8,6 +9,7 @@ import {
   Trash2Icon,
   FolderPlus,
   FolderIcon,
+  GripVertical,
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
@@ -16,9 +18,8 @@ import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
-import TableApi from "@/components/TableApi";
+import TableApi, { SkeletonLoader } from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -38,6 +39,22 @@ import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
 import { GroupCategorySelect } from "@/components/GroupCategorySelect";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function Groups() {
   const t = useTranslations("groups");
@@ -59,17 +76,90 @@ export default function Groups() {
     null
   );
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editableGroups, setEditableGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    if (!isEditMode && data?.groups) {
+      setEditableGroups(data.groups);
+    }
+  }, [data?.groups, isEditMode]);
+
+  const toggleEditMode = () => {
+    setIsEditMode((prev) => {
+      const next = !prev;
+      if (!prev && data?.groups) {
+        setEditableGroups(data.groups);
+      }
+      return next;
+    });
+  };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+
+    setEditableGroups((items) => {
+      const activeId = active.id.toString();
+      const overId = over.id.toString();
+      const oldIndex = items.findIndex(
+        (group) => group.id.toString() === activeId
+      );
+      const newIndex = items.findIndex(
+        (group) => group.id.toString() === overId
+      );
+
+      if (oldIndex === -1 || newIndex === -1) return items;
+      return arrayMove(items, oldIndex, newIndex);
+    });
+  };
+
+  const renderActionCell = (group: Group) => (
+    <div className="flex gap-2">
+      <Link href={`/groups/edit/${group.id}`}>
+        <Edit3Icon />
+      </Link>
+      <FolderIcon
+        className="text-blue-500 cursor-pointer"
+        onClick={() => openMoveDialog(group)}
+      />
+      <Dialog>
+        <DialogTrigger asChild>
+          <Trash2Icon className="text-red-500 cursor-pointer" />
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{group.name}</DialogTitle>
+            <DialogDescription>{group.member_count}</DialogDescription>
+          </DialogHeader>
+          <div>{t("DouYouDeleteGroup")}</div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">{t("cancel")}</Button>
+            </DialogClose>
+            <Button
+              onClick={() => {
+                setGroupId(group.id);
+                mutate();
+              }}
+            >
+              {t("confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 
   const { mutate } = useApiMutation<{ message: string }>(
     `group/${groupId}`,
     "DELETE",
     ["deleteGroup"],
     {
-      onSuccess: (data) => {
+      onSuccess: (mutationData) => {
         queryClient.invalidateQueries({ queryKey: ["groups"] });
         toast({
           title: t("groupDeleted"),
-          description: t(data?.message),
+          description: t(mutationData?.message),
         });
       },
     }
@@ -80,10 +170,10 @@ export default function Groups() {
       { id: number; name: string },
       { name: string; parent_category_id?: number | null }
     >("group-category/create", "POST", ["create-category"], {
-      onSuccess: (data) => {
+      onSuccess: (mutationData) => {
         toast({
           title: tCategory("categoryCreated"),
-          description: data.name,
+          description: mutationData.name,
         });
         queryClient.invalidateQueries({ queryKey: ["group-categories"] });
         queryClient.invalidateQueries({ queryKey: ["groups"] });
@@ -108,10 +198,10 @@ export default function Groups() {
       "PUT",
       ["move-group-to-category"],
       {
-        onSuccess: (data) => {
+        onSuccess: (mutationData) => {
           toast({
             title: t("groupMoved"),
-            description: data.message,
+            description: mutationData.message,
           });
           queryClient.invalidateQueries({ queryKey: ["groups"] });
           setIsMoveDialogOpen(false);
@@ -133,6 +223,7 @@ export default function Groups() {
     setTargetCategoryId(group.group_category_id || null);
     setIsMoveDialogOpen(true);
   };
+
   const { mutate: exportGroups } = useFileMutation<{ message: string }>(
     `group/export`,
     ["exportGroups"]
@@ -146,51 +237,14 @@ export default function Groups() {
     {
       accessorKey: "member_count",
       header: t("studentCount"),
-      cell: ({ row }) => row.getValue("member_count"),
+      cell: ({ row }) => row.original.member_count ?? 0,
     },
     {
       header: t("action"),
       meta: {
         notClickable: true,
       },
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Link href={`/groups/edit/${row.original.id}`}>
-            <Edit3Icon />
-          </Link>
-          <FolderIcon
-            className="text-blue-500 cursor-pointer"
-            onClick={() => openMoveDialog(row.original)}
-          />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Trash2Icon className="text-red-500 cursor-pointer" />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{row?.original.name}</DialogTitle>
-                <DialogDescription>
-                  {row.original.member_count}
-                </DialogDescription>
-              </DialogHeader>
-              <div>{t("DouYouDeleteGroup")}</div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
-                </DialogClose>
-                <Button
-                  onClick={() => {
-                    setGroupId(row.original.id);
-                    mutate();
-                  }}
-                >
-                  {t("confirm")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ),
+      cell: ({ row }) => renderActionCell(row.original),
     },
   ];
 
@@ -198,6 +252,14 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
+          <Button
+            variant={isEditMode ? "default" : "outline"}
+            icon={<Edit3Icon className="h-5 w-5" />}
+            onClick={toggleEditMode}
+          >
+            {isEditMode ? t("done") : t("edit")}
+          </Button>
+
           <Dialog
             open={isCreateCategoryDialogOpen}
             onOpenChange={setIsCreateCategoryDialogOpen}
@@ -237,7 +299,7 @@ export default function Groups() {
                     value={selectedParentId}
                     onChange={setSelectedParentId}
                     placeholder={tCategory("selectParentCategory")}
-                    allowEmpty={true}
+                    allowEmpty
                   />
                 </div>
               </div>
@@ -257,7 +319,6 @@ export default function Groups() {
             </DialogContent>
           </Dialog>
 
-          {/* Move Group Dialog */}
           <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
             <DialogContent>
               <DialogHeader>
@@ -278,7 +339,7 @@ export default function Groups() {
                     value={targetCategoryId}
                     onChange={setTargetCategoryId}
                     placeholder={tCategory("selectParentCategory")}
-                    allowEmpty={true}
+                    allowEmpty
                   />
                 </div>
               </div>
@@ -299,6 +360,7 @@ export default function Groups() {
             </Button>
           </Link>
         </PageHeader>
+
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
@@ -309,10 +371,11 @@ export default function Groups() {
             }}
             className="sm:max-w-sm mb-4"
           />
-          <div className="">
+          <div>
             <PaginationApi data={data?.pagination || null} setPage={setPage} />
           </div>
         </div>
+
         <div className="space-y-2 align-left">
           <div className="flex justify-end items-center">
             <Button
@@ -326,14 +389,139 @@ export default function Groups() {
             </Button>
           </div>
           <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi
-              linkPrefix="/groups"
-              data={data?.groups ?? null}
-              columns={columns}
-            />
+            {isEditMode ? (
+              data?.groups ? (
+                <SortableGroupsTable
+                  groups={editableGroups}
+                  onDragEnd={handleDragEnd}
+                  renderActionCell={renderActionCell}
+                  headers={{
+                    drag: "",
+                    name: t("groupName"),
+                    members: t("studentCount"),
+                    action: t("action"),
+                  }}
+                />
+              ) : (
+                <Table>
+                  <TableBody>
+                    <SkeletonLoader rowCount={5} columnCount={4} />
+                  </TableBody>
+                </Table>
+              )
+            ) : (
+              <TableApi
+                linkPrefix="/groups"
+                data={data?.groups ?? null}
+                columns={columns}
+              />
+            )}
           </Card>
         </div>
       </div>
     </div>
+  );
+}
+
+type SortableGroupsTableProps = {
+  groups: Group[];
+  onDragEnd: (event: DragEndEvent) => void;
+  renderActionCell: (group: Group) => JSX.Element;
+  headers: {
+    drag: string;
+    name: string;
+    members: string;
+    action: string;
+  };
+};
+
+function SortableGroupsTable({
+  groups,
+  onDragEnd,
+  renderActionCell,
+  headers,
+}: SortableGroupsTableProps) {
+  return (
+    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext
+        items={groups.map((group) => group.id.toString())}
+        strategy={verticalListSortingStrategy}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">{headers.drag}</TableHead>
+              <TableHead>{headers.name}</TableHead>
+              <TableHead>{headers.members}</TableHead>
+              <TableHead>{headers.action}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {groups.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="py-6 text-center text-sm text-muted-foreground"
+                >
+                  {headers.members}
+                </TableCell>
+              </TableRow>
+            ) : (
+              groups.map((group) => (
+                <SortableGroupRow
+                  key={group.id}
+                  group={group}
+                  renderActionCell={renderActionCell}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </SortableContext>
+    </DndContext>
+  );
+}
+
+type SortableGroupRowProps = {
+  group: Group;
+  renderActionCell: (group: Group) => JSX.Element;
+};
+
+function SortableGroupRow({
+  group,
+  renderActionCell,
+}: SortableGroupRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: group.id.toString() });
+
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  return (
+    <TableRow ref={setNodeRef} style={style} className="bg-background">
+      <TableCell className="w-10">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="cursor-grab"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </Button>
+      </TableCell>
+      <TableCell>{group.name}</TableCell>
+      <TableCell>{group.member_count ?? 0}</TableCell>
+      <TableCell>{renderActionCell(group)}</TableCell>
+    </TableRow>
   );
 }
