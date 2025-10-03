@@ -228,7 +228,7 @@ export default function SettingsScreen() {
                   >
                     {i18n[language].name}
                   </ThemedText>
-                  <ThemedText style={styles.profileText}>
+                  <ThemedText style={[styles.profileText, { flexWrap: 'wrap' }]}>
                     {user && `${user.given_name} ${user.family_name}`}
                   </ThemedText>
                 </View>
