@@ -445,6 +445,7 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 16,
     fontWeight: '400',
+    width: 280,
   },
   profileInitial: {
     fontSize: 12,
