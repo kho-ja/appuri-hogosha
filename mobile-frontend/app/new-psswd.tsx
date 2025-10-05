@@ -255,47 +255,20 @@ export default function NewPassword() {
           />
 
           {password.length > 0 && (
-            <>
-              <ThemedView style={styles.strengthContainer}>
-                <ThemedText style={styles.strengthLabel}>
-                  {i18n[language].passwordStrength}
-                </ThemedText>
-                <View style={styles.strengthBar}>
-                  <View
-                    style={[
-                      styles.strengthFill,
-                      {
-                        width: `${passwordStrength.score}%`,
-                        backgroundColor: passwordStrength.color,
-                      },
-                    ]}
-                  />
-                </View>
-                <ThemedText
-                  style={[
-                    styles.strengthText,
-                    { color: passwordStrength.color },
-                  ]}
-                >
-                  {passwordStrength.label}
-                </ThemedText>
-              </ThemedView>
-
-              <PasswordRequirements
-                password={password}
-                requirements={{
-                  minLength: i18n[language].minLength,
-                  hasNumber: i18n[language].hasNumber,
-                  hasUppercase: i18n[language].hasUppercase,
-                  hasLowercase: i18n[language].hasLowercase,
-                  hasSpecialChar: i18n[language].hasSpecialChar,
-                  passwordStrength: i18n[language].passwordStrength,
-                  weak: i18n[language].weak,
-                  medium: i18n[language].medium,
-                  strong: i18n[language].strong,
-                }}
-              />
-            </>
+            <PasswordRequirements
+              password={password}
+              requirements={{
+                minLength: i18n[language].minLength,
+                hasNumber: i18n[language].hasNumber,
+                hasUppercase: i18n[language].hasUppercase,
+                hasLowercase: i18n[language].hasLowercase,
+                hasSpecialChar: i18n[language].hasSpecialChar,
+                passwordStrength: i18n[language].passwordStrength,
+                weak: i18n[language].weak,
+                medium: i18n[language].medium,
+                strong: i18n[language].strong,
+              }}
+            />
           )}
 
           <Button
