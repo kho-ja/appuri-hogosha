@@ -10,12 +10,16 @@ import {
   FolderPlus,
   FolderIcon,
   GripVertical,
+  ChevronRight,
+  ChevronDown,
+  Loader2,
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
+import GroupCategory from "@/types/group-category";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import TableApi, { SkeletonLoader } from "@/components/TableApi";
@@ -78,6 +82,7 @@ export default function Groups() {
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editableGroups, setEditableGroups] = useState<Group[]>([]);
+  const [openCategoryIds, setOpenCategoryIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!isEditMode && data?.groups) {
@@ -248,6 +253,21 @@ export default function Groups() {
     },
   ];
 
+  const { data: categoryTreeResponse, isLoading: isCategoryTreeLoading } =
+    useApiQuery<{ tree: GroupCategory[] }>("group-category/tree", [
+      "group-category-tree",
+    ]);
+
+  const categoryTree = categoryTreeResponse?.tree ?? [];
+
+  const toggleCategoryOpen = (categoryId: number) => {
+    setOpenCategoryIds((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
   return (
     <div className="w-full">
       <div className="space-y-4">
@@ -376,6 +396,25 @@ export default function Groups() {
           </div>
         </div>
 
+        {categoryTree.length > 0 && (
+          <Card className="space-y-3 p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                {tCategory("categories")}
+              </h2>
+              {isCategoryTreeLoading && (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+            </div>
+            <CategoryMenu
+              categories={categoryTree}
+              openCategoryIds={openCategoryIds}
+              onToggleCategory={toggleCategoryOpen}
+              emptyLabel={tCategory("noGroups")}
+            />
+          </Card>
+        )}
+
         <div className="space-y-2 align-left">
           <div className="flex justify-end items-center">
             <Button
@@ -487,10 +526,7 @@ type SortableGroupRowProps = {
   renderActionCell: (group: Group) => JSX.Element;
 };
 
-function SortableGroupRow({
-  group,
-  renderActionCell,
-}: SortableGroupRowProps) {
+function SortableGroupRow({ group, renderActionCell }: SortableGroupRowProps) {
   const {
     attributes,
     listeners,
@@ -523,5 +559,110 @@ function SortableGroupRow({
       <TableCell>{group.member_count ?? 0}</TableCell>
       <TableCell>{renderActionCell(group)}</TableCell>
     </TableRow>
+  );
+}
+
+type CategoryMenuProps = {
+  categories: GroupCategory[];
+  openCategoryIds: number[];
+  onToggleCategory: (id: number) => void;
+  emptyLabel: string;
+};
+
+function CategoryMenu({
+  categories,
+  openCategoryIds,
+  onToggleCategory,
+  emptyLabel,
+}: CategoryMenuProps) {
+  if (!categories.length) return null;
+
+  return (
+    <div className="space-y-2">
+      {categories.map((category) => (
+        <CategoryNode
+          key={category.id}
+          category={category}
+          openCategoryIds={openCategoryIds}
+          onToggleCategory={onToggleCategory}
+          emptyLabel={emptyLabel}
+        />
+      ))}
+    </div>
+  );
+}
+
+type CategoryNodeProps = {
+  category: GroupCategory;
+  openCategoryIds: number[];
+  onToggleCategory: (id: number) => void;
+  emptyLabel: string;
+};
+
+function CategoryNode({
+  category,
+  openCategoryIds,
+  onToggleCategory,
+  emptyLabel,
+}: CategoryNodeProps) {
+  const isOpen = openCategoryIds.includes(category.id);
+
+  return (
+    <div className="overflow-hidden rounded-md border border-border bg-muted/20">
+      <button
+        type="button"
+        onClick={() => onToggleCategory(category.id)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition hover:bg-muted/40"
+      >
+        <span className="flex items-center gap-2">
+          {isOpen ? (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          )}
+          {category.name}
+        </span>
+        {typeof category.group_count === "number" && (
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+            {category.group_count}
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="space-y-2 border-t border-border bg-background px-6 py-4 text-sm">
+          {category.groups && category.groups.length > 0 ? (
+            <ul className="space-y-2">
+              {category.groups.map((group) => (
+                <li
+                  key={`category-${category.id}-group-${group.id}`}
+                  className="flex items-center justify-between rounded-md border border-transparent bg-muted px-3 py-2 text-sm transition hover:border-border"
+                >
+                  <Link href={`/groups/${group.id}`} className="font-medium">
+                    {group.name}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    {group.member_count ?? 0}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-muted-foreground">{emptyLabel}</p>
+          )}
+
+          {category.children && category.children.length > 0 && (
+            <div className="pt-2">
+              <CategoryMenu
+                categories={category.children}
+                openCategoryIds={openCategoryIds}
+                onToggleCategory={onToggleCategory}
+                emptyLabel={emptyLabel}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
