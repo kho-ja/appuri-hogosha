@@ -239,7 +239,6 @@ class PostController implements IController {
                     }
                 }
 
-                // Attach groups by names
                 if (post.group_names.length) {
                     const groups = await DB.query(
                         `SELECT id, name FROM StudentGroup WHERE name IN (:names) AND school_id = :sid`,
@@ -308,21 +307,42 @@ class PostController implements IController {
             const postId = req.params.id;
             if (!postId || !isValidId(postId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_post_id',
                 };
             }
 
+            const { students, groups } = req.body;
+
+            if (!Array.isArray(students) || !Array.isArray(groups)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_input_arrays',
+                };
+            }
+
+            const studentIds = students
+                .filter(id => id != null)
+                .map(id => parseInt(id, 10));
+            const groupIds = groups
+                .filter(id => id != null)
+                .map(id => parseInt(id, 10));
+
+            if (!isValidArrayId(studentIds) || !isValidArrayId(groupIds)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_student_or_group_ids',
+                };
+            }
+
             const postInfo = await DB.query(
-                `SELECT id
-                                             FROM Post
-                                             WHERE id = :id
-                                               AND school_id = :school_id`,
+                `SELECT id FROM Post WHERE id = :id AND school_id = :school_id`,
                 {
                     id: postId,
                     school_id: req.user.school_id,
                 }
             );
+
             if (postInfo.length <= 0) {
                 throw {
                     status: 404,
@@ -330,183 +350,186 @@ class PostController implements IController {
                 };
             }
 
-            const { students, groups } = req.body;
+            await DB.execute('START TRANSACTION');
 
-            const existingPostStudents = await DB.query(
-                `SELECT id, student_id, group_id
-                                                     FROM PostStudent
-                                                     WHERE post_id = :post_id`,
-                {
-                    post_id: postId,
-                }
-            );
-
-            const existingIndividualStudents = existingPostStudents.filter(
-                (ps: any) => ps.student_id && ps.group_id === null
-            );
-            const existingGroupStudents = existingPostStudents.filter(
-                (ps: any) => ps.group_id !== null
-            );
-
-            const existingIndividualStudentIds = existingIndividualStudents.map(
-                (ps: any) => ps.student_id
-            );
-            const existingGroupIds = existingGroupStudents.map(
-                (ps: any) => ps.group_id
-            );
-
-            const studentsToAdd = students.filter(
-                (id: any) => !existingIndividualStudentIds.includes(id)
-            );
-            const groupsToAdd = groups.filter(
-                (id: any) => !existingGroupIds.includes(id)
-            );
-
-            const studentsToRemove = existingIndividualStudents.filter(
-                (ps: any) => !students.includes(ps.student_id)
-            );
-            const groupsToRemove = existingGroupStudents.filter(
-                (ps: any) => !groups.includes(ps.group_id)
-            );
-
-            if (studentsToRemove.length > 0) {
-                const studentIdsToRemove = studentsToRemove.map(
-                    (ps: any) => ps.id
-                );
-                const studentConditions = studentIdsToRemove
-                    .map((id: any) => `post_student_id = ${id}`)
-                    .join(' OR ');
-
-                await DB.execute(
-                    `DELETE FROM PostParent WHERE ${studentConditions}`
+            try {
+                const existingPostStudents = await DB.query(
+                    `SELECT id, student_id, group_id FROM PostStudent WHERE post_id = :post_id`,
+                    { post_id: postId }
                 );
 
-                const postStudentConditions = studentIdsToRemove
-                    .map((id: any) => `id = ${id}`)
-                    .join(' OR ');
-                await DB.execute(
-                    `DELETE FROM PostStudent WHERE ${postStudentConditions}`
+                const existingIndividualStudents = existingPostStudents
+                    .filter((ps: any) => ps.student_id && ps.group_id === null)
+                    .map((ps: any) => ps.student_id);
+
+                const existingGroupIds = existingPostStudents
+                    .filter((ps: any) => ps.group_id !== null)
+                    .map((ps: any) => ps.group_id);
+
+                const studentsToAdd = studentIds.filter(
+                    id => !existingIndividualStudents.includes(id)
                 );
-            }
+                const groupsToAdd = groupIds.filter(
+                    id => !existingGroupIds.includes(id)
+                );
 
-            if (groupsToRemove.length > 0) {
-                const uniqueGroupsToRemove = [
-                    ...new Set(groupsToRemove.map((ps: any) => ps.group_id)),
-                ];
+                const studentsToRemove = existingPostStudents.filter(
+                    (ps: any) =>
+                        ps.student_id &&
+                        ps.group_id === null &&
+                        !studentIds.includes(ps.student_id)
+                );
+                const groupsToRemove = existingPostStudents.filter(
+                    (ps: any) => ps.group_id && !groupIds.includes(ps.group_id)
+                );
 
-                for (const groupId of uniqueGroupsToRemove) {
-                    const groupPostStudentIds = await DB.query(
-                        `SELECT id FROM PostStudent WHERE post_id = :post_id AND group_id = :group_id`,
-                        { post_id: postId, group_id: groupId }
+                if (studentsToRemove.length > 0) {
+                    const studentIdsToRemove = studentsToRemove.map(
+                        (ps: any) => ps.id
                     );
 
-                    if (groupPostStudentIds.length > 0) {
-                        const groupStudentConditions = groupPostStudentIds
-                            .map((ps: any) => `post_student_id = ${ps.id}`)
-                            .join(' OR ');
-
-                        await DB.execute(
-                            `DELETE FROM PostParent WHERE ${groupStudentConditions}`
-                        );
-
-                        const postStudentConditions = groupPostStudentIds
-                            .map((ps: any) => `id = ${ps.id}`)
-                            .join(' OR ');
-                        await DB.execute(
-                            `DELETE FROM PostStudent WHERE ${postStudentConditions}`
-                        );
-                    }
-                }
-            }
-
-            for (const studentId of studentsToAdd) {
-                const post_student = await DB.execute(
-                    `INSERT INTO PostStudent (post_id, student_id) VALUES (:post_id, :student_id)`,
-                    {
-                        post_id: postId,
-                        student_id: studentId,
-                    }
-                );
-
-                const studentParents = await DB.query(
-                    `SELECT parent_id FROM StudentParent WHERE student_id = :student_id`,
-                    {
-                        student_id: studentId,
-                    }
-                );
-                if (studentParents.length > 0) {
-                    const studentParentValues = studentParents.map(
-                        (sp: any) =>
-                            `(${post_student.insertId}, ${sp.parent_id})`
-                    );
                     await DB.execute(
-                        `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${studentParentValues.join(',')}`
+                        `DELETE FROM PostParent WHERE post_student_id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                        studentIdsToRemove
+                    );
+
+                    await DB.execute(
+                        `DELETE FROM PostStudent WHERE id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                        studentIdsToRemove
                     );
                 }
-            }
 
-            for (const groupId of groupsToAdd) {
-                const groupMembers = await DB.query(
-                    `SELECT student_id FROM GroupMember WHERE group_id = :group_id`,
-                    {
-                        group_id: groupId,
+                if (groupsToRemove.length > 0) {
+                    const groupPostStudentIds = groupsToRemove.map(
+                        (ps: any) => ps.id
+                    );
+
+                    await DB.execute(
+                        `DELETE FROM PostParent WHERE post_student_id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                        groupPostStudentIds
+                    );
+
+                    await DB.execute(
+                        `DELETE FROM PostStudent WHERE id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                        groupPostStudentIds
+                    );
+                }
+
+                for (const studentId of studentsToAdd) {
+                    const studentCheck = await DB.query(
+                        `SELECT id FROM Student WHERE id = :student_id AND school_id = :school_id`,
+                        { student_id: studentId, school_id: req.user.school_id }
+                    );
+
+                    if (studentCheck.length === 0) {
+                        throw {
+                            status: 400,
+                            message: `student_not_found_or_invalid: ${studentId}`,
+                        };
                     }
-                );
 
-                if (groupMembers.length <= 0) {
-                    throw {
-                        status: 404,
-                        message: 'group_members_not_found',
-                    };
-                }
-
-                for (const member of groupMembers) {
-                    const post_student = await DB.execute(
-                        `INSERT INTO PostStudent (post_id, student_id, group_id) VALUES (:post_id, :student_id, :group_id)`,
-                        {
-                            post_id: postId,
-                            student_id: member.student_id,
-                            group_id: groupId,
-                        }
+                    const postStudentResult = await DB.execute(
+                        `INSERT INTO PostStudent (post_id, student_id) VALUES (:post_id, :student_id)`,
+                        { post_id: postId, student_id: studentId }
                     );
+
                     const studentParents = await DB.query(
                         `SELECT parent_id FROM StudentParent WHERE student_id = :student_id`,
-                        {
-                            student_id: member.student_id,
-                        }
+                        { student_id: studentId }
                     );
+
                     if (studentParents.length > 0) {
-                        const studentParentValues = studentParents.map(
-                            (sp: any) =>
-                                `(${post_student.insertId}, ${sp.parent_id})`
-                        );
-                        await DB.execute(
-                            `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${studentParentValues.join(',')}`
-                        );
+                        for (const parent of studentParents) {
+                            await DB.execute(
+                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES (:post_student_id, :parent_id)`,
+                                {
+                                    post_student_id: postStudentResult.insertId,
+                                    parent_id: parent.parent_id,
+                                }
+                            );
+                        }
                     }
                 }
+
+                for (const groupId of groupsToAdd) {
+                    const groupCheck = await DB.query(
+                        `SELECT id FROM StudentGroup WHERE id = :group_id AND school_id = :school_id`,
+                        { group_id: groupId, school_id: req.user.school_id }
+                    );
+
+                    if (groupCheck.length === 0) {
+                        throw {
+                            status: 400,
+                            message: `group_not_found_or_invalid: ${groupId}`,
+                        };
+                    }
+
+                    const groupMembers = await DB.query(
+                        `SELECT student_id FROM GroupMember WHERE group_id = :group_id`,
+                        { group_id: groupId }
+                    );
+
+                    if (groupMembers.length === 0) {
+                        throw {
+                            status: 400,
+                            message: `group_has_no_members: ${groupId}`,
+                        };
+                    }
+
+                    for (const member of groupMembers) {
+                        const postStudentResult = await DB.execute(
+                            `INSERT INTO PostStudent (post_id, student_id, group_id) VALUES (:post_id, :student_id, :group_id)`,
+                            {
+                                post_id: postId,
+                                student_id: member.student_id,
+                                group_id: groupId,
+                            }
+                        );
+
+                        const studentParents = await DB.query(
+                            `SELECT parent_id FROM StudentParent WHERE student_id = :student_id`,
+                            { student_id: member.student_id }
+                        );
+
+                        if (studentParents.length > 0) {
+                            for (const parent of studentParents) {
+                                await DB.execute(
+                                    `INSERT INTO PostParent (post_student_id, parent_id) VALUES (:post_student_id, :parent_id)`,
+                                    {
+                                        post_student_id:
+                                            postStudentResult.insertId,
+                                        parent_id: parent.parent_id,
+                                    }
+                                );
+                            }
+                        }
+                    }
+                }
+
+                await DB.execute(
+                    `UPDATE Post SET edited_at = NOW() WHERE id = :id AND school_id = :school_id`,
+                    { id: postId, school_id: req.user.school_id }
+                );
+
+                await DB.execute('COMMIT');
+
+                return res
+                    .status(200)
+                    .json({
+                        message: 'post_sender_updated_successfully',
+                    })
+                    .end();
+            } catch (transactionError) {
+                await DB.execute('ROLLBACK');
+                throw transactionError;
+            }
+        } catch (e: any) {
+            try {
+                await DB.execute('ROLLBACK');
+            } catch {
+                // Ignore rollback errors (transaction might not be active)
             }
 
-            const post = postInfo[0];
-
-            await DB.execute(
-                `UPDATE Post
-                              SET edited_at = NOW()
-                              WHERE id = :id
-                                AND school_id = :school_id`,
-                {
-                    id: post.id,
-                    school_id: req.user.school_id,
-                }
-            );
-
-            return res
-                .status(200)
-                .json({
-                    message: 'post_sender_updated_successfully',
-                })
-                .end();
-        } catch (e: any) {
             if (e.status) {
                 return res
                     .status(e.status)
@@ -515,6 +538,7 @@ class PostController implements IController {
                     })
                     .end();
             } else {
+                console.error('postUpdateSender error:', e);
                 return res
                     .status(500)
                     .json({
