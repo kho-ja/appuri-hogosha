@@ -341,49 +341,82 @@ class PostController implements IController {
                 }
             );
 
-            const existingStudentIds = existingPostStudents.map(
+            const existingIndividualStudents = existingPostStudents.filter(
+                (ps: any) => ps.student_id && ps.group_id === null
+            );
+            const existingGroupStudents = existingPostStudents.filter(
+                (ps: any) => ps.group_id !== null
+            );
+
+            const existingIndividualStudentIds = existingIndividualStudents.map(
                 (ps: any) => ps.student_id
             );
-            const existingGroupIds = existingPostStudents.map(
+            const existingGroupIds = existingGroupStudents.map(
                 (ps: any) => ps.group_id
             );
 
             const studentsToAdd = students.filter(
-                (id: any) => !existingStudentIds.includes(id)
+                (id: any) => !existingIndividualStudentIds.includes(id)
             );
             const groupsToAdd = groups.filter(
                 (id: any) => !existingGroupIds.includes(id)
             );
 
-            const studentsToRemove = existingPostStudents.filter(
-                (ps: any) => ps.student_id && !students.includes(ps.student_id)
+            const studentsToRemove = existingIndividualStudents.filter(
+                (ps: any) => !students.includes(ps.student_id)
             );
-            const groupsToRemove = existingPostStudents.filter(
-                (ps: any) => ps.group_id && !groups.includes(ps.group_id)
+            const groupsToRemove = existingGroupStudents.filter(
+                (ps: any) => !groups.includes(ps.group_id)
             );
 
             if (studentsToRemove.length > 0) {
-                const studentConditions = studentsToRemove
-                    .map((ps: any) => `id = ${ps.id}`)
-                    .join(' OR ');
-                await DB.execute(
-                    `DELETE FROM PostStudent WHERE ${studentConditions}`
+                const studentIdsToRemove = studentsToRemove.map(
+                    (ps: any) => ps.id
                 );
+                const studentConditions = studentIdsToRemove
+                    .map((id: any) => `post_student_id = ${id}`)
+                    .join(' OR ');
+
                 await DB.execute(
                     `DELETE FROM PostParent WHERE ${studentConditions}`
+                );
+
+                const postStudentConditions = studentIdsToRemove
+                    .map((id: any) => `id = ${id}`)
+                    .join(' OR ');
+                await DB.execute(
+                    `DELETE FROM PostStudent WHERE ${postStudentConditions}`
                 );
             }
 
             if (groupsToRemove.length > 0) {
-                const groupConditions = groupsToRemove
-                    .map((ps: any) => `id = ${ps.id}`)
-                    .join(' OR ');
-                await DB.execute(
-                    `DELETE FROM PostStudent WHERE ${groupConditions}`
-                );
-                await DB.execute(
-                    `DELETE FROM PostParent WHERE ${groupConditions}`
-                );
+                const uniqueGroupsToRemove = [
+                    ...new Set(groupsToRemove.map((ps: any) => ps.group_id)),
+                ];
+
+                for (const groupId of uniqueGroupsToRemove) {
+                    const groupPostStudentIds = await DB.query(
+                        `SELECT id FROM PostStudent WHERE post_id = :post_id AND group_id = :group_id`,
+                        { post_id: postId, group_id: groupId }
+                    );
+
+                    if (groupPostStudentIds.length > 0) {
+                        const groupStudentConditions = groupPostStudentIds
+                            .map((ps: any) => `post_student_id = ${ps.id}`)
+                            .join(' OR ');
+
+                        await DB.execute(
+                            `DELETE FROM PostParent WHERE ${groupStudentConditions}`
+                        );
+
+                        const postStudentConditions = groupPostStudentIds
+                            .map((ps: any) => `id = ${ps.id}`)
+                            .join(' OR ');
+                        await DB.execute(
+                            `DELETE FROM PostStudent WHERE ${postStudentConditions}`
+                        );
+                    }
+                }
             }
 
             for (const studentId of studentsToAdd) {
