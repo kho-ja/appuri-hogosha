@@ -168,7 +168,11 @@ export default function CreateStudent({
                 <FormItem>
                   <FormLabel>{t("StudentNumber")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("StudentNumber")} {...field} />
+                    <Input
+                      placeholder={t("StudentNumber")}
+                      {...field}
+                      noSpaceAccepted
+                    />
                   </FormControl>
                   <FormMessage>
                     {formState.errors.student_number?.message}
