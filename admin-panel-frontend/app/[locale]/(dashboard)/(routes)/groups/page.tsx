@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import {
@@ -14,7 +14,6 @@ import {
   ChevronDown,
   Loader2,
 } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
@@ -22,7 +21,7 @@ import GroupApi from "@/types/groupApi";
 import GroupCategory from "@/types/group-category";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
-import TableApi, { SkeletonLoader } from "@/components/TableApi";
+import { SkeletonLoader } from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -82,7 +81,7 @@ export default function Groups() {
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editableGroups, setEditableGroups] = useState<Group[]>([]);
-  const [openCategoryIds, setOpenCategoryIds] = useState<number[]>([]);
+  const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isEditMode && data?.groups) {
@@ -234,33 +233,41 @@ export default function Groups() {
     ["exportGroups"]
   );
 
-  const columns: ColumnDef<Group>[] = [
-    {
-      accessorKey: "name",
-      header: t("groupName"),
-    },
-    {
-      accessorKey: "member_count",
-      header: t("studentCount"),
-      cell: ({ row }) => row.original.member_count ?? 0,
-    },
-    {
-      header: t("action"),
-      meta: {
-        notClickable: true,
-      },
-      cell: ({ row }) => renderActionCell(row.original),
-    },
-  ];
-
   const { data: categoryTreeResponse, isLoading: isCategoryTreeLoading } =
     useApiQuery<{ tree: GroupCategory[] }>("group-category/tree", [
       "group-category-tree",
     ]);
 
-  const categoryTree = categoryTreeResponse?.tree ?? [];
+  const categoryTree = useMemo(
+    () => categoryTreeResponse?.tree ?? [],
+    [categoryTreeResponse?.tree]
+  );
 
-  const toggleCategoryOpen = (categoryId: number) => {
+  const uncategorizedGroups = useMemo(
+    () => (data?.groups ?? []).filter((group) => !group.group_category_id),
+    [data?.groups]
+  );
+
+  const rawCategoryNodes = useMemo(
+    () => mapCategoryTree(categoryTree),
+    [categoryTree]
+  );
+
+  const categoryNodes = useMemo(() => {
+    const nodes = [...rawCategoryNodes];
+    if (uncategorizedGroups.length) {
+      nodes.push({
+        id: "category-uncategorized",
+        title: tCategory("noCategory"),
+        badgeCount: uncategorizedGroups.length,
+        groups: uncategorizedGroups,
+        children: [],
+      });
+    }
+    return nodes;
+  }, [rawCategoryNodes, uncategorizedGroups, tCategory]);
+
+  const toggleCategoryOpen = (categoryId: string) => {
     setOpenCategoryIds((prev) =>
       prev.includes(categoryId)
         ? prev.filter((id) => id !== categoryId)
@@ -396,7 +403,7 @@ export default function Groups() {
           </div>
         </div>
 
-        {categoryTree.length > 0 && (
+        {(categoryNodes.length > 0 || isCategoryTreeLoading) && (
           <Card className="space-y-3 p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">
@@ -407,7 +414,7 @@ export default function Groups() {
               )}
             </div>
             <CategoryMenu
-              categories={categoryTree}
+              categories={categoryNodes}
               openCategoryIds={openCategoryIds}
               onToggleCategory={toggleCategoryOpen}
               emptyLabel={tCategory("noGroups")}
@@ -427,9 +434,9 @@ export default function Groups() {
               <span className="sr-only sm:not-sr-only">{t("export")}</span>
             </Button>
           </div>
-          <Card x-chunk="dashboard-05-chunk-3">
-            {isEditMode ? (
-              data?.groups ? (
+          {isEditMode && (
+            <Card x-chunk="dashboard-05-chunk-3">
+              {data?.groups ? (
                 <SortableGroupsTable
                   groups={editableGroups}
                   onDragEnd={handleDragEnd}
@@ -447,15 +454,9 @@ export default function Groups() {
                     <SkeletonLoader rowCount={5} columnCount={4} />
                   </TableBody>
                 </Table>
-              )
-            ) : (
-              <TableApi
-                linkPrefix="/groups"
-                data={data?.groups ?? null}
-                columns={columns}
-              />
-            )}
-          </Card>
+              )}
+            </Card>
+          )}
         </div>
       </div>
     </div>
@@ -562,10 +563,30 @@ function SortableGroupRow({ group, renderActionCell }: SortableGroupRowProps) {
   );
 }
 
+type CategoryTreeNode = {
+  id: string;
+  title: string;
+  badgeCount: number;
+  groups: Group[];
+  children: CategoryTreeNode[];
+};
+
+const mapCategoryTree = (categories: GroupCategory[]): CategoryTreeNode[] =>
+  categories.map((category) => ({
+    id: `category-${category.id}`,
+    title: category.name,
+    badgeCount:
+      typeof category.group_count === "number"
+        ? category.group_count
+        : (category.groups?.length ?? 0),
+    groups: category.groups ?? [],
+    children: mapCategoryTree(category.children ?? []),
+  }));
+
 type CategoryMenuProps = {
-  categories: GroupCategory[];
-  openCategoryIds: number[];
-  onToggleCategory: (id: number) => void;
+  categories: CategoryTreeNode[];
+  openCategoryIds: string[];
+  onToggleCategory: (id: string) => void;
   emptyLabel: string;
 };
 
@@ -579,10 +600,10 @@ function CategoryMenu({
 
   return (
     <div className="space-y-2">
-      {categories.map((category) => (
+      {categories.map((node) => (
         <CategoryNode
-          key={category.id}
-          category={category}
+          key={node.id}
+          node={node}
           openCategoryIds={openCategoryIds}
           onToggleCategory={onToggleCategory}
           emptyLabel={emptyLabel}
@@ -593,25 +614,25 @@ function CategoryMenu({
 }
 
 type CategoryNodeProps = {
-  category: GroupCategory;
-  openCategoryIds: number[];
-  onToggleCategory: (id: number) => void;
+  node: CategoryTreeNode;
+  openCategoryIds: string[];
+  onToggleCategory: (id: string) => void;
   emptyLabel: string;
 };
 
 function CategoryNode({
-  category,
+  node,
   openCategoryIds,
   onToggleCategory,
   emptyLabel,
 }: CategoryNodeProps) {
-  const isOpen = openCategoryIds.includes(category.id);
+  const isOpen = openCategoryIds.includes(node.id);
 
   return (
     <div className="overflow-hidden rounded-md border border-border bg-muted/20">
       <button
         type="button"
-        onClick={() => onToggleCategory(category.id)}
+        onClick={() => onToggleCategory(node.id)}
         className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition hover:bg-muted/40"
       >
         <span className="flex items-center gap-2">
@@ -620,22 +641,20 @@ function CategoryNode({
           ) : (
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           )}
-          {category.name}
+          {node.title}
         </span>
-        {typeof category.group_count === "number" && (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-            {category.group_count}
-          </span>
-        )}
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+          {node.badgeCount}
+        </span>
       </button>
 
       {isOpen && (
         <div className="space-y-2 border-t border-border bg-background px-6 py-4 text-sm">
-          {category.groups && category.groups.length > 0 ? (
+          {node.groups.length ? (
             <ul className="space-y-2">
-              {category.groups.map((group) => (
+              {node.groups.map((group) => (
                 <li
-                  key={`category-${category.id}-group-${group.id}`}
+                  key={`${node.id}-group-${group.id}`}
                   className="flex items-center justify-between rounded-md border border-transparent bg-muted px-3 py-2 text-sm transition hover:border-border"
                 >
                   <Link href={`/groups/${group.id}`} className="font-medium">
@@ -651,10 +670,10 @@ function CategoryNode({
             <p className="text-xs text-muted-foreground">{emptyLabel}</p>
           )}
 
-          {category.children && category.children.length > 0 && (
+          {node.children.length > 0 && (
             <div className="pt-2">
               <CategoryMenu
-                categories={category.children}
+                categories={node.children}
                 openCategoryIds={openCategoryIds}
                 onToggleCategory={onToggleCategory}
                 emptyLabel={emptyLabel}
