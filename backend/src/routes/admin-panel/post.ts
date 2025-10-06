@@ -388,15 +388,17 @@ class PostController implements IController {
                         (ps: any) => ps.id
                     );
 
-                    await DB.execute(
-                        `DELETE FROM PostParent WHERE post_student_id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
-                        studentIdsToRemove
-                    );
+                    if (studentIdsToRemove.length > 0) {
+                        await DB.execute(
+                            `DELETE FROM PostParent WHERE post_student_id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                            studentIdsToRemove
+                        );
 
-                    await DB.execute(
-                        `DELETE FROM PostStudent WHERE id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
-                        studentIdsToRemove
-                    );
+                        await DB.execute(
+                            `DELETE FROM PostStudent WHERE id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                            studentIdsToRemove
+                        );
+                    }
                 }
 
                 if (groupsToRemove.length > 0) {
@@ -404,15 +406,17 @@ class PostController implements IController {
                         (ps: any) => ps.id
                     );
 
-                    await DB.execute(
-                        `DELETE FROM PostParent WHERE post_student_id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
-                        groupPostStudentIds
-                    );
+                    if (groupPostStudentIds.length > 0) {
+                        await DB.execute(
+                            `DELETE FROM PostParent WHERE post_student_id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                            groupPostStudentIds
+                        );
 
-                    await DB.execute(
-                        `DELETE FROM PostStudent WHERE id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
-                        groupPostStudentIds
-                    );
+                        await DB.execute(
+                            `DELETE FROM PostStudent WHERE id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                            groupPostStudentIds
+                        );
+                    }
                 }
 
                 for (const studentId of studentsToAdd) {
