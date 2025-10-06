@@ -350,7 +350,8 @@ class PostController implements IController {
                 };
             }
 
-            await DB.execute('START TRANSACTION');
+            // Use DB.query() instead of DB.execute() for transaction commands
+            await DB.query('START TRANSACTION');
 
             try {
                 const existingPostStudents = await DB.query(
@@ -389,13 +390,18 @@ class PostController implements IController {
                     );
 
                     if (studentIdsToRemove.length > 0) {
-                        await DB.execute(
-                            `DELETE FROM PostParent WHERE post_student_id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                        // Use DB.query() for DELETE with IN clause to avoid prepared statement issues
+                        const idPlaceholders = studentIdsToRemove
+                            .map(() => '?')
+                            .join(',');
+
+                        await DB.query(
+                            `DELETE FROM PostParent WHERE post_student_id IN (${idPlaceholders})`,
                             studentIdsToRemove
                         );
 
-                        await DB.execute(
-                            `DELETE FROM PostStudent WHERE id IN (${studentIdsToRemove.map(() => '?').join(',')})`,
+                        await DB.query(
+                            `DELETE FROM PostStudent WHERE id IN (${idPlaceholders})`,
                             studentIdsToRemove
                         );
                     }
@@ -407,13 +413,18 @@ class PostController implements IController {
                     );
 
                     if (groupPostStudentIds.length > 0) {
-                        await DB.execute(
-                            `DELETE FROM PostParent WHERE post_student_id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                        // Use DB.query() for DELETE with IN clause to avoid prepared statement issues
+                        const idPlaceholders = groupPostStudentIds
+                            .map(() => '?')
+                            .join(',');
+
+                        await DB.query(
+                            `DELETE FROM PostParent WHERE post_student_id IN (${idPlaceholders})`,
                             groupPostStudentIds
                         );
 
-                        await DB.execute(
-                            `DELETE FROM PostStudent WHERE id IN (${groupPostStudentIds.map(() => '?').join(',')})`,
+                        await DB.query(
+                            `DELETE FROM PostStudent WHERE id IN (${idPlaceholders})`,
                             groupPostStudentIds
                         );
                     }
@@ -515,7 +526,7 @@ class PostController implements IController {
                     { id: postId, school_id: req.user.school_id }
                 );
 
-                await DB.execute('COMMIT');
+                await DB.query('COMMIT');
 
                 return res
                     .status(200)
@@ -524,12 +535,12 @@ class PostController implements IController {
                     })
                     .end();
             } catch (transactionError) {
-                await DB.execute('ROLLBACK');
+                await DB.query('ROLLBACK');
                 throw transactionError;
             }
         } catch (e: any) {
             try {
-                await DB.execute('ROLLBACK');
+                await DB.query('ROLLBACK');
             } catch {
                 // Ignore rollback errors (transaction might not be active)
             }
