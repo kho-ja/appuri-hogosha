@@ -29,7 +29,7 @@ const GetFormSchema = (_t: (key: string) => string) => {
   return z.object({
     given_name: z.string().max(50),
     family_name: z.string().max(50),
-    email: z.string().max(0).or(z.string().email()),
+    email: z.string().max(0).or(z.string().email()).optional(),
   });
 };
 
@@ -79,7 +79,7 @@ export default function EditParent({
     if (data) {
       form.setValue("given_name", data.parent.given_name);
       form.setValue("family_name", data.parent.family_name);
-      form.setValue("email", data.parent.email);
+      form.setValue("email", data.parent.email ? data.parent.email : "");
     }
   }, [data, form]);
 
@@ -95,7 +95,7 @@ export default function EditParent({
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
-              email: values.email.trim(),
+              email: values.email ? values.email.trim() : "",
             })
           )}
           className="space-y-4"

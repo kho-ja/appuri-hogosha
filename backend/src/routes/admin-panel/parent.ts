@@ -1393,10 +1393,10 @@ class ParentController implements IController {
 
     parentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { email } = req.body;
+            const { email } = req.body || '';
             let { given_name, family_name } = req.body as any;
 
-            if (!email || !isValidEmail(email)) {
+            if (email !== '' && (!email || !isValidEmail(email))) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_email',
