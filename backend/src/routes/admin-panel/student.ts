@@ -892,8 +892,14 @@ class StudentController implements IController {
 
     studentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { phone_number, given_name, family_name, student_number } =
-                req.body;
+            const {
+                phone_number,
+                given_name,
+                family_name,
+                student_number: studentNumber,
+            } = req.body;
+
+            const student_number = studentNumber.replace(/\D+/g, '');
 
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
@@ -1236,9 +1242,11 @@ class StudentController implements IController {
                 phone_number,
                 given_name,
                 family_name,
-                student_number,
+                student_number: studentNumber,
                 parents,
             } = req.body;
+
+            const student_number = studentNumber.replace(/\D+/g, '');
 
             if (!email || !isValidEmail(email)) {
                 throw {
