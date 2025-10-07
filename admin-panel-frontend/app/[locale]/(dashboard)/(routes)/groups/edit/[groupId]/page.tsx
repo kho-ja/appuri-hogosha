@@ -49,7 +49,7 @@ export default function EditGroup({
   const { data, isLoading, isError } = useApiQuery<{
     group: { name: string };
     members: Student[];
-  }>(`group/${groupId}`, ["group", groupId]);
+  }>(`group/${groupId}?context=edit`, ["group", groupId]);
 
   const { isPending, mutate } = useApiMutation<{ message: string }>(
     `group/${groupId}`,
@@ -86,11 +86,12 @@ export default function EditGroup({
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit((data) =>
-              mutate({
-                ...data,
-                students: selectedStudents.map((e) => e.id),
-              } as any)
+            onSubmit={form.handleSubmit(
+              (data) =>
+                mutate({
+                  ...data,
+                  students: selectedStudents.map((e) => e.id),
+                } as any) // eslint-disable-line
             )}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
