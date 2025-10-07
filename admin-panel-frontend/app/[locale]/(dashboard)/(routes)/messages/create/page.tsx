@@ -345,11 +345,12 @@ export default function SendMessagePage() {
                         if (file.size > MAX_SIZE) {
                           toast({
                             title: "Xatolik",
-                            description: "5MB dan katta hajmli rasm yuklab bo‘lmaydi!",
+                            description:
+                              "5MB dan katta hajmli rasm yuklab bo‘lmaydi!",
                             variant: "destructive",
                           });
                           form.setValue("image", "");
-                          e.target.value = ""; 
+                          e.target.value = "";
                           return;
                         }
 
