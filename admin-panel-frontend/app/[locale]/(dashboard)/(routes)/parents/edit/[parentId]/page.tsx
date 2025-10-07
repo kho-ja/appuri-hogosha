@@ -30,6 +30,7 @@ const GetFormSchema = (_t: (key: string) => string) => {
     given_name: z.string().max(50),
     family_name: z.string().max(50),
     email: z.string().max(0).or(z.string().email()).optional(),
+    phone_number: z.string().max(0).optional(),
   });
 };
 
@@ -96,6 +97,7 @@ export default function EditParent({
             mutate({
               ...values,
               email: values.email ? values.email.trim() : "",
+              phone_number: data?.parent.phone_number,
             })
           )}
           className="space-y-4"
