@@ -438,6 +438,7 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     gap: 20,
+    width: '90%',
   },
   infoIcon: {
     marginRight: 15,
@@ -445,7 +446,7 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 16,
     fontWeight: '400',
-    width: 280,
+    flex: 1,
   },
   profileInitial: {
     fontSize: 12,
