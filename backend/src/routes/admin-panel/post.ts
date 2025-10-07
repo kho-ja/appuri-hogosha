@@ -531,7 +531,7 @@ class PostController implements IController {
                 return res
                     .status(200)
                     .json({
-                        message: 'post_sender_updated_successfully',
+                        message: 'post_receivers_updated_successfully',
                     })
                     .end();
             } catch (transactionError) {

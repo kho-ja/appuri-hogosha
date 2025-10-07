@@ -979,6 +979,7 @@
     "post_not_found": "投稿が見つかりません",
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
+    "post_receivers_updated_successfully": "投稿受信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿通知が正常に再送信されました",
     "invalid_or_missing_title": "無効または存在しないタイトル",
     "invalid_or_missing_description": "無効または存在しない説明",
@@ -1223,7 +1224,8 @@
     "confirm": "確認",
     "back": "戻る",
     "recieversChanged": "受信者が変更されました",
-    "post_sender_updated_successfully": "投稿送信者が正常に更新されました"
+    "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
+    "post_receivers_updated_successfully": "投稿受信者が正常に更新されました"
   },
   "BackButton": {
     "back": "戻る"
