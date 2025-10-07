@@ -43,7 +43,7 @@ export default function Recievers({
       onSuccess: (data: any) => {
         toast({
           title: t("recieversChanged"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push(`/messages/${messageId}`);
       },

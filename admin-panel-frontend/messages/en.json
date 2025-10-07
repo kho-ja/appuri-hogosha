@@ -968,7 +968,8 @@
     "invalid_or_missing_post_id": "Invalid or missing post id",
     "post_not_found": "Post not found",
     "group_members_not_found": "Group members not found",
-    "post_sender_updated_successfully": "Post sender updated successfully",
+    "post_sender_updated_successfully": "Post receivers updated successfully",
+    "post_receivers_updated_successfully": "Post receivers updated successfully",
     "post_notification_replayed_successfully": "Post notification replayed successfully",
     "invalid_or_missing_title": "Invalid or missing title",
     "invalid_or_missing_description": "Invalid or missing description",
@@ -1213,7 +1214,8 @@
     "confirm": "Confirm",
     "back": "Back",
     "recieversChanged": "Recievers Changed Successfully",
-    "post_sender_updated_successfully": "Post sender updated successfully"
+    "post_sender_updated_successfully": "Post sender updated successfully",
+    "post_receivers_updated_successfully": "Post receivers updated successfully"
   },
   "BackButton": {
     "back": "Back"

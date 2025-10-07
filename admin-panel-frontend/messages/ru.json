@@ -965,6 +965,7 @@
     "post_not_found": "Пост не найден",
     "group_members_not_found": "Члены группы не найдены",
     "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
+    "post_receivers_updated_successfully": "Получатели поста успешно обновлены",
     "post_notification_replayed_successfully": "Уведомление о посте успешно отправлено повторно",
     "invalid_or_missing_title": "Неверный или отсутствующий заголовок",
     "invalid_or_missing_description": "Неверное или отсутствующее описание",
@@ -1209,7 +1210,8 @@
     "confirm": "Подтвердить",
     "back": "Назад",
     "recieversChanged": "Получатели изменены",
-    "post_sender_updated_successfully": "Отправитель поста успешно обновлён"
+    "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
+    "post_receivers_updated_successfully": "Получатели поста успешно обновлены"
   },
   "BackButton": {
     "back": "Назад"
