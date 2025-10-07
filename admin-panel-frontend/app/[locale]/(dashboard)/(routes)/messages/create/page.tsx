@@ -136,7 +136,8 @@ export default function SendMessagePage() {
     }
 
     const subscription = form.watch((values) => {
-      localStorage.setItem("formDataMessages", JSON.stringify(values));
+      const { image, ...rest } = values;
+      localStorage.setItem("formDataMessages", JSON.stringify(rest));
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -339,7 +340,20 @@ export default function SendMessagePage() {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        field.onChange(file.name); // Save file name
+                        const MAX_SIZE = 5 * 1024 * 1024;
+
+                        if (file.size > MAX_SIZE) {
+                          toast({
+                            title: "Xatolik",
+                            description: "5MB dan katta hajmli rasm yuklab bo‘lmaydi!",
+                            variant: "destructive",
+                          });
+                          form.setValue("image", "");
+                          e.target.value = ""; 
+                          return;
+                        }
+
+                        field.onChange(file.name);
                         const reader = new FileReader();
                         reader.onloadend = () => {
                           form.setValue("image", reader.result as string);
