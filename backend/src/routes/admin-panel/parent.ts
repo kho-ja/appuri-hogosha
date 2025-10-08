@@ -1407,11 +1407,10 @@ class ParentController implements IController {
             if (typeof given_name === 'string') given_name = given_name.trim();
             if (typeof family_name === 'string')
                 family_name = family_name.trim();
-
-            if (!given_name || !isValidString(given_name)) {
+            if (given_name && !isValidString(given_name)) {
                 throw { status: 401, message: 'invalid_or_missing_given_name' };
             }
-            if (!family_name || !isValidString(family_name)) {
+            if (family_name && !isValidString(family_name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_family_name',
@@ -1457,8 +1456,8 @@ class ParentController implements IController {
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
-                if (duplicate.id != parentId) {
-                    if (email !== null && email === duplicate.email) {
+                if (email !== null && duplicate.id != parentId) {
+                    if (email === duplicate.email) {
                         throw {
                             status: 401,
                             message: 'email_already_exists',
@@ -1474,7 +1473,7 @@ class ParentController implements IController {
                         given_name = :given_name
                     WHERE id = :id`,
                 {
-                    email: email || '',
+                    email: email,
                     given_name: given_name || '',
                     family_name: family_name || '',
                     id: parent.id,
