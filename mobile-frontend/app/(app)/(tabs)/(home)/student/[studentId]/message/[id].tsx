@@ -336,14 +336,15 @@ export default function DetailsScreen() {
               throw new Error('Failed to fetch message from server');
             }
 
-            // Get any available student to save the message
+            // Get the specific student for whom the message is intended
             activeStudent = await db.getFirstAsync<Student>(
-              'SELECT * FROM student LIMIT 1'
+              'SELECT * FROM student WHERE id = ?',
+              [actualStudentId]
             );
 
             if (!activeStudent) {
               throw new Error(
-                'No students found in database. Please sync students first.'
+                `Target student ${actualStudentId} not found in database. Please sync students first.`
               );
             }
 
@@ -414,6 +415,8 @@ export default function DetailsScreen() {
     };
 
     fetchMessage();
+    // markMessageAsRead is intentionally excluded to prevent infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     id,
     actualStudentId,
@@ -422,7 +425,6 @@ export default function DetailsScreen() {
     isDemoMode,
     isOnline,
     session,
-    markMessageAsRead,
     i18n,
     language,
   ]);
