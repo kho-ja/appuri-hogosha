@@ -1393,10 +1393,11 @@ class ParentController implements IController {
 
     parentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { email } = req.body;
+            const phone_number = req.body.phone_number;
+            const email = req.body.email || null;
             let { given_name, family_name } = req.body as any;
 
-            if (!email || !isValidEmail(email)) {
+            if (email !== null && (!email || !isValidEmail(email))) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_email',
@@ -1447,15 +1448,15 @@ class ParentController implements IController {
             const parent = parentInfo[0];
 
             const findDuplicates = await DB.query(
-                `SELECT id, email FROM Parent WHERE email = :email`,
+                `SELECT id, email, phone_number FROM Parent WHERE phone_number = :phone_number`,
                 {
-                    email: email,
+                    phone_number: phone_number,
                 }
             );
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
-                if (duplicate.id != parentId) {
+                if (email !== null && duplicate.id != parentId) {
                     if (email === duplicate.email) {
                         throw {
                             status: 401,
