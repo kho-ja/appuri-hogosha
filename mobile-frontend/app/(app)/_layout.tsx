@@ -7,7 +7,6 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React from 'react';
-import 'react-native-worklets';
 import { useThemeMode } from '@rneui/themed';
 import { MessageProvider } from '@/contexts/message-context';
 import { StatusBar } from 'react-native';

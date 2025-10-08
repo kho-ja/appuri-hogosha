@@ -67,11 +67,7 @@ module.exports = ({ config }) => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: variantConfig.iosBundleId,
-      icon: {
-        light: variantConfig.iosIconLight,
-        dark: variantConfig.iosIconDark,
-        tinted: variantConfig.iosIconTinted,
-      },
+      icon: variantConfig.iosIconLight,
       ...(process.env.GOOGLE_SERVICES_PLIST && {
         googleServicesFile: process.env.GOOGLE_SERVICES_PLIST,
       }),
