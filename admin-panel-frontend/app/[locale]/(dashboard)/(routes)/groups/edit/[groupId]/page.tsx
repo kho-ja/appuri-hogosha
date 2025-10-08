@@ -51,22 +51,20 @@ export default function EditGroup({
     members: Student[];
   }>(`group/${groupId}?context=edit`, ["group", groupId]);
 
-  const { isPending, mutate } = useApiMutation<{ message: string }>(
-    `group/${groupId}`,
-    "PUT",
-    ["editGroup"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("GroupEdited"),
-          description: data.message,
-        });
-        form.reset();
-        router.push(`/groups/${groupId}`);
-        setSelectedStudents([]);
-      },
-    }
-  );
+  const { isPending, mutate } = useApiMutation<
+    { message: string },
+    { group: { name: string }; students: number[] }
+  >(`group/${groupId}`, "PUT", ["editGroup"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("GroupEdited"),
+        description: data.message,
+      });
+      form.reset();
+      router.push(`/groups/${groupId}`);
+      setSelectedStudents([]);
+    },
+  });
 
   useEffect(() => {
     if (data) {
@@ -86,12 +84,11 @@ export default function EditGroup({
         <Form {...form}>
           <form
             className="space-y-4"
-            onSubmit={form.handleSubmit(
-              (data) =>
-                mutate({
-                  ...data,
-                  students: selectedStudents.map((e) => e.id),
-                } as any) // eslint-disable-line
+            onSubmit={form.handleSubmit((data) =>
+              mutate({
+                group: { name: data.name },
+                students: selectedStudents.map((e) => e.id),
+              })
             )}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
