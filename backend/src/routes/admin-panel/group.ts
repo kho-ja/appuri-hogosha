@@ -635,6 +635,7 @@ class GroupController implements IController {
     groupView = async (req: ExtendedRequest, res: Response) => {
         try {
             const groupId = req.params.id;
+            const context = req.query.context as string;
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
@@ -686,8 +687,11 @@ class GroupController implements IController {
             const whereClause =
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
-            const groupMembers = await DB.query(
-                `SELECT
+            let groupMembers;
+
+            if (context === 'view') {
+                groupMembers = await DB.query(
+                    `SELECT
                     st.id,st.phone_number,st.email,
                     st.student_number, st.given_name, st.family_name
                 FROM GroupMember AS gm
@@ -695,8 +699,20 @@ class GroupController implements IController {
                 WHERE gm.group_id = :group_id ${whereClause}
                 ORDER BY gm.id DESC
                 LIMIT :limit OFFSET :offset;`,
-                params
-            );
+                    params
+                );
+            } else {
+                groupMembers = await DB.query(
+                    `SELECT
+                    st.id,st.phone_number,st.email,
+                    st.student_number, st.given_name, st.family_name
+                FROM GroupMember AS gm
+                INNER JOIN Student AS st on gm.student_id = st.id
+                WHERE gm.group_id = :group_id ${whereClause}
+                ORDER BY gm.id DESC;`,
+                    { group_id: groupId }
+                );
+            }
 
             const totalMembers = (
                 await DB.query(
