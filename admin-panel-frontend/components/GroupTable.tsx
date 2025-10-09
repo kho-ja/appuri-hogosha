@@ -29,23 +29,29 @@ import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiQuery from "@/lib/useApiQuery";
 import useTableQuery from "@/lib/useTableQuery";
+import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
 
 export function GroupTable({
   selectedGroups,
   setSelectedGroups,
+  useIndependentState = false,
 }: {
   selectedGroups: Group[];
   setSelectedGroups: React.Dispatch<React.SetStateAction<Group[]>>;
+  useIndependentState?: boolean;
 }) {
   const t = useTranslations("GroupTable");
   const { data: session } = useSession();
+
+  const urlTableQuery = useTableQuery();
+  const independentTableQuery = useIndependentTableQuery("group");
 
   const {
     page,
     setPage,
     search: searchName,
     setSearch: setSearchName,
-  } = useTableQuery();
+  } = useIndependentState ? independentTableQuery : urlTableQuery;
 
   const { data } = useApiQuery<GroupApi>(
     `group/list?page=${page}&name=${searchName}`,
