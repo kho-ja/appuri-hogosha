@@ -604,20 +604,13 @@ class ParentController implements IController {
 
             const csvData: any = [];
             for (const parent of parents) {
-                const student_numbers = parent.student_numbers;
-                const first = student_numbers.splice(0, 1);
                 csvData.push({
                     email: parent.email,
                     phone_number: parent.phone_number,
                     given_name: parent.given_name,
                     family_name: parent.family_name,
-                    student_numbers: first[0],
+                    student_numbers: parent.student_numbers.join(','),
                 });
-                for (const student_number of student_numbers) {
-                    csvData.push({
-                        student_numbers: student_number,
-                    });
-                }
             }
 
             const csvContent = stringify(csvData, {
