@@ -382,12 +382,14 @@ export default function SendMessagePage() {
               <GroupTable
                 selectedGroups={selectedGroups}
                 setSelectedGroups={setSelectedGroups}
+                useIndependentState={true}
               />
             </TabsContent>
             <TabsContent value="student">
               <StudentTable
                 selectedStudents={selectedStudents}
                 setSelectedStudents={setSelectedStudents}
+                useIndependentState={true}
               />
             </TabsContent>
           </Tabs>
