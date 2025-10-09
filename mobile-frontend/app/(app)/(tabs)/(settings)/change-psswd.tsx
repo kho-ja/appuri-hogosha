@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SecureInput from '@/components/atomic/secure-input';
@@ -131,26 +131,43 @@ export default function Index() {
   const handlePress = () => {
     setErrorMessage('');
 
-    // Validation
-    if (!oldPassword.trim()) {
-      setErrorMessage(i18n[language].enterOldPassword);
-      return;
+    const validations = [
+      {
+        condition: !oldPassword.trim(),
+        message: i18n[language].enterOldPassword,
+      },
+      {
+        condition: !isPasswordValid(),
+        message: i18n[language].pleaseEnsurePasswordRequirements,
+      },
+      {
+        condition: newPassword !== confirmPassword,
+        message: i18n[language].passwordsDoNotMatch,
+      },
+      {
+        condition: oldPassword === newPassword,
+        message: i18n[language].newPasswordMustBeDifferent,
+      },
+    ];
+
+    for (const validation of validations) {
+      if (validation.condition) {
+        setErrorMessage(validation.message);
+        Toast.show(validation.message, {
+          duration: Toast.durations.SHORT,
+          position: Toast.positions.BOTTOM,
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+          containerStyle: {
+            backgroundColor: '#DC2626',
+            borderRadius: 5,
+          },
+        });
+        return;
+      }
     }
 
-    if (!isPasswordValid()) {
-      setErrorMessage(i18n[language].pleaseEnsurePasswordRequirements);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setErrorMessage(i18n[language].passwordsDoNotMatch);
-      return;
-    }
-
-    if (oldPassword === newPassword) {
-      setErrorMessage(i18n[language].newPasswordMustBeDifferent);
-      return;
-    }
     mutate();
   };
 
