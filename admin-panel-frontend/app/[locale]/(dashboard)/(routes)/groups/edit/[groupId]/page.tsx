@@ -53,7 +53,7 @@ export default function EditGroup({
 
   const { isPending, mutate } = useApiMutation<
     { message: string },
-    { group: { name: string }; students: number[] }
+    { name: string; students: number[] }
   >(`group/${groupId}`, "PUT", ["editGroup"], {
     onSuccess: (data) => {
       toast({
@@ -86,7 +86,7 @@ export default function EditGroup({
             className="space-y-4"
             onSubmit={form.handleSubmit((data) =>
               mutate({
-                group: { name: data.name },
+                name: data.name,
                 students: selectedStudents.map((e) => e.id),
               })
             )}
