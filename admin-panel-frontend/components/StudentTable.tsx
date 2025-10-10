@@ -29,19 +29,27 @@ import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
 import useTableQuery from "@/lib/useTableQuery";
+import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
 
 export function StudentTable({
   selectedStudents,
   setSelectedStudents,
+  useIndependentState = false,
 }: {
   selectedStudents: Student[];
   setSelectedStudents: React.Dispatch<React.SetStateAction<Student[]>>;
+  useIndependentState?: boolean;
 }) {
   const t = useTranslations("StudentTable");
   const tName = useTranslations("names");
   const { data: session } = useSession();
 
-  const { page, setPage, search, setSearch } = useTableQuery();
+  const urlTableQuery = useTableQuery();
+  const independentTableQuery = useIndependentTableQuery("student");
+
+  const { page, setPage, search, setSearch } = useIndependentState
+    ? independentTableQuery
+    : urlTableQuery;
 
   const { data } = useApiPostQuery<StudentApi>(
     "student/list",

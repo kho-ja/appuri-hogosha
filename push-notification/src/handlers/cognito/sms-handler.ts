@@ -98,6 +98,9 @@ export class CognitoHandler {
                         template,
                         placeholders
                     );
+                    // Append a mobile deep link for smoother onboarding
+                    const link = this.buildAuthDeepLink();
+                    if (link) message = `${message} ${link}`;
                     console.log(
                         `📋 Using Cognito template for international SMS`
                     );
@@ -120,11 +123,15 @@ export class CognitoHandler {
                         template,
                         placeholders
                     );
+                    const link = this.buildAuthDeepLink();
+                    if (link) message = `${message} ${link}`;
                     console.log(
                         `📋 Using Cognito template for international SMS`
                     );
                 } else if (event.response?.smsMessage) {
                     message = event.response.smsMessage;
+                    const link = this.buildAuthDeepLink();
+                    if (link) message = `${message} ${link}`;
                     console.log(
                         `📱 Using Cognito prepared message for international SMS`
                     );
@@ -209,6 +216,8 @@ export class CognitoHandler {
                     template,
                     placeholders
                 );
+                const link = this.buildAuthDeepLink();
+                if (link) message = `${message} ${link}`;
                 console.log(`📤 Using Cognito template: "${template}"`);
             } else {
                 console.warn(
@@ -278,6 +287,8 @@ export class CognitoHandler {
                     template,
                     placeholders
                 );
+                const link = this.buildAuthDeepLink();
+                if (link) message = `${message} ${link}`;
                 console.log(
                     `📋 Using Cognito User Pool template for ${event.triggerSource}`
                 );
@@ -285,6 +296,8 @@ export class CognitoHandler {
                 // Fallback to Cognito's prepared message
                 message = event.response?.smsMessage;
                 if (message) {
+                    const link = this.buildAuthDeepLink();
+                    if (link) message = `${message} ${link}`;
                     console.log(
                         `📱 Using Cognito prepared message for ${event.triggerSource}`
                     );
@@ -420,17 +433,18 @@ export class CognitoHandler {
         decryptedCode: string
     ): string {
         const username = this.extractUsername(event);
+        const link = this.buildAuthDeepLink();
 
         // Fallback templates (AWS default format)
         switch (event.triggerSource) {
             case 'CustomSMSSender_AdminCreateUser':
-                return `Your username is ${username} and temporary password is ${decryptedCode}`;
+                return `Your username is ${username} and temporary password is ${decryptedCode} ${link ? ` ${link}` : ''}`;
             case 'CustomSMSSender_Authentication':
             case 'CustomSMSSender_ForgotPassword':
             case 'CustomSMSSender_ResendCode':
-                return `Your verification code is ${decryptedCode}`;
+                return `Your verification code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
             default:
-                return `Your code is ${decryptedCode}`;
+                return `Your code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
         }
     }
 
@@ -460,6 +474,13 @@ export class CognitoHandler {
                 placeholders[key] = value;
             }
         );
+
+        // Add deep link placeholder for templates that include it
+        const deepLink = this.buildAuthDeepLink();
+        if (deepLink) {
+            placeholders.deeplink = deepLink;
+            placeholders.deepLink = deepLink;
+        }
 
         return placeholders;
     }
@@ -501,5 +522,12 @@ export class CognitoHandler {
                 error
             );
         }
+    }
+
+    /**
+     * Build a simple universal link to the mobile app (no extra params)
+     */
+    private buildAuthDeepLink(): string {
+        return 'https://appuri-hogosha.vercel.app/parentnotification';
     }
 }

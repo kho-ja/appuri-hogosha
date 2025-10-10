@@ -698,7 +698,8 @@ class ParentController implements IController {
                         .filter(Boolean),
                 };
                 const rowErrors: Record<string, string> = {};
-                if (!isValidEmail(normalized.email))
+                // Email handling: allow empty email for all actions; validate only if present
+                if (normalized.email && !isValidEmail(normalized.email))
                     rowErrors.email = ErrorKeys.invalid_email;
                 if (!isValidPhoneNumber(normalized.phone_number))
                     rowErrors.phone_number = ErrorKeys.invalid_phone_number;
@@ -721,7 +722,7 @@ class ParentController implements IController {
                         break;
                     }
                 }
-                if (seenEmails.has(normalized.email))
+                if (normalized.email && seenEmails.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
                 if (seenPhones.has(normalized.phone_number))
                     rowErrors.phone_number = ErrorKeys.phone_already_exists;
@@ -729,7 +730,7 @@ class ParentController implements IController {
                 if (Object.keys(rowErrors).length > 0) {
                     errors.push({ row: normalized, errors: rowErrors });
                 } else {
-                    seenEmails.add(normalized.email);
+                    if (normalized.email) seenEmails.add(normalized.email);
                     seenPhones.add(normalized.phone_number);
                     valid.push(normalized);
                 }
@@ -744,16 +745,21 @@ class ParentController implements IController {
             // Transaction for DB ops
             connection = await DB.beginTransaction();
 
-            // Fetch existing parents (by email & phone)
-            const existing = await DB.queryWithConnection(
-                connection,
-                'SELECT id, email, phone_number FROM Parent WHERE (email IN (:emails) OR phone_number IN (:phones)) AND school_id = :sid',
-                {
-                    emails: valid.map(v => v.email),
-                    phones: valid.map(v => v.phone_number),
-                    sid: req.user.school_id,
-                }
-            );
+            // Fetch existing parents (by email & phone) - avoid empty IN () by building clause dynamically
+            const emails = valid.map(v => v.email).filter(Boolean);
+            const phones = valid.map(v => v.phone_number).filter(Boolean);
+            let existing: any[] = [];
+            if (emails.length || phones.length) {
+                const parts: string[] = [];
+                if (emails.length) parts.push('email IN (:emails)');
+                if (phones.length) parts.push('phone_number IN (:phones)');
+                const where = `(${parts.join(' OR ')}) AND school_id = :sid`;
+                existing = await DB.queryWithConnection(
+                    connection,
+                    `SELECT id, email, phone_number FROM Parent WHERE ${where}`,
+                    { emails, phones, sid: req.user.school_id }
+                );
+            }
             const emailToId = new Map(
                 existing.map((p: any) => [p.email, p.id])
             );
@@ -764,7 +770,7 @@ class ParentController implements IController {
             for (const row of valid) {
                 try {
                     if (action === 'create') {
-                        if (emailToId.has(row.email)) {
+                        if (row.email && emailToId.has(row.email)) {
                             response.errors.push({
                                 row,
                                 errors: {
@@ -826,16 +832,18 @@ class ParentController implements IController {
                         }
                         response.inserted.push(row);
                     } else if (action === 'update') {
-                        if (!emailToId.has(row.email)) {
+                        const pid = row.email
+                            ? emailToId.get(row.email)
+                            : phoneToId.get(row.phone_number);
+                        if (!pid) {
                             response.errors.push({
                                 row,
                                 errors: {
-                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                    email: ErrorKeys.parent_does_not_exist,
                                 },
                             });
                             continue;
                         }
-                        const pid = emailToId.get(row.email);
                         await DB.executeWithConnection(
                             connection,
                             `UPDATE Parent SET phone_number = :phone, given_name = :given, family_name = :family WHERE id = :id`,
@@ -893,16 +901,18 @@ class ParentController implements IController {
                         }
                         response.updated.push(row);
                     } else if (action === 'delete') {
-                        if (!emailToId.has(row.email)) {
+                        const pid = row.email
+                            ? emailToId.get(row.email)
+                            : phoneToId.get(row.phone_number);
+                        if (!pid) {
                             response.errors.push({
                                 row,
                                 errors: {
-                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                    email: ErrorKeys.parent_does_not_exist,
                                 },
                             });
                             continue;
                         }
-                        const pid = emailToId.get(row.email);
                         await this.cognitoClient.delete(`+${row.phone_number}`);
                         await DB.executeWithConnection(
                             connection,
@@ -1279,17 +1289,9 @@ class ParentController implements IController {
                     `SELECT p.id,
                             p.email,
                             p.phone_number,
-                            COALESCE(NULLIF(p.given_name,''), fs.given_name, '') AS given_name,
-                            COALESCE(NULLIF(p.family_name,''), fs.family_name, '') AS family_name
+                            p.given_name AS given_name,
+                            p.family_name AS family_name
                      FROM Parent p
-                     LEFT JOIN (
-                        SELECT sp.parent_id,
-                               MIN(st.given_name) AS given_name,
-                               MIN(st.family_name) AS family_name
-                        FROM StudentParent sp
-                        INNER JOIN Student st ON st.id = sp.student_id
-                        GROUP BY sp.parent_id
-                     ) fs ON fs.parent_id = p.id
                      WHERE p.id IN (:parents) AND p.school_id = :school_id`,
                     {
                         parents: parentIds,
@@ -1393,10 +1395,11 @@ class ParentController implements IController {
 
     parentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { email } = req.body;
+            const phone_number = req.body.phone_number;
+            const email = req.body.email || null;
             let { given_name, family_name } = req.body as any;
 
-            if (!email || !isValidEmail(email)) {
+            if (email !== null && (!email || !isValidEmail(email))) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_email',
@@ -1447,15 +1450,15 @@ class ParentController implements IController {
             const parent = parentInfo[0];
 
             const findDuplicates = await DB.query(
-                `SELECT id, email FROM Parent WHERE email = :email`,
+                `SELECT id, email, phone_number FROM Parent WHERE phone_number = :phone_number`,
                 {
-                    email: email,
+                    phone_number: phone_number,
                 }
             );
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
-                if (duplicate.id != parentId) {
+                if (email !== null && duplicate.id != parentId) {
                     if (email === duplicate.email) {
                         throw {
                             status: 401,
@@ -1524,18 +1527,10 @@ class ParentController implements IController {
                 `SELECT p.id,
                         p.email,
                         p.phone_number,
-                        COALESCE(NULLIF(p.given_name,''), fs.given_name, '') AS given_name,
-                        COALESCE(NULLIF(p.family_name,''), fs.family_name, '') AS family_name,
+                        p.given_name AS given_name,
+                        p.family_name AS family_name,
                         p.created_at
                  FROM Parent p
-                 LEFT JOIN (
-                    SELECT sp.parent_id,
-                           MIN(st.given_name) AS given_name,
-                           MIN(st.family_name) AS family_name
-                    FROM StudentParent sp
-                    INNER JOIN Student st ON st.id = sp.student_id
-                    GROUP BY sp.parent_id
-                 ) fs ON fs.parent_id = p.id
                  WHERE p.id = :id
                  AND p.school_id = :school_id`,
                 {
@@ -1607,18 +1602,10 @@ class ParentController implements IController {
                 `SELECT p.id,
                         p.email,
                         p.phone_number,
-                        COALESCE(NULLIF(p.given_name,''), fs.given_name, '') AS given_name,
-                        COALESCE(NULLIF(p.family_name,''), fs.family_name, '') AS family_name,
+                        p.given_name AS given_name,
+                        p.family_name AS family_name,
                         p.created_at
                  FROM Parent p
-                 LEFT JOIN (
-                    SELECT sp.parent_id,
-                           MIN(st.given_name) AS given_name,
-                           MIN(st.family_name) AS family_name
-                    FROM StudentParent sp
-                    INNER JOIN Student st ON st.id = sp.student_id
-                    GROUP BY sp.parent_id
-                 ) fs ON fs.parent_id = p.id
                  WHERE p.id = :id
                  AND p.school_id = :school_id`,
                 {
@@ -1767,17 +1754,9 @@ class ParentController implements IController {
                     p.id,
                     p.email,
                     p.phone_number,
-                    COALESCE(NULLIF(p.given_name,''), fs.given_name, '') AS given_name,
-                    COALESCE(NULLIF(p.family_name,''), fs.family_name, '') AS family_name
+                    p.given_name AS given_name,
+                    p.family_name AS family_name
                  FROM Parent p
-                 LEFT JOIN (
-                    SELECT sp.parent_id,
-                           MIN(st.given_name) AS given_name,
-                           MIN(st.family_name) AS family_name
-                    FROM StudentParent sp
-                    INNER JOIN Student st ON st.id = sp.student_id
-                    GROUP BY sp.parent_id
-                 ) fs ON fs.parent_id = p.id
                  WHERE p.school_id = :school_id ${whereClause}
                  ORDER BY p.id DESC
                  LIMIT :limit OFFSET :offset;`,
@@ -1908,17 +1887,9 @@ class ParentController implements IController {
                     p.id,
                     p.email,
                     p.phone_number,
-                    COALESCE(NULLIF(p.given_name,''), fs.given_name, '') AS given_name,
-                    COALESCE(NULLIF(p.family_name,''), fs.family_name, '') AS family_name
+                    p.given_name AS given_name,
+                    p.family_name AS family_name
                  FROM Parent p
-                 LEFT JOIN (
-                    SELECT sp.parent_id,
-                           MIN(st.given_name) AS given_name,
-                           MIN(st.family_name) AS family_name
-                    FROM StudentParent sp
-                    INNER JOIN Student st ON st.id = sp.student_id
-                    GROUP BY sp.parent_id
-                 ) fs ON fs.parent_id = p.id
                  WHERE p.school_id = :school_id ${whereClause}
                  ORDER BY p.id DESC
                  LIMIT :limit OFFSET :offset;`,
@@ -2155,8 +2126,8 @@ class ParentController implements IController {
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
             const headers = [
-                'email',
-                'phone_number',
+                'email', // optional when creating
+                'phone_number', // required
                 'given_name',
                 'family_name',
                 'student_numbers',

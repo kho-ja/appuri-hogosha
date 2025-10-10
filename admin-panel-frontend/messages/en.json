@@ -440,7 +440,8 @@
     "createFromCSV": "Create students from CSV",
     "createFromKintone": "Create students from Kintone",
     "Invalid phone number": "Invalid phone number",
-    "Email is too long": "Email is too long"
+    "Email is too long": "Email is too long",
+    "NoSpacesAllowed": "Spaces are not allowed"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
@@ -827,7 +828,8 @@
     "group_members_not_found": "Group members not found",
     "export": "Export",
     "back": "Back",
-    "csv_is_empty_but_valid": "CSV is empty but valid"
+    "csv_is_empty_but_valid": "CSV is empty but valid",
+    "parentCsvNote": "For CREATE: phone_number is required; email is optional. For UPDATE/DELETE: we match by email when provided, otherwise by phone_number."
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",

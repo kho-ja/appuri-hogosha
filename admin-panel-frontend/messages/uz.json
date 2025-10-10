@@ -439,7 +439,8 @@
     "createFromCSV": "CSV orqali yaratish",
     "createFromKintone": "Kintone orqali yaratish",
     "Invalid phone number": "Noto'g'ri telefon raqami",
-    "Email is too long": "Email juda uzun"
+    "Email is too long": "Email juda uzun",
+    "NoSpacesAllowed": "Bo'shliqlarga ruxsat berilmaydi"
   },
   "EditParent": {
     "EditParent": "Vasiyni tahrirlash",
@@ -826,7 +827,8 @@
     "group_members_not_found": "Guruh a'zolari topilmadi",
     "export": "Yuklab olish",
     "back": "Orqaga",
-    "csv_is_empty_but_valid": "CSV bo'sh, lekin yaroqli"
+    "csv_is_empty_but_valid": "CSV bo'sh, lekin yaroqli",
+    "parentCsvNote": "CREATE uchun: phone_number majburiy; email ixtiyoriy. UPDATE/DELETE uchun: agar email ko‘rsatilgan bo‘lsa, shunga qarab, aks holda phone_number bo‘yicha moslashtiriladi."
   },
   "fromKintone": {
     "uploadStudent": "Talabani yuklab olish",

@@ -436,7 +436,8 @@
     "createFromCSV": "Создать из CSV",
     "createFromKintone": "Создать из Kintone",
     "Invalid phone number": "Неверный номер телефона",
-    "Email is too long": "Email слишком длинный"
+    "Email is too long": "Email слишком длинный",
+    "NoSpacesAllowed": "Пробелы не допускаются"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",
@@ -822,7 +823,8 @@
     "group_members_not_found": "Члены группы не найдены",
     "export": "Экспорт",
     "back": "Назад",
-    "csv_is_empty_but_valid": "CSV пустой, но действительный"
+    "csv_is_empty_but_valid": "CSV пустой, но действительный",
+    "parentCsvNote": "Для CREATE: phone_number обязателен; email — необязателен. Для UPDATE/DELETE: если указан email, ищем по нему, иначе — по phone_number."
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",

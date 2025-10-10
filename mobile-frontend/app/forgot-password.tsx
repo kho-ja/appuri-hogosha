@@ -16,7 +16,7 @@ import SecureInput from '@/components/atomic/secure-input';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   sendVerificationCode,
   verifyResetCode,
@@ -93,6 +93,7 @@ export default function ForgotPasswordScreen() {
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ phone?: string; code?: string }>();
 
   // State variables
   const [currentStep, setCurrentStep] = useState<Step>('phone');
@@ -203,6 +204,30 @@ export default function ForgotPasswordScreen() {
       });
     }
   };
+
+  // Pre-fill from deep link params if present
+  useEffect(() => {
+    const phone = (params?.phone as string) || '';
+    const code = (params?.code as string) || '';
+    if (phone) {
+      // If E.164 with +998, set defaults accordingly
+      if (phone.startsWith('+998')) {
+        setSelectedCountry({
+          callingCode: '+998',
+          cca2: 'UZ' as ICountryCca2,
+          flag: '🇺🇿',
+          name: { en: 'Uzbekistan' } as ICountryName,
+        });
+        setPhoneNumber(phone.replace('+998', ''));
+      } else {
+        setPhoneNumber(phone.replace(/^\+/, ''));
+      }
+    }
+    if (code) {
+      setVerificationCode(code);
+      setCurrentStep('verify');
+    }
+  }, [params]);
 
   // Handle resend code
   const handleResendCode = async () => {

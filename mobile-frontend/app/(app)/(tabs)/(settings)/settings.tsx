@@ -342,11 +342,11 @@ export default function SettingsScreen() {
         <BottomSheet
           isVisible={isFontSizeOpen}
           onBackdropPress={() => setIsFontSizeOpen(false)}
-          backdropStyle={{ opacity: 0 }}
           modalProps={{
             transparent: true,
             statusBarTranslucent: true,
-            animationType: 'slide',
+            // Disable slide so the backdrop doesn't animate from bottom
+            animationType: 'none',
           }}
           containerStyle={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
         >
