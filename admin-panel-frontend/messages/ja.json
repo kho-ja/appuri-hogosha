@@ -436,7 +436,8 @@
     "createFromCSV": "CSVから作成する ",
     "createFromKintone": "Kintoneから作成する ",
     "Invalid phone number": "無効な電話番号",
-    "Email is too long": "メールアドレスが長すぎます"
+    "Email is too long": "メールアドレスが長すぎます",
+    "NoSpacesAllowed": "スペースは使用できません"
   },
   "EditParent": {
     "EditParent": "保護者を編集",
@@ -826,7 +827,8 @@
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
     "export": "ファイルに書き出す",
     "back": "戻る",
-    "csv_is_empty_but_valid": "CSVは空ですが有効です"
+    "csv_is_empty_but_valid": "CSVは空ですが有効です",
+    "parentCsvNote": "作成（CREATE）の場合は phone_number が必須で、email は任意です。更新/削除（UPDATE/DELETE）の場合は email があれば email を、なければ phone_number で照合します。"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
