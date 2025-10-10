@@ -19,7 +19,8 @@ import { ThemedView } from '@/components/ThemedView';
 import ThemedPhoneInput from '@/components/atomic/ThemedPhoneInput';
 import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
 
 export default function SignIn() {
   const [password, setPassword] = useState('');
@@ -30,6 +31,7 @@ export default function SignIn() {
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
+  const params = useLocalSearchParams<{ phone?: string; code?: string }>();
 
   React.useEffect(() => {
     const loadCredentials = async () => {
@@ -48,6 +50,32 @@ export default function SignIn() {
     };
     initialize();
   }, []);
+
+  // If deep link provides ?phone= and/or ?code=, pre-fill inputs for convenience
+  React.useEffect(() => {
+    const phone = (params?.phone as string) || '';
+    const code = (params?.code as string) || '';
+
+    if (phone) {
+      // Handle E.164 (e.g., +99890XXXXXXX) for Uzbekistan by default
+      if (phone.startsWith('+998')) {
+        setSelectedCountry({
+          callingCode: '+998',
+          cca2: 'UZ' as ICountryCca2,
+          flag: '🇺🇿',
+          name: { en: 'Uzbekistan' } as ICountryName,
+        });
+        setPhoneNumber(phone.replace('+998', ''));
+      } else {
+        // Fallback: keep as-is; user can adjust country selector
+        setPhoneNumber(phone.replace(/^\+/, ''));
+      }
+    }
+    if (code) {
+      // For invites, code may be a temporary password
+      setPassword(code);
+    }
+  }, [params]);
 
   const handleBackPress = useCallback(() => {
     if (backPressCount === 0) {
