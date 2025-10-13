@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import {
@@ -11,9 +17,11 @@ import {
   FolderIcon,
   GripVertical,
   ChevronRight,
-  ChevronDown,
   Loader2,
+  ArrowRight,
+  Users2,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
@@ -588,6 +596,7 @@ type CategoryMenuProps = {
   openCategoryIds: string[];
   onToggleCategory: (id: string) => void;
   emptyLabel: string;
+  level?: number;
 };
 
 function CategoryMenu({
@@ -595,21 +604,24 @@ function CategoryMenu({
   openCategoryIds,
   onToggleCategory,
   emptyLabel,
+  level = 0,
 }: CategoryMenuProps) {
   if (!categories.length) return null;
 
   return (
-    <div className="space-y-2">
-      {categories.map((node) => (
+    <ul className={cn("space-y-2", level > 0 && "pl-5")}>
+      {categories.map((node, index) => (
         <CategoryNode
           key={node.id}
           node={node}
           openCategoryIds={openCategoryIds}
           onToggleCategory={onToggleCategory}
           emptyLabel={emptyLabel}
+          level={level}
+          isLast={index === categories.length - 1}
         />
       ))}
-    </div>
+    </ul>
   );
 }
 
@@ -618,6 +630,8 @@ type CategoryNodeProps = {
   openCategoryIds: string[];
   onToggleCategory: (id: string) => void;
   emptyLabel: string;
+  level: number;
+  isLast: boolean;
 };
 
 function CategoryNode({
@@ -625,41 +639,99 @@ function CategoryNode({
   openCategoryIds,
   onToggleCategory,
   emptyLabel,
+  level,
+  isLast,
 }: CategoryNodeProps) {
   const isOpen = openCategoryIds.includes(node.id);
+  const contentWrapperRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(0);
+
+  useEffect(() => {
+    const element = contentWrapperRef.current;
+    if (!element) return;
+
+    const updateHeight = () => setContentHeight(element.scrollHeight);
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [node.groups, node.children]);
 
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-muted/20">
+    <li
+      className={cn(
+        "relative rounded-xl border border-border bg-muted/20 shadow-sm transition hover:border-primary/40",
+        level > 0 &&
+          "before:absolute before:left-[-20px] before:top-0 before:h-full before:border-l before:border-dashed before:border-border/70",
+        level > 0 && !isLast && "before:h-[calc(100%+12px)]"
+      )}
+    >
       <button
         type="button"
         onClick={() => onToggleCategory(node.id)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium transition hover:bg-muted/40"
+        className="group flex w-full items-center justify-between rounded-xl bg-muted/40 px-4 py-3 text-left text-sm font-medium transition hover:bg-muted/60"
       >
-        <span className="flex items-center gap-2">
-          {isOpen ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          )}
-          {node.title}
+        <span className="flex items-center gap-3">
+          <span
+            className={cn(
+              "flex h-6 w-6 items-center justify-center rounded-full border border-border/70 bg-background transition",
+              isOpen && "border-primary/60 bg-primary/10 text-primary"
+            )}
+          >
+            <ChevronRight
+              className={cn(
+                "h-4 w-4 transition-transform duration-200 ease-out",
+                isOpen && "rotate-90"
+              )}
+            />
+          </span>
+          <span className="flex flex-col">
+            <span className="text-base font-semibold">{node.title}</span>
+            {node.groups.length > 0 && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users2 className="h-3 w-3" />
+                {node.groups.length}
+              </span>
+            )}
+          </span>
         </span>
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
           {node.badgeCount}
         </span>
       </button>
 
-      {isOpen && (
-        <div className="space-y-2 border-t border-border bg-background px-6 py-4 text-sm">
+      <div
+        className={cn(
+          "overflow-hidden border-t border-dashed border-border/60 bg-background px-4 transition-all duration-300 ease-out",
+          isOpen ? "opacity-100" : "opacity-0"
+        )}
+        style={{
+          maxHeight: isOpen ? contentHeight + 24 : 0,
+          paddingTop: isOpen ? 12 : 0,
+          paddingBottom: isOpen ? 12 : 0,
+        }}
+      >
+        <div ref={contentWrapperRef} className="space-y-3">
           {node.groups.length ? (
-            <ul className="space-y-2">
+            <ul className="space-y-2 pl-3">
               {node.groups.map((group) => (
                 <li
                   key={`${node.id}-group-${group.id}`}
-                  className="flex items-center justify-between rounded-md border border-transparent bg-muted px-3 py-2 text-sm transition hover:border-border"
+                  className="flex items-center justify-between rounded-lg border border-transparent bg-muted/40 px-3 py-2 text-sm transition hover:border-primary/30 hover:bg-muted/60"
                 >
-                  <Link href={`/groups/${group.id}`} className="font-medium">
-                    {group.name}
-                  </Link>
+                  <span className="flex items-center gap-2">
+                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                    <Link
+                      href={`/groups/${group.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {group.name}
+                    </Link>
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {group.member_count ?? 0}
                   </span>
@@ -667,21 +739,24 @@ function CategoryNode({
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-muted-foreground">{emptyLabel}</p>
+            <p className="rounded-lg border border-dashed border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              {emptyLabel}
+            </p>
           )}
 
           {node.children.length > 0 && (
-            <div className="pt-2">
+            <div className="pt-3">
               <CategoryMenu
                 categories={node.children}
                 openCategoryIds={openCategoryIds}
                 onToggleCategory={onToggleCategory}
                 emptyLabel={emptyLabel}
+                level={level + 1}
               />
             </div>
           )}
         </div>
-      )}
-    </div>
+      </div>
+    </li>
   );
 }
