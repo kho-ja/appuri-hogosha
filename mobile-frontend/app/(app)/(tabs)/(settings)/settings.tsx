@@ -221,10 +221,7 @@ export default function SettingsScreen() {
               />
               <View>
                 <ThemedText
-                  style={[
-                    styles.profileInitial,
-                    { color: theme.colors.grey1 },
-                  ]}
+                  style={[styles.profileInitial, { color: theme.colors.grey1 }]}
                 >
                   {i18n[language].name}
                 </ThemedText>
@@ -389,8 +386,7 @@ export default function SettingsScreen() {
 
             <SampleText
               text={
-                translation[language as keyof typeof translation]
-                  ?.sampleText ||
+                translation[language as keyof typeof translation]?.sampleText ||
                 'Choose the text size that suits you best for a more comfortable reading experience.'
               }
               overrideMultiplier={fontPreviewMultiplier}
