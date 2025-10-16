@@ -32,7 +32,8 @@ import {
 
 // Type definitions for better error handling
 interface ParentCSVRow extends CSVRowBase {
-    email: string;
+    // email can be null when empty in CSV; store as null to avoid unique '' collisions
+    email: string | null;
     phone_number: string;
     given_name: string;
     family_name: string;
@@ -673,6 +674,8 @@ class ParentController implements IController {
 
         const response = createBaseResponse<ParentCSVRow>();
         let connection: Connection | null = null;
+        // track created cognito usernames across the entire upload so we can cleanup on rollback
+        let createdCognitoUsers: string[] = [];
         try {
             const rawRows = await parseCSVBuffer(req.file.buffer);
             if (rawRows.length === 0) {
@@ -687,8 +690,10 @@ class ParentController implements IController {
             const errors: ParentRowError[] = [];
 
             for (const row of rawRows) {
+                // normalize email as null when empty to avoid DB unique index collisions on empty string
+                const rawEmail = String(row.email || '').trim();
                 const normalized: ParentCSVRow = {
-                    email: String(row.email || '').trim(),
+                    email: rawEmail === '' ? null : rawEmail,
                     phone_number: String(row.phone_number || '').trim(),
                     given_name: String(row.given_name || '').trim(),
                     family_name: String(row.family_name || '').trim(),
@@ -722,6 +727,7 @@ class ParentController implements IController {
                         break;
                     }
                 }
+                // only check duplicates for non-null emails
                 if (normalized.email && seenEmails.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
                 if (seenPhones.has(normalized.phone_number))
@@ -746,7 +752,10 @@ class ParentController implements IController {
             connection = await DB.beginTransaction();
 
             // Fetch existing parents (by email & phone) - avoid empty IN () by building clause dynamically
-            const emails = valid.map(v => v.email).filter(Boolean);
+            // build email list ignoring nulls
+            const emails = valid
+                .map(v => v.email)
+                .filter((e): e is string => Boolean(e));
             const phones = valid.map(v => v.phone_number).filter(Boolean);
             let existing: any[] = [];
             if (emails.length || phones.length) {
@@ -761,11 +770,15 @@ class ParentController implements IController {
                 );
             }
             const emailToId = new Map(
-                existing.map((p: any) => [p.email, p.id])
+                existing
+                    .filter((p: any) => p.email !== null && p.email !== '')
+                    .map((p: any) => [p.email, p.id])
             );
             const phoneToId = new Map(
                 existing.map((p: any) => [p.phone_number, p.id])
             );
+
+            // Track Cognito usernames created during this upload so we can cleanup on failure
 
             for (const row of valid) {
                 try {
@@ -794,9 +807,13 @@ class ParentController implements IController {
                             : `+${row.phone_number}`;
                         const parent = await this.cognitoClient.register(
                             phone_number,
-                            row.email,
+                            row.email || '',
                             phone_number
                         );
+                        // register succeeded; remember username for cleanup if DB insert fails later
+                        if (parent && parent.sub_id) {
+                            createdCognitoUsers.push(parent.sub_id);
+                        }
                         const insert = await DB.executeWithConnection(
                             connection,
                             `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
@@ -923,6 +940,20 @@ class ParentController implements IController {
                     }
                 } catch (_) {
                     void _; // explicitly ignore
+                    // If we created a Cognito user for this row but then failed to finish DB operations,
+                    // attempt to delete the Cognito user to avoid orphaned accounts.
+                    try {
+                        if (createdCognitoUsers.length) {
+                            const last = createdCognitoUsers.pop();
+                            if (last) await this.cognitoClient.delete(last);
+                        }
+                    } catch (cleanupErr) {
+                        console.error(
+                            'Failed to cleanup cognito user after row error',
+                            cleanupErr
+                        );
+                    }
+
                     response.errors.push({
                         row,
                         errors: { general: 'processing_error' },
@@ -944,6 +975,24 @@ class ParentController implements IController {
                 .end();
         } catch (e: any) {
             if (connection) await DB.rollbackTransaction(connection);
+            // Cleanup any Cognito users created during this failed upload
+            try {
+                if (createdCognitoUsers && createdCognitoUsers.length) {
+                    for (const username of createdCognitoUsers) {
+                        try {
+                            await this.cognitoClient.delete(username);
+                        } catch (e) {
+                            console.error(
+                                'Failed to cleanup cognito user during rollback:',
+                                username,
+                                e
+                            );
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error during cognito cleanup after rollback', e);
+            }
             return res
                 .status(500)
                 .json(createErrorResponse(ErrorKeys.server_error, e.message))
