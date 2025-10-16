@@ -136,7 +136,8 @@ export default function SendMessagePage() {
     }
 
     const subscription = form.watch((values) => {
-      localStorage.setItem("formDataMessages", JSON.stringify(values));
+      const safeValues = { ...values, image: undefined };
+      localStorage.setItem("formDataMessages", JSON.stringify(safeValues));
     });
     return () => subscription.unsubscribe();
   }, [form]);
