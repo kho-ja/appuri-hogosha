@@ -136,8 +136,8 @@ export default function SendMessagePage() {
     }
 
     const subscription = form.watch((values) => {
-      const safeVales = { ...values, image: undefined };
-      localStorage.setItem("formDataMessages", JSON.stringify(safeVales));
+      const safeValues = { ...values, image: undefined };
+      localStorage.setItem("formDataMessages", JSON.stringify(safeValues));
     });
     return () => subscription.unsubscribe();
   }, [form]);
@@ -220,9 +220,6 @@ export default function SendMessagePage() {
     });
     localStorage.removeItem("formDataMessages");
   };
-
-  console.log("has recipients", hasRecipients);
-  console.log("isFormValid", isFormValid);
 
   const handleSelectedDraft = (draft: any) => {
     form.reset({
