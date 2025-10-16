@@ -153,13 +153,7 @@ class CognitoClient {
             const command = new AdminCreateUserCommand(params);
             const data = await this.client.send(command);
 
-            // Auto-verify phone number after user creation
-            if (phone_number) {
-                console.log(
-                    `Auto-verifying phone number for user: ${identifier}`
-                );
-                await this.verifyPhoneNumber(identifier);
-            }
+            // Note: Auto phone verification removed on user creation.
 
             return {
                 sub_id: data.User?.Username ?? '',
@@ -167,21 +161,7 @@ class CognitoClient {
         } catch (e: any) {
             console.error('error:', e);
             if (e.name === 'UsernameExistsException') {
-                // If user already exists, try to verify their phone number
-                if (phone_number) {
-                    console.log(
-                        `User exists, attempting to verify phone number: ${identifier}`
-                    );
-                    try {
-                        await this.verifyPhoneNumber(identifier);
-                    } catch (verifyError) {
-                        console.error(
-                            'Failed to verify existing user phone:',
-                            verifyError
-                        );
-                    }
-                }
-
+                // Note: Auto phone verification on existing users removed.
                 throw {
                     status: 401,
                     message: 'Email already exists',

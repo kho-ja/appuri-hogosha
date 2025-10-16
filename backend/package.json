@@ -9,7 +9,8 @@
         "lint": "eslint . --ext .ts,.tsx",
         "lint:fix": "eslint . --ext .ts,.tsx --fix",
         "fix-phone": "tsx scripts/fix-phone-verification.ts",
-        "fix-email": "tsx scripts/fix-email-verification.ts"
+        "fix-email": "tsx scripts/fix-email-verification.ts",
+        "cleanup-orphans": "tsx scripts/cleanup-orphan-cognito.ts"
     },
     "keywords": [],
     "author": "kho-ja",
