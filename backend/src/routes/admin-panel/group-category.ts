@@ -191,9 +191,16 @@ class GroupCategoryController implements IController {
 
             // Get groups for each category
             const groups = await DB.query(
-                `SELECT sg.id, sg.name, sg.group_category_id, sg.created_at
+                `SELECT 
+                    sg.id, 
+                    sg.name, 
+                    sg.group_category_id, 
+                    sg.created_at,
+                    COUNT(gm.student_id) AS member_count
                  FROM StudentGroup sg
+                 LEFT JOIN GroupMember gm ON gm.group_id = sg.id
                  WHERE sg.school_id = :school_id AND sg.group_category_id IS NOT NULL
+                 GROUP BY sg.id, sg.name, sg.group_category_id, sg.created_at
                  ORDER BY sg.group_category_id, sg.name`,
                 {
                     school_id: req.user.school_id,
@@ -203,7 +210,10 @@ class GroupCategoryController implements IController {
             // Add groups to their categories
             groups.forEach((group: any) => {
                 if (categoryMap.has(group.group_category_id)) {
-                    categoryMap.get(group.group_category_id).groups.push(group);
+                    categoryMap.get(group.group_category_id).groups.push({
+                        ...group,
+                        member_count: Number(group.member_count ?? 0),
+                    });
                 }
             });
 
@@ -611,11 +621,11 @@ class GroupCategoryController implements IController {
                     COUNT(gm.student_id) as member_count
                  FROM StudentGroup sg
                  LEFT JOIN GroupMember gm ON sg.id = gm.group_id
-                 WHERE sg.group_category_id = :category_id AND sg.school_id = :school_id
+                 WHERE sg.group_category_id = :id AND sg.school_id = :school_id
                  GROUP BY sg.id, sg.name, sg.created_at
                  ORDER BY sg.name`,
                 {
-                    category_id: categoryId,
+                    id: categoryId,
                     school_id: req.user.school_id,
                 }
             );

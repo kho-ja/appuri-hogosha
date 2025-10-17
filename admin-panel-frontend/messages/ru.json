@@ -1247,7 +1247,16 @@
     "categories": "Категории",
     "noGroups": "Нет групп в этой категории",
     "createCategory": "Создать категорию",
+    "createCategoryDescription": "Создайте новую категорию для организации групп",
+    "createParentGroup": "Создать родительскую категорию",
+    "createParentGroupDescription": "Создайте новую родительскую категорию для организации групп по иерархии",
     "categoryName": "Название категории",
+    "enterCategoryName": "Введите название категории",
+    "parentCategory": "Родительская категория",
+    "selectParentCategory": "Выберите родительскую категорию (необязательно)",
+    "noParent": "Без родительской категории",
+    "create": "Создать",
+    "creating": "Создается...",
     "Actions": "Действия",
     "edit": "Редактировать",
     "delete": "Удалить",
@@ -1262,6 +1271,11 @@
     "back": "Назад",
     "groups": "Группы",
     "noGroupsFound": "Группы не найдены",
-    "searchPlaceholder": "Поиск по группам..."
+    "searchPlaceholder": "Поиск по группам...",
+    "category": "Категория",
+    "typeColumn": "Тип",
+    "parentLabel": "Родитель",
+    "childLabel": "Подкатегория",
+    "groupLabel": "Группа"
   }
 }

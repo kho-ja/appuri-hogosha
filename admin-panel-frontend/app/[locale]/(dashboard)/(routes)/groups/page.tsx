@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import {
@@ -16,10 +10,7 @@ import {
   FolderPlus,
   FolderIcon,
   GripVertical,
-  ChevronRight,
   Loader2,
-  ArrowRight,
-  Users2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PaginationApi from "@/components/PaginationApi";
@@ -89,7 +80,18 @@ export default function Groups() {
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editableGroups, setEditableGroups] = useState<Group[]>([]);
-  const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
+
+  const categoryTableLabels = useMemo(
+    () => ({
+      headerName: tCategory("categoryName"),
+      headerType: tCategory("typeColumn"),
+      headerMembers: t("studentCount"),
+      parent: tCategory("parentLabel"),
+      child: tCategory("childLabel"),
+      group: tCategory("groupLabel"),
+    }),
+    [t, tCategory]
+  );
 
   useEffect(() => {
     if (!isEditMode && data?.groups) {
@@ -267,21 +269,16 @@ export default function Groups() {
       nodes.push({
         id: "category-uncategorized",
         title: tCategory("noCategory"),
-        badgeCount: uncategorizedGroups.length,
+        studentCount: uncategorizedGroups.reduce(
+          (total, group) => total + getGroupStudentCount(group),
+          0
+        ),
         groups: uncategorizedGroups,
         children: [],
       });
     }
     return nodes;
   }, [rawCategoryNodes, uncategorizedGroups, tCategory]);
-
-  const toggleCategoryOpen = (categoryId: string) => {
-    setOpenCategoryIds((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
 
   return (
     <div className="w-full">
@@ -421,11 +418,10 @@ export default function Groups() {
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               )}
             </div>
-            <CategoryMenu
+            <CategoryTable
               categories={categoryNodes}
-              openCategoryIds={openCategoryIds}
-              onToggleCategory={toggleCategoryOpen}
               emptyLabel={tCategory("noGroups")}
+              labels={categoryTableLabels}
             />
           </Card>
         )}
@@ -574,189 +570,198 @@ function SortableGroupRow({ group, renderActionCell }: SortableGroupRowProps) {
 type CategoryTreeNode = {
   id: string;
   title: string;
-  badgeCount: number;
+  studentCount: number;
   groups: Group[];
   children: CategoryTreeNode[];
 };
 
-const mapCategoryTree = (categories: GroupCategory[]): CategoryTreeNode[] =>
-  categories.map((category) => ({
-    id: `category-${category.id}`,
-    title: category.name,
-    badgeCount:
-      typeof category.group_count === "number"
-        ? category.group_count
-        : (category.groups?.length ?? 0),
-    groups: category.groups ?? [],
-    children: mapCategoryTree(category.children ?? []),
-  }));
-
-type CategoryMenuProps = {
-  categories: CategoryTreeNode[];
-  openCategoryIds: string[];
-  onToggleCategory: (id: string) => void;
-  emptyLabel: string;
-  level?: number;
+type CategoryTableLabels = {
+  headerName: string;
+  headerType: string;
+  headerMembers: string;
+  parent: string;
+  child: string;
+  group: string;
 };
 
-function CategoryMenu({
-  categories,
-  openCategoryIds,
-  onToggleCategory,
-  emptyLabel,
-  level = 0,
-}: CategoryMenuProps) {
-  if (!categories.length) return null;
+type CategoryDisplayRow = {
+  id: string;
+  name: string;
+  level: number;
+  type: "parent" | "child" | "group" | "empty";
+  members: number | null;
+  groupId?: number;
+};
+
+const mapCategoryTree = (categories: GroupCategory[]): CategoryTreeNode[] =>
+  categories.map((category) => {
+    const children = mapCategoryTree(category.children ?? []);
+    const groups = category.groups ?? [];
+    const groupStudentCount = groups.reduce(
+      (total, group) => total + getGroupStudentCount(group),
+      0
+    );
+    const childrenStudentCount = children.reduce(
+      (total, child) => total + child.studentCount,
+      0
+    );
+
+    return {
+      id: `category-${category.id}`,
+      title: category.name,
+      studentCount: groupStudentCount + childrenStudentCount,
+      groups,
+      children,
+    };
+  });
+
+type CategoryTableProps = {
+  categories: CategoryTreeNode[];
+  emptyLabel: string;
+  labels: CategoryTableLabels;
+};
+
+function CategoryTable({ categories, emptyLabel, labels }: CategoryTableProps) {
+  const rows = flattenCategoryTree(categories, emptyLabel);
+
+  if (!rows.length) {
+    return (
+      <div className="py-6 text-center text-sm text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
 
   return (
-    <ul className={cn("space-y-2", level > 0 && "pl-5")}>
-      {categories.map((node, index) => (
-        <CategoryNode
-          key={node.id}
-          node={node}
-          openCategoryIds={openCategoryIds}
-          onToggleCategory={onToggleCategory}
-          emptyLabel={emptyLabel}
-          level={level}
-          isLast={index === categories.length - 1}
-        />
-      ))}
-    </ul>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>{labels.headerName}</TableHead>
+          <TableHead className="w-40">{labels.headerType}</TableHead>
+          <TableHead className="w-24 text-right">
+            {labels.headerMembers}
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.id} className="hover:bg-muted/10">
+            <TableCell
+              style={{ paddingLeft: `${row.level * 1.5}rem` }}
+              className={cn(
+                row.type === "empty" && "text-xs italic text-muted-foreground"
+              )}
+            >
+              {row.type === "group" && row.groupId ? (
+                <Link
+                  href={`/groups/${row.groupId}`}
+                  className="font-medium hover:underline"
+                >
+                  {row.name}
+                </Link>
+              ) : (
+                row.name
+              )}
+            </TableCell>
+            <TableCell>
+              {row.type === "empty" ? (
+                <span className="text-muted-foreground">—</span>
+              ) : (
+                <TypeBadge type={row.type} labels={labels} />
+              )}
+            </TableCell>
+            <TableCell className="text-right">
+              {typeof row.members === "number" ? row.members : "—"}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 
-type CategoryNodeProps = {
-  node: CategoryTreeNode;
-  openCategoryIds: string[];
-  onToggleCategory: (id: string) => void;
-  emptyLabel: string;
-  level: number;
-  isLast: boolean;
-};
+function flattenCategoryTree(
+  nodes: CategoryTreeNode[],
+  emptyLabel: string,
+  level = 0
+): CategoryDisplayRow[] {
+  return nodes.flatMap((node) => {
+    const rows: CategoryDisplayRow[] = [
+      {
+        id: node.id,
+        name: node.title,
+        level,
+        type: level === 0 ? "parent" : "child",
+        members: node.studentCount,
+      },
+    ];
 
-function CategoryNode({
-  node,
-  openCategoryIds,
-  onToggleCategory,
-  emptyLabel,
-  level,
-  isLast,
-}: CategoryNodeProps) {
-  const isOpen = openCategoryIds.includes(node.id);
-  const contentWrapperRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState(0);
+    if (node.groups.length === 0 && node.children.length === 0) {
+      rows.push({
+        id: `${node.id}-empty`,
+        name: emptyLabel,
+        level: level + 1,
+        type: "empty",
+        members: null,
+      });
+    } else {
+      node.groups.forEach((group) =>
+        rows.push({
+          id: `${node.id}-group-${group.id}`,
+          name: group.name,
+          level: level + 1,
+          type: "group",
+          members: getGroupStudentCount(group),
+          groupId: group.id,
+        })
+      );
+      if (node.children.length) {
+        rows.push(...flattenCategoryTree(node.children, emptyLabel, level + 1));
+      }
+    }
 
-  useEffect(() => {
-    const element = contentWrapperRef.current;
-    if (!element) return;
+    return rows;
+  });
+}
 
-    const updateHeight = () => setContentHeight(element.scrollHeight);
-    updateHeight();
+function TypeBadge({
+  type,
+  labels,
+}: {
+  type: "parent" | "child" | "group";
+  labels: CategoryTableLabels;
+}) {
+  const textMap = {
+    parent: labels.parent,
+    child: labels.child,
+    group: labels.group,
+  };
 
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(element);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [node.groups, node.children]);
+  const colorMap = {
+    parent: "bg-blue-500/10 text-blue-200 border-blue-500/40",
+    child: "bg-amber-500/10 text-amber-200 border-amber-500/40",
+    group: "bg-emerald-500/10 text-emerald-200 border-emerald-500/40",
+  };
 
   return (
-    <li
+    <span
       className={cn(
-        "relative rounded-xl border border-border bg-muted/20 shadow-sm transition hover:border-primary/40",
-        level > 0 &&
-          "before:absolute before:left-[-20px] before:top-0 before:h-full before:border-l before:border-dashed before:border-border/70",
-        level > 0 && !isLast && "before:h-[calc(100%+12px)]"
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
+        colorMap[type]
       )}
     >
-      <button
-        type="button"
-        onClick={() => onToggleCategory(node.id)}
-        className="group flex w-full items-center justify-between rounded-xl bg-muted/40 px-4 py-3 text-left text-sm font-medium transition hover:bg-muted/60"
-      >
-        <span className="flex items-center gap-3">
-          <span
-            className={cn(
-              "flex h-6 w-6 items-center justify-center rounded-full border border-border/70 bg-background transition",
-              isOpen && "border-primary/60 bg-primary/10 text-primary"
-            )}
-          >
-            <ChevronRight
-              className={cn(
-                "h-4 w-4 transition-transform duration-200 ease-out",
-                isOpen && "rotate-90"
-              )}
-            />
-          </span>
-          <span className="flex flex-col">
-            <span className="text-base font-semibold">{node.title}</span>
-            {node.groups.length > 0 && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Users2 className="h-3 w-3" />
-                {node.groups.length}
-              </span>
-            )}
-          </span>
-        </span>
-        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
-          {node.badgeCount}
-        </span>
-      </button>
+      {textMap[type]}
+    </span>
+  );
+}
 
-      <div
-        className={cn(
-          "overflow-hidden border-t border-dashed border-border/60 bg-background px-4 transition-all duration-300 ease-out",
-          isOpen ? "opacity-100" : "opacity-0"
-        )}
-        style={{
-          maxHeight: isOpen ? contentHeight + 24 : 0,
-          paddingTop: isOpen ? 12 : 0,
-          paddingBottom: isOpen ? 12 : 0,
-        }}
-      >
-        <div ref={contentWrapperRef} className="space-y-3">
-          {node.groups.length ? (
-            <ul className="space-y-2 pl-3">
-              {node.groups.map((group) => (
-                <li
-                  key={`${node.id}-group-${group.id}`}
-                  className="flex items-center justify-between rounded-lg border border-transparent bg-muted/40 px-3 py-2 text-sm transition hover:border-primary/30 hover:bg-muted/60"
-                >
-                  <span className="flex items-center gap-2">
-                    <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                    <Link
-                      href={`/groups/${group.id}`}
-                      className="font-medium hover:underline"
-                    >
-                      {group.name}
-                    </Link>
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {group.member_count ?? 0}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="rounded-lg border border-dashed border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              {emptyLabel}
-            </p>
-          )}
-
-          {node.children.length > 0 && (
-            <div className="pt-3">
-              <CategoryMenu
-                categories={node.children}
-                openCategoryIds={openCategoryIds}
-                onToggleCategory={onToggleCategory}
-                emptyLabel={emptyLabel}
-                level={level + 1}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </li>
+function getGroupStudentCount(group: Group): number {
+  return (
+    group.member_count ??
+    (group as any).student_count ??
+    (group as any).students_count ??
+    (Array.isArray((group as any).students)
+      ? (group as any).students.length
+      : 0)
   );
 }
