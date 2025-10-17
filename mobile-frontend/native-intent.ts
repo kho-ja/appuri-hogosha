@@ -56,8 +56,24 @@ export function redirectSystemPath({
         pathname = pathname.replace('/parentnotification', '') || '/';
       }
       const normalized = normalizePath(pathname, url.searchParams);
-      console.log('HTTPS redirect:', normalized);
-      return normalized;
+
+      // Preserve whitelisted query params for auth flows
+      const allowedParams = new URLSearchParams();
+      const allowList = ['phone', 'code'];
+      allowList.forEach(key => {
+        const val = url.searchParams.get(key);
+        if (val) allowedParams.set(key, val);
+      });
+      const shouldKeepQuery =
+        (normalized === '/sign-in' || normalized === '/forgot-password') &&
+        Array.from(allowedParams.keys()).length > 0;
+
+      const result = shouldKeepQuery
+        ? `${normalized}?${allowedParams.toString()}`
+        : normalized;
+
+      console.log('HTTPS redirect:', result);
+      return result;
     }
 
     // Custom schemes: jduapp, jduapp-dev, jduapp-preview

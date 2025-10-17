@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,19 +28,29 @@ import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
+import useTableQuery from "@/lib/useTableQuery";
+import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
 
 export function StudentTable({
   selectedStudents,
   setSelectedStudents,
+  useIndependentState = false,
 }: {
   selectedStudents: Student[];
   setSelectedStudents: React.Dispatch<React.SetStateAction<Student[]>>;
+  useIndependentState?: boolean;
 }) {
   const t = useTranslations("StudentTable");
   const tName = useTranslations("names");
   const { data: session } = useSession();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState<string>("");
+
+  const urlTableQuery = useTableQuery();
+  const independentTableQuery = useIndependentTableQuery("student");
+
+  const { page, setPage, search, setSearch } = useIndependentState
+    ? independentTableQuery
+    : urlTableQuery;
+
   const { data } = useApiPostQuery<StudentApi>(
     "student/list",
     ["students", page, search],

@@ -2,14 +2,12 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
-  useState,
   useMemo,
+  useState,
 } from 'react';
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -18,12 +16,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useSession } from '@/contexts/auth-context';
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
+import { BottomSheet, Button, useTheme } from '@rneui/themed';
 import { I18nContext } from '@/contexts/i18n-context';
-import { Button, useTheme } from '@rneui/themed';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
@@ -116,7 +110,12 @@ export default function SettingsScreen() {
   const [user, setUser] = useState<User | null>(null);
   const { theme } = useTheme();
   const isDark = theme.mode === 'dark';
-  const [, setIsOpen] = useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isFontSizeOpen, setIsFontSizeOpen] = useState(false);
+  // live preview for font size slider while dragging
+  const [fontPreviewMultiplier, setFontPreviewMultiplier] = useState<
+    number | undefined
+  >(undefined);
   const [selectedLanguage, setSelectedLanguage] = useState(
     language === 'en'
       ? 'English'
@@ -126,18 +125,9 @@ export default function SettingsScreen() {
           ? 'Русский'
           : "O'zbekcha"
   );
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-  const fontSizeBottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = ['40%', '50%'];
+  // RNE BottomSheet uses simple isVisible toggles; no refs/snap points needed
 
-  const { multiplier } = useFontSize();
-  const dynamicFontSizeSnapPoints = useMemo(() => {
-    if (multiplier >= 2.0) {
-      return ['50%', '55%'];
-    } else {
-      return ['40%', '50%'];
-    }
-  }, [multiplier]);
+  useFontSize();
 
   const handleLanguageSelect = async (
     language: React.SetStateAction<string>
@@ -154,17 +144,14 @@ export default function SettingsScreen() {
     setLanguage(languageCode);
     setSelectedLanguage(language);
     await AsyncStorage.setItem('language', languageCode);
-    bottomSheetModalRef.current?.dismiss();
+    setIsLanguageOpen(false);
   };
   const handlePresentModal = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-    setTimeout(() => {
-      setIsOpen(true);
-    }, 100);
+    setIsLanguageOpen(true);
   }, []);
 
   const handlePresentFontSizeModal = useCallback(() => {
-    fontSizeBottomSheetRef.current?.present();
+    setIsFontSizeOpen(true);
   }, []);
 
   useEffect(() => {
@@ -181,6 +168,15 @@ export default function SettingsScreen() {
 
     fetchUser();
   }, [db]);
+
+  // Compute display name and hide the name row if both parts are empty/blank
+  const displayName = useMemo(() => {
+    const given = (user?.given_name ?? '').trim();
+    const family = (user?.family_name ?? '').trim();
+    const combined = [given, family].filter(Boolean).join(' ');
+    return combined || '';
+  }, [user]);
+
   const handlePress = useCallback(() => {
     Alert.alert(
       i18n[language].confirmLogout || 'Confirm Logout',
@@ -201,226 +197,212 @@ export default function SettingsScreen() {
 
   const backgroundColor = theme.colors.background;
 
-  const handleOutsidePress = useCallback(() => {
-    bottomSheetModalRef.current?.dismiss();
-  }, []);
-
-  const handleFontSizeOutsidePress = useCallback(() => {
-    fontSizeBottomSheetRef.current?.dismiss();
-  }, []);
+  // Backdrop press is handled via BottomSheetBackdrop 'pressBehavior="close"'
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <BottomSheetModalProvider>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 16 }}
-        >
-          <View style={styles.infoCard}>
-            <ThemedText style={styles.sectionTitle}>
-              {i18n[language].personalInfo}
-            </ThemedText>
-            <View style={styles.infoRow}>
-              <View style={styles.row}>
-                <Ionicons
-                  name='person-outline'
-                  size={22}
-                  color={theme.colors.grey1}
-                  style={styles.infoIcon}
-                />
-                <View>
-                  <ThemedText
-                    style={[
-                      styles.profileInitial,
-                      { color: theme.colors.grey1 },
-                    ]}
-                  >
-                    {i18n[language].name}
-                  </ThemedText>
-                  <ThemedText style={styles.profileText}>
-                    {user && `${user.given_name} ${user.family_name}`}
-                  </ThemedText>
-                </View>
-              </View>
-              <View style={styles.row}>
-                <Ionicons
-                  name='call-outline'
-                  size={22}
-                  color={theme.colors.grey1}
-                  style={styles.infoIcon}
-                />
-                <View>
-                  <ThemedText
-                    style={[
-                      styles.profileInitial,
-                      { color: theme.colors.grey1 },
-                    ]}
-                  >
-                    {i18n[language].phoneNumber}
-                  </ThemedText>
-                  <ThemedText style={styles.profileText}>
-                    +{user && user.phone_number}
-                  </ThemedText>
-                </View>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingTop: 16 }}
+      style={[styles.container, { backgroundColor }]}
+    >
+      <View style={styles.infoCard}>
+        <ThemedText style={styles.sectionTitle}>
+          {i18n[language].personalInfo}
+        </ThemedText>
+        <View style={styles.infoRow}>
+          {displayName ? (
+            <View style={styles.row}>
+              <Ionicons
+                name='person-outline'
+                size={22}
+                color={theme.colors.grey1}
+                style={styles.infoIcon}
+              />
+              <View>
+                <ThemedText
+                  style={[styles.profileInitial, { color: theme.colors.grey1 }]}
+                >
+                  {i18n[language].name}
+                </ThemedText>
+                <ThemedText style={styles.profileText}>
+                  {user && `${user.given_name} ${user.family_name}`}
+                </ThemedText>
               </View>
             </View>
+          ) : null}
+          <View style={styles.row}>
+            <Ionicons
+              name='call-outline'
+              size={22}
+              color={theme.colors.grey1}
+              style={styles.infoIcon}
+            />
+            <View>
+              <ThemedText
+                style={[styles.profileInitial, { color: theme.colors.grey1 }]}
+              >
+                {i18n[language].phoneNumber}
+              </ThemedText>
+              <ThemedText style={styles.profileText}>
+                +{user && user.phone_number}
+              </ThemedText>
+            </View>
           </View>
-          <View style={styles.infoCard}>
-            <ThemedText style={styles.sectionTitle}>
-              {i18n[language].preferences}
-            </ThemedText>
-            <Pressable onPress={handlePresentModal} style={styles.row}>
-              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                <Ionicons color='#fff' name='language-outline' size={20} />
-              </View>
-              <ThemedText style={styles.rowLabel}>
-                {i18n[language].language}
-              </ThemedText>
-              <View style={styles.rowSpacer} />
-              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-            </Pressable>
-            <Pressable
-              onPress={() => router.navigate('change-psswd' as Href)}
-              style={styles.row}
-            >
-              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                <Ionicons color='#fff' name='lock-closed-outline' size={20} />
-              </View>
-              <ThemedText style={styles.rowLabel}>
-                {i18n[language].changePassword}
-              </ThemedText>
-              <View style={styles.rowSpacer} />
-              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-            </Pressable>
-            <Pressable style={styles.row} onPress={handlePresentFontSizeModal}>
-              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                <Ionicons color='#fff' name='text' size={20} />
-              </View>
-              <ThemedText style={styles.rowLabel}>
-                {i18n[language].textSize}
-              </ThemedText>
-              <View style={styles.rowSpacer} />
-              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-            </Pressable>
-            <ThemeSwitcher />
+        </View>
+      </View>
+      <View style={styles.infoCard}>
+        <ThemedText style={styles.sectionTitle}>
+          {i18n[language].preferences}
+        </ThemedText>
+        <Pressable onPress={handlePresentModal} style={styles.row}>
+          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+            <Ionicons color='#fff' name='language-outline' size={20} />
           </View>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={1}
-            snapPoints={snapPoints}
-            backgroundStyle={{ backgroundColor: '#eee' }}
-            onDismiss={() => setIsOpen(false)}
-            backdropComponent={() => (
-              <Pressable
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                onPress={handleOutsidePress}
-              />
-            )}
+          <ThemedText style={styles.rowLabel}>
+            {i18n[language].language}
+          </ThemedText>
+          <View style={styles.rowSpacer} />
+          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+        </Pressable>
+        <Pressable
+          onPress={() => router.navigate('change-psswd' as Href)}
+          style={styles.row}
+        >
+          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+            <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+          </View>
+          <ThemedText style={styles.rowLabel}>
+            {i18n[language].changePassword}
+          </ThemedText>
+          <View style={styles.rowSpacer} />
+          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+        </Pressable>
+        <Pressable style={styles.row} onPress={handlePresentFontSizeModal}>
+          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+            <Ionicons color='#fff' name='text' size={20} />
+          </View>
+          <ThemedText style={styles.rowLabel}>
+            {i18n[language].textSize}
+          </ThemedText>
+          <View style={styles.rowSpacer} />
+          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+        </Pressable>
+        <ThemeSwitcher />
+      </View>
+      <BottomSheet
+        isVisible={isLanguageOpen}
+        onBackdropPress={() => setIsLanguageOpen(false)}
+        modalProps={{
+          transparent: true,
+          statusBarTranslucent: true,
+          // Disable slide so the backdrop doesn't animate from bottom
+          animationType: 'none',
+        }}
+        containerStyle={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+      >
+        <ThemedView
+          style={[
+            styles.contentContainer,
+            {
+              backgroundColor: theme.colors.background,
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              paddingTop: 8,
+            },
+          ]}
+        >
+          <ThemedText
+            style={{
+              marginTop: 18,
+              marginBottom: 18,
+              fontSize: 18,
+              alignSelf: 'flex-start',
+            }}
           >
-            <ThemedView style={styles.contentContainer}>
+            {i18n[language].language}
+          </ThemedText>
+          <ThemedView style={{ width: '100%' }}>
+            {languageData.map(l => (
+              <LanguageSelection
+                key={l.language}
+                language={l.language}
+                selectedLanguage={selectedLanguage}
+                onSelect={handleLanguageSelect}
+                flag={l.flag}
+                isDark={isDark}
+              />
+            ))}
+          </ThemedView>
+        </ThemedView>
+      </BottomSheet>
+      <BottomSheet
+        isVisible={isFontSizeOpen}
+        onBackdropPress={() => setIsFontSizeOpen(false)}
+        modalProps={{
+          transparent: true,
+          statusBarTranslucent: true,
+          // Disable slide so the backdrop doesn't animate from bottom
+          animationType: 'none',
+        }}
+        containerStyle={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+      >
+        <ThemedView
+          style={[
+            styles.contentContainer,
+            {
+              backgroundColor: theme.colors.background,
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              paddingTop: 8,
+            },
+          ]}
+        >
+          <ThemedView style={styles.row}></ThemedView>
+          <ThemedView style={styles.fontSizeContainer}>
+            <View style={styles.sliderWithLabels}>
               <ThemedText
                 style={{
-                  marginTop: 18,
-                  marginBottom: 18,
-                  fontSize: 18,
-                  alignSelf: 'flex-start',
+                  fontSize: 14,
+                  color: '#8E8E93',
+                  fontWeight: '500',
                 }}
               >
-                {i18n[language].language}
+                A
               </ThemedText>
-              <ThemedView style={{ width: '100%' }}>
-                {languageData.map(l => (
-                  <LanguageSelection
-                    key={l.language}
-                    language={l.language}
-                    selectedLanguage={selectedLanguage}
-                    onSelect={handleLanguageSelect}
-                    flag={l.flag}
-                    isDark={isDark}
-                  />
-                ))}
-              </ThemedView>
-            </ThemedView>
-          </BottomSheetModal>
-          <BottomSheetModal
-            ref={fontSizeBottomSheetRef}
-            index={1}
-            snapPoints={dynamicFontSizeSnapPoints}
-            backgroundStyle={{ backgroundColor: '#eee' }}
-            onDismiss={() => setIsOpen(false)}
-            backdropComponent={() => (
-              <Pressable
+              <View style={styles.sliderFixedContainer}>
+                <FontSizeSlider onPreviewChange={setFontPreviewMultiplier} />
+              </View>
+              <ThemedText
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
+                  fontSize: 24,
+                  color: '#8E8E93',
+                  fontWeight: '600',
                 }}
-                onPress={handleFontSizeOutsidePress}
-              />
-            )}
-          >
-            <ThemedView style={styles.contentContainer}>
-              <ThemedView style={styles.row}></ThemedView>
-              <ThemedView style={styles.fontSizeContainer}>
-                <View style={styles.sliderWithLabels}>
-                  <ThemedText
-                    style={{
-                      fontSize: 14,
-                      color: '#8E8E93',
-                      fontWeight: '500',
-                    }}
-                  >
-                    A
-                  </ThemedText>
-                  <View style={styles.sliderFixedContainer}>
-                    <FontSizeSlider />
-                  </View>
-                  <ThemedText
-                    style={{
-                      fontSize: 24,
-                      color: '#8E8E93',
-                      fontWeight: '600',
-                    }}
-                  >
-                    A
-                  </ThemedText>
-                </View>
+              >
+                A
+              </ThemedText>
+            </View>
 
-                <SampleText
-                  text={
-                    translation[language as keyof typeof translation]
-                      ?.sampleText ||
-                    'Choose the text size that suits you best for a more comfortable reading experience.'
-                  }
-                />
-              </ThemedView>
-            </ThemedView>
-          </BottomSheetModal>
-          <View style={{ marginTop: 40, marginBottom: 20 }}>
-            <Button
-              buttonStyle={[
-                styles.submitButton,
-                { backgroundColor: theme.colors.background },
-              ]}
-              onPress={handlePress}
-              title={i18n[language].logout}
-              titleStyle={styles.text}
-              icon={
-                <Ionicons name='log-out-outline' size={30} color='#FF4444' />
+            <SampleText
+              text={
+                translation[language as keyof typeof translation]?.sampleText ||
+                'Choose the text size that suits you best for a more comfortable reading experience.'
               }
+              overrideMultiplier={fontPreviewMultiplier}
             />
-          </View>
-        </ScrollView>
-      </BottomSheetModalProvider>
-    </SafeAreaView>
+          </ThemedView>
+        </ThemedView>
+      </BottomSheet>
+      <View style={{ marginTop: 40, marginBottom: 20 }}>
+        <Button
+          buttonStyle={styles.submitButton}
+          onPress={handlePress}
+          title={i18n[language].logout}
+          titleStyle={styles.text}
+          icon={<Ionicons name='log-out-outline' size={30} color='#FF4444' />}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
@@ -441,6 +423,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderWidth: 1,
     borderColor: '#FF4444',
+    backgroundColor: 'transparent',
   },
   sectionTitle: {
     fontSize: 16,
@@ -449,6 +432,7 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     gap: 20,
+    width: '90%',
   },
   infoIcon: {
     marginRight: 15,
@@ -456,6 +440,7 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 16,
     fontWeight: '400',
+    flex: 1,
   },
   profileInitial: {
     fontSize: 12,
@@ -493,7 +478,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    height: 50,
+    minHeight: 50,
     borderRadius: 8,
     marginHorizontal: 5,
   },

@@ -9,7 +9,6 @@ import {
   PaginationPrevious,
 } from "./ui/pagination";
 import pagination from "@/types/pagination";
-import { useRouter, usePathname } from "@/navigation";
 
 const PaginationApi = ({
   data,
@@ -19,15 +18,12 @@ const PaginationApi = ({
   setPage: (newPage: number) => void;
   className?: string;
 }) => {
-  const router = useRouter();
-  const pathname = usePathname();
   const containerRef = useRef<HTMLDivElement>(null);
   const [useMobileLayout, setUseMobileLayout] = useState(false);
   const resizeTimeout = useRef<NodeJS.Timeout>();
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    router.push(`${pathname}?page=${newPage}`, { scroll: false });
   };
 
   useEffect(() => {

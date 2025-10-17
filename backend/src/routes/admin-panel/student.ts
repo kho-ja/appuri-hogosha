@@ -673,45 +673,56 @@ class StudentController implements IController {
                 }
 
                 if (newParentIds.length > 0) {
-                    const limitValidate = await DB.query(
-                        `SELECT pa.id
+                    const parentLimitCheck = await DB.query(
+                        `SELECT pa.id, COUNT(sp.student_id) as student_count
                         FROM Parent AS pa
                         LEFT JOIN StudentParent AS sp on pa.id = sp.parent_id
                         WHERE pa.id IN (:parents)
-                        GROUP BY pa.id
-                        HAVING COUNT(sp.student_id) < 5;`,
+                        GROUP BY pa.id;`,
                         {
                             parents: newParentIds,
                         }
                     );
 
-                    if (limitValidate.length > 0) {
-                        const validParentIds = limitValidate.map(
-                            (item: any) => item.id
-                        );
-                        const insertData = validParentIds.map(
-                            (parentId: any) => ({
-                                student_id: student.id,
-                                parent_id: parentId,
-                            })
-                        );
-                        const valuesString = insertData
-                            .map(
-                                (item: any) =>
-                                    `(${item.student_id}, ${item.parent_id})`
-                            )
-                            .join(', ');
-                        await DB.query(`INSERT INTO StudentParent (student_id, parent_id)
-                        VALUES ${valuesString};`);
+                    const parentsAtLimit = parentLimitCheck
+                        .filter((item: any) => item.student_count >= 5)
+                        .map((item: any) => item.id);
 
-                        //     for (const parentId of limitValidate) {
-                        //         await DB.query(`INSERT INTO StudentParent (student_id, parent_id)
-                        // VALUES (:student_id, :parent_id);`, {
-                        //             student_id: student.id,
-                        //             parent_id: parentId.parent_id
-                        //         });
-                        //     }
+                    if (parentsAtLimit.length > 0) {
+                        const parentNames = await DB.query(
+                            `SELECT id, given_name, family_name, email
+                            FROM Parent
+                            WHERE id IN (:parentIds)`,
+                            {
+                                parentIds: parentsAtLimit,
+                            }
+                        );
+
+                        throw {
+                            status: 400,
+                            message: ErrorKeys.parent_student_limit_exceeded,
+                            details: {
+                                parentsAtLimit: parentNames.map((p: any) => ({
+                                    id: p.id,
+                                    name: `${p.given_name} ${p.family_name}`,
+                                    email: p.email,
+                                })),
+                            },
+                        };
                     }
+
+                    const insertData = newParentIds.map((parentId: any) => ({
+                        student_id: student.id,
+                        parent_id: parentId,
+                    }));
+                    const valuesString = insertData
+                        .map(
+                            (item: any) =>
+                                `(${item.student_id}, ${item.parent_id})`
+                        )
+                        .join(', ');
+                    await DB.query(`INSERT INTO StudentParent (student_id, parent_id)
+                    VALUES ${valuesString};`);
 
                     for (const parentId of newParentIds) {
                         await syncronizePosts(parentId, student.id);
@@ -782,9 +793,13 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const studentParents = await DB.query(
-                `SELECT pa.id, pa.given_name, pa.family_name
+                `SELECT
+                    pa.id,
+                    COALESCE(NULLIF(pa.given_name, ''), st.given_name) AS given_name,
+                    COALESCE(NULLIF(pa.family_name, ''), st.family_name) AS family_name
                 FROM StudentParent AS sp
-                INNER JOIN Parent AS pa on sp.parent_id = pa.id
+                INNER JOIN Parent AS pa ON sp.parent_id = pa.id
+                INNER JOIN Student AS st ON sp.student_id = st.id
                 WHERE sp.student_id = :student_id;`,
                 {
                     student_id: student.id,
@@ -877,8 +892,14 @@ class StudentController implements IController {
 
     studentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { phone_number, given_name, family_name, student_number } =
-                req.body;
+            const {
+                phone_number,
+                given_name,
+                family_name,
+                student_number: studentNumber,
+            } = req.body;
+
+            const student_number = studentNumber.replace(/\D+/g, '');
 
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
@@ -1031,10 +1052,15 @@ class StudentController implements IController {
             const student = studentInfo[0];
 
             const studentParents = await DB.query(
-                `SELECT pa.id, pa.email,
-                pa.phone_number, pa.given_name, pa.family_name
+                `SELECT
+                    pa.id,
+                    pa.email,
+                    pa.phone_number,
+                    COALESCE(NULLIF(pa.given_name, ''), st.given_name) AS given_name,
+                    COALESCE(NULLIF(pa.family_name, ''), st.family_name) AS family_name
                 FROM StudentParent AS sp
-                INNER JOIN Parent AS pa on sp.parent_id = pa.id
+                INNER JOIN Parent AS pa ON sp.parent_id = pa.id
+                INNER JOIN Student AS st ON sp.student_id = st.id
                 WHERE sp.student_id = :student_id;`,
                 {
                     student_id: student.id,
@@ -1216,9 +1242,11 @@ class StudentController implements IController {
                 phone_number,
                 given_name,
                 family_name,
-                student_number,
+                student_number: studentNumber,
                 parents,
             } = req.body;
+
+            const student_number = studentNumber.replace(/\D+/g, '');
 
             if (!email || !isValidEmail(email)) {
                 throw {

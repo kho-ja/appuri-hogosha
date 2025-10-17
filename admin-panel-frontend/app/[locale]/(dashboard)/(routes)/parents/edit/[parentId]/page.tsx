@@ -27,9 +27,10 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (_t: (key: string) => string) => {
   return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    email: z.string().max(0).or(z.string().email()),
+    given_name: z.string().max(50),
+    family_name: z.string().max(50),
+    email: z.string().max(0).or(z.string().email()).optional(),
+    phone_number: z.string().max(0).optional(),
   });
 };
 
@@ -44,7 +45,8 @@ export default function EditParent({
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  type FormType = z.infer<typeof formSchema>;
+  const form = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       given_name: "",
@@ -55,7 +57,7 @@ export default function EditParent({
   const { data, isLoading, isError } = useApiQuery<{
     parent: Parent;
   }>(`parent/${parentId}`, ["parent", parentId]);
-  const { isPending, mutate } = useApiMutation<{ parent: Parent }>(
+  const { isPending, mutate } = useApiMutation<{ parent: Parent }, FormType>(
     `parent/${parentId}`,
     "PUT",
     ["editParent", parentId],
@@ -63,7 +65,10 @@ export default function EditParent({
       onSuccess: (data) => {
         toast({
           title: t("ParentUpdated"),
-          description: tName("name", { ...data?.parent } as any),
+          description: tName("name", {
+            given_name: data.parent.given_name,
+            family_name: data.parent.family_name,
+          }),
         });
         form.reset();
         router.push(`/parents/${parentId}`);
@@ -75,7 +80,7 @@ export default function EditParent({
     if (data) {
       form.setValue("given_name", data.parent.given_name);
       form.setValue("family_name", data.parent.family_name);
-      form.setValue("email", data.parent.email);
+      form.setValue("email", data.parent.email ? data.parent.email : "");
     }
   }, [data, form]);
 
@@ -91,8 +96,9 @@ export default function EditParent({
           onSubmit={form.handleSubmit((values) =>
             mutate({
               ...values,
-              email: values.email.trim(),
-            } as any)
+              email: values.email ? values.email.trim() : "",
+              phone_number: data?.parent.phone_number,
+            })
           )}
           className="space-y-4"
         >
@@ -114,7 +120,7 @@ export default function EditParent({
                       </FormControl>
                       <FormMessage>
                         {formState.errors.given_name &&
-                          "Parent name is required. Parent name should be more than 5 characters"}
+                          "Invalid parent given name"}
                       </FormMessage>
                     </FormItem>
                   )}
@@ -135,7 +141,7 @@ export default function EditParent({
                       </FormControl>
                       <FormMessage>
                         {formState.errors.family_name &&
-                          "Parent family name is required. Parent family name should be more than 5 characters"}
+                          "Invalid parent family name"}
                       </FormMessage>
                     </FormItem>
                   )}

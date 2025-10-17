@@ -43,7 +43,7 @@ export default function Recievers({
       onSuccess: (data: any) => {
         toast({
           title: t("recieversChanged"),
-          description: data?.message,
+          description: t(data?.message),
         });
         router.push(`/messages/${messageId}`);
       },
@@ -84,6 +84,7 @@ export default function Recievers({
           <GroupTable
             selectedGroups={selectedGroups}
             setSelectedGroups={setSelectedGroups}
+            useIndependentState={true}
           />
         </TabsContent>
 
@@ -91,6 +92,7 @@ export default function Recievers({
           <StudentTable
             selectedStudents={selectedStudents}
             setSelectedStudents={setSelectedStudents}
+            useIndependentState={true}
           />
         </TabsContent>
       </Tabs>

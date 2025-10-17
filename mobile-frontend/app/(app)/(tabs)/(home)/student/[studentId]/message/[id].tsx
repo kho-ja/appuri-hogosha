@@ -336,14 +336,15 @@ export default function DetailsScreen() {
               throw new Error('Failed to fetch message from server');
             }
 
-            // Get any available student to save the message
+            // Get the specific student for whom the message is intended
             activeStudent = await db.getFirstAsync<Student>(
-              'SELECT * FROM student LIMIT 1'
+              'SELECT * FROM student WHERE id = ?',
+              [actualStudentId]
             );
 
             if (!activeStudent) {
               throw new Error(
-                'No students found in database. Please sync students first.'
+                `Target student ${actualStudentId} not found in database. Please sync students first.`
               );
             }
 
@@ -387,9 +388,23 @@ export default function DetailsScreen() {
         }
 
         setMessage(fullMessage);
-        // Mark message as read if it hasn't been read yet
-        if (fullMessage.read_status === 0) {
-          await markMessageAsRead(fullMessage.id, fullMessage.student_id);
+
+        // Find all messages in the same group (same title, content, sent_time) that are unread
+        const unreadGroupMessages = (await db.getAllAsync(
+          'SELECT id, read_status FROM message WHERE student_id = ? AND title = ? AND content = ? AND sent_time = ? AND read_status = 0',
+          [
+            fullMessage.student_id,
+            fullMessage.title || '',
+            fullMessage.content || '',
+            fullMessage.sent_time || '',
+          ]
+        )) as { id: number; read_status: number }[];
+
+        // Mark all unread messages in the group as read
+        if (unreadGroupMessages.length > 0) {
+          for (const unreadMsg of unreadGroupMessages) {
+            await markMessageAsRead(unreadMsg.id, fullMessage.student_id);
+          }
         }
       } catch (error) {
         console.error('Error in fetchMessage:', error);
@@ -400,6 +415,8 @@ export default function DetailsScreen() {
     };
 
     fetchMessage();
+    // markMessageAsRead is intentionally excluded to prevent infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     id,
     actualStudentId,
@@ -408,7 +425,6 @@ export default function DetailsScreen() {
     isDemoMode,
     isOnline,
     session,
-    markMessageAsRead,
     i18n,
     language,
   ]);

@@ -68,6 +68,21 @@ const formSchema = z.object({
 
 export default function CreateFromCsv() {
   const t = useTranslations("fromcsv");
+  const tErrors = useTranslations("errors");
+  // Minimal translator: try 'fromcsv' first, then 'errors', otherwise fallback
+  const translateKey = (key?: string) => {
+    const k = (key ?? "").split(".").pop() || "";
+    if (!k) return tErrors("unexpected_error");
+    try {
+      return t(k);
+    } catch {
+      try {
+        return tErrors(k);
+      } catch {
+        return tErrors("unexpected_error");
+      }
+    }
+  };
   const queryClient = useQueryClient();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -89,27 +104,28 @@ export default function CreateFromCsv() {
         });
         form.reset();
 
-        // Show success/warning toast based on results
+        // Show success/warning toast based on results (localized)
         if (data.success && data.summary) {
-          const { inserted, updated, deleted, errors } = data.summary;
-          const totalProcessed = inserted + updated + deleted;
-
-          if (errors > 0) {
+          const { errors: errorCount } = data.summary;
+          if (errorCount > 0) {
             toast({
               title: t("parentsUploadedWithWarnings"),
-              description: `${totalProcessed} parents processed, ${errors} errors found`,
+              description: t("csv_processed_with_errors"),
               variant: "destructive",
             });
           } else {
             toast({
               title: t("parentsUploaded"),
-              description: `${totalProcessed} parents processed successfully`,
+              description: t("csv_processed_successfully"),
             });
           }
         } else {
           toast({
             title: t("parentsUploaded"),
-            description: t(data?.message || "Upload completed"),
+            description: translateKey(
+              (data as { message?: string } | undefined)?.message ??
+                "csv_processed_successfully"
+            ),
           });
         }
 
@@ -122,9 +138,13 @@ export default function CreateFromCsv() {
         }
       },
       onError(error) {
+        const e = error as
+          | { body?: { error?: string }; message?: string }
+          | undefined;
+        const errKey = e?.body?.error ?? e?.message ?? "unexpected_error";
         toast({
-          title: t("uploadFailed"),
-          description: t(error?.message || "wentWrong"),
+          title: t("uploadError"),
+          description: translateKey(errKey),
           variant: "destructive",
         });
       },
@@ -134,7 +154,11 @@ export default function CreateFromCsv() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const file = values.csvFile;
     const formData = new FormData();
-    const convertedFile = await convertToUtf8IfNeeded(file);
+    const converted = await convertToUtf8IfNeeded(file);
+    const convertedFile = new File([converted], file.name, {
+      type: converted.type || "text/csv",
+      lastModified: Date.now(),
+    });
     formData.append("file", convertedFile);
     formData.append("throwInError", "false");
     formData.append("withCSV", "true");
@@ -241,6 +265,9 @@ export default function CreateFromCsv() {
             </Button>
           </form>
         </Form>
+        <div className="text-sm text-muted-foreground">
+          {t("parentCsvNote")}
+        </div>
         <div>{t("newHere?")}</div>
         <Link href="/instruction" className="text-blue-600">
           {t("howToCreateFromCSV")}
@@ -321,7 +348,7 @@ export default function CreateFromCsv() {
                               <Info className="text-red-500" />
                             </HoverCardTrigger>
                             <HoverCardContent className="text-red-500">
-                              {error.errors.student_numbers}
+                              {translateKey(error.errors.student_numbers)}
                             </HoverCardContent>
                           </HoverCard>
                         )}
@@ -366,14 +393,16 @@ export default function CreateFromCsv() {
   );
 }
 
+type ParentField = "email" | "given_name" | "family_name" | "phone_number";
+
 const ErrorCell = ({
   name,
   error,
 }: {
-  name: keyof Upload<Parent>["errors"][0]["row"];
+  name: ParentField;
   error: Upload<Parent>["errors"][0];
 }) => {
-  const t = useTranslations("fromcsv");
+  const t = useTranslations("errors");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && <span>{error?.row[name]}</span>}
@@ -383,7 +412,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {t(error.errors[name] || "")}
+            {t(error.errors[name] || "unexpected_error")}
           </HoverCardContent>
         </HoverCard>
       )}

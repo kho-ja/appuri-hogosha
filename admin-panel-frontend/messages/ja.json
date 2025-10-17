@@ -64,11 +64,6 @@
     "PasswordTooWeak": "パスワードが弱すぎます。8文字以上、大文字・小文字・数字・記号を含めてください。",
     "PasswordRequirementsNotMet": "パスワードが要件を満たしていません",
     "PasswordRequirements": "パスワード要件",
-    "8CharacterMinimum": "最低8文字",
-    "ContainsNumber": "数字を1文字以上含む",
-    "ContainsLowercase": "小文字を1文字以上含む",
-    "ContainsUppercase": "大文字を1文字以上含む",
-    "ContainsSpecialChar": "特殊文字を1文字以上含む",
     "PasswordChanged": "パスワードが変更されました",
     "ResetPasswordError": "パスワードのリセットに失敗しました。",
     "ResetPassword": "パスワードをリセット",
@@ -316,7 +311,6 @@
     "dark": "ダーク",
     "system": "システム",
     "permissions": "権限",
-    "isAccessible": "アクセス可能ですか？",
     "Message Operations": "メッセージ操作",
     "Forms Actions": "フォーム操作",
     "Parents Actions": "保護者操作",
@@ -381,11 +375,7 @@
     "Guardian": "保護者",
     "Importance": "重要性",
     "All": "すべて",
-    "Description": "詳細",
-    "Accepted": "受け入れられた",
-    "Declined": "拒否された",
-    "accepted": "受け入れられた ⭕",
-    "declined": "拒否 ✖\uFE0F"
+    "Description": "詳細"
   },
   "CreateGroup": {
     "CreateGroup": "グループを保存",
@@ -446,7 +436,8 @@
     "createFromCSV": "CSVから作成する ",
     "createFromKintone": "Kintoneから作成する ",
     "Invalid phone number": "無効な電話番号",
-    "Email is too long": "メールアドレスが長すぎます"
+    "Email is too long": "メールアドレスが長すぎます",
+    "NoSpacesAllowed": "スペースは使用できません"
   },
   "EditParent": {
     "EditParent": "保護者を編集",
@@ -530,7 +521,9 @@
     "close": "閉じる",
     "confirm": "確認する",
     "parentDeleted": "保護者が削除されました",
-    "export": "ファイルに書き出す"
+    "export": "ファイルに書き出す",
+    "Students": "学生",
+    "noStudents": "学生がいません"
   },
   "posts": {
     "messages": "メッセージ",
@@ -625,7 +618,6 @@
     "AdminFamilyName": "管理者の姓",
     "AdminPhone": "管理者の電話番号",
     "AdminEmail": "管理者のメール",
-    "AdminTelegram": "管理者のTelegram",
     "AdminStatus": "管理者のステータス",
     "Create": "保存",
     "Picture": "画像",
@@ -642,7 +634,6 @@
     "AdminFamilyName": "管理者の姓",
     "AdminPhone": "管理者の電話番号",
     "AdminEmail": "管理者のメール",
-    "AdminTelegram": "管理者のTelegram",
     "AdminStatus": "管理者のステータス",
     "Create": "作成",
     "Picture": "画像",
@@ -837,7 +828,8 @@
     "post_notification_replayed_successfully": "投稿の通知が正常に再送信されました",
     "export": "ファイルに書き出す",
     "back": "戻る",
-    "csv_is_empty_but_valid": "CSVは空ですが有効です"
+    "csv_is_empty_but_valid": "CSVは空ですが有効です",
+    "parentCsvNote": "作成（CREATE）の場合は phone_number が必須で、email は任意です。更新/削除（UPDATE/DELETE）の場合は email があれば email を、なければ phone_number で照合します。"
   },
   "fromKintone": {
     "uploadStudent": "学生をアップロード",
@@ -972,12 +964,14 @@
     "invalid_or_missing_parent_id": "無効または存在しない保護者ID",
     "parent_not_found": "保護者が見つかりません",
     "parent_cant_attach_more_than_5_students": "保護者は5人以上の学生を紐付けることはできません",
+    "parent_student_limit_exceeded": "保護者を追加できません - 既に5人の学生が紐付けられています",
     "maximum_5_students_allowed": "最大5人の学生が許可されています",
     "invalid_or_missing_students": "無効または存在しない学生",
     "invalid_or_missing_post_id": "無効または存在しない投稿ID",
     "post_not_found": "投稿が見つかりません",
     "group_members_not_found": "グループメンバーが見つかりません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
+    "post_receivers_updated_successfully": "投稿受信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿通知が正常に再送信されました",
     "invalid_or_missing_title": "無効または存在しないタイトル",
     "invalid_or_missing_description": "無効または存在しない説明",
@@ -1222,7 +1216,8 @@
     "confirm": "確認",
     "back": "戻る",
     "recieversChanged": "受信者が変更されました",
-    "post_sender_updated_successfully": "投稿送信者が正常に更新されました"
+    "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
+    "post_receivers_updated_successfully": "投稿受信者が正常に更新されました"
   },
   "BackButton": {
     "back": "戻る"

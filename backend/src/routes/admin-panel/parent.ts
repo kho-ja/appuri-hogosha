@@ -32,7 +32,8 @@ import {
 
 // Type definitions for better error handling
 interface ParentCSVRow extends CSVRowBase {
-    email: string;
+    // email can be null when empty in CSV; store as null to avoid unique '' collisions
+    email: string | null;
     phone_number: string;
     given_name: string;
     family_name: string;
@@ -150,11 +151,16 @@ class ParentController implements IController {
             const result =
                 await this.cognitoClient.resendTemporaryPassword(phoneNumber);
 
+            const parentName =
+                `${parent.given_name ?? ''} ${parent.family_name ?? ''}`.trim() ||
+                parent.email ||
+                parent.phone_number;
+
             return res
                 .status(200)
                 .json({
                     message: result.message,
-                    parent_name: `${parent.given_name} ${parent.family_name}`,
+                    parent_name: parentName,
                     email: parent.email,
                 })
                 .end();
@@ -196,14 +202,13 @@ class ParentController implements IController {
                 !kintoneSubdomain ||
                 !kintoneDomain ||
                 !kintoneToken ||
-                !given_name_field ||
-                !family_name_field ||
+                // names can be optional; keep fields optional as well
                 !email_field ||
                 !phone_number_field ||
                 !student_number_field
             ) {
                 throw new Error(
-                    'kintoneSubdomain, kintoneDomain, kintoneToken, given_name_field, family_name_field, email_field, phone_number_field, student_number_field are required'
+                    'kintoneSubdomain, kintoneDomain, kintoneToken, email_field, phone_number_field, student_number_field are required'
                 );
             }
 
@@ -308,27 +313,27 @@ class ParentController implements IController {
             }
 
             for (const record of data.records) {
-                let given_name: any = record[given_name_field];
-                let family_name: any = record[family_name_field];
+                let given_name: any = given_name_field
+                    ? record[given_name_field]
+                    : undefined;
+                let family_name: any = family_name_field
+                    ? record[family_name_field]
+                    : undefined;
                 let email: any = record[email_field];
                 let phone_number: any = record[phone_number_field];
                 let student_number: any = record[student_number_field];
 
                 const rowErrors: any = {};
-                if (!given_name) {
-                    rowErrors.given_name = 'missing_or_empty_given_name';
-                } else {
+                // Names are optional. If present, validate; otherwise set null later
+                if (given_name !== undefined) {
                     given_name = parseKintoneRow(given_name);
-                    if (!isValidString(given_name)) {
+                    if (given_name && !isValidString(given_name)) {
                         rowErrors.given_name = 'invalid_given_name_format';
                     }
                 }
-
-                if (!family_name) {
-                    rowErrors.family_name = 'missing_or_empty_family_name';
-                } else {
+                if (family_name !== undefined) {
                     family_name = parseKintoneRow(family_name);
-                    if (!isValidString(family_name)) {
+                    if (family_name && !isValidString(family_name)) {
                         rowErrors.family_name = 'invalid_family_name_format';
                     }
                 }
@@ -366,8 +371,8 @@ class ParentController implements IController {
                 }
 
                 let row = {
-                    given_name: given_name,
-                    family_name: family_name,
+                    given_name: given_name ?? null,
+                    family_name: family_name ?? null,
                     email: email,
                     phone_number: phone_number,
                     student_number: student_number,
@@ -446,6 +451,8 @@ class ParentController implements IController {
                         ...row,
                         school_id: req.user.school_id,
                         cognito_sub_id: parent.sub_id,
+                        given_name: row.given_name || '',
+                        family_name: row.family_name || '',
                     }
                 );
                 const parentId = parentInsert.insertId;
@@ -471,7 +478,11 @@ class ParentController implements IController {
             for (const row of updateList) {
                 await DB.execute(
                     'UPDATE Parent SET phone_number = :phone_number, given_name = :given_name, family_name = :family_name WHERE email = :email',
-                    row
+                    {
+                        ...row,
+                        given_name: row.given_name || '',
+                        family_name: row.family_name || '',
+                    }
                 );
                 const parentId = (
                     await DB.query(
@@ -663,6 +674,8 @@ class ParentController implements IController {
 
         const response = createBaseResponse<ParentCSVRow>();
         let connection: Connection | null = null;
+        // track created cognito usernames across the entire upload so we can cleanup on rollback
+        let createdCognitoUsers: string[] = [];
         try {
             const rawRows = await parseCSVBuffer(req.file.buffer);
             if (rawRows.length === 0) {
@@ -677,8 +690,10 @@ class ParentController implements IController {
             const errors: ParentRowError[] = [];
 
             for (const row of rawRows) {
+                // normalize email as null when empty to avoid DB unique index collisions on empty string
+                const rawEmail = String(row.email || '').trim();
                 const normalized: ParentCSVRow = {
-                    email: String(row.email || '').trim(),
+                    email: rawEmail === '' ? null : rawEmail,
                     phone_number: String(row.phone_number || '').trim(),
                     given_name: String(row.given_name || '').trim(),
                     family_name: String(row.family_name || '').trim(),
@@ -688,13 +703,21 @@ class ParentController implements IController {
                         .filter(Boolean),
                 };
                 const rowErrors: Record<string, string> = {};
-                if (!isValidEmail(normalized.email))
+                // Email handling: allow empty email for all actions; validate only if present
+                if (normalized.email && !isValidEmail(normalized.email))
                     rowErrors.email = ErrorKeys.invalid_email;
                 if (!isValidPhoneNumber(normalized.phone_number))
                     rowErrors.phone_number = ErrorKeys.invalid_phone_number;
-                if (!isValidString(normalized.given_name))
+                // Names optional in CSV; if provided then validate
+                if (
+                    normalized.given_name &&
+                    !isValidString(normalized.given_name)
+                )
                     rowErrors.given_name = ErrorKeys.invalid_name;
-                if (!isValidString(normalized.family_name))
+                if (
+                    normalized.family_name &&
+                    !isValidString(normalized.family_name)
+                )
                     rowErrors.family_name = ErrorKeys.invalid_name;
                 // validate each student number if present
                 for (const sn of normalized.student_numbers) {
@@ -704,7 +727,8 @@ class ParentController implements IController {
                         break;
                     }
                 }
-                if (seenEmails.has(normalized.email))
+                // only check duplicates for non-null emails
+                if (normalized.email && seenEmails.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
                 if (seenPhones.has(normalized.phone_number))
                     rowErrors.phone_number = ErrorKeys.phone_already_exists;
@@ -712,7 +736,7 @@ class ParentController implements IController {
                 if (Object.keys(rowErrors).length > 0) {
                     errors.push({ row: normalized, errors: rowErrors });
                 } else {
-                    seenEmails.add(normalized.email);
+                    if (normalized.email) seenEmails.add(normalized.email);
                     seenPhones.add(normalized.phone_number);
                     valid.push(normalized);
                 }
@@ -727,27 +751,39 @@ class ParentController implements IController {
             // Transaction for DB ops
             connection = await DB.beginTransaction();
 
-            // Fetch existing parents (by email & phone)
-            const existing = await DB.queryWithConnection(
-                connection,
-                'SELECT id, email, phone_number FROM Parent WHERE (email IN (:emails) OR phone_number IN (:phones)) AND school_id = :sid',
-                {
-                    emails: valid.map(v => v.email),
-                    phones: valid.map(v => v.phone_number),
-                    sid: req.user.school_id,
-                }
-            );
+            // Fetch existing parents (by email & phone) - avoid empty IN () by building clause dynamically
+            // build email list ignoring nulls
+            const emails = valid
+                .map(v => v.email)
+                .filter((e): e is string => Boolean(e));
+            const phones = valid.map(v => v.phone_number).filter(Boolean);
+            let existing: any[] = [];
+            if (emails.length || phones.length) {
+                const parts: string[] = [];
+                if (emails.length) parts.push('email IN (:emails)');
+                if (phones.length) parts.push('phone_number IN (:phones)');
+                const where = `(${parts.join(' OR ')}) AND school_id = :sid`;
+                existing = await DB.queryWithConnection(
+                    connection,
+                    `SELECT id, email, phone_number FROM Parent WHERE ${where}`,
+                    { emails, phones, sid: req.user.school_id }
+                );
+            }
             const emailToId = new Map(
-                existing.map((p: any) => [p.email, p.id])
+                existing
+                    .filter((p: any) => p.email !== null && p.email !== '')
+                    .map((p: any) => [p.email, p.id])
             );
             const phoneToId = new Map(
                 existing.map((p: any) => [p.phone_number, p.id])
             );
 
+            // Track Cognito usernames created during this upload so we can cleanup on failure
+
             for (const row of valid) {
                 try {
                     if (action === 'create') {
-                        if (emailToId.has(row.email)) {
+                        if (row.email && emailToId.has(row.email)) {
                             response.errors.push({
                                 row,
                                 errors: {
@@ -771,9 +807,13 @@ class ParentController implements IController {
                             : `+${row.phone_number}`;
                         const parent = await this.cognitoClient.register(
                             phone_number,
-                            row.email,
+                            row.email || '',
                             phone_number
                         );
+                        // register succeeded; remember username for cleanup if DB insert fails later
+                        if (parent && parent.sub_id) {
+                            createdCognitoUsers.push(parent.sub_id);
+                        }
                         const insert = await DB.executeWithConnection(
                             connection,
                             `INSERT INTO Parent(cognito_sub_id, email, phone_number, given_name, family_name, school_id)
@@ -782,8 +822,8 @@ class ParentController implements IController {
                                 cid: parent.sub_id,
                                 email: row.email,
                                 phone: row.phone_number,
-                                given: row.given_name,
-                                family: row.family_name,
+                                given: row.given_name || '',
+                                family: row.family_name || '',
                                 sid: req.user.school_id,
                             }
                         );
@@ -809,23 +849,25 @@ class ParentController implements IController {
                         }
                         response.inserted.push(row);
                     } else if (action === 'update') {
-                        if (!emailToId.has(row.email)) {
+                        const pid = row.email
+                            ? emailToId.get(row.email)
+                            : phoneToId.get(row.phone_number);
+                        if (!pid) {
                             response.errors.push({
                                 row,
                                 errors: {
-                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                    email: ErrorKeys.parent_does_not_exist,
                                 },
                             });
                             continue;
                         }
-                        const pid = emailToId.get(row.email);
                         await DB.executeWithConnection(
                             connection,
                             `UPDATE Parent SET phone_number = :phone, given_name = :given, family_name = :family WHERE id = :id`,
                             {
                                 phone: row.phone_number,
-                                given: row.given_name,
-                                family: row.family_name,
+                                given: row.given_name || '',
+                                family: row.family_name || '',
                                 id: pid,
                             }
                         );
@@ -876,16 +918,18 @@ class ParentController implements IController {
                         }
                         response.updated.push(row);
                     } else if (action === 'delete') {
-                        if (!emailToId.has(row.email)) {
+                        const pid = row.email
+                            ? emailToId.get(row.email)
+                            : phoneToId.get(row.phone_number);
+                        if (!pid) {
                             response.errors.push({
                                 row,
                                 errors: {
-                                    email: ErrorKeys.admin_does_not_exist, // TODO: introduce parent_does_not_exist constant
+                                    email: ErrorKeys.parent_does_not_exist,
                                 },
                             });
                             continue;
                         }
-                        const pid = emailToId.get(row.email);
                         await this.cognitoClient.delete(`+${row.phone_number}`);
                         await DB.executeWithConnection(
                             connection,
@@ -896,6 +940,20 @@ class ParentController implements IController {
                     }
                 } catch (_) {
                     void _; // explicitly ignore
+                    // If we created a Cognito user for this row but then failed to finish DB operations,
+                    // attempt to delete the Cognito user to avoid orphaned accounts.
+                    try {
+                        if (createdCognitoUsers.length) {
+                            const last = createdCognitoUsers.pop();
+                            if (last) await this.cognitoClient.delete(last);
+                        }
+                    } catch (cleanupErr) {
+                        console.error(
+                            'Failed to cleanup cognito user after row error',
+                            cleanupErr
+                        );
+                    }
+
                     response.errors.push({
                         row,
                         errors: { general: 'processing_error' },
@@ -917,6 +975,24 @@ class ParentController implements IController {
                 .end();
         } catch (e: any) {
             if (connection) await DB.rollbackTransaction(connection);
+            // Cleanup any Cognito users created during this failed upload
+            try {
+                if (createdCognitoUsers && createdCognitoUsers.length) {
+                    for (const username of createdCognitoUsers) {
+                        try {
+                            await this.cognitoClient.delete(username);
+                        } catch (e) {
+                            console.error(
+                                'Failed to cleanup cognito user during rollback:',
+                                username,
+                                e
+                            );
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error during cognito cleanup after rollback', e);
+            }
             return res
                 .status(500)
                 .json(createErrorResponse(ErrorKeys.server_error, e.message))
@@ -1259,8 +1335,13 @@ class ParentController implements IController {
                 isValidArrayId(parentIds)
             ) {
                 const parentList = await DB.query(
-                    `SELECT id, given_name, family_name
-                        FROM Parent WHERE id IN (:parents) AND school_id = :school_id`,
+                    `SELECT p.id,
+                            p.email,
+                            p.phone_number,
+                            p.given_name AS given_name,
+                            p.family_name AS family_name
+                     FROM Parent p
+                     WHERE p.id IN (:parents) AND p.school_id = :school_id`,
                     {
                         parents: parentIds,
                         school_id: req.user.school_id,
@@ -1363,21 +1444,24 @@ class ParentController implements IController {
 
     parentEdit = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { email, given_name, family_name } = req.body;
+            const phone_number = req.body.phone_number;
+            const email = req.body.email || null;
+            let { given_name, family_name } = req.body as any;
 
-            if (!email || !isValidEmail(email)) {
+            if (email !== null && (!email || !isValidEmail(email))) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_email',
                 };
             }
-            if (!given_name || !isValidString(given_name)) {
-                throw {
-                    status: 401,
-                    message: 'invalid_or_missing_given_name',
-                };
+            // Names are optional; if provided (non-empty), validate, else set to null
+            if (typeof given_name === 'string') given_name = given_name.trim();
+            if (typeof family_name === 'string')
+                family_name = family_name.trim();
+            if (given_name && !isValidString(given_name)) {
+                throw { status: 401, message: 'invalid_or_missing_given_name' };
             }
-            if (!family_name || !isValidString(family_name)) {
+            if (family_name && !isValidString(family_name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_family_name',
@@ -1415,15 +1499,15 @@ class ParentController implements IController {
             const parent = parentInfo[0];
 
             const findDuplicates = await DB.query(
-                `SELECT id, email FROM Parent WHERE email = :email`,
+                `SELECT id, email, phone_number FROM Parent WHERE phone_number = :phone_number`,
                 {
-                    email: email,
+                    phone_number: phone_number,
                 }
             );
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
-                if (duplicate.id != parentId) {
+                if (email !== null && duplicate.id != parentId) {
                     if (email === duplicate.email) {
                         throw {
                             status: 401,
@@ -1441,8 +1525,8 @@ class ParentController implements IController {
                     WHERE id = :id`,
                 {
                     email: email,
-                    given_name: given_name,
-                    family_name: family_name,
+                    given_name: given_name || '',
+                    family_name: family_name || '',
                     id: parent.id,
                 }
             );
@@ -1489,15 +1573,15 @@ class ParentController implements IController {
                 };
             }
             const parentInfo = await DB.query(
-                `SELECT id,
-                       email,
-                       phone_number,
-                       given_name,
-                       family_name,
-                       created_at
-                FROM Parent
-                WHERE id = :id
-                AND school_id = :school_id`,
+                `SELECT p.id,
+                        p.email,
+                        p.phone_number,
+                        p.given_name AS given_name,
+                        p.family_name AS family_name,
+                        p.created_at
+                 FROM Parent p
+                 WHERE p.id = :id
+                 AND p.school_id = :school_id`,
                 {
                     id: parentId,
                     school_id: req.user.school_id,
@@ -1564,15 +1648,15 @@ class ParentController implements IController {
                 };
             }
             const parentInfo = await DB.query(
-                `SELECT id,
-                       email,
-                       phone_number,
-                       given_name,
-                       family_name,
-                       created_at
-                FROM Parent
-                WHERE id = :id
-                AND school_id = :school_id`,
+                `SELECT p.id,
+                        p.email,
+                        p.phone_number,
+                        p.given_name AS given_name,
+                        p.family_name AS family_name,
+                        p.created_at
+                 FROM Parent p
+                 WHERE p.id = :id
+                 AND p.school_id = :school_id`,
                 {
                     id: parentId,
                     school_id: req.user.school_id,
@@ -1706,7 +1790,7 @@ class ParentController implements IController {
             }
             if (name) {
                 filters.push(
-                    '(given_name LIKE :name OR family_name LIKE :name)'
+                    '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
                 );
                 params.name = `%${name}%`;
             }
@@ -1716,18 +1800,23 @@ class ParentController implements IController {
 
             const parentList = await DB.query(
                 `SELECT
-                id, email, phone_number, given_name, family_name
-                FROM Parent
-                WHERE school_id = :school_id ${whereClause}
-                ORDER BY id DESC
-                LIMIT :limit OFFSET :offset;`,
+                    p.id,
+                    p.email,
+                    p.phone_number,
+                    p.given_name AS given_name,
+                    p.family_name AS family_name
+                 FROM Parent p
+                 WHERE p.school_id = :school_id ${whereClause}
+                 ORDER BY p.id DESC
+                 LIMIT :limit OFFSET :offset;`,
                 params
             );
 
             const totalParents = (
                 await DB.query(
                     `SELECT COUNT(*) as total
-                FROM Parent WHERE school_id = :school_id ${whereClause};`,
+                     FROM Parent p
+                     WHERE p.school_id = :school_id ${whereClause};`,
                     params
                 )
             )[0].total;
@@ -1834,7 +1923,7 @@ class ParentController implements IController {
             }
             if (name) {
                 filters.push(
-                    '(given_name LIKE :name OR family_name LIKE :name)'
+                    '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
                 );
                 params.name = `%${name}%`;
             }
@@ -1844,18 +1933,23 @@ class ParentController implements IController {
 
             const parentList = await DB.query(
                 `SELECT
-                id, email, phone_number, given_name, family_name
-                FROM Parent
-                WHERE school_id = :school_id ${whereClause}
-                ORDER BY id DESC
-                LIMIT :limit OFFSET :offset;`,
+                    p.id,
+                    p.email,
+                    p.phone_number,
+                    p.given_name AS given_name,
+                    p.family_name AS family_name
+                 FROM Parent p
+                 WHERE p.school_id = :school_id ${whereClause}
+                 ORDER BY p.id DESC
+                 LIMIT :limit OFFSET :offset;`,
                 params
             );
 
             const totalParents = (
                 await DB.query(
                     `SELECT COUNT(*) as total
-                FROM Parent WHERE school_id = :school_id ${whereClause};`,
+                     FROM Parent p
+                     WHERE p.school_id = :school_id ${whereClause};`,
                     params
                 )
             )[0].total;
@@ -1872,10 +1966,36 @@ class ParentController implements IController {
                 links: generatePaginationLinks(page, totalPages),
             };
 
+            // Also fetch related students to support side-by-side/accordion UI
+            const parentIds = parentList.map((p: any) => p.id);
+            let studentsByParent: Record<number, any[]> = {};
+            if (parentIds.length) {
+                const rel = await DB.query(
+                    `SELECT sp.parent_id, st.id, st.given_name, st.family_name, st.student_number
+                     FROM StudentParent sp
+                     INNER JOIN Student st ON st.id = sp.student_id
+                     WHERE sp.parent_id IN (:ids)`,
+                    { ids: parentIds }
+                );
+                for (const r of rel) {
+                    (studentsByParent[r.parent_id] ||= []).push({
+                        id: r.id,
+                        given_name: r.given_name,
+                        family_name: r.family_name,
+                        student_number: r.student_number,
+                    });
+                }
+            }
+
+            const parents = parentList.map((p: any) => ({
+                ...p,
+                students: studentsByParent[p.id] || [],
+            }));
+
             return res
                 .status(200)
                 .json({
-                    parents: parentList,
+                    parents,
                     pagination: pagination,
                 })
                 .end();
@@ -1900,8 +2020,8 @@ class ParentController implements IController {
 
     createParent = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { email, phone_number, given_name, family_name, students } =
-                req.body;
+            const { email, phone_number, students } = req.body;
+            let { given_name, family_name } = req.body as any;
 
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
@@ -1909,13 +2029,14 @@ class ParentController implements IController {
                     message: 'invalid_or_missing_phone',
                 };
             }
-            if (!given_name || !isValidString(given_name)) {
-                throw {
-                    status: 401,
-                    message: 'invalid_or_missing_given_name',
-                };
+            // Names optional; validate if provided (non-empty)
+            if (typeof given_name === 'string') given_name = given_name.trim();
+            if (typeof family_name === 'string')
+                family_name = family_name.trim();
+            if (given_name && !isValidString(given_name)) {
+                throw { status: 401, message: 'invalid_or_missing_given_name' };
             }
-            if (!family_name || !isValidString(family_name)) {
+            if (family_name && !isValidString(family_name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_family_name',
@@ -1969,8 +2090,8 @@ class ParentController implements IController {
                     cognito_sub_id: parent.sub_id,
                     email: email || null,
                     phone_number: phone_number,
-                    given_name: given_name,
-                    family_name: family_name,
+                    given_name: given_name || '',
+                    family_name: family_name || '',
                     school_id: req.user.school_id,
                 }
             );
@@ -2054,8 +2175,8 @@ class ParentController implements IController {
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
             const headers = [
-                'email',
-                'phone_number',
+                'email', // optional when creating
+                'phone_number', // required
                 'given_name',
                 'family_name',
                 'student_numbers',

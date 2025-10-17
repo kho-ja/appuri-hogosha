@@ -49,24 +49,22 @@ export default function EditGroup({
   const { data, isLoading, isError } = useApiQuery<{
     group: { name: string };
     members: Student[];
-  }>(`group/${groupId}`, ["group", groupId]);
+  }>(`group/${groupId}?context=edit`, ["group", groupId]);
 
-  const { isPending, mutate } = useApiMutation<{ message: string }>(
-    `group/${groupId}`,
-    "PUT",
-    ["editGroup"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("GroupEdited"),
-          description: data.message,
-        });
-        form.reset();
-        router.push(`/groups/${groupId}`);
-        setSelectedStudents([]);
-      },
-    }
-  );
+  const { isPending, mutate } = useApiMutation<
+    { message: string },
+    { name: string; students: number[] }
+  >(`group/${groupId}`, "PUT", ["editGroup"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("GroupEdited"),
+        description: data.message,
+      });
+      form.reset();
+      router.push(`/groups/${groupId}`);
+      setSelectedStudents([]);
+    },
+  });
 
   useEffect(() => {
     if (data) {
@@ -88,9 +86,9 @@ export default function EditGroup({
             className="space-y-4"
             onSubmit={form.handleSubmit((data) =>
               mutate({
-                ...data,
+                name: data.name,
                 students: selectedStudents.map((e) => e.id),
-              } as any)
+              })
             )}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

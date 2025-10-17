@@ -63,11 +63,6 @@
     "PasswordTooWeak": "Пароль слишком слабый. Используйте минимум 8 символов, заглавные/строчные буквы, цифру и символ.",
     "PasswordRequirementsNotMet": "Пароль не соответствует требованиям",
     "PasswordRequirements": "Требования к паролю",
-    "8CharacterMinimum": "Минимум 8 символов",
-    "ContainsNumber": "Содержит минимум 1 цифру",
-    "ContainsLowercase": "Содержит минимум 1 строчную букву",
-    "ContainsUppercase": "Содержит минимум 1 заглавную букву",
-    "ContainsSpecialChar": "Содержит минимум 1 специальный символ",
     "PasswordChanged": "Пароль изменён",
     "ResetPasswordError": "Не удалось изменить пароль.",
     "ResetPassword": "Сбросить пароль",
@@ -315,7 +310,6 @@
     "dark": "Темная",
     "system": "Системная",
     "permissions": "Разрешения",
-    "isAccessible": "Доступно?",
     "Message Operations": "Операции с сообщениями",
     "Forms Actions": "Действия с формами",
     "Parents Actions": "Действия с родителями",
@@ -380,11 +374,7 @@
     "Guardian": "Опекун",
     "Importance": "Важность",
     "All": "Все",
-    "Description": "Описание",
-    "Accepted": "Принято",
-    "Declined": "Отклонено",
-    "accepted": "принято ⭕",
-    "declined": "отклонено ✖\uFE0F"
+    "Description": "Описание"
   },
   "CreateGroup": {
     "CreateGroup": "Сохранить группу",
@@ -446,7 +436,8 @@
     "createFromCSV": "Создать из CSV",
     "createFromKintone": "Создать из Kintone",
     "Invalid phone number": "Неверный номер телефона",
-    "Email is too long": "Email слишком длинный"
+    "Email is too long": "Email слишком длинный",
+    "NoSpacesAllowed": "Пробелы не допускаются"
   },
   "EditParent": {
     "EditParent": "Редактировать родителя",
@@ -529,7 +520,9 @@
     "close": "Закрыть",
     "confirm": "Подтвердить",
     "parentDeleted": "Родитель удален",
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "Students": "Студенты",
+    "noStudents": "Студентов нет"
   },
   "posts": {
     "messages": "Сообщения",
@@ -623,7 +616,6 @@
     "AdminFamilyName": "Фамилия администратора",
     "AdminPhone": "Телефон администратора",
     "AdminEmail": "Email администратора",
-    "AdminTelegram": "Телеграм администратора",
     "AdminStatus": "Статус администратора",
     "Create": "Сохранить",
     "Picture": "Картинка",
@@ -640,7 +632,6 @@
     "AdminFamilyName": "Фамилия администратора",
     "AdminPhone": "Телефон администратора",
     "AdminEmail": "Email администратора",
-    "AdminTelegram": "Телеграм администратора",
     "AdminStatus": "Статус администратора",
     "Create": "Создать",
     "Picture": "Картинка",
@@ -833,7 +824,8 @@
     "group_members_not_found": "Члены группы не найдены",
     "export": "Экспорт",
     "back": "Назад",
-    "csv_is_empty_but_valid": "CSV пустой, но действительный"
+    "csv_is_empty_but_valid": "CSV пустой, но действительный",
+    "parentCsvNote": "Для CREATE: phone_number обязателен; email — необязателен. Для UPDATE/DELETE: если указан email, ищем по нему, иначе — по phone_number."
   },
   "fromKintone": {
     "uploadStudent": "Загрузить студента",
@@ -969,12 +961,14 @@
     "invalid_or_missing_parent_id": "Неверный или отсутствующий идентификатор родителя",
     "parent_not_found": "Родитель не найден",
     "parent_cant_attach_more_than_5_students": "Родитель не может привязать более 5 студентов",
+    "parent_student_limit_exceeded": "Невозможно добавить родителя(ей) - у них уже есть 5 связанных учеников",
     "maximum_5_parents_allowed": "Максимум 5 родителей разрешено",
     "invalid_or_missing_students": "Неверные или отсутствующие студенты",
     "invalid_or_missing_post_id": "Неверный или отсутствующий идентификатор поста",
     "post_not_found": "Пост не найден",
     "group_members_not_found": "Члены группы не найдены",
     "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
+    "post_receivers_updated_successfully": "Получатели поста успешно обновлены",
     "post_notification_replayed_successfully": "Уведомление о посте успешно отправлено повторно",
     "invalid_or_missing_title": "Неверный или отсутствующий заголовок",
     "invalid_or_missing_description": "Неверное или отсутствующее описание",
@@ -1219,7 +1213,8 @@
     "confirm": "Подтвердить",
     "back": "Назад",
     "recieversChanged": "Получатели изменены",
-    "post_sender_updated_successfully": "Отправитель поста успешно обновлён"
+    "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
+    "post_receivers_updated_successfully": "Получатели поста успешно обновлены"
   },
   "BackButton": {
     "back": "Назад"

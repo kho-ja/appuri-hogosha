@@ -42,7 +42,11 @@ const GetFormSchema = (t: (key: string) => string) => {
       .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
-    student_number: z.string().min(1).max(10),
+    student_number: z
+      .string()
+      .min(1)
+      .max(10)
+      .refine((v) => !/\s/.test(v), { message: t("NoSpacesAllowed") }),
   });
 };
 
@@ -196,7 +200,7 @@ export default function CreateStudent() {
                 <FormItem>
                   <FormLabel>{t("StudentNumber")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("StudentNumber")} {...field} />
+                    <Input {...field} placeholder={t("StudentNumber")} />
                   </FormControl>
                   <FormMessage>
                     {formState.errors.student_number?.message}

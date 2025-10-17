@@ -14,6 +14,7 @@ import { StatusBarBackground } from '@/components/StatusBarBackground';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
@@ -25,6 +26,12 @@ setupNotificationHandler();
 export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
   const [isDeepLinkNavigating, setIsDeepLinkNavigating] = React.useState(false);
+  const [appStartTime] = React.useState(() => Date.now());
+  const [hasProcessedInitialUrl, setHasProcessedInitialUrl] =
+    React.useState(false);
+  const [processedInitialUrl, setProcessedInitialUrl] = React.useState<
+    string | null
+  >(null);
 
   // Protection mechanism: reset loading state after 5 seconds
   React.useEffect(() => {
@@ -54,6 +61,24 @@ export default function Root() {
 
   // Handle deep links
   React.useEffect(() => {
+    // Helper function to determine if this should be treated as an initial deep link
+    const isEffectivelyInitial = (
+      receivedTime: number,
+      providedInitial: boolean
+    ): boolean => {
+      // If it's already marked as initial, trust that
+      if (providedInitial) return true;
+
+      // If we haven't processed any initial URL yet and this comes within 2 seconds of app start,
+      // treat it as initial (this handles iOS jduapp:// scheme issue)
+      if (!hasProcessedInitialUrl && receivedTime - appStartTime < 2000) {
+        console.log('Treating early addEventListener URL as initial');
+        return true;
+      }
+
+      return false;
+    };
+
     // Helper function to get student count from AsyncStorage
     const getStudentInfo = async (): Promise<{
       count: number;
@@ -78,11 +103,32 @@ export default function Root() {
     const handleNavigation = async (
       redirectPath: string,
       isInitial: boolean = false,
-      originalUrl?: string
+      originalUrl?: string,
+      receivedTime: number = Date.now()
     ) => {
+      // Prevent duplicate processing of the same initial URL
+      if (isInitial && originalUrl) {
+        if (processedInitialUrl === originalUrl) {
+          console.log(
+            'Skipping duplicate initial URL processing:',
+            originalUrl
+          );
+          return;
+        }
+        setProcessedInitialUrl(originalUrl);
+      }
+
+      // Determine effective initial state
+      const effectivelyInitial = isEffectivelyInitial(receivedTime, isInitial);
+
       console.log(
-        `Handling navigation to: ${redirectPath} (initial: ${isInitial})`
+        `Handling navigation to: ${redirectPath} (provided initial: ${isInitial}, effectively initial: ${effectivelyInitial})`
       );
+
+      // Mark that we've processed an initial URL to prevent future false positives
+      if (effectivelyInitial) {
+        setHasProcessedInitialUrl(true);
+      }
 
       const studentInfo = await getStudentInfo();
       console.log('Student info:', studentInfo);
@@ -102,7 +148,7 @@ export default function Root() {
         const isHttpsDeepLink = originalUrl?.startsWith('https://');
 
         // For single student, different logic for HTTPS vs dev schemes
-        const delay = isInitial ? 50 : 0;
+        const delay = effectivelyInitial ? 50 : 0;
         setTimeout(() => {
           // For message links
           const messageMatch = optimizedPath.match(
@@ -128,7 +174,7 @@ export default function Root() {
 
             console.log('Single student: Creating navigation for message');
 
-            if (isInitial) {
+            if (effectivelyInitial) {
               // App starting fresh - safe full stack creation
               console.log(
                 'Fresh app start: Creating Student → Message history safely'
@@ -232,10 +278,10 @@ export default function Root() {
 
         // For initial URLs, add a longer delay to ensure app is fully loaded
         // But for dev schemes use smaller delay
-        const delay = isInitial ? (isHttpsDeepLink ? 1000 : 50) : 0;
+        const delay = effectivelyInitial ? (isHttpsDeepLink ? 1000 : 50) : 0;
 
         // For all schemes when app is closed, hide interface during navigation
-        if (isInitial) {
+        if (effectivelyInitial) {
           setIsDeepLinkNavigating(true);
         }
 
@@ -254,7 +300,7 @@ export default function Root() {
             }, 50);
           } else {
             // Dev schemes (exp, jduapp): Different logic for closed/open app
-            if (isInitial) {
+            if (effectivelyInitial) {
               // App closed: create full navigation history Home → Student → Message
               console.log(
                 'Dev scheme (app closed): Creating full navigation stack Home → Student → Message'
@@ -290,7 +336,7 @@ export default function Root() {
         const studentMatch = redirectPath.match(/^\/student\/(\d+)$/);
         if (studentMatch) {
           console.log('Deep link to student page');
-          const delay = isInitial ? 1000 : 0;
+          const delay = effectivelyInitial ? 1000 : 0;
           setTimeout(() => {
             if (isHttpsDeepLink) {
               // HTTPS: Create proper stack Home → Student
@@ -301,7 +347,7 @@ export default function Root() {
               }, 50);
             } else {
               // Dev schemes: Different logic for closed/open app
-              if (isInitial) {
+              if (effectivelyInitial) {
                 // App closed: create navigation history Home → Student
                 console.log(
                   'Dev scheme (app closed): Creating Home → Student stack'
@@ -321,8 +367,10 @@ export default function Root() {
           }, delay);
         } else {
           // For other deep links, navigate directly
-          const delay = isInitial ? 1000 : 0;
-          const navigationMethod = isInitial ? router.replace : router.push;
+          const delay = effectivelyInitial ? 1000 : 0;
+          const navigationMethod = effectivelyInitial
+            ? router.replace
+            : router.push;
           setTimeout(() => {
             navigationMethod(redirectPath as any);
           }, delay);
@@ -341,7 +389,7 @@ export default function Root() {
             initial: true,
           });
           if (redirectPath !== '/unexpected-error') {
-            handleNavigation(redirectPath, true, initialURL);
+            handleNavigation(redirectPath, true, initialURL, appStartTime);
           }
         }
       } catch (error) {
@@ -353,19 +401,20 @@ export default function Root() {
 
     // Handle deep links when app is already running
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      console.log('Deep link received:', url);
+      const receivedTime = Date.now();
+      console.log('Deep link received:', url, 'at time:', receivedTime);
       const redirectPath = redirectSystemPath({
         path: url,
         initial: false,
       });
 
       if (redirectPath !== '/unexpected-error') {
-        handleNavigation(redirectPath, false, url);
+        handleNavigation(redirectPath, false, url, receivedTime);
       }
     });
 
     return () => subscription.remove();
-  }, []);
+  }, [appStartTime, hasProcessedInitialUrl, processedInitialUrl]);
 
   const memoizedTheme = React.useMemo(
     () => ({ ...theme, mode: themeMode }),
@@ -375,40 +424,42 @@ export default function Root() {
   return (
     <RootSiblingParent>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SQLiteProvider
-          databaseName='maria.db'
-          assetSource={{ assetId: require('../assets/database/maria.db') }}
-        >
-          <ThemeProvider theme={memoizedTheme}>
-            <StatusBarBackground>
-              {/* Global status bar with blue background */}
-              <StatusBar
-                style='light'
-                backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-                translucent={false}
-              />
-              <NetworkProvider>
-                <I18nProvider>
-                  {isDeepLinkNavigating ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        backgroundColor:
-                          themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      {/* Empty screen during navigation */}
-                    </View>
-                  ) : (
-                    <AppWithNotifications />
-                  )}
-                </I18nProvider>
-              </NetworkProvider>
-            </StatusBarBackground>
-          </ThemeProvider>
-        </SQLiteProvider>
+        <SafeAreaProvider>
+          <SQLiteProvider
+            databaseName='maria.db'
+            assetSource={{ assetId: require('../assets/database/maria.db') }}
+          >
+            <ThemeProvider theme={memoizedTheme}>
+              <StatusBarBackground>
+                {/* Global status bar with blue background */}
+                <StatusBar
+                  style='light'
+                  backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
+                  translucent={false}
+                />
+                <NetworkProvider>
+                  <I18nProvider>
+                    {isDeepLinkNavigating ? (
+                      <View
+                        style={{
+                          flex: 1,
+                          backgroundColor:
+                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {/* Empty screen during navigation */}
+                      </View>
+                    ) : (
+                      <AppWithNotifications />
+                    )}
+                  </I18nProvider>
+                </NetworkProvider>
+              </StatusBarBackground>
+            </ThemeProvider>
+          </SQLiteProvider>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     </RootSiblingParent>
   );

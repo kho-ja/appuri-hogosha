@@ -1,17 +1,12 @@
 import React, { useContext, useEffect } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  BackHandler,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity, View, BackHandler } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 
 const languageData = [
   { language: "O'zbekcha", flag: '🇺🇿', code: 'uz' },

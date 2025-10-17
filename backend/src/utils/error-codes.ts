@@ -28,12 +28,14 @@ export const ErrorKeys = {
     phone_already_exists: 'phone_already_exists',
     admin_already_exists: 'admin_already_exists',
     admin_does_not_exist: 'admin_does_not_exist',
+    parent_does_not_exist: 'parent_does_not_exist',
     student_does_not_exist: 'student_does_not_exist',
     student_already_exists: 'student_already_exists',
     student_email_already_exists: 'student_email_already_exists',
     student_number_already_exists: 'student_number_already_exists',
     group_name_already_exists: 'group_name_already_exists',
     group_does_not_exist: 'group_does_not_exist',
+    parent_student_limit_exceeded: 'parent_student_limit_exceeded',
 
     // General errors
     server_error: 'server_error',

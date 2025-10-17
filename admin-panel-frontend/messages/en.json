@@ -63,11 +63,6 @@
     "PasswordTooWeak": "Password is too weak. Use at least 8 characters, upper/lowercase letters, number, and symbol.",
     "PasswordRequirementsNotMet": "Password does not meet all requirements",
     "PasswordRequirements": "Password Requirements",
-    "8CharacterMinimum": "8-character minimum length",
-    "ContainsNumber": "Contains at least 1 number",
-    "ContainsLowercase": "Contains at least 1 lowercase letter",
-    "ContainsUppercase": "Contains at least 1 uppercase letter",
-    "ContainsSpecialChar": "Contains at least 1 special character",
     "PasswordChanged": "Password changed",
     "ResetPasswordError": "Failed to reset password.",
     "ResetPassword": "Reset Password",
@@ -319,7 +314,6 @@
     "dark": "Dark",
     "system": "System",
     "permissions": "Permissions",
-    "isAccessible": "Is it accessible?",
     "Message Operations": "Message Operations",
     "Forms Actions": "Forms Actions",
     "Parents Actions": "Parents Actions",
@@ -384,11 +378,7 @@
     "Guardian": "Guardian",
     "Importance": "Importance",
     "All": "All",
-    "Description": "Description",
-    "Accepted": "Accepted",
-    "Declined": "Declined",
-    "accepted": "accepted ⭕",
-    "declined": "declined ✖\uFE0F"
+    "Description": "Description"
   },
   "CreateGroup": {
     "CreateGroup": "Save Group",
@@ -487,7 +477,8 @@
     "createFromCSV": "Create students from CSV",
     "createFromKintone": "Create students from Kintone",
     "Invalid phone number": "Invalid phone number",
-    "Email is too long": "Email is too long"
+    "Email is too long": "Email is too long",
+    "NoSpacesAllowed": "Spaces are not allowed"
   },
   "EditParent": {
     "EditParent": "Edit Parent",
@@ -575,7 +566,9 @@
     "close": "Close",
     "confirm": "Confirm",
     "parentDeleted": "Parent Deleted Successfully",
-    "export": "Export"
+    "export": "Export",
+    "Students": "Students",
+    "noStudents": "No students"
   },
   "posts": {
     "messages": "Messages",
@@ -670,7 +663,6 @@
     "AdminFamilyName": "Admin Family Name",
     "AdminPhone": "Admin Phone",
     "AdminEmail": "Admin Email",
-    "AdminTelegram": "Admin Telegram",
     "AdminStatus": "Admin Status",
     "Create": "Save",
     "Picture": "Picture",
@@ -687,7 +679,6 @@
     "AdminFamilyName": "Admin Family Name",
     "AdminPhone": "Admin Phone",
     "AdminEmail": "Admin Email",
-    "AdminTelegram": "Admin Telegram",
     "AdminStatus": "Admin Status",
     "Create": "Create",
     "Picture": "Picture",
@@ -880,7 +871,8 @@
     "group_members_not_found": "Group members not found",
     "export": "Export",
     "back": "Back",
-    "csv_is_empty_but_valid": "CSV is empty but valid"
+    "csv_is_empty_but_valid": "CSV is empty but valid",
+    "parentCsvNote": "For CREATE: phone_number is required; email is optional. For UPDATE/DELETE: we match by email when provided, otherwise by phone_number."
   },
   "fromKintone": {
     "uploadStudent": "Upload Student",
@@ -1015,12 +1007,14 @@
     "invalid_or_missing_parent_id": "Invalid or missing parent ID",
     "parent_not_found": "Parent not found",
     "parent_cant_attach_more_than_5_students": "Parent can't attach more than 5 students",
+    "parent_student_limit_exceeded": "Cannot add parent(s) - they already have 5 students linked",
     "maximum_5_parents_allowed": "Maximum 5 parents allowed",
     "invalid_or_missing_students": "Invalid or missing students",
     "invalid_or_missing_post_id": "Invalid or missing post id",
     "post_not_found": "Post not found",
     "group_members_not_found": "Group members not found",
-    "post_sender_updated_successfully": "Post sender updated successfully",
+    "post_sender_updated_successfully": "Post receivers updated successfully",
+    "post_receivers_updated_successfully": "Post receivers updated successfully",
     "post_notification_replayed_successfully": "Post notification replayed successfully",
     "invalid_or_missing_title": "Invalid or missing title",
     "invalid_or_missing_description": "Invalid or missing description",
@@ -1265,7 +1259,8 @@
     "confirm": "Confirm",
     "back": "Back",
     "recieversChanged": "Recievers Changed Successfully",
-    "post_sender_updated_successfully": "Post sender updated successfully"
+    "post_sender_updated_successfully": "Post sender updated successfully",
+    "post_receivers_updated_successfully": "Post receivers updated successfully"
   },
   "BackButton": {
     "back": "Back"
