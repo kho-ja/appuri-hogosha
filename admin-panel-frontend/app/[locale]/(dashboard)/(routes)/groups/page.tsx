@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import {
@@ -9,7 +9,6 @@ import {
   Trash2Icon,
   FolderPlus,
   FolderIcon,
-  GripVertical,
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,6 @@ import GroupApi from "@/types/groupApi";
 import GroupCategory from "@/types/group-category";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
-import { SkeletonLoader } from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -49,14 +47,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 
 export default function Groups() {
   const t = useTranslations("groups");
@@ -78,8 +68,6 @@ export default function Groups() {
     null
   );
   const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editableGroups, setEditableGroups] = useState<Group[]>([]);
 
   const categoryTableLabels = useMemo(
     () => ({
@@ -89,43 +77,10 @@ export default function Groups() {
       parent: tCategory("parentLabel"),
       child: tCategory("childLabel"),
       group: tCategory("groupLabel"),
+      action: t("action"),
     }),
     [t, tCategory]
   );
-
-  useEffect(() => {
-    if (!isEditMode && data?.groups) {
-      setEditableGroups(data.groups);
-    }
-  }, [data?.groups, isEditMode]);
-
-  const toggleEditMode = () => {
-    setIsEditMode((prev) => {
-      const next = !prev;
-      if (!prev && data?.groups) {
-        setEditableGroups(data.groups);
-      }
-      return next;
-    });
-  };
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over || active.id === over.id) return;
-
-    setEditableGroups((items) => {
-      const activeId = active.id.toString();
-      const overId = over.id.toString();
-      const oldIndex = items.findIndex(
-        (group) => group.id.toString() === activeId
-      );
-      const newIndex = items.findIndex(
-        (group) => group.id.toString() === overId
-      );
-
-      if (oldIndex === -1 || newIndex === -1) return items;
-      return arrayMove(items, oldIndex, newIndex);
-    });
-  };
 
   const renderActionCell = (group: Group) => (
     <div className="flex gap-2">
@@ -269,10 +224,7 @@ export default function Groups() {
       nodes.push({
         id: "category-uncategorized",
         title: tCategory("noCategory"),
-        studentCount: uncategorizedGroups.reduce(
-          (total, group) => total + getGroupStudentCount(group),
-          0
-        ),
+        badgeCount: uncategorizedGroups.length,
         groups: uncategorizedGroups,
         children: [],
       });
@@ -284,14 +236,6 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
-          <Button
-            variant={isEditMode ? "default" : "outline"}
-            icon={<Edit3Icon className="h-5 w-5" />}
-            onClick={toggleEditMode}
-          >
-            {isEditMode ? t("done") : t("edit")}
-          </Button>
-
           <Dialog
             open={isCreateCategoryDialogOpen}
             onOpenChange={setIsCreateCategoryDialogOpen}
@@ -422,6 +366,7 @@ export default function Groups() {
               categories={categoryNodes}
               emptyLabel={tCategory("noGroups")}
               labels={categoryTableLabels}
+              renderActionCell={renderActionCell}
             />
           </Card>
         )}
@@ -438,139 +383,16 @@ export default function Groups() {
               <span className="sr-only sm:not-sr-only">{t("export")}</span>
             </Button>
           </div>
-          {isEditMode && (
-            <Card x-chunk="dashboard-05-chunk-3">
-              {data?.groups ? (
-                <SortableGroupsTable
-                  groups={editableGroups}
-                  onDragEnd={handleDragEnd}
-                  renderActionCell={renderActionCell}
-                  headers={{
-                    drag: "",
-                    name: t("groupName"),
-                    members: t("studentCount"),
-                    action: t("action"),
-                  }}
-                />
-              ) : (
-                <Table>
-                  <TableBody>
-                    <SkeletonLoader rowCount={5} columnCount={4} />
-                  </TableBody>
-                </Table>
-              )}
-            </Card>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-type SortableGroupsTableProps = {
-  groups: Group[];
-  onDragEnd: (event: DragEndEvent) => void;
-  renderActionCell: (group: Group) => JSX.Element;
-  headers: {
-    drag: string;
-    name: string;
-    members: string;
-    action: string;
-  };
-};
-
-function SortableGroupsTable({
-  groups,
-  onDragEnd,
-  renderActionCell,
-  headers,
-}: SortableGroupsTableProps) {
-  return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-      <SortableContext
-        items={groups.map((group) => group.id.toString())}
-        strategy={verticalListSortingStrategy}
-      >
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">{headers.drag}</TableHead>
-              <TableHead>{headers.name}</TableHead>
-              <TableHead>{headers.members}</TableHead>
-              <TableHead>{headers.action}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {groups.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="py-6 text-center text-sm text-muted-foreground"
-                >
-                  {headers.members}
-                </TableCell>
-              </TableRow>
-            ) : (
-              groups.map((group) => (
-                <SortableGroupRow
-                  key={group.id}
-                  group={group}
-                  renderActionCell={renderActionCell}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </SortableContext>
-    </DndContext>
-  );
-}
-
-type SortableGroupRowProps = {
-  group: Group;
-  renderActionCell: (group: Group) => JSX.Element;
-};
-
-function SortableGroupRow({ group, renderActionCell }: SortableGroupRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: group.id.toString() });
-
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.6 : 1,
-  };
-
-  return (
-    <TableRow ref={setNodeRef} style={style} className="bg-background">
-      <TableCell className="w-10">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="cursor-grab"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
-      </TableCell>
-      <TableCell>{group.name}</TableCell>
-      <TableCell>{group.member_count ?? 0}</TableCell>
-      <TableCell>{renderActionCell(group)}</TableCell>
-    </TableRow>
-  );
-}
-
 type CategoryTreeNode = {
   id: string;
   title: string;
-  studentCount: number;
+  badgeCount: number;
   groups: Group[];
   children: CategoryTreeNode[];
 };
@@ -582,47 +404,45 @@ type CategoryTableLabels = {
   parent: string;
   child: string;
   group: string;
+  action: string;
 };
 
 type CategoryDisplayRow = {
   id: string;
   name: string;
   level: number;
-  type: "parent" | "child" | "group" | "empty";
+  type: "parent" | "child" | "group";
   members: number | null;
   groupId?: number;
+  group?: Group;
 };
 
 const mapCategoryTree = (categories: GroupCategory[]): CategoryTreeNode[] =>
-  categories.map((category) => {
-    const children = mapCategoryTree(category.children ?? []);
-    const groups = category.groups ?? [];
-    const groupStudentCount = groups.reduce(
-      (total, group) => total + getGroupStudentCount(group),
-      0
-    );
-    const childrenStudentCount = children.reduce(
-      (total, child) => total + child.studentCount,
-      0
-    );
-
-    return {
-      id: `category-${category.id}`,
-      title: category.name,
-      studentCount: groupStudentCount + childrenStudentCount,
-      groups,
-      children,
-    };
-  });
+  categories.map((category) => ({
+    id: `category-${category.id}`,
+    title: category.name,
+    badgeCount:
+      typeof category.group_count === "number"
+        ? category.group_count
+        : (category.groups?.length ?? 0),
+    groups: category.groups ?? [],
+    children: mapCategoryTree(category.children ?? []),
+  }));
 
 type CategoryTableProps = {
   categories: CategoryTreeNode[];
   emptyLabel: string;
   labels: CategoryTableLabels;
+  renderActionCell: (group: Group) => JSX.Element;
 };
 
-function CategoryTable({ categories, emptyLabel, labels }: CategoryTableProps) {
-  const rows = flattenCategoryTree(categories, emptyLabel);
+function CategoryTable({
+  categories,
+  emptyLabel,
+  labels,
+  renderActionCell,
+}: CategoryTableProps) {
+  const rows = flattenCategoryTree(categories);
 
   if (!rows.length) {
     return (
@@ -633,56 +453,61 @@ function CategoryTable({ categories, emptyLabel, labels }: CategoryTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{labels.headerName}</TableHead>
-          <TableHead className="w-40">{labels.headerType}</TableHead>
-          <TableHead className="w-24 text-right">
-            {labels.headerMembers}
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id} className="hover:bg-muted/10">
-            <TableCell
-              style={{ paddingLeft: `${row.level * 1.5}rem` }}
-              className={cn(
-                row.type === "empty" && "text-xs italic text-muted-foreground"
-              )}
-            >
-              {row.type === "group" && row.groupId ? (
-                <Link
-                  href={`/groups/${row.groupId}`}
-                  className="font-medium hover:underline"
-                >
-                  {row.name}
-                </Link>
-              ) : (
-                row.name
-              )}
-            </TableCell>
-            <TableCell>
-              {row.type === "empty" ? (
-                <span className="text-muted-foreground">—</span>
-              ) : (
-                <TypeBadge type={row.type} labels={labels} />
-              )}
-            </TableCell>
-            <TableCell className="text-right">
-              {typeof row.members === "number" ? row.members : "—"}
-            </TableCell>
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{labels.headerName}</TableHead>
+            <TableHead className="w-40">{labels.headerType}</TableHead>
+            <TableHead className="w-24 text-right">
+              {labels.headerMembers}
+            </TableHead>
+            <TableHead className="w-32 text-right">{labels.action}</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.id} className="hover:bg-muted/10">
+              <TableCell
+                style={{ paddingLeft: `${row.level * 1.5}rem` }}
+                className={cn(
+                  row.type !== "group" && row.members === 0
+                    ? "text-sm text-muted-foreground"
+                    : undefined
+                )}
+              >
+                {row.type === "group" && row.groupId ? (
+                  <Link
+                    href={`/groups/${row.groupId}`}
+                    className="font-medium hover:underline"
+                  >
+                    {row.name}
+                  </Link>
+                ) : (
+                  row.name
+                )}
+              </TableCell>
+              <TableCell>
+                <TypeBadge type={row.type} labels={labels} />
+              </TableCell>
+              <TableCell className="text-right">
+                {typeof row.members === "number" ? row.members : "—"}
+              </TableCell>
+              <TableCell className="text-right">
+                {row.type === "group" && row.group
+                  ? renderActionCell(row.group)
+                  : "—"}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
 function flattenCategoryTree(
   nodes: CategoryTreeNode[],
-  emptyLabel: string,
   level = 0
 ): CategoryDisplayRow[] {
   return nodes.flatMap((node) => {
@@ -692,32 +517,23 @@ function flattenCategoryTree(
         name: node.title,
         level,
         type: level === 0 ? "parent" : "child",
-        members: node.studentCount,
+        members: node.badgeCount,
       },
     ];
 
-    if (node.groups.length === 0 && node.children.length === 0) {
+    node.groups.forEach((group) =>
       rows.push({
-        id: `${node.id}-empty`,
-        name: emptyLabel,
+        id: `${node.id}-group-${group.id}`,
+        name: group.name,
         level: level + 1,
-        type: "empty",
-        members: null,
-      });
-    } else {
-      node.groups.forEach((group) =>
-        rows.push({
-          id: `${node.id}-group-${group.id}`,
-          name: group.name,
-          level: level + 1,
-          type: "group",
-          members: getGroupStudentCount(group),
-          groupId: group.id,
-        })
-      );
-      if (node.children.length) {
-        rows.push(...flattenCategoryTree(node.children, emptyLabel, level + 1));
-      }
+        type: "group",
+        members: group.member_count ?? 0,
+        groupId: group.id,
+        group,
+      })
+    );
+    if (node.children.length) {
+      rows.push(...flattenCategoryTree(node.children, level + 1));
     }
 
     return rows;
@@ -752,16 +568,5 @@ function TypeBadge({
     >
       {textMap[type]}
     </span>
-  );
-}
-
-function getGroupStudentCount(group: Group): number {
-  return (
-    group.member_count ??
-    (group as any).student_count ??
-    (group as any).students_count ??
-    (Array.isArray((group as any).students)
-      ? (group as any).students.length
-      : 0)
   );
 }
