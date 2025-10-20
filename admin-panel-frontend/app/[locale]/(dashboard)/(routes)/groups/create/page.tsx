@@ -25,9 +25,11 @@ import Group from "@/types/group";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { GroupSelect } from "@/components/GroupSelect";
 
 const formSchema = z.object({
   name: z.string().min(1),
+  sub_group_id: z.number().nullable().optional(),
 });
 
 export default function CreateGroup() {
@@ -40,12 +42,14 @@ export default function CreateGroup() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      sub_group_id: null,
     },
   });
 
   interface CreateGroupPayload {
     name: string;
     students: number[];
+    sub_group_id?: number | null;
   }
   const { mutate } = useApiMutation<{ group: Group }, CreateGroupPayload>(
     `group/create`,
@@ -104,6 +108,7 @@ export default function CreateGroup() {
               mutate({
                 name: data.name,
                 students: selectedStudents.map((student) => student.id),
+                sub_group_id: data.sub_group_id,
               })
             )}
           >
@@ -117,6 +122,24 @@ export default function CreateGroup() {
                     <Input {...field} placeholder={t("GroupName")} />
                   </FormControl>
                   <FormMessage>{formState.errors.name?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sub_group_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("ParentGroup")}</FormLabel>
+                  <FormControl>
+                    <GroupSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder={t("SelectParentGroup")}
+                      allowEmpty
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

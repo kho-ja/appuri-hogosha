@@ -1,22 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
 import {
   Edit3Icon,
   FileIcon,
   Trash2Icon,
   FolderPlus,
   FolderIcon,
-  Loader2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+// utilities
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
-import GroupCategory from "@/types/group-category";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,7 +35,8 @@ import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
-import { GroupCategorySelect } from "@/components/GroupCategorySelect";
+import { GroupSelect } from "@/components/GroupSelect";
+import { GroupTable } from "@/components/GroupTable";
 import {
   Table,
   TableBody,
@@ -47,10 +45,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSession } from "next-auth/react";
 
 export default function Groups() {
   const t = useTranslations("groups");
-  const tCategory = useTranslations("GroupCategory");
+  const { data: session } = useSession();
   const { page, setPage, search, setSearch } = useTableQuery();
 
   const { data } = useApiQuery<GroupApi>(
@@ -62,24 +61,15 @@ export default function Groups() {
   const [isCreateCategoryDialogOpen, setIsCreateCategoryDialogOpen] =
     useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const [selectedGroupsForParent, setSelectedGroupsForParent] = useState<
+    Group[]
+  >([]);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedGroupToMove, setSelectedGroupToMove] = useState<Group | null>(
     null
   );
-  const [targetCategoryId, setTargetCategoryId] = useState<number | null>(null);
-
-  const categoryTableLabels = useMemo(
-    () => ({
-      headerName: tCategory("categoryName"),
-      headerType: tCategory("typeColumn"),
-      headerMembers: t("studentCount"),
-      parent: tCategory("parentLabel"),
-      child: tCategory("childLabel"),
-      group: tCategory("groupLabel"),
-      action: t("action"),
-    }),
-    [t, tCategory]
+  const [targetParentGroupId, setTargetParentGroupId] = useState<number | null>(
+    null
   );
 
   const renderActionCell = (group: Group) => (
@@ -134,62 +124,113 @@ export default function Groups() {
     }
   );
 
-  const { mutate: createCategory, isPending: isCreatingCategory } =
-    useApiMutation<
-      { id: number; name: string },
-      { name: string; parent_category_id?: number | null }
-    >("group-category/create", "POST", ["create-category"], {
-      onSuccess: (mutationData) => {
-        toast({
-          title: tCategory("categoryCreated"),
-          description: mutationData.name,
-        });
-        queryClient.invalidateQueries({ queryKey: ["group-categories"] });
-        queryClient.invalidateQueries({ queryKey: ["groups"] });
-        setNewCategoryName("");
-        setSelectedParentId(null);
-        setIsCreateCategoryDialogOpen(false);
-      },
-    });
-
-  const handleCreateCategory = () => {
-    if (!newCategoryName.trim()) return;
-
-    createCategory({
-      name: newCategoryName.trim(),
-      parent_category_id: selectedParentId,
-    });
-  };
-
-  const { mutate: moveGroupToCategory, isPending: isMovingGroup } =
-    useApiMutation<{ message: string }, { group_category_id: number | null }>(
-      `group/${selectedGroupToMove?.id}/move-category`,
-      "PUT",
-      ["move-group-to-category"],
+  const { mutate: createParentGroup, isPending: isCreatingCategory } =
+    useApiMutation<{ id: number; name: string }, { name: string }>(
+      "group/create",
+      "POST",
+      ["create-group"],
       {
         onSuccess: (mutationData) => {
+          if (selectedGroupsForParent.length > 0) {
+            moveSelectedGroupsToParent(mutationData.id);
+          }
+
           toast({
-            title: t("groupMoved"),
-            description: mutationData.message,
+            title: t("groupCreated"),
+            description: mutationData.name,
           });
           queryClient.invalidateQueries({ queryKey: ["groups"] });
-          setIsMoveDialogOpen(false);
-          setSelectedGroupToMove(null);
-          setTargetCategoryId(null);
+          setNewCategoryName("");
+          setSelectedGroupsForParent([]);
+          setIsCreateCategoryDialogOpen(false);
         },
       }
     );
 
+  const moveSelectedGroupsToParent = async (parentGroupId: number) => {
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const group of selectedGroupsForParent) {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${group.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.sessionToken}`,
+            },
+            body: JSON.stringify({
+              name: group.name,
+              sub_group_id: parentGroupId,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      } catch (error) {
+        errorCount++;
+      }
+    }
+
+    if (successCount > 0) {
+      toast({
+        title: t("groupsMoved"),
+        description: t("groupsMovedDescription", {
+          count: successCount,
+        }),
+      });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    }
+
+    if (errorCount > 0) {
+      toast({
+        title: t("error"),
+        description: t("failedToMoveGroups"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) return;
+
+    createParentGroup({ name: newCategoryName.trim() });
+  };
+
+  const { mutate: moveGroupToParent, isPending: isMovingGroup } =
+    useApiMutation<
+      { message: string },
+      { name: string; sub_group_id: number | null; students?: number[] }
+    >(`group/${selectedGroupToMove?.id}`, "PUT", ["move-group-to-parent"], {
+      onSuccess: () => {
+        toast({
+          title: t("groupMoved"),
+          description: t("groupMoved"),
+        });
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+        setIsMoveDialogOpen(false);
+        setSelectedGroupToMove(null);
+        setTargetParentGroupId(null);
+      },
+    });
+
   const handleMoveGroup = () => {
     if (!selectedGroupToMove) return;
-    moveGroupToCategory({
-      group_category_id: targetCategoryId,
+    moveGroupToParent({
+      name: selectedGroupToMove.name,
+      sub_group_id: targetParentGroupId,
     });
   };
 
   const openMoveDialog = (group: Group) => {
     setSelectedGroupToMove(group);
-    setTargetCategoryId(group.group_category_id || null);
+    setTargetParentGroupId(group.sub_group_id || null);
     setIsMoveDialogOpen(true);
   };
 
@@ -197,40 +238,6 @@ export default function Groups() {
     `group/export`,
     ["exportGroups"]
   );
-
-  const { data: categoryTreeResponse, isLoading: isCategoryTreeLoading } =
-    useApiQuery<{ tree: GroupCategory[] }>("group-category/tree", [
-      "group-category-tree",
-    ]);
-
-  const categoryTree = useMemo(
-    () => categoryTreeResponse?.tree ?? [],
-    [categoryTreeResponse?.tree]
-  );
-
-  const uncategorizedGroups = useMemo(
-    () => (data?.groups ?? []).filter((group) => !group.group_category_id),
-    [data?.groups]
-  );
-
-  const rawCategoryNodes = useMemo(
-    () => mapCategoryTree(categoryTree),
-    [categoryTree]
-  );
-
-  const categoryNodes = useMemo(() => {
-    const nodes = [...rawCategoryNodes];
-    if (uncategorizedGroups.length) {
-      nodes.push({
-        id: "category-uncategorized",
-        title: tCategory("noCategory"),
-        badgeCount: uncategorizedGroups.length,
-        groups: uncategorizedGroups,
-        children: [],
-      });
-    }
-    return nodes;
-  }, [rawCategoryNodes, uncategorizedGroups, tCategory]);
 
   return (
     <div className="w-full">
@@ -245,51 +252,46 @@ export default function Groups() {
                 variant="outline"
                 icon={<FolderPlus className="h-5 w-5" />}
               >
-                {tCategory("createParentGroup")}
+                {t("createParentGroup")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{tCategory("createParentGroup")}</DialogTitle>
+                <DialogTitle>{t("createParentGroup")}</DialogTitle>
                 <DialogDescription>
-                  {tCategory("createParentGroupDescription")}
+                  {t("createParentGroupDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category-name">
-                    {tCategory("categoryName")}
-                  </Label>
+                  <Label htmlFor="category-name">{t("groupName")}</Label>
                   <Input
                     id="category-name"
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder={tCategory("enterCategoryName")}
+                    placeholder={t("enterGroupName")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="parent-category">
-                    {tCategory("parentCategory")}
-                  </Label>
-                  <GroupCategorySelect
-                    value={selectedParentId}
-                    onChange={setSelectedParentId}
-                    placeholder={tCategory("selectParentCategory")}
-                    allowEmpty
-                  />
+                  <Label>{t("selectGroupsToMove")}</Label>
+                  <div className="max-h-64 overflow-y-auto border rounded-md p-2">
+                    <GroupTable
+                      selectedGroups={selectedGroupsForParent}
+                      setSelectedGroups={setSelectedGroupsForParent}
+                      useIndependentState={true}
+                    />
+                  </div>
                 </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">{tCategory("cancel")}</Button>
+                  <Button variant="outline">{t("cancel")}</Button>
                 </DialogClose>
                 <Button
                   onClick={handleCreateCategory}
                   disabled={!newCategoryName.trim() || isCreatingCategory}
                 >
-                  {isCreatingCategory
-                    ? tCategory("creating")
-                    : tCategory("create")}
+                  {isCreatingCategory ? t("creating") : t("create")}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -298,7 +300,7 @@ export default function Groups() {
           <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t("moveGroupToCategory")}</DialogTitle>
+                <DialogTitle>{t("moveGroupToParent")}</DialogTitle>
                 <DialogDescription>
                   {selectedGroupToMove && (
                     <>
@@ -310,18 +312,18 @@ export default function Groups() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>{tCategory("selectParentCategory")}</Label>
-                  <GroupCategorySelect
-                    value={targetCategoryId}
-                    onChange={setTargetCategoryId}
-                    placeholder={tCategory("selectParentCategory")}
+                  <Label>{t("selectParentGroup")}</Label>
+                  <GroupSelect
+                    value={targetParentGroupId}
+                    onChange={setTargetParentGroupId}
+                    placeholder={t("selectParentGroup")}
                     allowEmpty
                   />
                 </div>
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">{tCategory("cancel")}</Button>
+                  <Button variant="outline">{t("cancel")}</Button>
                 </DialogClose>
                 <Button onClick={handleMoveGroup} disabled={isMovingGroup}>
                   {isMovingGroup ? t("moving") : t("move")}
@@ -352,25 +354,6 @@ export default function Groups() {
           </div>
         </div>
 
-        {(categoryNodes.length > 0 || isCategoryTreeLoading) && (
-          <Card className="space-y-3 p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
-                {tCategory("categories")}
-              </h2>
-              {isCategoryTreeLoading && (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              )}
-            </div>
-            <CategoryTable
-              categories={categoryNodes}
-              emptyLabel={tCategory("noGroups")}
-              labels={categoryTableLabels}
-              renderActionCell={renderActionCell}
-            />
-          </Card>
-        )}
-
         <div className="space-y-2 align-left">
           <div className="flex justify-end items-center">
             <Button
@@ -383,190 +366,41 @@ export default function Groups() {
               <span className="sr-only sm:not-sr-only">{t("export")}</span>
             </Button>
           </div>
+
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("groupName")}</TableHead>
+                  <TableHead className="w-40">{t("parent")}</TableHead>
+                  <TableHead className="w-24 text-right">
+                    {t("studentCount")}
+                  </TableHead>
+                  <TableHead className="w-32 text-right">
+                    {t("action")}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(data?.groups ?? []).map((group) => (
+                  <TableRow key={group.id} className="hover:bg-muted/10">
+                    <TableCell className="font-medium">
+                      <Link href={`/groups/${group.id}`}>{group.name}</Link>
+                    </TableCell>
+                    <TableCell>{group.sub_group_name ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      {group.member_count ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {renderActionCell(group)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-type CategoryTreeNode = {
-  id: string;
-  title: string;
-  badgeCount: number;
-  groups: Group[];
-  children: CategoryTreeNode[];
-};
-
-type CategoryTableLabels = {
-  headerName: string;
-  headerType: string;
-  headerMembers: string;
-  parent: string;
-  child: string;
-  group: string;
-  action: string;
-};
-
-type CategoryDisplayRow = {
-  id: string;
-  name: string;
-  level: number;
-  type: "parent" | "child" | "group";
-  members: number | null;
-  groupId?: number;
-  group?: Group;
-};
-
-const mapCategoryTree = (categories: GroupCategory[]): CategoryTreeNode[] =>
-  categories.map((category) => ({
-    id: `category-${category.id}`,
-    title: category.name,
-    badgeCount:
-      typeof category.group_count === "number"
-        ? category.group_count
-        : (category.groups?.length ?? 0),
-    groups: category.groups ?? [],
-    children: mapCategoryTree(category.children ?? []),
-  }));
-
-type CategoryTableProps = {
-  categories: CategoryTreeNode[];
-  emptyLabel: string;
-  labels: CategoryTableLabels;
-  renderActionCell: (group: Group) => JSX.Element;
-};
-
-function CategoryTable({
-  categories,
-  emptyLabel,
-  labels,
-  renderActionCell,
-}: CategoryTableProps) {
-  const rows = flattenCategoryTree(categories);
-
-  if (!rows.length) {
-    return (
-      <div className="py-6 text-center text-sm text-muted-foreground">
-        {emptyLabel}
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{labels.headerName}</TableHead>
-            <TableHead className="w-40">{labels.headerType}</TableHead>
-            <TableHead className="w-24 text-right">
-              {labels.headerMembers}
-            </TableHead>
-            <TableHead className="w-32 text-right">{labels.action}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id} className="hover:bg-muted/10">
-              <TableCell
-                style={{ paddingLeft: `${row.level * 1.5}rem` }}
-                className={cn(
-                  row.type !== "group" && row.members === 0
-                    ? "text-sm text-muted-foreground"
-                    : undefined
-                )}
-              >
-                {row.type === "group" && row.groupId ? (
-                  <Link
-                    href={`/groups/${row.groupId}`}
-                    className="font-medium hover:underline"
-                  >
-                    {row.name}
-                  </Link>
-                ) : (
-                  row.name
-                )}
-              </TableCell>
-              <TableCell>
-                <TypeBadge type={row.type} labels={labels} />
-              </TableCell>
-              <TableCell className="text-right">
-                {typeof row.members === "number" ? row.members : "—"}
-              </TableCell>
-              <TableCell className="text-right">
-                {row.type === "group" && row.group
-                  ? renderActionCell(row.group)
-                  : "—"}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-function flattenCategoryTree(
-  nodes: CategoryTreeNode[],
-  level = 0
-): CategoryDisplayRow[] {
-  return nodes.flatMap((node) => {
-    const rows: CategoryDisplayRow[] = [
-      {
-        id: node.id,
-        name: node.title,
-        level,
-        type: level === 0 ? "parent" : "child",
-        members: node.badgeCount,
-      },
-    ];
-
-    node.groups.forEach((group) =>
-      rows.push({
-        id: `${node.id}-group-${group.id}`,
-        name: group.name,
-        level: level + 1,
-        type: "group",
-        members: group.member_count ?? 0,
-        groupId: group.id,
-        group,
-      })
-    );
-    if (node.children.length) {
-      rows.push(...flattenCategoryTree(node.children, level + 1));
-    }
-
-    return rows;
-  });
-}
-
-function TypeBadge({
-  type,
-  labels,
-}: {
-  type: "parent" | "child" | "group";
-  labels: CategoryTableLabels;
-}) {
-  const textMap = {
-    parent: labels.parent,
-    child: labels.child,
-    group: labels.group,
-  };
-
-  const colorMap = {
-    parent: "bg-blue-500/10 text-blue-200 border-blue-500/40",
-    child: "bg-amber-500/10 text-amber-200 border-amber-500/40",
-    group: "bg-emerald-500/10 text-emerald-200 border-emerald-500/40",
-  };
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide",
-        colorMap[type]
-      )}
-    >
-      {textMap[type]}
-    </span>
   );
 }
