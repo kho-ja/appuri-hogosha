@@ -9,7 +9,6 @@ import {
   FolderPlus,
   FolderIcon,
 } from "lucide-react";
-// utilities
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
@@ -47,6 +46,11 @@ import {
 } from "@/components/ui/table";
 import { useSession } from "next-auth/react";
 
+interface GroupTreeNode extends Group {
+  children?: GroupTreeNode[];
+  level?: number;
+}
+
 export default function Groups() {
   const t = useTranslations("groups");
   const { data: session } = useSession();
@@ -71,6 +75,53 @@ export default function Groups() {
   const [targetParentGroupId, setTargetParentGroupId] = useState<number | null>(
     null
   );
+
+  // Build tree structure from flat list
+  const buildTreeStructure = (groups: Group[]): GroupTreeNode[] => {
+    const groupMap = new Map<number, GroupTreeNode>();
+    const rootGroups: GroupTreeNode[] = [];
+
+    // First pass: create all nodes
+    groups.forEach((group) => {
+      groupMap.set(group.id, { ...group, children: [] });
+    });
+
+    // Second pass: build tree
+    groups.forEach((group) => {
+      const node = groupMap.get(group.id)!;
+      if (group.sub_group_id) {
+        const parent = groupMap.get(group.sub_group_id);
+        if (parent) {
+          parent.children!.push(node);
+        } else {
+          // Parent not found in current page, show as root
+          rootGroups.push(node);
+        }
+      } else {
+        rootGroups.push(node);
+      }
+    });
+
+    return rootGroups;
+  };
+
+  // Flatten tree for rendering with levels - always expanded
+  const flattenTree = (
+    nodes: GroupTreeNode[],
+    level: number = 0
+  ): GroupTreeNode[] => {
+    const result: GroupTreeNode[] = [];
+    nodes.forEach((node) => {
+      result.push({ ...node, level });
+      if (node.children && node.children.length > 0) {
+        result.push(...flattenTree(node.children, level + 1));
+      }
+    });
+    return result;
+  };
+
+  const treeData = buildTreeStructure(data?.groups ?? []);
+  const flatData = flattenTree(treeData);
 
   const renderActionCell = (group: Group) => (
     <div className="flex gap-2">
@@ -239,6 +290,26 @@ export default function Groups() {
     ["exportGroups"]
   );
 
+  const renderGroupRow = (group: GroupTreeNode) => {
+    const level = group.level ?? 0;
+
+    return (
+      <TableRow key={group.id} className="hover:bg-muted/10">
+        <TableCell className="font-medium">
+          <div
+            className="flex items-center gap-2"
+            style={{ paddingLeft: `${level * 24}px` }}
+          >
+            <Link href={`/groups/${group.id}`}>{group.name}</Link>
+          </div>
+        </TableCell>
+        <TableCell>{group.sub_group_name ?? "—"}</TableCell>
+        <TableCell className="text-right">{group.member_count ?? 0}</TableCell>
+        <TableCell className="text-right">{renderActionCell(group)}</TableCell>
+      </TableRow>
+    );
+  };
+
   return (
     <div className="w-full">
       <div className="space-y-4">
@@ -382,20 +453,7 @@ export default function Groups() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(data?.groups ?? []).map((group) => (
-                  <TableRow key={group.id} className="hover:bg-muted/10">
-                    <TableCell className="font-medium">
-                      <Link href={`/groups/${group.id}`}>{group.name}</Link>
-                    </TableCell>
-                    <TableCell>{group.sub_group_name ?? "—"}</TableCell>
-                    <TableCell className="text-right">
-                      {group.member_count ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {renderActionCell(group)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {flatData.map((group) => renderGroupRow(group))}
               </TableBody>
             </Table>
           </div>
