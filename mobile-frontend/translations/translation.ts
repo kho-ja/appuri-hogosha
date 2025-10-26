@@ -510,7 +510,7 @@ const translations: Translations = {
     loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
-    forgotPasswordLink: 'Kodni unutdingizmi? Parolni tiklang.',
+    forgotPasswordLink: 'Parolni unutdingizmi? Parolni tiklang.',
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
     loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
