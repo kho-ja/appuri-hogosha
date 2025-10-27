@@ -389,7 +389,7 @@ export default function ForgotPasswordScreen() {
           <ThemedView style={styles.container}>
             <ThemedView style={styles.header}>
               <ThemedText style={styles.title}>
-                {i18n[language].resetPasswordTitle}s
+                {i18n[language].resetPasswordTitle}
               </ThemedText>
               <ThemedText style={styles.description}>
                 {i18n[language].enterPhoneNumberText}
