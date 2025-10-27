@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, Platform, Alert, Linking } from 'react-native';
+import { View, StyleSheet, Platform, Linking } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Button } from '@rneui/themed';
 import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Alert from '@/utils/customAlert';
 
 interface BatteryOptimizationHelperProps {
   visible?: boolean;

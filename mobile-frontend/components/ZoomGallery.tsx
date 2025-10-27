@@ -6,7 +6,6 @@ import React, {
   useEffect,
 } from 'react';
 import {
-  Alert,
   Platform,
   TouchableOpacity,
   View,
@@ -21,6 +20,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nContext } from '@/contexts/i18n-context';
+import Alert from '@/utils/customAlert';
 
 type Img = { uri: string };
 

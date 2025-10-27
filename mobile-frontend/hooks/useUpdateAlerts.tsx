@@ -1,8 +1,8 @@
 import React, { useEffect, useContext } from 'react';
 import * as Updates from 'expo-updates';
-import { Alert } from 'react-native';
 import { Button } from '@rneui/themed';
 import { I18nContext } from '@/contexts/i18n-context';
+import Alert from '@/utils/customAlert';
 
 export const useUpdateAlerts = () => {
   const { language, i18n } = useContext(I18nContext);

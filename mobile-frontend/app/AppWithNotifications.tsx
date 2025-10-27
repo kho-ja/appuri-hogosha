@@ -11,9 +11,10 @@ import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
-import { Platform, Alert, Linking } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useUpdateAlerts } from '@/hooks/useUpdateAlerts';
+import Alert from '@/utils/customAlert';
 
 // Helper function to guide users for battery optimization
 const showBatteryOptimizationAlert = async (i18n: any, language: string) => {

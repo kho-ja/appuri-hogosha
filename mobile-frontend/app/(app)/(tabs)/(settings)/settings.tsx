@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -27,6 +26,7 @@ import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import Alert from '@/utils/customAlert';
 
 const languageData = [
   {

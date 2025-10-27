@@ -1,5 +1,6 @@
 import * as Linking from 'expo-linking';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
+import Alert from './customAlert';
 
 /**
  * Utility function to test deep links based on app's structure

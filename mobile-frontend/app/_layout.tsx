@@ -19,6 +19,7 @@ import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
 } from '../native-intent';
+import { AlertProvider } from '@/utils/customAlert';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
@@ -439,21 +440,23 @@ export default function Root() {
                 />
                 <NetworkProvider>
                   <I18nProvider>
-                    {isDeepLinkNavigating ? (
-                      <View
-                        style={{
-                          flex: 1,
-                          backgroundColor:
-                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {/* Empty screen during navigation */}
-                      </View>
-                    ) : (
-                      <AppWithNotifications />
-                    )}
+                    <AlertProvider>
+                      {isDeepLinkNavigating ? (
+                        <View
+                          style={{
+                            flex: 1,
+                            backgroundColor:
+                              themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {/* Empty screen during navigation */}
+                        </View>
+                      ) : (
+                        <AppWithNotifications />
+                      )}
+                    </AlertProvider>
                   </I18nProvider>
                 </NetworkProvider>
               </StatusBarBackground>
