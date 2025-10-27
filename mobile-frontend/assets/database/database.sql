@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS message (
     read_status INTEGER CHECK (read_status IN (0, 1)) DEFAULT 0,
     read_time TEXT,
     sent_status INTEGER CHECK (sent_status IN (0, 1)) DEFAULT 0,
+    came_time TEXT,
     FOREIGN KEY (student_number) REFERENCES student (student_number) ON DELETE CASCADE
 );
 
