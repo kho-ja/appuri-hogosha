@@ -32,6 +32,7 @@ export default function SignIn() {
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
   const params = useLocalSearchParams<{ phone?: string; code?: string }>();
+  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
 
   React.useEffect(() => {
     const loadCredentials = async () => {
@@ -51,7 +52,6 @@ export default function SignIn() {
     initialize();
   }, []);
 
-  // If deep link provides ?phone= and/or ?code=, pre-fill inputs for convenience
   React.useEffect(() => {
     const phone = (params?.phone as string) || '';
     const code = (params?.code as string) || '';
@@ -81,7 +81,7 @@ export default function SignIn() {
     if (backPressCount === 0) {
       Toast.show(i18n[language].pressBackAgainToExit, {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -122,7 +122,7 @@ export default function SignIn() {
       ) {
         Toast.show(i18n[language].loginFailedNotifications, {
           duration: Toast.durations.LONG,
-          position: Toast.positions.BOTTOM,
+          position: TOAST_POSITION,
           shadow: true,
           animation: true,
           hideOnPress: true,
@@ -135,7 +135,7 @@ export default function SignIn() {
       } else {
         Toast.show(i18n[language].loginFailed, {
           duration: Toast.durations.LONG,
-          position: Toast.positions.BOTTOM,
+          position: TOAST_POSITION,
           shadow: true,
           animation: true,
           hideOnPress: true,
@@ -152,7 +152,7 @@ export default function SignIn() {
 
       Toast.show(i18n[language].loginSuccess, {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM - 120,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,

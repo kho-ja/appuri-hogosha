@@ -111,6 +111,7 @@ export default function ForgotPasswordScreen() {
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const [resendCount, setResendCount] = useState(0);
+  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
 
   // No ref needed for react-native-otp-entry
 
@@ -131,7 +132,7 @@ export default function ForgotPasswordScreen() {
     if (!phoneNumber.trim()) {
       Toast.show('Please enter your phone number', {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -173,7 +174,7 @@ export default function ForgotPasswordScreen() {
           : `Verification code resent successfully (Attempt ${resendCount + 1})`,
         {
           duration: Toast.durations.LONG,
-          position: Toast.positions.BOTTOM,
+          position: TOAST_POSITION,
           shadow: true,
           animation: true,
           hideOnPress: true,
@@ -192,7 +193,7 @@ export default function ForgotPasswordScreen() {
           : 'Failed to send verification code';
       Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -255,7 +256,7 @@ export default function ForgotPasswordScreen() {
     if (finalCode.length !== 6) {
       Toast.show('Please enter all 6 digits', {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -278,7 +279,7 @@ export default function ForgotPasswordScreen() {
 
       Toast.show('Code verified successfully', {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -294,7 +295,7 @@ export default function ForgotPasswordScreen() {
         error instanceof Error ? error.message : 'Invalid verification code';
       Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -317,7 +318,7 @@ export default function ForgotPasswordScreen() {
     if (!passwordValidation.isValid) {
       Toast.show(i18n[language].passwordRequirementsNotMet, {
         duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -347,7 +348,7 @@ export default function ForgotPasswordScreen() {
       setIsLoading(false);
       Toast.show(i18n[language].passwordCreatedSuccessfully, {
         duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -366,7 +367,7 @@ export default function ForgotPasswordScreen() {
         error instanceof Error ? error.message : 'Failed to reset password';
       Toast.show(errorMessage, {
         duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,

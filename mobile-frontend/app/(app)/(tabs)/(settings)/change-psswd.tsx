@@ -76,6 +76,7 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
 
   const isPasswordValid = () => {
     const passwordRegex =
@@ -110,7 +111,7 @@ export default function Index() {
     onSuccess: () => {
       Toast.show(i18n[language].passwordChangedSuccess, {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
@@ -155,7 +156,7 @@ export default function Index() {
         setErrorMessage(validation.message);
         Toast.show(validation.message, {
           duration: Toast.durations.SHORT,
-          position: Toast.positions.BOTTOM,
+          position: TOAST_POSITION,
           shadow: true,
           animation: true,
           hideOnPress: true,
