@@ -357,7 +357,14 @@ export default function SettingsScreen() {
             },
           ]}
         >
-          <ThemedView style={styles.row}></ThemedView>
+          <SampleText
+            text={
+              translation[language as keyof typeof translation]?.sampleText ||
+              'Choose the text size that suits you best for a more comfortable reading experience.'
+            }
+            overrideMultiplier={fontPreviewMultiplier}
+          />
+
           <ThemedView style={styles.fontSizeContainer}>
             <View style={styles.sliderWithLabels}>
               <ThemedText
@@ -382,14 +389,6 @@ export default function SettingsScreen() {
                 A
               </ThemedText>
             </View>
-
-            <SampleText
-              text={
-                translation[language as keyof typeof translation]?.sampleText ||
-                'Choose the text size that suits you best for a more comfortable reading experience.'
-              }
-              overrideMultiplier={fontPreviewMultiplier}
-            />
           </ThemedView>
         </ThemedView>
       </BottomSheet>
@@ -440,7 +439,6 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 16,
     fontWeight: '400',
-    flex: 1,
   },
   profileInitial: {
     fontSize: 12,
