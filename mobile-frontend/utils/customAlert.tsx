@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  useColorScheme,
 } from 'react-native';
 
 export interface AlertButton {
@@ -60,6 +61,9 @@ interface AlertState {
 }
 
 export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   const [alertState, setAlertState] = React.useState<AlertState>({
     visible: false,
     title: '',
@@ -121,13 +125,32 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
   const getButtonTextStyle = (style?: string) => {
     switch (style) {
       case 'cancel':
-        return styles.cancelButtonText;
+        return [styles.cancelButtonText, isDark && styles.darkText];
       case 'destructive':
         return styles.destructiveButtonText;
       default:
-        return styles.defaultButtonText;
+        return [styles.defaultButtonText, isDark && styles.darkText];
     }
   };
+
+  const alertContainerStyle = [
+    styles.alertContainer,
+    isDark && styles.darkAlertContainer,
+  ];
+
+  const titleStyle = [styles.title, isDark && styles.darkText];
+  const messageStyle = [styles.message, isDark && styles.darkText];
+  const buttonsContainerStyle = [
+    styles.buttonsContainer,
+    isDark && styles.darkBorder,
+  ];
+  const buttonStyle = (button: AlertButton, isLast: boolean) => [
+    styles.button,
+    getButtonStyle(button.style),
+    !isLast && styles.buttonBorder,
+    !isLast && isDark && styles.darkBorder,
+    alertState.buttons.length === 1 && styles.singleButton,
+  ];
 
   return (
     <>
@@ -149,28 +172,22 @@ export const AlertProvider: React.FC<AlertProviderProps> = ({ children }) => {
             activeOpacity={1}
             onPress={e => e.stopPropagation()}
           >
-            <View style={styles.alertContainer}>
-              <Text style={styles.title}>{alertState.title}</Text>
+            <View style={alertContainerStyle}>
+              <Text style={titleStyle}>{alertState.title}</Text>
               {alertState.message ? (
-                <Text style={styles.message}>{alertState.message}</Text>
+                <Text style={messageStyle}>{alertState.message}</Text>
               ) : null}
-              <View style={styles.buttonsContainer}>
+              <View style={buttonsContainerStyle}>
                 {alertState.buttons.map((button, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={[
-                      styles.button,
-                      getButtonStyle(button.style),
-                      alertState.buttons.length === 1 && styles.singleButton,
-                    ]}
+                    style={buttonStyle(
+                      button,
+                      index === alertState.buttons.length - 1
+                    )}
                     onPress={() => handleButtonPress(button)}
                   >
-                    <Text
-                      style={[
-                        styles.buttonText,
-                        getButtonTextStyle(button.style),
-                      ]}
-                    >
+                    <Text style={getButtonTextStyle(button.style)}>
                       {button.text || 'OK'}
                     </Text>
                   </TouchableOpacity>
@@ -210,6 +227,9 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  darkAlertContainer: {
+    backgroundColor: '#1c1c1e',
+  },
   title: {
     fontSize: 17,
     fontWeight: '600',
@@ -227,16 +247,25 @@ const styles = StyleSheet.create({
     marginBottom: 21,
     color: '#000',
   },
+  darkText: {
+    color: '#fff',
+  },
   buttonsContainer: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#dbdbdf',
     flexDirection: 'row',
+  },
+  darkBorder: {
+    borderTopColor: '#38383a',
+    borderRightColor: '#38383a',
   },
   button: {
     flex: 1,
     paddingVertical: 11,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonBorder: {
     borderRightWidth: StyleSheet.hairlineWidth,
     borderRightColor: '#dbdbdf',
   },
