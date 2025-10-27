@@ -152,7 +152,7 @@ export default function SignIn() {
 
       Toast.show(i18n[language].loginSuccess, {
         duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
+        position: Toast.positions.BOTTOM - 120,
         shadow: true,
         animation: true,
         hideOnPress: true,
