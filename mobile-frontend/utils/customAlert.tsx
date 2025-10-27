@@ -272,15 +272,13 @@ const styles = StyleSheet.create({
   singleButton: {
     borderRightWidth: 0,
   },
-  buttonText: {
-    fontSize: 17,
-  },
   defaultButton: {
     backgroundColor: 'transparent',
   },
   defaultButtonText: {
     color: '#007AFF',
     fontWeight: '400',
+    fontSize: 17,
   },
   cancelButton: {
     backgroundColor: 'transparent',
@@ -288,6 +286,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#007AFF',
     fontWeight: '600',
+    fontSize: 17,
   },
   destructiveButton: {
     backgroundColor: 'transparent',
@@ -295,6 +294,7 @@ const styles = StyleSheet.create({
   destructiveButtonText: {
     color: '#FF3B30',
     fontWeight: '400',
+    fontSize: 17,
   },
 });
 
