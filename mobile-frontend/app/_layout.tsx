@@ -421,6 +421,33 @@ export default function Root() {
     [themeMode]
   );
 
+  React.useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('themeMode');
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          setThemeMode(savedTheme);
+        }
+      } catch (error) {
+        console.error('Failed to load theme from AsyncStorage:', error);
+      }
+    };
+
+    loadTheme();
+  }, []);
+
+  React.useEffect(() => {
+    const saveTheme = async () => {
+      try {
+        await AsyncStorage.setItem('themeMode', themeMode);
+      } catch (error) {
+        console.error('Failed to save theme to AsyncStorage:', error);
+      }
+    };
+
+    saveTheme();
+  }, [themeMode]);
+
   return (
     <RootSiblingParent>
       <GestureHandlerRootView style={{ flex: 1 }}>
