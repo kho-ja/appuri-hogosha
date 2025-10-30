@@ -32,7 +32,6 @@ export default function Root() {
   const [processedInitialUrl, setProcessedInitialUrl] = React.useState<
     string | null
   >(null);
-
   // Protection mechanism: reset loading state after 5 seconds
   React.useEffect(() => {
     if (isDeepLinkNavigating) {
@@ -416,37 +415,60 @@ export default function Root() {
     return () => subscription.remove();
   }, [appStartTime, hasProcessedInitialUrl, processedInitialUrl]);
 
-  const memoizedTheme = React.useMemo(
-    () => ({ ...theme, mode: themeMode }),
-    [themeMode]
-  );
-
   React.useEffect(() => {
     const loadTheme = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem('themeMode');
         if (savedTheme === 'light' || savedTheme === 'dark') {
           setThemeMode(savedTheme);
+        } else {
+          setThemeMode('light'); // Default theme
         }
       } catch (error) {
         console.error('Failed to load theme from AsyncStorage:', error);
+        setThemeMode('light'); // Default theme on error
       }
     };
 
     loadTheme();
   }, []);
 
+  // Save theme to AsyncStorage whenever it changes
   React.useEffect(() => {
-    const saveTheme = async () => {
-      try {
-        await AsyncStorage.setItem('themeMode', themeMode);
-      } catch (error) {
-        console.error('Failed to save theme to AsyncStorage:', error);
-      }
-    };
+    if (themeMode) {
+      const saveTheme = async () => {
+        try {
+          await AsyncStorage.setItem('themeMode', themeMode);
+        } catch (error) {
+          console.error('Failed to save theme to AsyncStorage:', error);
+        }
+      };
 
-    saveTheme();
+      saveTheme();
+    }
   }, [themeMode]);
+
+  // Memoize the theme to avoid unnecessary re-renders
+  const memoizedTheme = React.useMemo(
+    () => ({ ...theme, mode: themeMode || 'light' }),
+    [themeMode]
+  );
+
+  // Show a loading screen until the theme is loaded
+  if (themeMode === null) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+
+      </View>
+    );
+  }
 
   return (
     <RootSiblingParent>
