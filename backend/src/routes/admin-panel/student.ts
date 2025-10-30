@@ -500,10 +500,11 @@ class StudentController implements IController {
             }
 
             const existingStudents = await DB.query(
-                'SELECT email, student_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns)',
+                'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
                 {
                     emails: valid.map(v => v.email),
                     sns: valid.map(v => v.student_number),
+                    phones: valid.map(v => v.phone_number),
                 }
             );
             const existingEmailSet = new Set(
@@ -511,6 +512,9 @@ class StudentController implements IController {
             );
             const existingNumberSet = new Set(
                 existingStudents.map((s: any) => s.student_number)
+            );
+            const existingPhoneSet = new Set(
+                existingStudents.map((s: any) => s.phone_number)
             );
 
             for (const row of valid) {
@@ -529,6 +533,15 @@ class StudentController implements IController {
                             row,
                             errors: {
                                 student_number: 'student_number_already_exists',
+                            },
+                        });
+                        continue;
+                    }
+                    if (existingPhoneSet.has(row.phone_number)) {
+                        response.errors.push({
+                            row,
+                            errors: {
+                                phone_number: 'phone_number_already_exists',
                             },
                         });
                         continue;
