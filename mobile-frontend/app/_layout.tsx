@@ -19,6 +19,7 @@ import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
 } from '../native-intent';
+import { ThemeModeContext } from '@/contexts/theme-context';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
@@ -429,35 +430,39 @@ export default function Root() {
             databaseName='maria.db'
             assetSource={{ assetId: require('../assets/database/maria.db') }}
           >
-            <ThemeProvider theme={memoizedTheme}>
-              <StatusBarBackground>
-                {/* Global status bar with blue background */}
-                <StatusBar
-                  style='light'
-                  backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-                  translucent={false}
-                />
-                <NetworkProvider>
-                  <I18nProvider>
-                    {isDeepLinkNavigating ? (
-                      <View
-                        style={{
-                          flex: 1,
-                          backgroundColor:
-                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {/* Empty screen during navigation */}
-                      </View>
-                    ) : (
-                      <AppWithNotifications />
-                    )}
-                  </I18nProvider>
-                </NetworkProvider>
-              </StatusBarBackground>
-            </ThemeProvider>
+            <ThemeModeContext.Provider value={{ themeMode, setThemeMode }}>
+              <ThemeProvider theme={memoizedTheme}>
+                <StatusBarBackground>
+                  {/* Global status bar with blue background */}
+                  <StatusBar
+                    style='light'
+                    backgroundColor={
+                      themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'
+                    }
+                    translucent={false}
+                  />
+                  <NetworkProvider>
+                    <I18nProvider>
+                      {isDeepLinkNavigating ? (
+                        <View
+                          style={{
+                            flex: 1,
+                            backgroundColor:
+                              themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {/* Empty screen during navigation */}
+                        </View>
+                      ) : (
+                        <AppWithNotifications />
+                      )}
+                    </I18nProvider>
+                  </NetworkProvider>
+                </StatusBarBackground>
+              </ThemeProvider>
+            </ThemeModeContext.Provider>
           </SQLiteProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
