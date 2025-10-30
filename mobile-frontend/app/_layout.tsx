@@ -20,6 +20,7 @@ import {
   getNavigationPathForSingleStudent,
 } from '../native-intent';
 
+import { ThemeProvider as CustomThemeProvider } from '@/contexts/theme-context';
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
 
@@ -464,52 +465,54 @@ export default function Root() {
           alignItems: 'center',
           backgroundColor: '#FFFFFF',
         }}
-      >
-
-      </View>
+      ></View>
     );
   }
 
   return (
-    <RootSiblingParent>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <SQLiteProvider
-            databaseName='maria.db'
-            assetSource={{ assetId: require('../assets/database/maria.db') }}
-          >
-            <ThemeProvider theme={memoizedTheme}>
-              <StatusBarBackground>
-                {/* Global status bar with blue background */}
-                <StatusBar
-                  style='light'
-                  backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-                  translucent={false}
-                />
-                <NetworkProvider>
-                  <I18nProvider>
-                    {isDeepLinkNavigating ? (
-                      <View
-                        style={{
-                          flex: 1,
-                          backgroundColor:
-                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {/* Empty screen during navigation */}
-                      </View>
-                    ) : (
-                      <AppWithNotifications />
-                    )}
-                  </I18nProvider>
-                </NetworkProvider>
-              </StatusBarBackground>
-            </ThemeProvider>
-          </SQLiteProvider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    </RootSiblingParent>
+    <CustomThemeProvider>
+      <RootSiblingParent>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <SafeAreaProvider>
+            <SQLiteProvider
+              databaseName='maria.db'
+              assetSource={{ assetId: require('../assets/database/maria.db') }}
+            >
+              <ThemeProvider theme={memoizedTheme}>
+                <StatusBarBackground>
+                  {/* Global status bar with blue background */}
+                  <StatusBar
+                    style='light'
+                    backgroundColor={
+                      themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'
+                    }
+                    translucent={false}
+                  />
+                  <NetworkProvider>
+                    <I18nProvider>
+                      {isDeepLinkNavigating ? (
+                        <View
+                          style={{
+                            flex: 1,
+                            backgroundColor:
+                              themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          {/* Empty screen during navigation */}
+                        </View>
+                      ) : (
+                        <AppWithNotifications />
+                      )}
+                    </I18nProvider>
+                  </NetworkProvider>
+                </StatusBarBackground>
+              </ThemeProvider>
+            </SQLiteProvider>
+          </SafeAreaProvider>
+        </GestureHandlerRootView>
+      </RootSiblingParent>
+    </CustomThemeProvider>
   );
 }
