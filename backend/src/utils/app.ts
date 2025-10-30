@@ -4,6 +4,8 @@ import cors from 'cors';
 import process from 'node:process';
 import morgan from 'morgan';
 
+const allowedOrigins = [process.env.FRONTEND_URL];
+
 class App {
     public app: Application;
 
@@ -20,7 +22,13 @@ class App {
 
         this.app.use(
             cors({
-                origin: '*',
+                origin: function (origin, callback) {
+                    if (!origin || allowedOrigins.includes(origin)) {
+                        callback(null, true);
+                    } else {
+                        callback(new Error('Not allowed by CORS'));
+                    }
+                },
                 methods: 'GET,HEAD,PUT,POST,DELETE',
                 credentials: true,
                 optionsSuccessStatus: 204,
