@@ -17,6 +17,7 @@ import { PasswordRequirements } from '@/components/PasswordRequirements';
 import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   sendVerificationCode,
   verifyResetCode,
@@ -111,20 +112,71 @@ export default function ForgotPasswordScreen() {
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const [resendCount, setResendCount] = useState(0);
+  const [expiryAt, setExpiryAt] = useState<number | null>(null);
+
+  const EXPIRY_KEY = 'forgot_password_code_expiry';
 
   // No ref needed for react-native-otp-entry
 
-  // Countdown effect
+  // Load persisted expiry (if any) when component mounts
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      setCanResend(false);
+    let mounted = true;
+    AsyncStorage.getItem(EXPIRY_KEY)
+      .then(value => {
+        if (!mounted) return;
+        if (value) {
+          const n = Number(value);
+          if (!isNaN(n) && n > Date.now()) {
+            setExpiryAt(n);
+          } else {
+            // stale value, remove it
+            AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
+          }
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | number | undefined;
+
+    if (expiryAt) {
+      const update = () => {
+        const remaining = Math.max(
+          0,
+          Math.ceil((expiryAt - Date.now()) / 1000)
+        );
+        setCountdown(remaining);
+        if (remaining <= 0) {
+          setCanResend(true);
+          setExpiryAt(null);
+          AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
+        } else {
+          setCanResend(false);
+        }
+      };
+
+      update();
+      timer = setInterval(update, 1000) as unknown as number;
     } else {
-      setCanResend(true);
+      if (countdown > 0) {
+        timer = setTimeout(
+          () => setCountdown(countdown - 1),
+          1000
+        ) as unknown as number;
+        setCanResend(false);
+      } else {
+        setCanResend(true);
+      }
     }
-    return () => clearTimeout(timer);
-  }, [countdown]);
+
+    return () => {
+      if (timer) clearInterval(timer as any);
+    };
+  }, [expiryAt, countdown]);
 
   // Page 1: Phone number input
   const handleSendCode = async () => {
@@ -161,6 +213,10 @@ export default function ForgotPasswordScreen() {
 
       // Set countdown with increasing delay for multiple attempts
       const delay = Math.min(60 + resendCount * 30, 300); // 60s, 90s, 120s... max 5min
+      // Persist absolute expiry so the timer keeps running while app is backgrounded
+      const newExpiry = Date.now() + delay * 1000;
+      setExpiryAt(newExpiry);
+      AsyncStorage.setItem(EXPIRY_KEY, String(newExpiry)).catch(() => {});
       setCountdown(delay);
       setCanResend(false);
 
@@ -276,6 +332,9 @@ export default function ForgotPasswordScreen() {
       setIsLoading(false);
       setCurrentStep('newPassword');
 
+      setExpiryAt(null);
+      AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
+
       Toast.show('Code verified successfully', {
         duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
@@ -359,6 +418,8 @@ export default function ForgotPasswordScreen() {
       });
 
       // Navigate back to sign-in after successful password reset
+      setExpiryAt(null);
+      AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
       router.push('/sign-in');
     } catch (error) {
       setIsLoading(false);
