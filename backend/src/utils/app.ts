@@ -26,7 +26,15 @@ class App {
         this.app.use(
             cors({
                 origin: function (origin, callback) {
-                    if (!origin || allowedOrigins.includes(origin)) {
+                    if (!origin) return callback(null, true); // allow server-to-server or tools
+
+                    const isAllowed = allowedOrigins.some(allowed =>
+                        typeof allowed === 'string'
+                            ? allowed === origin
+                            : allowed?.test(origin)
+                    );
+
+                    if (isAllowed) {
                         callback(null, true);
                     } else {
                         callback(new Error('Not allowed by CORS'));
