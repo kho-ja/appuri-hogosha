@@ -4,7 +4,10 @@ import cors from 'cors';
 import process from 'node:process';
 import morgan from 'morgan';
 
-const allowedOrigins = [process.env.FRONTEND_URL];
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
+];
 
 class App {
     public app: Application;
