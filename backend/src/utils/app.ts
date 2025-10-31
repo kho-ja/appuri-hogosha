@@ -5,7 +5,7 @@ import process from 'node:process';
 import morgan from 'morgan';
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL?.replace(/\/$/, ''),
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
 ];
 
