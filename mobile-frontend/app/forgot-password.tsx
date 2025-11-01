@@ -573,11 +573,15 @@ export default function ForgotPasswordScreen() {
             <Button
               onPress={() => handleVerifyCode()}
               title={i18n[language].continueText}
-              buttonStyle={[
-                styles.submitButton,
-                verificationCode.length !== 6 && styles.disabledButton,
-              ]}
+              buttonStyle={styles.submitButton}
               titleStyle={styles.buttonText}
+              disabledTitleStyle={{
+                color: '#999999',
+              }}
+              disabledStyle={{
+                backgroundColor: '#4285F4',
+                opacity: 0.5,
+              }}
               disabled={isLoading || verificationCode.length !== 6}
               loading={isLoading}
             />
@@ -636,6 +640,13 @@ export default function ForgotPasswordScreen() {
             title={i18n[language].saveNewPassword}
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}
+            disabledTitleStyle={{
+              color: '#999999',
+            }}
+            disabledStyle={{
+              backgroundColor: '#4285F4',
+              opacity: 0.5,
+            }}
             disabled={isLoading || !passwordValidation.isValid}
             loading={isLoading}
           />
