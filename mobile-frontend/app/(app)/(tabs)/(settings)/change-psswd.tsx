@@ -76,7 +76,7 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
+  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   const isPasswordValid = () => {
     const passwordRegex =

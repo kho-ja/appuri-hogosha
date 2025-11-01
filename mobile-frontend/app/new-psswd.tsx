@@ -94,7 +94,7 @@ export default function NewPassword() {
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
+  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   // Password strength calculation
   const calculatePasswordStrength = (

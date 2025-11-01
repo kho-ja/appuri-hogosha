@@ -32,7 +32,7 @@ export default function SignIn() {
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
   const params = useLocalSearchParams<{ phone?: string; code?: string }>();
-  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
+  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   React.useEffect(() => {
     const loadCredentials = async () => {

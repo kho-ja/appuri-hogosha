@@ -111,7 +111,7 @@ export default function ForgotPasswordScreen() {
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(false);
   const [resendCount, setResendCount] = useState(0);
-  const TOAST_POSITION = Toast.positions.BOTTOM - 120;
+  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   // No ref needed for react-native-otp-entry
 
