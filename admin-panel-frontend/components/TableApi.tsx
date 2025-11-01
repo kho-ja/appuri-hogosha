@@ -1,28 +1,25 @@
+"use client";
+
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  type ColumnDef,
+  ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/navigation";
+import { useRouter } from "next/navigation";
+import { Table } from "@/components/ui/table";
+import { TableBody } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
+import { TableHead } from "@/components/ui/table";
+import { TableHeader } from "@/components/ui/table";
+import { TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MouseEvent } from "react";
 
 declare module "@tanstack/react-table" {
   interface ColumnMeta<TData, TValue> {
-    /**
-     * When true, the cell for this column will not trigger row link navigation.
-     */
     notClickable?: boolean;
-    /** @internal Ensure generics referenced so no-unused-vars rule is satisfied */
     __genericMarker__?: (TData & TValue) | undefined;
   }
 }
@@ -42,11 +39,22 @@ const TableApi = <T,>({
 }: TableApiProps<T>) => {
   const t = useTranslations("table");
   const router = useRouter();
+
   const table = useReactTable({
     data: data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const handleCellClick = (
+    event: MouseEvent<HTMLTableCellElement>,
+    rowLink?: string,
+    isNotClickable?: boolean
+  ) => {
+    if (!rowLink || isNotClickable) return;
+    event.preventDefault();
+    router.push(rowLink);
+  };
 
   const renderTableHeader = () => (
     <TableHeader>
@@ -72,37 +80,44 @@ const TableApi = <T,>({
       return <SkeletonLoader rowCount={5} columnCount={columns.length} />;
     }
 
-    if (!table.getRowModel().rows.length) {
+    const rows = table.getRowModel().rows;
+    if (!rows.length) {
       return (
         <TableRow>
-          <TableCell colSpan={columns.length} className="h-24 text-center">
-            {t("noResults")}
+          <TableCell
+            colSpan={columns.length}
+            className="py-6 text-center text-sm text-muted-foreground"
+          >
+            {t("noData")}
           </TableCell>
         </TableRow>
       );
     }
 
-    return table.getRowModel().rows.map((row) => {
+    return rows.map((row) => {
       const rowId = row.original[linkSuffixRowName as keyof T];
-      const rowLink = linkPrefix && rowId ? `${linkPrefix}/${rowId}` : "";
+      const rowLink =
+        linkPrefix && typeof rowId !== "undefined"
+          ? `${linkPrefix}/${rowId}`
+          : undefined;
 
       return (
-        <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-          {row.getVisibleCells().map((cell) =>
-            linkPrefix && !cell.column.columnDef.meta?.notClickable ? (
+        <TableRow key={row.id}>
+          {row.getVisibleCells().map((cell) => {
+            const isNotClickable = cell.column.columnDef.meta?.notClickable;
+            const isClickable = !!rowLink && !isNotClickable;
+            return (
               <TableCell
                 key={cell.id}
-                onClick={() => router.push(rowLink)}
-                className="cursor-pointer"
+                onClick={(event) =>
+                  handleCellClick(event, rowLink, isNotClickable)
+                }
+                className={isClickable ? "cursor-pointer" : ""}
               >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </TableCell>
-            ) : (
-              <TableCell key={cell.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            )
-          )}
+            );
+          })}
         </TableRow>
       );
     });

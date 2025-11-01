@@ -6,4 +6,6 @@ export default interface Group {
   not_viewed_count?: boolean;
   created_at?: string;
   student_numbers?: string[];
+  sub_group_id?: number | null;
+  sub_group_name?: string;
 }

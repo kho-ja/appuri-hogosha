@@ -115,9 +115,12 @@ CREATE TABLE
     `name` varchar(255) NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `school_id` int NOT NULL,
+    `sub_group_id` int DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `idx_studentgroup_school_id` (`school_id`),
+    KEY `idx_studentgroup_sub_group_id` (`sub_group_id`),
     CONSTRAINT `StudentGroup_ibfk_1` FOREIGN KEY (`school_id`) REFERENCES `School` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `StudentGroup_subgroup_fk` FOREIGN KEY (`sub_group_id`) REFERENCES `StudentGroup` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
 
     --- Unique constraint on name and school_id
     UNIQUE INDEX `StudentGroup_pk` (`name`, `school_id`) VISIBLE
