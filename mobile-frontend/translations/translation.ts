@@ -173,7 +173,7 @@ const translations: Translations = {
       'To ensure you receive all notifications:\n\n1. Find this app in the list\n2. Select "Don\'t optimize" or "Allow"\n3. Restart the app\n\nNote: Steps may vary by device manufacturer.',
     deviceSpecificInstructions: 'Device-Specific Instructions',
     deviceInstructionsText:
-      'Different Android manufacturers have different settings:\n\n• Samsung: Settings → Apps → [App] → Battery → Optimize battery usage\n• Xiaomi: Settings → Apps → Manage apps → [App] → Battery saver\n• OnePlus: Settings → Apps → [App] → Battery → Battery optimization\n• Huawei: Settings → Apps → [App] → Battery → App launch',
+      'Different Android manufacturers have different settings:\n\n• Samsung: Settings \u2192 Apps \u2192 [App] \u2192 Battery \u2192 Optimize battery usage\n• Xiaomi: Settings \u2192 Apps \u2192 Manage apps \u2192 [App] \u2192 Battery saver\n• OnePlus: Settings \u2192 Apps \u2192 [App] \u2192 Battery \u2192 Battery optimization\n• Huawei: Settings \u2192 Apps \u2192 [App] \u2192 Battery \u2192 App launch',
     gotIt: 'Got it',
     /*battery optimization*/
 
@@ -423,7 +423,7 @@ const translations: Translations = {
       'すべての通知を確実に受信するために：\n\n1. リストでこのアプリを見つけます\n2. "最適化しない"または"許可"を選択します\n3. アプリを再起動します\n\n注：手順はデバイスメーカーによって異なる場合があります。',
     deviceSpecificInstructions: 'デバイス固有の手順',
     deviceInstructionsText:
-      'Androidメーカーごとに設定が異なります：\n\n• Samsung：設定→アプリ→[アプリ]→バッテリー→バッテリー使用量の最適化\n• Xiaomi：設定→アプリ→アプリの管理→[アプリ]→バッテリーセーバー\n• OnePlus：設定→アプリ→[アプリ]→バッテリー→バッテリー最適化\n• Huawei：設定→アプリ→[アプリ]→バッテリー→アプリ起動',
+      'Androidメーカーごとに設定が異なります：\n\n• Samsung：設定\u2192アプリ\u2192[アプリ]\u2192バッテリー\u2192バッテリー使用量の最適化\n• Xiaomi：設定\u2192アプリ\u2192アプリの管理\u2192[アプリ]\u2192バッテリーセーバー\n• OnePlus：設定\u2192アプリ\u2192[アプリ]\u2192バッテリー\u2192バッテリー最適化\n• Huawei：設定\u2192アプリ\u2192[アプリ]\u2192バッテリー\u2192アプリ起動',
     gotIt: 'わかりました',
     /*battery optimization*/
 
@@ -510,7 +510,7 @@ const translations: Translations = {
     loginToAccount: 'Kirish',
     forgotPassword: 'Parolingizni unutdingizmi?',
     resetPassword: 'parolni tiklash',
-    forgotPasswordLink: 'Kodni unutdingizmi? Parolni tiklang.',
+    forgotPasswordLink: 'Parolni unutdingizmi? Parolni tiklang.',
     noaccount: "Hisobingiz yo'qmi?",
     justregister: "Ro'yxatdan o'ting",
     loginFailed: "Noto'g'ri telefon raqam yoki parol kiritilgan",
@@ -672,7 +672,7 @@ const translations: Translations = {
       'Barcha bildirishnomalarni olishingizni ta\'minlash uchun:\n\n1. Ro\'yxatdan ushbu ilovani toping\n2. "Optimallashtirmaslik" yoki "Ruxsat berish"ni tanlang\n3. Ilovani qayta ishga tushiring\n\nEslatma: Qadamlar qurilma ishlab chiqaruvchisiga qarab farq qilishi mumkin.',
     deviceSpecificInstructions: "Qurilmaga xos ko'rsatmalar",
     deviceInstructionsText:
-      'Turli Android ishlab chiqaruvchilarining turli sozlamalari bor:\n\n• Samsung: Sozlamalar → Ilovalar → [Ilova] → Batareya → Batareya ishlatishini optimallashtirish\n• Xiaomi: Sozlamalar → Ilovalar → Ilovalarni boshqarish → [Ilova] → Batareya tejagich\n• OnePlus: Sozlamalar → Ilovalar → [Ilova] → Batareya → Batareya optimizatsiyasi\n• Huawei: Sozlamalar → Ilovalar → [Ilova] → Batareya → Ilova ishga tushirish',
+      'Turli Android ishlab chiqaruvchilarining turli sozlamalari bor:\n\n• Samsung: Sozlamalar \u2192 Ilovalar \u2192 [Ilova] \u2192 Batareya \u2192 Batareya ishlatishini optimallashtirish\n• Xiaomi: Sozlamalar \u2192 Ilovalar \u2192 Ilovalarni boshqarish \u2192 [Ilova] \u2192 Batareya tejagich\n• OnePlus: Sozlamalar \u2192 Ilovalar \u2192 [Ilova] \u2192 Batareya \u2192 Batareya optimizatsiyasi\n• Huawei: Sozlamalar \u2192 Ilovalar \u2192 [Ilova] \u2192 Batareya \u2192 Ilova ishga tushirish',
     gotIt: 'Tushunarli',
     /*battery optimization*/
 
@@ -924,7 +924,7 @@ const translations: Translations = {
       'Чтобы получать все уведомления:\n\n1. Найдите это приложение в списке\n2. Выберите "Не оптимизировать" или "Разрешить"\n3. Перезапустите приложение\n\nПримечание: шаги могут отличаться в зависимости от производителя устройства.',
     deviceSpecificInstructions: 'Инструкции для конкретных устройств',
     deviceInstructionsText:
-      'У разных производителей Android разные настройки:\n\n• Samsung: Настройки → Приложения → [Приложение] → Батарея → Оптимизация использования батареи\n• Xiaomi: Настройки → Приложения → Управление приложениями → [Приложение] → Экономия батареи\n• OnePlus: Настройки → Приложения → [Приложение] → Батарея → Оптимизация батареи\n• Huawei: Настройки → Приложения → [Приложение] → Батарея → Автозапуск',
+      'У разных производителей Android разные настройки:\n\n• Samsung: Настройки \u2192 Приложения \u2192 [Приложение] \u2192 Батарея \u2192 Оптимизация использования батареи\n• Xiaomi: Настройки \u2192 Приложения \u2192 Управление приложениями \u2192 [Приложение] \u2192 Экономия батареи\n• OnePlus: Настройки \u2192 Приложения \u2192 [Приложение] \u2192 Батарея \u2192 Оптимизация батареи\n• Huawei: Настройки \u2192 Приложения \u2192 [Приложение] \u2192 Батарея \u2192 Автозапуск',
     gotIt: 'Понятно',
     /*battery optimization*/
 
