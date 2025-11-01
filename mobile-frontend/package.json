@@ -82,7 +82,8 @@
   "overrides": {
     "@rneui/themed": {
       "@rneui/base": "4.0.0-rc.8"
-    }
+    },
+    "tar": "7.5.2"
   },
   "expo": {
     "doctor": {
