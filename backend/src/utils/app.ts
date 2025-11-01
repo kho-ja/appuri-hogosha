@@ -4,6 +4,11 @@ import cors from 'cors';
 import process from 'node:process';
 import morgan from 'morgan';
 
+const allowedOrigins = [
+    process.env.FRONTEND_URL?.replace(/\/$/, ''),
+    /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
+];
+
 class App {
     public app: Application;
 
@@ -20,7 +25,21 @@ class App {
 
         this.app.use(
             cors({
-                origin: '*',
+                origin: function (origin, callback) {
+                    if (!origin) return callback(null, true); // allow server-to-server or tools
+
+                    const isAllowed = allowedOrigins.some(allowed =>
+                        typeof allowed === 'string'
+                            ? allowed === origin
+                            : allowed?.test(origin)
+                    );
+
+                    if (isAllowed) {
+                        callback(null, true);
+                    } else {
+                        callback(new Error('Not allowed by CORS'));
+                    }
+                },
                 methods: 'GET,HEAD,PUT,POST,DELETE',
                 credentials: true,
                 optionsSuccessStatus: 204,

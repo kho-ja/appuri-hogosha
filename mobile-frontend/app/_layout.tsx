@@ -19,9 +19,27 @@ import {
   redirectSystemPath,
   getNavigationPathForSingleStudent,
 } from '../native-intent';
+import {
+  ThemeModeProvider,
+  useThemeModeContext,
+} from '@/contexts/theme-context';
 
 // Set up the notification handler BEFORE the app starts
 setupNotificationHandler();
+
+function ThemedApp() {
+  const { themeMode } = useThemeModeContext();
+  const memoizedTheme = React.useMemo(
+    () => ({ ...theme, mode: themeMode }),
+    [themeMode]
+  );
+
+  return (
+    <ThemeProvider theme={memoizedTheme}>
+      <AppWithNotifications />
+    </ThemeProvider>
+  );
+}
 
 export default function Root() {
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light');
@@ -452,7 +470,9 @@ export default function Root() {
                         {/* Empty screen during navigation */}
                       </View>
                     ) : (
-                      <AppWithNotifications />
+                      <ThemeModeProvider>
+                        <ThemedApp />
+                      </ThemeModeProvider>
                     )}
                   </I18nProvider>
                 </NetworkProvider>

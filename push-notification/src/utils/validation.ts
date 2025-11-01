@@ -35,7 +35,7 @@ export const getUzbekistanOperatorRouting = (
             '20': { name: 'OQ', usePlayMobile: true }, // Beeline’s digital brand
             '33': { name: 'Humans', usePlayMobile: true }, // New MVNO
             '90': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
-            '91': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '91': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
             '93': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
             '94': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
             '95': { name: 'UMS', usePlayMobile: true }, // Use PlayMobile for UMS
