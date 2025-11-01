@@ -528,7 +528,14 @@
     "groupsMoved": "グループが正常に移動されました",
     "groupsMovedDescription": "{count}個のグループが新しい親グループに移動されました",
     "error": "エラー",
-    "failedToMoveGroups": "一部のグループの移動に失敗しました。再試行してください。"
+    "failedToMoveGroups": "一部のグループの移動に失敗しました。再試行してください。",
+    "failedToMoveGroup": "グループの移動に失敗しました。再試行してください。",
+    "cannotDropOnChild": "子グループにグループをドロップすることはできません。",
+    "cannotCreateCircularDependency": "循環依存関係を作成できません（例：親を自分の子に移動する）。",
+    "groupMovedDescription": "グループは正常に移動されました。",
+    "groupUnlinked": "グループのリンク解除",
+    "groupUnlinkedDescription": "グループは親から正常にリンク解除されました。",
+    "failedToUnlinkGroup": "グループのリンク解除に失敗しました。もう一度お試しください。"
   },
   "parents": {
     "parents": "保護者",

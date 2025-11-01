@@ -568,7 +568,14 @@
     "groupsMoved": "Groups moved successfully",
     "groupsMovedDescription": "{count} groups have been moved to the new parent group",
     "error": "Error",
-    "failedToMoveGroups": "Failed to move some groups. Please try again."
+    "failedToMoveGroups": "Failed to move some groups. Please try again.",
+    "failedToMoveGroup": "Failed to move group. Please try again.",
+    "cannotDropOnChild": "Cannot drop a group onto a child group.",
+    "cannotCreateCircularDependency": "Cannot create a circular dependency (e.g., move a parent into its own child).",
+    "groupMovedDescription": "The group has been moved successfully.",
+    "groupUnlinked": "Group Unlinked",
+    "groupUnlinkedDescription": "The group has been successfully unlinked from its parent.",
+    "failedToUnlinkGroup": "Failed to unlink the group. Please try again."
   },
   "parents": {
     "parents": "Parents",

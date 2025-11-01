@@ -530,7 +530,14 @@
     "groupsMoved": "Guruhlar muvaffaqiyatli ko'chirildi",
     "groupsMovedDescription": "{count} ta guruh yangi asosiy guruhga ko'chirildi",
     "error": "Xatolik",
-    "failedToMoveGroups": "Ba'zi guruhlarni ko'chirib bo'lmadi. Iltimos, qayta urinib ko'ring."
+    "failedToMoveGroups": "Ba'zi guruhlarni ko'chirib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+    "failedToMoveGroup": "Guruhni ko'chirib bo'lmadi. Iltimos, qayta urinib ko'ring.",
+    "cannotDropOnChild": "Guruhni quyi guruhga joylashtirib bo'lmaydi.",
+    "cannotCreateCircularDependency": "Siklik bog'liqlik yaratib bo'lmaydi (masalan, asosiy guruhni o'zining quyi guruhiga o'tkazish).",
+    "groupMovedDescription": "Guruh muvaffaqiyatli ko'chirildi.",
+    "groupUnlinked": "Guruh uzildi",
+    "groupUnlinkedDescription": "Guruh ota-onasidan muvaffaqiyatli uzildi.",
+    "failedToUnlinkGroup": "Guruhni uzib bo'lmadi. Iltimos, qayta urinib ko'ring."
   },
   "parents": {
     "parents": "Ota-onalar",

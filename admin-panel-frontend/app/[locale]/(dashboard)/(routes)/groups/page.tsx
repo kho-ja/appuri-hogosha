@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Edit3Icon,
@@ -8,7 +8,30 @@ import {
   Trash2Icon,
   FolderPlus,
   FolderIcon,
+  GripVertical,
+  Unlink2Icon,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+  UniqueIdentifier,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
@@ -45,10 +68,70 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
 interface GroupTreeNode extends Group {
   children?: GroupTreeNode[];
   level?: number;
+}
+
+function GroupRow({
+  group,
+  renderActionCell,
+  isOver,
+  isDragging,
+}: {
+  group: GroupTreeNode;
+  renderActionCell: (group: Group) => React.ReactNode;
+  isOver?: boolean;
+  isDragging?: boolean;
+}) {
+  const level = group.level ?? 0;
+
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: group.id,
+    });
+
+  // Apply transform only to the item being actively dragged
+  const style = {
+    transform: isDragging ? CSS.Transform.toString(transform) : undefined,
+    transition: isDragging ? transition : undefined,
+    zIndex: isDragging ? 1 : "auto", // Ensure dragged item is on top
+  };
+
+  const isDropTarget = isOver && !group.sub_group_id;
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "hover:bg-muted/10 transition-colors relative border-b border-border/50",
+        // When dragging, the original row itself moves, so no opacity change needed
+        isDropTarget && "border-b-2 border-b-white"
+      )}
+    >
+      <TableCell className="font-medium">
+        <div
+          className="flex items-center gap-2"
+          style={{ paddingLeft: `${level * 24}px` }}
+        >
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-move touch-none hover:text-primary transition-colors"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <Link href={`/groups/${group.id}`}>{group.name}</Link>
+        </div>
+      </TableCell>
+      <TableCell>{group.sub_group_name ?? "—"}</TableCell>
+      <TableCell className="text-right">{group.member_count ?? 0}</TableCell>
+      <TableCell className="text-right">{renderActionCell(group)}</TableCell>
+    </TableRow>
+  );
 }
 
 export default function Groups() {
@@ -75,18 +158,29 @@ export default function Groups() {
   const [targetParentGroupId, setTargetParentGroupId] = useState<number | null>(
     null
   );
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Build tree structure from flat list
   const buildTreeStructure = (groups: Group[]): GroupTreeNode[] => {
     const groupMap = new Map<number, GroupTreeNode>();
     const rootGroups: GroupTreeNode[] = [];
 
-    // First pass: create all nodes
     groups.forEach((group) => {
       groupMap.set(group.id, { ...group, children: [] });
     });
 
-    // Second pass: build tree
     groups.forEach((group) => {
       const node = groupMap.get(group.id)!;
       if (group.sub_group_id) {
@@ -94,7 +188,6 @@ export default function Groups() {
         if (parent) {
           parent.children!.push(node);
         } else {
-          // Parent not found in current page, show as root
           rootGroups.push(node);
         }
       } else {
@@ -105,7 +198,6 @@ export default function Groups() {
     return rootGroups;
   };
 
-  // Flatten tree for rendering with levels - always expanded
   const flattenTree = (
     nodes: GroupTreeNode[],
     level: number = 0
@@ -120,28 +212,222 @@ export default function Groups() {
     return result;
   };
 
-  const treeData = buildTreeStructure(data?.groups ?? []);
-  const flatData = flattenTree(treeData);
+  const treeData = useMemo(
+    () => buildTreeStructure(data?.groups ?? []),
+    [data?.groups]
+  );
+  const flatData = useMemo(() => flattenTree(treeData), [treeData]);
+
+  // Get all items for SortableContext
+  const allIds = useMemo(() => flatData.map((g) => g.id), [flatData]);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    setOverId(over?.id ?? null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    setActiveId(null);
+    setOverId(null);
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const activeGroup = flatData.find((g) => g.id === active.id);
+    const overGroup = flatData.find((g) => g.id === over.id);
+
+    if (!activeGroup || !overGroup) {
+      return;
+    }
+
+    // A group can only be dropped on a parent group (a group that is not a child itself).
+    if (overGroup.sub_group_id) {
+      toast({
+        title: t("error"),
+        description: t("cannotDropOnChild"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Don't drop on self
+    if (activeGroup.id === overGroup.id) {
+      return;
+    }
+
+    // Don't drop on same parent
+    if (activeGroup.sub_group_id === overGroup.id) {
+      return;
+    }
+
+    // Prevent dropping a parent into its own child
+    let current = overGroup;
+    while (current.sub_group_id) {
+      if (current.sub_group_id === activeGroup.id) {
+        toast({
+          title: t("error"),
+          description: t("cannotCreateCircularDependency"),
+          variant: "destructive",
+        });
+        return;
+      }
+      const parent = flatData.find((g) => g.id === current.sub_group_id);
+      if (!parent) break;
+      current = parent;
+    }
+
+    // Optimistic update - update cache immediately
+    queryClient.setQueryData<GroupApi>(["groups", page, search], (oldData) => {
+      if (!oldData) return oldData;
+
+      const updatedGroups = oldData.groups.map((group) =>
+        group.id === activeGroup.id
+          ? {
+              ...group,
+              sub_group_id: overGroup.id,
+              sub_group_name: overGroup.name,
+            }
+          : group
+      );
+
+      return {
+        ...oldData,
+        groups: updatedGroups,
+      };
+    });
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${activeGroup.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.sessionToken}`,
+          },
+          body: JSON.stringify({
+            name: activeGroup.name,
+            sub_group_id: overGroup.id,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: t("groupMoved"),
+          description: t("groupMovedDescription"),
+        });
+        // Refresh to get latest data from server
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+      } else {
+        toast({
+          title: t("error"),
+          description: t("failedToMoveGroup"),
+          variant: "destructive",
+        });
+        // Revert optimistic update on error
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+      }
+    } catch (error) {
+      toast({
+        title: t("error"),
+        description: t("failedToMoveGroup"),
+        variant: "destructive",
+      });
+      // Revert optimistic update on error
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    }
+  };
+
+  const handleUnlinkGroup = async (groupToUnlink: Group) => {
+    // Optimistic update: set parent to null
+    queryClient.setQueryData<GroupApi>(["groups", page, search], (oldData) => {
+      if (!oldData) return oldData;
+      const updatedGroups = oldData.groups.map((g) =>
+        g.id === groupToUnlink.id
+          ? { ...g, sub_group_id: null, sub_group_name: undefined }
+          : g
+      );
+      return { ...oldData, groups: updatedGroups };
+    });
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${groupToUnlink.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.sessionToken}`,
+          },
+          body: JSON.stringify({
+            name: groupToUnlink.name,
+            sub_group_id: null, // Unlink by setting parent to null
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: t("groupUnlinked"),
+          description: t("groupUnlinkedDescription"),
+        });
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+      } else {
+        toast({
+          title: t("error"),
+          description: t("failedToUnlinkGroup"),
+          variant: "destructive",
+        });
+        queryClient.invalidateQueries({ queryKey: ["groups"] }); // Revert on error
+      }
+    } catch (error) {
+      toast({
+        title: t("error"),
+        description: t("failedToUnlinkGroup"),
+        variant: "destructive",
+      });
+      queryClient.invalidateQueries({ queryKey: ["groups"] }); // Revert on error
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
 
   const renderActionCell = (group: Group) => (
-    <div className="flex gap-2">
+    <div className="flex items-center justify-end gap-2">
       <Link href={`/groups/edit/${group.id}`}>
-        <Edit3Icon />
+        <Edit3Icon className="h-5 w-5" />
       </Link>
       <FolderIcon
-        className="text-blue-500 cursor-pointer"
+        className="text-blue-500 cursor-pointer h-5 w-5"
         onClick={() => openMoveDialog(group)}
       />
+      {group.sub_group_id && (
+        <Unlink2Icon
+          className="text-yellow-500 cursor-pointer h-5 w-5"
+          onClick={() => handleUnlinkGroup(group)}
+        />
+      )}
       <Dialog>
         <DialogTrigger asChild>
-          <Trash2Icon className="text-red-500 cursor-pointer" />
+          <Trash2Icon className="text-red-500 cursor-pointer h-5 w-5" />
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{group.name}</DialogTitle>
             <DialogDescription>{group.member_count}</DialogDescription>
           </DialogHeader>
-          <div>{t("DouYouDeleteGroup")}</div>
+          <div>{t("doYouWantToDeleteGroup")}</div>
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="secondary">{t("cancel")}</Button>
@@ -290,26 +576,6 @@ export default function Groups() {
     ["exportGroups"]
   );
 
-  const renderGroupRow = (group: GroupTreeNode) => {
-    const level = group.level ?? 0;
-
-    return (
-      <TableRow key={group.id} className="hover:bg-muted/10">
-        <TableCell className="font-medium">
-          <div
-            className="flex items-center gap-2"
-            style={{ paddingLeft: `${level * 24}px` }}
-          >
-            <Link href={`/groups/${group.id}`}>{group.name}</Link>
-          </div>
-        </TableCell>
-        <TableCell>{group.sub_group_name ?? "—"}</TableCell>
-        <TableCell className="text-right">{group.member_count ?? 0}</TableCell>
-        <TableCell className="text-right">{renderActionCell(group)}</TableCell>
-      </TableRow>
-    );
-  };
-
   return (
     <div className="w-full">
       <div className="space-y-4">
@@ -439,23 +705,45 @@ export default function Groups() {
           </div>
 
           <div className="overflow-x-auto rounded-lg border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("groupName")}</TableHead>
-                  <TableHead className="w-40">{t("parent")}</TableHead>
-                  <TableHead className="w-24 text-right">
-                    {t("studentCount")}
-                  </TableHead>
-                  <TableHead className="w-32 text-right">
-                    {t("action")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {flatData.map((group) => renderGroupRow(group))}
-              </TableBody>
-            </Table>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+              modifiers={[restrictToVerticalAxis]}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("groupName")}</TableHead>
+                    <TableHead className="w-40">{t("parent")}</TableHead>
+                    <TableHead className="w-24 text-right">
+                      {t("studentCount")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("action")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* We still use SortableContext to get useSortable hooks, but without a sorting strategy */}
+                  <SortableContext items={allIds}>
+                    {flatData.map((group) => (
+                      <GroupRow
+                        key={group.id}
+                        group={group}
+                        renderActionCell={renderActionCell}
+                        isOver={overId === group.id}
+                        isDragging={activeId === group.id}
+                      />
+                    ))}
+                  </SortableContext>
+                </TableBody>
+              </Table>
+              {/* DragOverlay is completely removed */}
+            </DndContext>
           </div>
         </div>
       </div>
