@@ -141,7 +141,7 @@ export default function ForgotPasswordScreen() {
   }, []);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | number | undefined;
+    let timer: ReturnType<typeof setInterval> | undefined;
 
     if (expiryAt) {
       const update = () => {
@@ -160,13 +160,10 @@ export default function ForgotPasswordScreen() {
       };
 
       update();
-      timer = setInterval(update, 1000) as unknown as number;
+      timer = setInterval(update, 1000);
     } else {
       if (countdown > 0) {
-        timer = setTimeout(
-          () => setCountdown(countdown - 1),
-          1000
-        ) as unknown as number;
+        timer = setTimeout(() => setCountdown(countdown - 1), 1000);
         setCanResend(false);
       } else {
         setCanResend(true);
@@ -174,7 +171,7 @@ export default function ForgotPasswordScreen() {
     }
 
     return () => {
-      if (timer) clearInterval(timer as any);
+      if (timer) clearTimeout(timer);
     };
   }, [expiryAt, countdown]);
 
@@ -217,7 +214,6 @@ export default function ForgotPasswordScreen() {
       const newExpiry = Date.now() + delay * 1000;
       setExpiryAt(newExpiry);
       AsyncStorage.setItem(EXPIRY_KEY, String(newExpiry)).catch(() => {});
-      setCountdown(delay);
       setCanResend(false);
 
       // Clear OTP
