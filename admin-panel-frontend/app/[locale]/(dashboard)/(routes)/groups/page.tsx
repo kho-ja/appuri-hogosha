@@ -100,7 +100,7 @@ function GroupRow({
     zIndex: isDragging ? 1 : "auto", // Ensure dragged item is on top
   };
 
-  const isDropTarget = isOver && !group.sub_group_id;
+  const isDropTarget = !!isOver;
 
   return (
     <TableRow
@@ -248,14 +248,14 @@ export default function Groups() {
     }
 
     // A group can only be dropped on a parent group (a group that is not a child itself).
-    if (overGroup.sub_group_id) {
-      toast({
-        title: t("error"),
-        description: t("cannotDropOnChild"),
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (overGroup.sub_group_id) {
+    //   toast({
+    //     title: t("error"),
+    //     description: t("cannotDropOnChild"),
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     // Don't drop on self
     if (activeGroup.id === overGroup.id) {
