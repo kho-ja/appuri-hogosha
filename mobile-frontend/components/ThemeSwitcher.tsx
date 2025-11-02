@@ -1,33 +1,38 @@
 import React, { useContext } from 'react';
 import { View, Switch, StyleSheet } from 'react-native';
-import { useThemeMode } from '@rneui/themed';
+// import { useThemeMode } from '@rneui/themed';
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nContext } from '@/contexts/i18n-context';
+import { useThemeModeContext } from '@/contexts/theme-context';
 
 export default function ThemeSwitcher() {
-  const { mode, setMode } = useThemeMode();
+  // const { mode, setMode } = useThemeMode();
+  const { themeMode, setThemeMode } = useThemeModeContext();
   const { language, i18n } = useContext(I18nContext);
 
   const toggleTheme = () => {
-    setMode(mode === 'light' ? 'dark' : 'light');
+    const newMode = themeMode === 'light' ? 'dark' : 'light';
+    setThemeMode(newMode);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         <Ionicons
-          name={mode === 'light' ? 'sunny' : 'moon'}
+          name={themeMode === 'light' ? 'sunny' : 'moon'}
           size={20}
           color='#fff'
         />
       </View>
       <ThemedText style={styles.label}>
-        {mode === 'light' ? i18n[language].lightMode : i18n[language].darkMode}
+        {themeMode === 'light'
+          ? i18n[language].lightMode
+          : i18n[language].darkMode}
       </ThemedText>
       <View style={styles.rowSpacer} />
       <Switch
-        value={mode === 'dark'}
+        value={themeMode === 'dark'}
         onValueChange={toggleTheme}
         trackColor={{
           false: '#D1D5DB',
