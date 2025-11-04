@@ -5,6 +5,7 @@ export default interface Parent {
   email: string;
   phone_number: string;
   created_at?: string;
+  last_login_at?: string;
   viewed_at?: string;
   student_numbers?: string[];
   student_number?: string;

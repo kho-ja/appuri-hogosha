@@ -510,6 +510,7 @@
     "parentName": "保護者の名前",
     "Email": "メール",
     "Phone_number": "電話番号",
+    "loginStatus": "ログイン状態",
     "action": "操作",
     "view": "表示",
     "edit": "編集",
@@ -555,6 +556,7 @@
     "email": "メールアドレス",
     "parentId": "保護者ID",
     "phoneNumber": "電話番号",
+    "loginStatus": "ログイン状態",
     "noResults": "結果が見つかりません",
     "rowsSelected": "{count}行選択中（全{total}行）",
     "filter": "名前でフィルタリング"
@@ -1237,5 +1239,9 @@
     "resendPasswordDescription": "この管理者のメールアドレスに新しい一時パスワードを送信します。",
     "resendPasswordDescriptionPhone": "この管理者の電話番号に新しい一時パスワードを送信します。",
     "userAlreadyActive": "このユーザーはすでにアクティブです。パスワードを再送信する必要はありません。"
+  },
+  "loginBadge": {
+    "loggedIn": "ログイン済み",
+    "notLoggedIn": "未ログイン"
   }
 }

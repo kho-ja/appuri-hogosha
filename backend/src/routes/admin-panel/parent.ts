@@ -1578,7 +1578,8 @@ class ParentController implements IController {
                         p.phone_number,
                         p.given_name AS given_name,
                         p.family_name AS family_name,
-                        p.created_at
+                        p.created_at,
+                        p.last_login_at
                  FROM Parent p
                  WHERE p.id = :id
                  AND p.school_id = :school_id`,
@@ -1937,7 +1938,8 @@ class ParentController implements IController {
                     p.email,
                     p.phone_number,
                     p.given_name AS given_name,
-                    p.family_name AS family_name
+                    p.family_name AS family_name,
+                    p.last_login_at
                  FROM Parent p
                  WHERE p.school_id = :school_id ${whereClause}
                  ORDER BY p.id DESC

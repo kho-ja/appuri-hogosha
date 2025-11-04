@@ -30,6 +30,8 @@ import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import YesBadge from "@/components/yesbadge";
+import NoBadge from "@/components/nobadge";
 
 export default function Info() {
   const t = useTranslations("parents");
@@ -109,6 +111,15 @@ export default function Info() {
     {
       accessorKey: "email",
       header: t("Email"),
+    },
+    {
+      accessorKey: "last_login_at",
+      header: t("loginStatus"),
+      meta: { notClickable: true },
+      cell: ({ row }) => {
+        const lastLoginAt = row.original.last_login_at;
+        return lastLoginAt ? <YesBadge /> : <NoBadge />;
+      },
     },
     {
       header: t("action"),
