@@ -567,6 +567,8 @@
     "parentFamilyName": "Фамилия родителя",
     "parentEmail": "Email родителя",
     "parentPhoneNumber": "Номер телефона родителя",
+    "parentLastLogin": "Последний вход",
+    "parentNotLoggedIn": "Еще не входил",
     "parentCreationDate": "Дата создания",
     "students": "Студенты",
     "name": "Имя",

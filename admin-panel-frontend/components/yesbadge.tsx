@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 export default function YesBadge() {
   const t = useTranslations("loginBadge");
   return (
-    <Badge className="text-green-600 bg-green-200">● {t("loggedIn")}</Badge>
+    <Badge className="text-green-600 bg-green-200 text-nowrap">
+      ● {t("loggedIn")}
+    </Badge>
   );
 }

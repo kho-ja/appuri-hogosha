@@ -571,6 +571,8 @@
     "parentFamilyName": "Parent's Family Name",
     "parentEmail": "Parent's Email",
     "parentPhoneNumber": "Parent's Phone Number",
+    "parentLastLogin": "Last login",
+  "parentNotLoggedIn": "Not logged in yet",
     "parentCreationDate": "Creation Date",
     "students": "Students",
     "name": "Name",

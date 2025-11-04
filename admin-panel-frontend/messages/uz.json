@@ -570,6 +570,8 @@
     "parentFamilyName": "Ota-ona familiyasi",
     "parentEmail": "Ota-ona elektron pochtasi",
     "parentPhoneNumber": "Ota-ona telefon raqami",
+    "parentLastLogin": "So'nggi kirish",
+    "parentNotLoggedIn": "Hali tizimga kirilmagan",
     "parentCreationDate": "Yaratilgan sana",
     "students": "Talabalar",
     "name": "Ism",

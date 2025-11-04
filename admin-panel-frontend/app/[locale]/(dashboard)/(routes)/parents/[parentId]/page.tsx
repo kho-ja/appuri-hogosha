@@ -8,7 +8,19 @@ import Student from "@/types/student";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { FormatDateTime } from "@/lib/utils";
+function safeFormatDateTime(date?: string | null) {
+  if (!date) return "";
+
+  try {
+    const d = new Date(date);
+    return d.toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    } as Intl.DateTimeFormatOptions);
+  } catch (e) {
+    return "";
+  }
+}
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
@@ -49,7 +61,10 @@ export default function ThisParent({
     },
   ];
 
-  const dateValue = FormatDateTime(parentData?.parent.created_at ?? "");
+  const dateValue = safeFormatDateTime(parentData?.parent.created_at ?? "");
+  const lastLoginValue = parentData?.parent.last_login_at
+    ? safeFormatDateTime(parentData.parent.last_login_at)
+    : t("parentNotLoggedIn");
 
   if (isError) return <NotFound />;
 
@@ -88,6 +103,10 @@ export default function ThisParent({
           <DisplayProperty
             property={t("parentPhoneNumber")}
             value={parentData?.parent.phone_number}
+          />
+          <DisplayProperty
+            property={t("parentLastLogin")}
+            value={lastLoginValue}
           />
           <DisplayProperty
             property={t("parentCreationDate")}
