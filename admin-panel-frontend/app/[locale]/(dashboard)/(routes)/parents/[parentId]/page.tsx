@@ -8,19 +8,7 @@ import Student from "@/types/student";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-function safeFormatDateTime(date?: string | null) {
-  if (!date) return "";
-
-  try {
-    const d = new Date(date);
-    return d.toLocaleString(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    } as Intl.DateTimeFormatOptions);
-  } catch (e) {
-    return "";
-  }
-}
+import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
@@ -61,12 +49,17 @@ export default function ThisParent({
     },
   ];
 
-  const dateValue = safeFormatDateTime(parentData?.parent.created_at ?? "");
-  const lastLoginValue = parentData?.parent.last_login_at
-    ? safeFormatDateTime(parentData.parent.last_login_at)
-    : parentData?.parent.arn
-      ? t("parentLoggedInViaApp") // New translation key for when parent has arn but no last_login_at
-      : t("parentNotLoggedIn");
+  const dateValue = parentData?.parent.created_at
+    ? FormatDateTime(parentData.parent.created_at)
+    : "";
+
+  const lastLoginValue =
+    (parentData?.parent?.last_login_at
+      ? FormatDateTime(parentData.parent.last_login_at)
+      : "") ||
+    (parentData?.parent?.arn
+      ? t("parentLoggedInViaApp")
+      : t("parentNotLoggedIn"));
 
   if (isError) return <NotFound />;
 

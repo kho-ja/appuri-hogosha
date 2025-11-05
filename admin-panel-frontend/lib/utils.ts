@@ -29,22 +29,17 @@ export function FormatDate(
 
 export function FormatDateTime(
   date: string | Date,
-  style: DateTimeFormatOptions | undefined = {
+  style: Intl.DateTimeFormatOptions = {
     dateStyle: "medium",
     timeStyle: "short",
   }
 ) {
-  const format = useFormatter();
-  const timeZone = useTimeZone();
-
   if (!date) return "";
 
   const dateObject = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(dateObject.getTime())) return "";
 
-  return format.dateTime(dateObject, {
-    ...style,
-    timeZone,
-  });
+  return new Intl.DateTimeFormat("en-GB", style).format(dateObject);
 }
 
 export function FormatRelativeTime(date: string | Date) {
