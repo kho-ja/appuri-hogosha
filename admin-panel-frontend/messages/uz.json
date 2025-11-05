@@ -572,6 +572,7 @@
     "parentPhoneNumber": "Ota-ona telefon raqami",
     "parentLastLogin": "So'nggi kirish",
     "parentNotLoggedIn": "Hali tizimga kirilmagan",
+    "parentLoggedInViaApp": "Mobil ilova orqali kirgan",
     "parentCreationDate": "Yaratilgan sana",
     "students": "Talabalar",
     "name": "Ism",

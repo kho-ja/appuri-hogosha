@@ -569,6 +569,7 @@
     "parentPhoneNumber": "Номер телефона родителя",
     "parentLastLogin": "Последний вход",
     "parentNotLoggedIn": "Еще не входил",
+    "parentLoggedInViaApp": "Вошел через мобильное приложение",
     "parentCreationDate": "Дата создания",
     "students": "Студенты",
     "name": "Имя",

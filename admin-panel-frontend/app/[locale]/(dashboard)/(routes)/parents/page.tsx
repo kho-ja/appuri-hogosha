@@ -118,7 +118,10 @@ export default function Info() {
       meta: { notClickable: true },
       cell: ({ row }) => {
         const lastLoginAt = row.original.last_login_at;
-        return lastLoginAt ? <YesBadge /> : <NoBadge />;
+        const arn = row.original.arn;
+        // Parent is considered logged in if they have either last_login_at OR arn token
+        const isLoggedIn = lastLoginAt || arn;
+        return isLoggedIn ? <YesBadge /> : <NoBadge />;
       },
     },
     {

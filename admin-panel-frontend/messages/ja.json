@@ -570,6 +570,7 @@
     "parentPhoneNumber": "保護者の電話番号",
     "parentLastLogin": "最終ログイン",
     "parentNotLoggedIn": "まだログインしていません",
+    "parentLoggedInViaApp": "モバイルアプリ経由でログイン済み",
     "parentCreationDate": "作成日",
     "students": "学生",
     "name": "名前",

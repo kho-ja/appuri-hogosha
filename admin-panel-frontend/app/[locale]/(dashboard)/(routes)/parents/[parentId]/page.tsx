@@ -64,7 +64,9 @@ export default function ThisParent({
   const dateValue = safeFormatDateTime(parentData?.parent.created_at ?? "");
   const lastLoginValue = parentData?.parent.last_login_at
     ? safeFormatDateTime(parentData.parent.last_login_at)
-    : t("parentNotLoggedIn");
+    : parentData?.parent.arn
+      ? t("parentLoggedInViaApp") // New translation key for when parent has arn but no last_login_at
+      : t("parentNotLoggedIn");
 
   if (isError) return <NotFound />;
 
@@ -75,7 +77,10 @@ export default function ThisParent({
         {parentData?.parent && (
           <ResendPasswordDialog
             id={parentData.parent.id}
-            name={tName("name", { ...parentData.parent } as any)}
+            name={tName("name", {
+              given_name: parentData.parent.given_name,
+              family_name: parentData.parent.family_name,
+            })}
             identifier={parentData.parent.phone_number}
             type="parent"
             variant="button"

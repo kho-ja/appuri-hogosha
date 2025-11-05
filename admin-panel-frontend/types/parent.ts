@@ -7,6 +7,7 @@ export default interface Parent {
   created_at?: string;
   last_login_at?: string;
   viewed_at?: string;
+  arn?: string;
   student_numbers?: string[];
   student_number?: string;
   students?: Array<{
