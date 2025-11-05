@@ -192,11 +192,11 @@ export function ParentTable({
         ),
       },
       {
-        accessorKey: "last_login_at",
+        accessorKey: "last_login_at || arn",
         header: t("loginStatus"),
         cell: ({ row }) => {
-          const lastLoginAt = row.original.last_login_at || "Not logged in yet";
-          return lastLoginAt ? <YesBadge /> : <NoBadge />;
+          const isLoggedIn = row.original.last_login_at || row.original.arn;
+          return isLoggedIn ? <YesBadge /> : <NoBadge />;
         },
       },
     ],

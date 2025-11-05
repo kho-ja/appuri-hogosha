@@ -8,7 +8,7 @@ import Student from "@/types/student";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { FormatDateTime } from "@/lib/utils";
+import { useFormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
@@ -24,6 +24,7 @@ export default function ThisParent({
 }) {
   const t = useTranslations("ThisParent");
   const tName = useTranslations("names");
+  const formatDateTime = useFormatDateTime();
   const { data: parentData, isError } = useApiQuery<{
     parent: Parent;
     students: Student[];
@@ -50,12 +51,12 @@ export default function ThisParent({
   ];
 
   const dateValue = parentData?.parent.created_at
-    ? FormatDateTime(parentData.parent.created_at)
+    ? formatDateTime(parentData.parent.created_at)
     : "";
 
   const lastLoginValue =
     (parentData?.parent?.last_login_at
-      ? FormatDateTime(parentData.parent.last_login_at)
+      ? formatDateTime(parentData.parent.last_login_at)
       : "") ||
     (parentData?.parent?.arn
       ? t("parentLoggedInViaApp")
