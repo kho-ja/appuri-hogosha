@@ -512,6 +512,7 @@
     "parentName": "Ota-ona ismi",
     "Email": "Email",
     "Phone_number": "Telefon raqami",
+    "loginStatus": "Login holati",
     "action": "Harakat",
     "view": "Ko'rish",
     "edit": "Tahrirlash",
@@ -557,6 +558,7 @@
     "email": "Elektron pochta",
     "parentId": "Ota-onalar ID raqami",
     "phoneNumber": "Telefon raqami",
+    "loginStatus": "Login holati",
     "noResults": "Natijalar topilmadi",
     "rowsSelected": "{count} qator tanlandi (jami {total} qator)",
     "filter": "Nomi bo'yicha filtrlash"
@@ -568,6 +570,9 @@
     "parentFamilyName": "Ota-ona familiyasi",
     "parentEmail": "Ota-ona elektron pochtasi",
     "parentPhoneNumber": "Ota-ona telefon raqami",
+    "parentLastLogin": "So'nggi kirish",
+    "parentNotLoggedIn": "Hali tizimga kirilmagan",
+    "parentLoggedInViaApp": "Mobil ilova orqali kirgan",
     "parentCreationDate": "Yaratilgan sana",
     "students": "Talabalar",
     "name": "Ism",
@@ -1236,5 +1241,9 @@
     "resendPasswordDescription": "Bu foydalanuvchi email manziliga yangi vaqtinchalik parol yuboradi.",
     "resendPasswordDescriptionPhone": "Bu adminning telefon raqamiga yangi vaqtinchalik parol yuboradi.",
     "userAlreadyActive": "Foydalanuvchi allaqachon faol. Vaqtinchalik parolni qayta yuborish mumkin emas."
+  },
+  "loginBadge": {
+    "loggedIn": "Login qilgan",
+    "notLoggedIn": "Login qilmagan"
   }
 }

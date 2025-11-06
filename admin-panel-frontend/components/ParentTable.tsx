@@ -30,6 +30,8 @@ import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
 import useTableQuery from "@/lib/useTableQuery";
+import YesBadge from "./yesbadge";
+import NoBadge from "./nobadge";
 
 export function ParentTable({
   selectedParents,
@@ -188,6 +190,14 @@ export function ParentTable({
         cell: ({ row }) => (
           <div className="lowercase">{row.getValue("email")}</div>
         ),
+      },
+      {
+        accessorKey: "last_login_at || arn",
+        header: t("loginStatus"),
+        cell: ({ row }) => {
+          const isLoggedIn = row.original.last_login_at || row.original.arn;
+          return isLoggedIn ? <YesBadge /> : <NoBadge />;
+        },
       },
     ],
     [t, tParents, tName]

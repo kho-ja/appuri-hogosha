@@ -7,7 +7,49 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// MODERN APPROACH: Use next-intl's automatic timezone handling
+export function useFormatDate() {
+  const format = useFormatter();
+  const timeZone = useTimeZone();
+
+  return (
+    date: string | Date,
+    style: DateTimeFormatOptions | undefined = {
+      dateStyle: "long",
+    }
+  ) => {
+    if (!date) return "";
+
+    const dateObject = typeof date === "string" ? new Date(date) : date;
+
+    return format.dateTime(dateObject, {
+      ...style,
+      timeZone,
+    });
+  };
+}
+
+export function useFormatDateTime() {
+  const format = useFormatter();
+  const timeZone = useTimeZone();
+
+  return (
+    date: string | Date,
+    style: DateTimeFormatOptions | undefined = {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }
+  ) => {
+    if (!date) return "";
+
+    const dateObject = typeof date === "string" ? new Date(date) : date;
+
+    return format.dateTime(dateObject, {
+      ...style,
+      timeZone,
+    });
+  };
+}
+
 export function FormatDate(
   date: string | Date,
   style: DateTimeFormatOptions | undefined = {

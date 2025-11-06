@@ -513,6 +513,7 @@
     "parentName": "Parent Name",
     "Email": "Email",
     "Phone_number": "Phone Number",
+    "loginStatus": "Login Status",
     "action": "Action",
     "view": "View",
     "edit": "Edit",
@@ -558,6 +559,7 @@
     "email": "Email",
     "parentId": "Parent ID",
     "phoneNumber": "Phone Number",
+    "loginStatus": "Login Status",
     "noResults": "No results.",
     "rowsSelected": "{count} rows selected (out of {total} rows)",
     "filter": "Filter by name"
@@ -569,6 +571,9 @@
     "parentFamilyName": "Parent's Family Name",
     "parentEmail": "Parent's Email",
     "parentPhoneNumber": "Parent's Phone Number",
+    "parentLastLogin": "Last login",
+    "parentNotLoggedIn": "Not logged in yet",
+    "parentLoggedInViaApp": "Logged in via mobile app",
     "parentCreationDate": "Creation Date",
     "students": "Students",
     "name": "Name",
@@ -1238,5 +1243,9 @@
     "resendPasswordDescription": "This will send a new temporary password to the admin's email address.",
     "resendPasswordDescriptionPhone": "This will send a new temporary password to the admin's phone number.",
     "userAlreadyActive": "This user has already activated their account and doesn't need a temporary password."
+  },
+  "loginBadge": {
+    "loggedIn": "Logged In",
+    "notLoggedIn": "Not Logged In"
   }
 }
