@@ -215,8 +215,7 @@ class StudentController implements IController {
                     }
 
                     if (!phone_number) {
-                        rowErrors.phone_number =
-                            'missing_or_empty_phone_number';
+                        phone_number = '';
                     } else {
                         phone_number = parseKintoneRow(phone_number);
                         if (!isValidPhoneNumber(phone_number)) {
@@ -271,24 +270,24 @@ class StudentController implements IController {
             const existingEmails =
                 kintoneRecords?.length > 0
                     ? await DB.query(
-                          'SELECT email FROM Student WHERE email IN (:emails)',
-                          {
-                              emails: kintoneRecords.map(
-                                  (row: any) => row.email
-                              ),
-                          }
-                      )
+                        'SELECT email FROM Student WHERE email IN (:emails)',
+                        {
+                            emails: kintoneRecords.map(
+                                (row: any) => row.email
+                            ),
+                        }
+                    )
                     : [];
             const existingStudentNumbers =
                 kintoneRecords?.length > 0
                     ? await DB.query(
-                          'SELECT student_number FROM Student WHERE student_number IN (:studentNumbers)',
-                          {
-                              studentNumbers: kintoneRecords.map(
-                                  (row: any) => row.student_number
-                              ),
-                          }
-                      )
+                        'SELECT student_number FROM Student WHERE student_number IN (:studentNumbers)',
+                        {
+                            studentNumbers: kintoneRecords.map(
+                                (row: any) => row.student_number
+                            ),
+                        }
+                    )
                     : [];
 
             const existingEmailsSet = new Set(
@@ -455,7 +454,10 @@ class StudentController implements IController {
                 const rowErrors: Record<string, string> = {};
                 if (!isValidEmail(normalized.email))
                     rowErrors.email = ErrorKeys.invalid_email;
-                if (!isValidPhoneNumber(normalized.phone_number))
+                if (
+                    normalized.phone_number &&
+                    !isValidPhoneNumber(normalized.phone_number)
+                )
                     rowErrors.phone_number = ErrorKeys.invalid_phone_number;
                 if (!isValidString(normalized.given_name))
                     rowErrors.given_name = ErrorKeys.invalid_given_name;
@@ -499,14 +501,22 @@ class StudentController implements IController {
                     .end();
             }
 
-            const existingStudents = await DB.query(
-                'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
-                {
-                    emails: valid.map(v => v.email),
-                    sns: valid.map(v => v.student_number),
-                    phones: valid.map(v => v.phone_number),
-                }
-            );
+            const emails = valid.map((v) => v.email);
+            const sns = valid.map((v) => v.student_number);
+            const phones = valid.map((v) => v.phone_number).filter((p) => p);
+
+            let existingStudents: any[] = [];
+            if (phones.length > 0) {
+                existingStudents = await DB.query(
+                    'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
+                    { emails, sns, phones }
+                );
+            } else {
+                existingStudents = await DB.query(
+                    'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns)',
+                    { emails, sns }
+                );
+            }
             const existingEmailSet = new Set(
                 existingStudents.map((s: any) => s.email)
             );
@@ -537,7 +547,7 @@ class StudentController implements IController {
                         });
                         continue;
                     }
-                    if (existingPhoneSet.has(row.phone_number)) {
+                    if (row.phone_number && existingPhoneSet.has(row.phone_number)) {
                         response.errors.push({
                             row,
                             errors: {
@@ -914,7 +924,7 @@ class StudentController implements IController {
 
             const student_number = studentNumber.replace(/\D+/g, '');
 
-            if (!phone_number || !isValidPhoneNumber(phone_number)) {
+            if (phone_number && !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_phone',
@@ -966,21 +976,23 @@ class StudentController implements IController {
 
             const student = studentInfo[0];
 
-            const findDuplicates = await DB.query(
-                'SELECT id, phone_number FROM Student WHERE phone_number = :phone_number',
-                {
-                    phone_number: phone_number,
-                }
-            );
+            if (phone_number) {
+                const findDuplicates = await DB.query(
+                    'SELECT id, phone_number FROM Student WHERE phone_number = :phone_number',
+                    {
+                        phone_number: phone_number,
+                    }
+                );
 
-            if (findDuplicates.length >= 1) {
-                const duplicate = findDuplicates[0];
-                if (duplicate.id != studentId) {
-                    if (phone_number == duplicate.phone_number) {
-                        throw {
-                            status: 401,
-                            message: 'phone_number_already_exists',
-                        };
+                if (findDuplicates.length >= 1) {
+                    const duplicate = findDuplicates[0];
+                    if (duplicate.id != studentId) {
+                        if (phone_number == duplicate.phone_number) {
+                            throw {
+                                status: 401,
+                                message: 'phone_number_already_exists',
+                            };
+                        }
                     }
                 }
             }
@@ -1267,7 +1279,7 @@ class StudentController implements IController {
                     message: 'invalid_or_missing_email',
                 };
             }
-            if (!phone_number || !isValidPhoneNumber(phone_number)) {
+            if (phone_number && !isValidPhoneNumber(phone_number)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_phone',
@@ -1297,14 +1309,25 @@ class StudentController implements IController {
                 }
             }
 
-            const findDuplicates = await DB.query(
-                'SELECT email, phone_number, student_number FROM Student WHERE email = :email OR phone_number = :phone_number OR student_number = :student_number',
-                {
-                    email: email,
-                    phone_number: phone_number,
-                    student_number: student_number,
-                }
-            );
+            let findDuplicates: any[] = [];
+            if (phone_number) {
+                findDuplicates = await DB.query(
+                    'SELECT email, phone_number, student_number FROM Student WHERE email = :email OR phone_number = :phone_number OR student_number = :student_number',
+                    {
+                        email: email,
+                        phone_number: phone_number,
+                        student_number: student_number,
+                    }
+                );
+            } else {
+                findDuplicates = await DB.query(
+                    'SELECT email, phone_number, student_number FROM Student WHERE email = :email OR student_number = :student_number',
+                    {
+                        email: email,
+                        student_number: student_number,
+                    }
+                );
+            }
 
             if (findDuplicates.length >= 1) {
                 const duplicate = findDuplicates[0];
@@ -1315,7 +1338,7 @@ class StudentController implements IController {
                         message: 'email_already_exists',
                     };
                 }
-                if (phone_number == duplicate.phone_number) {
+                if (phone_number && phone_number == duplicate.phone_number) {
                     throw {
                         status: 401,
                         message: 'phone_number_already_exists',

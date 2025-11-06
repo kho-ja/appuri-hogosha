@@ -37,9 +37,10 @@ const GetFormSchema = (t: (key: string) => string) => {
       .max(254, { message: t("Email is too long") }),
     phone_number: z
       .string()
-      .min(10)
-      .max(20)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
+      .refine(
+        (v) => v === "" || (v.length >= 10 && v.length <= 20 && isValidPhoneNumber(v)),
+        { message: t("Invalid phone number") }
+      ),
     given_name: z.string().min(1).max(50),
     family_name: z.string().min(1).max(50),
     student_number: z
