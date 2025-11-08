@@ -215,7 +215,7 @@ class StudentController implements IController {
                     }
 
                     if (!phone_number) {
-                        phone_number = '';
+                        phone_number = null;
                     } else {
                         phone_number = parseKintoneRow(phone_number);
                         if (!isValidPhoneNumber(phone_number)) {
@@ -444,9 +444,10 @@ class StudentController implements IController {
             const seenNumbers = new Set<string>();
 
             for (const raw of rows) {
+                const phoneRaw = String(raw.phone_number || '').trim();
                 const normalized = {
                     email: String(raw.email || '').trim(),
-                    phone_number: String(raw.phone_number || '').trim(),
+                    phone_number: phoneRaw === '' ? null : phoneRaw,
                     given_name: String(raw.given_name || '').trim(),
                     family_name: String(raw.family_name || '').trim(),
                     student_number: String(raw.student_number || '').trim(),
@@ -503,7 +504,9 @@ class StudentController implements IController {
 
             const emails = valid.map((v) => v.email);
             const sns = valid.map((v) => v.student_number);
-            const phones = valid.map((v) => v.phone_number).filter((p) => p);
+            const phones = valid
+                .map((v) => v.phone_number)
+                .filter((p) => p != null && p !== '');
 
             let existingStudents: any[] = [];
             if (phones.length > 0) {
@@ -524,7 +527,9 @@ class StudentController implements IController {
                 existingStudents.map((s: any) => s.student_number)
             );
             const existingPhoneSet = new Set(
-                existingStudents.map((s: any) => s.phone_number)
+                existingStudents
+                    .map((s: any) => s.phone_number)
+                    .filter((p: any) => p != null && p !== '')
             );
 
             for (const row of valid) {
@@ -1005,7 +1010,7 @@ class StudentController implements IController {
                         given_name = :given_name
                     WHERE id = :id`,
                 {
-                    phone_number: phone_number,
+                    phone_number: phone_number || null,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
@@ -1357,7 +1362,7 @@ class StudentController implements IController {
                 VALUE (:email,:phone_number,:given_name,:family_name,:student_number,:school_id)`,
                 {
                     email: email,
-                    phone_number: phone_number,
+                    phone_number: phone_number || null,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
