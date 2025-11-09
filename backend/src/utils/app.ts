@@ -9,6 +9,12 @@ const allowedOrigins = [
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
 ];
 
+// For local development, always allow localhost:3000
+if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:3000');
+    allowedOrigins.push('http://127.0.0.1:3000');
+}
+
 class App {
     public app: Application;
 

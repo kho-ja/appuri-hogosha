@@ -25,6 +25,50 @@ import {
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 
+async function getAllDescendantGroupIds(
+    initialGroupIds: number[],
+    school_id: number
+): Promise<number[]> {
+    if (!initialGroupIds || initialGroupIds.length === 0) {
+        return [];
+    }
+
+    const allGroupIds = new Set<number>(initialGroupIds);
+    let currentIds = [...initialGroupIds];
+
+    while (currentIds.length > 0) {
+        // ИСПРАВЛЕНИЕ: Ищем группы, у которых sub_group_id указывает на текущие группы
+        // (то есть текущие группы - их родители)
+        const childGroups = (await DB.query(
+            `SELECT id FROM StudentGroup WHERE sub_group_id IN (:parentIds) AND school_id = :school_id`,
+            { parentIds: currentIds, school_id: school_id }
+        )) as any[];
+
+        console.log('Searching for children of:', currentIds);
+        console.log('Found children:', childGroups);
+
+        if (childGroups.length === 0) {
+            break;
+        }
+
+        const newChildIds = childGroups
+            .map((g: any) => parseInt(g.id))
+            .filter((id: number) => !allGroupIds.has(id) && !isNaN(id));
+
+        if (newChildIds.length === 0) {
+            break;
+        }
+
+        console.log('New child IDs to process:', newChildIds);
+
+        newChildIds.forEach((id: number) => allGroupIds.add(id));
+        currentIds = newChildIds;
+    }
+
+    console.log('Final all group IDs:', Array.from(allGroupIds));
+    return Array.from(allGroupIds);
+}
+
 // CSV upload now uses shared middleware (handleCSVUpload)
 
 class PostController implements IController {
@@ -2071,18 +2115,17 @@ class PostController implements IController {
 
             const postId = postInsert.insertId;
 
+            // --- INDIVIDUAL STUDENTS ---
             if (
                 students &&
                 Array.isArray(students) &&
                 isValidStringArrayId(students) &&
                 students.length > 0
             ) {
-                const studentList = await DB.query(
-                    `SELECT st.id
-                     FROM Student AS st
-                     WHERE st.id IN (:students)`,
+                const studentList = (await DB.query(
+                    `SELECT st.id FROM Student AS st WHERE st.id IN (:students)`,
                     { students }
-                );
+                )) as { id: number }[];
 
                 if (studentList.length > 0) {
                     for (const student of studentList) {
@@ -2094,75 +2137,162 @@ class PostController implements IController {
                             }
                         );
 
-                        const studentAttachList = await DB.query(
-                            `SELECT sp.parent_id
-                                                                  FROM StudentParent AS sp
-                                                                  WHERE sp.student_id = :student_id`,
-                            {
-                                student_id: student.id,
-                            }
-                        );
+                        const studentAttachList = (await DB.query(
+                            `SELECT sp.parent_id FROM StudentParent AS sp WHERE sp.student_id = :student_id`,
+
+                            { student_id: student.id }
+                        )) as { parent_id: number }[];
 
                         if (studentAttachList.length > 0) {
-                            const studentValues = studentAttachList
-                                .map(
-                                    (student: any) =>
-                                        `(${post_student.insertId}, ${student.parent_id})`
-                                )
-                                .join(', ');
-                            await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
-                                              VALUES ${studentValues}`);
+                            const parentInsertData = studentAttachList.map(
+                                (parent: { parent_id: number }) => [
+                                    post_student.insertId,
+                                    parent.parent_id,
+                                ]
+                            );
+                            await DB.execute(
+                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ?`,
+                                [parentInsertData]
+                            );
                         }
                     }
                 }
             }
-            if (
-                groups &&
-                Array.isArray(groups) &&
-                isValidArrayId(groups) &&
-                groups.length > 0
-            ) {
-                const studentList = await DB.query(
-                    `SELECT gm.student_id, gm.group_id
-                     FROM GroupMember AS gm
-                              RIGHT JOIN StudentGroup sg on gm.group_id = sg.id
-                     WHERE group_id IN (:groups)
-                       AND sg.school_id = :school_id`,
-                    {
-                        groups: groups,
-                        school_id: req.user.school_id,
-                    }
+
+            // --- GROUPS (AND THEIR DESCENDANTS) ---
+            const groupIds =
+                groups && Array.isArray(groups)
+                    ? groups
+                          .map((id: any) => parseInt(id, 10))
+                          .filter((id: number) => !isNaN(id))
+                    : [];
+
+            if (isValidArrayId(groupIds) && groupIds.length > 0) {
+                console.log('Initial group IDs:', groupIds);
+
+                // 1. Get all descendant groups
+                const allGroupIds = await getAllDescendantGroupIds(
+                    groupIds,
+                    req.user.school_id
                 );
 
-                if (studentList.length > 0) {
-                    for (const student of studentList) {
-                        const post_student = await DB.execute(
-                            `INSERT INTO PostStudent (post_id, student_id, group_id) VALUE (:post_id, :student_id, :group_id)`,
-                            {
-                                post_id: postId,
-                                student_id: student.student_id,
-                                group_id: student.group_id,
-                            }
+                console.log(
+                    'All group IDs (including descendants):',
+                    allGroupIds
+                );
+
+                if (allGroupIds.length > 0) {
+                    // 2. Get all students from all groups
+                    const studentList = (await DB.query(
+                        `SELECT gm.student_id, gm.group_id
+                         FROM GroupMember AS gm
+                         WHERE gm.group_id IN (:groups)`,
+                        { groups: allGroupIds }
+                    )) as { student_id: number; group_id: number }[];
+
+                    console.log('Students found:', studentList.length);
+
+                    if (studentList.length > 0) {
+                        // 3. Bulk insert all students into PostStudent
+                        const postStudentInsertData = studentList.map(
+                            (student: {
+                                student_id: number;
+                                group_id: number;
+                            }) => [postId, student.student_id, student.group_id]
                         );
 
-                        const studentAttachList = await DB.query(
-                            `SELECT sp.parent_id
-                                                                  FROM StudentParent AS sp
-                                                                  WHERE sp.student_id = :student_id`,
-                            {
-                                student_id: student.student_id,
-                            }
+                        // Use DB.query() instead of DB.execute() for bulk insert with VALUES ?
+                        const placeholders = postStudentInsertData
+                            .map(() => '(?, ?, ?)')
+                            .join(', ');
+                        const flatValues = postStudentInsertData.flat();
+
+                        const postStudentResult = await DB.query(
+                            `INSERT INTO PostStudent (post_id, student_id, group_id) VALUES ${placeholders}`,
+                            flatValues
                         );
 
-                        if (studentAttachList.length > 0) {
-                            const studentValues = studentAttachList
-                                .map(
-                                    (student: any) =>
-                                        `(${post_student.insertId}, ${student.parent_id})`
-                                )
-                                .join(', ');
-                            await DB.execute(`INSERT INTO PostParent (post_student_id, parent_id)
-                                              VALUES ${studentValues}`);
+                        console.log(
+                            'Inserted PostStudent rows:',
+                            postStudentResult.affectedRows
+                        );
+
+                        // 4. Get all parents for all students in one query
+                        const firstInsertId = postStudentResult.insertId;
+                        const affectedRows = postStudentResult.affectedRows;
+                        const lastInsertId = firstInsertId + affectedRows - 1;
+
+                        const newPostStudents = (await DB.query(
+                            `SELECT id, student_id FROM PostStudent WHERE id BETWEEN :firstId AND :lastId`,
+                            { firstId: firstInsertId, lastId: lastInsertId }
+                        )) as { id: number; student_id: number }[];
+
+                        const studentIdsForParentQuery = newPostStudents.map(
+                            (ps: { student_id: number }) => ps.student_id
+                        );
+
+                        if (studentIdsForParentQuery.length > 0) {
+                            const allParents = (await DB.query(
+                                `SELECT student_id, parent_id FROM StudentParent WHERE student_id IN (:studentIds)`,
+                                { studentIds: studentIdsForParentQuery }
+                            )) as {
+                                student_id: number;
+                                parent_id: number;
+                            }[];
+
+                            console.log('Parents found:', allParents.length);
+
+                            if (allParents.length > 0) {
+                                const postStudentIdMap = new Map(
+                                    newPostStudents.map(
+                                        (ps: {
+                                            id: number;
+                                            student_id: number;
+                                        }) => [ps.student_id, ps.id]
+                                    )
+                                );
+
+                                // 5. Bulk insert all parents into PostParent
+                                const allParentInsertData = allParents
+                                    .map(
+                                        (parent: {
+                                            student_id: number;
+                                            parent_id: number;
+                                        }) => {
+                                            const postStudentId =
+                                                postStudentIdMap.get(
+                                                    parent.student_id
+                                                );
+                                            if (postStudentId) {
+                                                return [
+                                                    postStudentId,
+                                                    parent.parent_id,
+                                                ];
+                                            }
+                                            return null;
+                                        }
+                                    )
+                                    .filter(Boolean);
+
+                                if (allParentInsertData.length > 0) {
+                                    // Use DB.query() for bulk insert
+                                    const parentPlaceholders =
+                                        allParentInsertData
+                                            .map(() => '(?, ?)')
+                                            .join(', ');
+                                    const flatParentValues =
+                                        allParentInsertData.flat();
+
+                                    const parentResult = await DB.query(
+                                        `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${parentPlaceholders}`,
+                                        flatParentValues
+                                    );
+                                    console.log(
+                                        'Inserted PostParent rows:',
+                                        parentResult.affectedRows
+                                    );
+                                }
+                            }
                         }
                     }
                 }

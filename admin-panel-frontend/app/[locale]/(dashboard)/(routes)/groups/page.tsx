@@ -139,10 +139,10 @@ export default function Groups() {
   const { data: session } = useSession();
   const { page, setPage, search, setSearch } = useTableQuery();
 
-  const { data } = useApiQuery<GroupApi>(
-    `group/list?page=${page}&name=${search}`,
-    ["groups", page, search]
-  );
+  const { data } = useApiQuery<GroupApi>(`group/list?name=${search}&all=true`, [
+    "groups",
+    search,
+  ]);
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
   const [isCreateCategoryDialogOpen, setIsCreateCategoryDialogOpen] =
@@ -687,7 +687,7 @@ export default function Groups() {
             className="sm:max-w-sm mb-4"
           />
           <div>
-            <PaginationApi data={data?.pagination || null} setPage={setPage} />
+            {/* <PaginationApi data={data?.pagination || null} setPage={setPage} /> */}
           </div>
         </div>
 

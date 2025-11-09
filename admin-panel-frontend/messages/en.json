@@ -353,6 +353,7 @@
     "columns": "Columns",
     "noResults": "No results.",
     "rowsSelected": "{count} of {total} rows selected.",
+    "parent": "Parent",
     "previous": "Previous",
     "next": "Next"
   },
@@ -545,7 +546,7 @@
     "view": "View",
     "delete": "Delete",
     "filter": "Filter by Name",
-    "DouYouDeleteGroup": "Do You really want to delete this group?",
+    "doYouWantToDeleteGroup": "Do you want to delete this group?",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "create": "Create",

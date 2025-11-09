@@ -505,7 +505,7 @@
     "view": "表示",
     "delete": "削除",
     "filter": "名前でフィルタリング",
-    "DouYouDeleteGroup": "このグループを本当に削除しますか？",
+    "doYouWantToDeleteGroup": "このグループを削除しますか？",
     "cancel": "キャンセル",
     "confirm": "確認",
     "create": "作成",

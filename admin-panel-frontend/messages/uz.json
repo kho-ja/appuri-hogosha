@@ -507,7 +507,7 @@
     "view": "Ko'rish",
     "delete": "O'chirish",
     "filter": "Nomi bo'yicha filtrlash",
-    "DouYouDeleteGroup": "Ushbu guruhni haqiqatdan ham oʻchirmoqchimisiz?",
+    "doYouWantToDeleteGroup": "Ushbu guruhni o'chirmoqchimisiz?",
     "cancel": "Bekor qilish",
     "confirm": "Tasdiqlash",
     "create": "Yaratish",
