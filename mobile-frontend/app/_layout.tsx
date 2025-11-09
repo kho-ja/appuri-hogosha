@@ -1,5 +1,4 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SQLiteProvider } from 'expo-sqlite';
@@ -38,6 +37,37 @@ function ThemedApp() {
     <ThemeProvider theme={memoizedTheme}>
       <AppWithNotifications />
     </ThemeProvider>
+  );
+}
+
+function AppWrapper({
+  isDeepLinkNavigating,
+}: {
+  isDeepLinkNavigating: boolean;
+}) {
+  const { themeMode } = useThemeModeContext();
+
+  return (
+    <StatusBarBackground isDark={themeMode === 'dark'}>
+      <NetworkProvider>
+        <I18nProvider>
+          {isDeepLinkNavigating ? (
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {/* Empty screen during navigation */}
+            </View>
+          ) : (
+            <ThemedApp />
+          )}
+        </I18nProvider>
+      </NetworkProvider>
+    </StatusBarBackground>
   );
 }
 
@@ -434,11 +464,6 @@ export default function Root() {
     return () => subscription.remove();
   }, [appStartTime, hasProcessedInitialUrl, processedInitialUrl]);
 
-  const memoizedTheme = React.useMemo(
-    () => ({ ...theme, mode: themeMode }),
-    [themeMode]
-  );
-
   return (
     <RootSiblingParent>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -447,37 +472,9 @@ export default function Root() {
             databaseName='maria.db'
             assetSource={{ assetId: require('../assets/database/maria.db') }}
           >
-            <ThemeProvider theme={memoizedTheme}>
-              <StatusBarBackground>
-                {/* Global status bar with blue background */}
-                <StatusBar
-                  style='light'
-                  backgroundColor={themeMode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-                  translucent={false}
-                />
-                <NetworkProvider>
-                  <I18nProvider>
-                    {isDeepLinkNavigating ? (
-                      <View
-                        style={{
-                          flex: 1,
-                          backgroundColor:
-                            themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        {/* Empty screen during navigation */}
-                      </View>
-                    ) : (
-                      <ThemeModeProvider>
-                        <ThemedApp />
-                      </ThemeModeProvider>
-                    )}
-                  </I18nProvider>
-                </NetworkProvider>
-              </StatusBarBackground>
-            </ThemeProvider>
+            <ThemeModeProvider>
+              <AppWrapper isDeepLinkNavigating={isDeepLinkNavigating} />
+            </ThemeModeProvider>
           </SQLiteProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

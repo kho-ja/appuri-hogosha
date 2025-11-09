@@ -1,38 +1,42 @@
 import React from 'react';
-import { View, Platform, Dimensions } from 'react-native';
+import { View, Platform, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@rneui/themed';
 
 interface StatusBarBackgroundProps {
   children?: React.ReactNode;
+  isDark?: boolean;
 }
 
-export function StatusBarBackground({ children }: StatusBarBackgroundProps) {
-  const { theme } = useTheme();
+export function StatusBarBackground({
+  children,
+  isDark = false,
+}: StatusBarBackgroundProps) {
   const insets = useSafeAreaInsets();
-  const { width } = Dimensions.get('window');
 
-  // Status bar background colors
-  const statusBarBackgroundColor =
-    theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6';
+  const bgColor = isDark ? '#1A4AAC' : '#3B81F6';
+  const statusBarHeight = insets.top || (Platform.OS === 'ios' ? 44 : 25);
+
+  React.useEffect(() => {
+    // For both platforms
+    StatusBar.setBarStyle('light-content', true);
+
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor(bgColor, true);
+    }
+  }, [bgColor, isDark]);
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Status Bar Background for both iOS and Android */}
-      {Platform.OS === 'ios' ? (
+      {/* iOS: render colored bar at top */}
+      {Platform.OS === 'ios' && (
         <View
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            width: width,
-            height: insets.top,
-            backgroundColor: statusBarBackgroundColor,
-            zIndex: 9999,
+            width: '100%',
+            height: statusBarHeight,
+            backgroundColor: bgColor,
           }}
         />
-      ) : null}
+      )}
       {children}
     </View>
   );

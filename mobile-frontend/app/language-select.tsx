@@ -38,6 +38,11 @@ export default function LanguageSelect() {
     return () => backHandler.remove();
   }, []);
 
+  const isDark = theme.mode === 'dark';
+  const buttonBgColor = isDark ? '#2A2A3E' : '#EAF2FF';
+  const textColor = isDark ? '#FFFFFF' : theme.colors.black;
+  const chevronColor = isDark ? '#64B5F6' : '#226fc9';
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -46,15 +51,15 @@ export default function LanguageSelect() {
         {languageData.map(({ language, flag, code }) => (
           <TouchableOpacity
             key={code}
-            style={styles.languageItem}
+            style={[styles.languageItem, { backgroundColor: buttonBgColor }]}
             onPress={() => handleSelect(code as 'en' | 'ja' | 'uz' | 'ru')}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
             <View style={styles.row}>
               <ThemedText style={styles.flag}>{flag}</ThemedText>
-              <ThemedText>{language}</ThemedText>
+              <ThemedText style={{ color: textColor }}>{language}</ThemedText>
             </View>
-            <Ionicons color='#226fc9' name='chevron-forward' size={20} />
+            <Ionicons color={chevronColor} name='chevron-forward' size={20} />
           </TouchableOpacity>
         ))}
       </View>
@@ -85,7 +90,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 15,
-    backgroundColor: '#EAF2FF',
   },
   flag: {
     fontSize: 22,
