@@ -88,6 +88,11 @@ class ParentController implements IController {
             verifyToken,
             this.resendTemporaryPassword
         );
+        this.router.post(
+            '/bulk-resend-password',
+            verifyToken,
+            this.bulkResendTemporaryPassword
+        );
 
         this.router.get('/:id/students', verifyToken, this.parentStudents);
         this.router.post(
@@ -166,6 +171,140 @@ class ParentController implements IController {
                 .end();
         } catch (e: any) {
             console.error('Error resending temporary password:', e);
+
+            if (e.status) {
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
+            } else {
+                return res
+                    .status(500)
+                    .json({
+                        error: 'Internal server error',
+                    })
+                    .end();
+            }
+        }
+    };
+
+    bulkResendTemporaryPassword = async (
+        req: ExtendedRequest,
+        res: Response
+    ) => {
+        try {
+            const { parentIds } = req.body;
+
+            if (!Array.isArray(parentIds) || parentIds.length === 0) {
+                return res
+                    .status(400)
+                    .json({
+                        error: 'Invalid parent IDs array',
+                    })
+                    .end();
+            }
+
+            for (const id of parentIds) {
+                if (!isValidId(id)) {
+                    return res
+                        .status(400)
+                        .json({
+                            error: `Invalid parent ID: ${id}`,
+                        })
+                        .end();
+                }
+            }
+
+            const placeholders = parentIds.map(() => '?').join(', ');
+            const parents = await DB.query(
+                `
+                SELECT
+                    p.id,
+                    p.email,
+                    p.phone_number,
+                    p.given_name,
+                    p.family_name,
+                    p.last_login_at,
+                    p.arn
+                FROM Parent p
+                WHERE p.id IN (${placeholders})
+            `,
+                parentIds
+            );
+
+            if (parents.length === 0) {
+                return res
+                    .status(404)
+                    .json({
+                        error: 'No parents found',
+                    })
+                    .end();
+            }
+
+            const parentsNeedingPassword = parents.filter(
+                (parent: any) => !parent.last_login_at && !parent.arn
+            );
+
+            if (parentsNeedingPassword.length === 0) {
+                return res
+                    .status(200)
+                    .json({
+                        message: 'All selected parents have already logged in',
+                        successful_count: 0,
+                        failed_count: 0,
+                        results: [],
+                    })
+                    .end();
+            }
+
+            const results = [];
+            let successfulCount = 0;
+            let failedCount = 0;
+
+            for (const parent of parentsNeedingPassword) {
+                try {
+                    const phoneNumber = parent.phone_number.startsWith('+')
+                        ? parent.phone_number
+                        : `+${parent.phone_number}`;
+
+                    const result =
+                        await this.cognitoClient.resendTemporaryPassword(
+                            phoneNumber
+                        );
+
+                    results.push({
+                        parent_id: parent.id,
+                        success: true,
+                        message: result.message,
+                    });
+                    successfulCount++;
+                } catch (e: any) {
+                    console.error(
+                        `Error resending password for parent ${parent.id}:`,
+                        e
+                    );
+                    results.push({
+                        parent_id: parent.id,
+                        success: false,
+                        message: e.message || 'Failed to resend password',
+                    });
+                    failedCount++;
+                }
+            }
+
+            return res
+                .status(200)
+                .json({
+                    message: `Bulk password resend completed. ${successfulCount} successful, ${failedCount} failed.`,
+                    successful_count: successfulCount,
+                    failed_count: failedCount,
+                    results: results,
+                })
+                .end();
+        } catch (e: any) {
+            console.error('Error in bulk resend temporary password:', e);
 
             if (e.status) {
                 return res

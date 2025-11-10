@@ -526,7 +526,8 @@
     "parentDeleted": "Parent Deleted Successfully",
     "export": "Export",
     "Students": "Students",
-    "noStudents": "No students"
+    "noStudents": "No students",
+    "bulkOperations": "Bulk Operations"
   },
   "posts": {
     "messages": "Messages",
@@ -1243,6 +1244,27 @@
     "resendPasswordDescription": "This will send a new temporary password to the admin's email address.",
     "resendPasswordDescriptionPhone": "This will send a new temporary password to the admin's phone number.",
     "userAlreadyActive": "This user has already activated their account and doesn't need a temporary password."
+  },
+  "BulkResendPasswordDialog": {
+    "bulkResendPassword": "Resend Passwords to All",
+    "bulkResendDescription": "This will send new temporary passwords via SMS to all selected parents who haven't logged in yet.",
+    "bulkResendConfirm": "Are you sure you want to send temporary passwords to the selected parents?",
+    "bulkResendSuccess": "Passwords sent successfully",
+    "bulkResendSuccessDescription": "Successfully sent passwords to {successful} out of {total} parents.",
+    "bulkResendError": "Failed to send passwords",
+    "parentsWillReceiveSMS": "{count, plural, one {# parent will receive SMS} other {# parents will receive SMS}}",
+    "alreadyLoggedInParents": "Already logged in parents",
+    "skippingLoggedInParents": "{count, plural, one {Skipping # parent who has already logged in} other {Skipping # parents who have already logged in}}",
+    "noParentsSelected": "No parents selected. Please select parents from the table below.",
+    "allParentsAlreadyLoggedIn": "All selected parents have already logged in and don't need new passwords.",
+    "sendPasswordsToParents": "{count, plural, one {Send Password to # Parent} other {Send Passwords to # Parents}}",
+    "cancel": "Cancel"
+  },
+  "parentManagement": {
+    "title": "Parent Management",
+    "bulkOperations": "Bulk Operations",
+    "selectParentsDescription": "Select parents from the table below to perform bulk operations. You can resend temporary passwords to parents who haven't logged in yet.",
+    "selectedCount": "{count, plural, =0 {No parents selected} one {# parent selected} other {# parents selected}}"
   },
   "loginBadge": {
     "loggedIn": "Logged In",

@@ -522,7 +522,8 @@
     "parentDeleted": "Родитель удален",
     "export": "Экспорт",
     "Students": "Студенты",
-    "noStudents": "Студентов нет"
+    "noStudents": "Студентов нет",
+    "bulkOperations": "Массовые операции"
   },
   "posts": {
     "messages": "Сообщения",
@@ -1243,5 +1244,26 @@
   "loginBadge": {
     "loggedIn": "Вошел в систему",
     "notLoggedIn": "Не вошел в систему"
+  },
+  "BulkResendPasswordDialog": {
+    "bulkResendPassword": "Переслать пароли всем",
+    "bulkResendDescription": "Это отправит новые временные пароли через СМС всем выбранным родителям, которые еще не вошли в систему.",
+    "bulkResendConfirm": "Вы уверены, что хотите отправить временные пароли выбранным родителям?",
+    "bulkResendSuccess": "Пароли успешно отправлены",
+    "bulkResendSuccessDescription": "Успешно отправлены пароли {successful} из {total} родителей.",
+    "bulkResendError": "Ошибка отправки паролей",
+    "parentsWillReceiveSMS": "{count} родителей получат СМС",
+    "alreadyLoggedInParents": "Уже вошедшие в систему родители",
+    "skippingLoggedInParents": "Пропускаем {count} родителей, которые уже вошли в систему",
+    "noParentsSelected": "Родители не выбраны. Пожалуйста, выберите родителей из таблицы ниже.",
+    "allParentsAlreadyLoggedIn": "Все выбранные родители уже вошли в систему и не нуждаются в новых паролях.",
+    "sendPasswordsToParents": "Отправить пароли {count} родителям",
+    "cancel": "Отмена"
+  },
+  "parentManagement": {
+    "title": "Управление родителями",
+    "bulkOperations": "Массовые операции",
+    "selectParentsDescription": "Выберите родителей из таблицы ниже для выполнения массовых операций. Вы можете переслать временные пароли родителям, которые еще не вошли в систему.",
+    "selectedCount": "Выбрано {count} родителей"
   }
 }

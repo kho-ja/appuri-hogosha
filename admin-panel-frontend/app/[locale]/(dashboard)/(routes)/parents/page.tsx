@@ -1,7 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon, RefreshCcw } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -173,11 +173,21 @@ export default function Info() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("parents")} variant="list">
-          <Link href={`/parents/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("createparent")}
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/parents/management`}>
+              <Button
+                variant="outline"
+                icon={<RefreshCcw className="h-5 w-5" />}
+              >
+                {t("bulkOperations")}
+              </Button>
+            </Link>
+            <Link href={`/parents/create`}>
+              <Button icon={<Plus className="h-5 w-5" />}>
+                {t("createparent")}
+              </Button>
+            </Link>
+          </div>
         </PageHeader>
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
