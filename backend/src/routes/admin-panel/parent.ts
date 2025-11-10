@@ -259,37 +259,52 @@ class ParentController implements IController {
                     .end();
             }
 
-            const results = [];
-            let successfulCount = 0;
-            let failedCount = 0;
+            const parentPromises = parentsNeedingPassword.map(
+                async (parent: any) => {
+                    try {
+                        const phoneNumber = parent.phone_number.startsWith('+')
+                            ? parent.phone_number
+                            : `+${parent.phone_number}`;
 
-            for (const parent of parentsNeedingPassword) {
-                try {
-                    const phoneNumber = parent.phone_number.startsWith('+')
-                        ? parent.phone_number
-                        : `+${parent.phone_number}`;
+                        const result =
+                            await this.cognitoClient.resendTemporaryPassword(
+                                phoneNumber
+                            );
 
-                    const result =
-                        await this.cognitoClient.resendTemporaryPassword(
-                            phoneNumber
+                        return {
+                            parent_id: parent.id,
+                            success: true,
+                            message: result.message,
+                        };
+                    } catch (e: any) {
+                        console.error(
+                            'Error resending password for a parent:',
+                            e
                         );
-
-                    results.push({
-                        parent_id: parent.id,
-                        success: true,
-                        message: result.message,
-                    });
-                    successfulCount++;
-                } catch (e: any) {
-                    console.error('Error resending password for a parent:', e);
-                    results.push({
-                        parent_id: parent.id,
-                        success: false,
-                        message: e.message || 'Failed to resend password',
-                    });
-                    failedCount++;
+                        return {
+                            parent_id: parent.id,
+                            success: false,
+                            message: e.message || 'Failed to resend password',
+                        };
+                    }
                 }
-            }
+            );
+
+            const results = await Promise.allSettled(parentPromises);
+            const processedResults = results.map(result =>
+                result.status === 'fulfilled'
+                    ? result.value
+                    : {
+                          parent_id: 'unknown',
+                          success: false,
+                          message: 'Promise failed to execute',
+                      }
+            );
+
+            const successfulCount = processedResults.filter(
+                r => r.success
+            ).length;
+            const failedCount = processedResults.filter(r => !r.success).length;
 
             return res
                 .status(200)
@@ -297,7 +312,7 @@ class ParentController implements IController {
                     message: `Bulk password resend completed. ${successfulCount} successful, ${failedCount} failed.`,
                     successful_count: successfulCount,
                     failed_count: failedCount,
-                    results: results,
+                    results: processedResults,
                 })
                 .end();
         } catch (e: any) {
