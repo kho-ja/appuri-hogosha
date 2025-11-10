@@ -281,10 +281,7 @@ class ParentController implements IController {
                     });
                     successfulCount++;
                 } catch (e: any) {
-                    console.error(
-                        `Error resending password for parent ${parent.id}:`,
-                        e
-                    );
+                    console.error('Error resending password for a parent:', e);
                     results.push({
                         parent_id: parent.id,
                         success: false,
