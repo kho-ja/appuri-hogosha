@@ -36,9 +36,11 @@ import NoBadge from "./nobadge";
 export function ParentTable({
   selectedParents,
   setSelectedParents,
+  showOnlyNonLoggedIn = false,
 }: {
   selectedParents: Parent[];
   setSelectedParents: React.Dispatch<React.SetStateAction<Parent[]>>;
+  showOnlyNonLoggedIn?: boolean;
 }) {
   const t = useTranslations("ParentTable");
   const tParents = useTranslations("parents");
@@ -203,15 +205,27 @@ export function ParentTable({
     [t, tParents, tName]
   );
 
+  const filteredParents = useMemo(() => {
+    const parents = data?.parents ?? [];
+    if (showOnlyNonLoggedIn) {
+      return parents.filter(
+        (parent) =>
+          (!parent.last_login_at || parent.last_login_at === "") &&
+          (!parent.arn || parent.arn === "")
+      );
+    }
+    return parents;
+  }, [data, showOnlyNonLoggedIn]);
+
   const table = useReactTable({
-    data: useMemo(() => data?.parents ?? [], [data]),
+    data: filteredParents,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
       if (typeof updater === "function") {
         const newSelection = updater(rowSelection);
         const newSelectedParents =
-          data?.parents.filter((parent) => newSelection[parent.id]) || [];
+          filteredParents.filter((parent) => newSelection[parent.id]) || [];
         setSelectedParents((prev) => {
           const prevIds = new Set(prev.map((p) => p.id));
           return [

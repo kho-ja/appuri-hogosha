@@ -56,6 +56,7 @@ export default function ParentManagementPage() {
           <ParentTable
             selectedParents={selectedParents}
             setSelectedParents={setSelectedParents}
+            showOnlyNonLoggedIn={true}
           />
         </CardContent>
       </Card>

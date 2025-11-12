@@ -1263,7 +1263,7 @@
   "parentManagement": {
     "title": "Parent Management",
     "bulkOperations": "Bulk Operations",
-    "selectParentsDescription": "Select parents from the table below to perform bulk operations. You can resend temporary passwords to parents who haven't logged in yet.",
+    "selectParentsDescription": "Select parents from the table below to perform bulk operations. Only parents who haven't logged in yet are shown here.",
     "selectedCount": "{count, plural, =0 {No parents selected} one {# parent selected} other {# parents selected}}"
   },
   "loginBadge": {

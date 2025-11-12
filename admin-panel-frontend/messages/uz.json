@@ -1260,8 +1260,8 @@
   },
   "parentManagement": {
     "title": "Ota-onalarni boshqarish",
-    "bulkOperations": "Jamoaviy amallar",
-    "selectParentsDescription": "Jamoaviy amallarni bajarish uchun quyidagi jadvaldan ota-onalarni tanlang. Hali login qilmagan ota-onalarga vaqtinchalik parollarni qayta jo'natishingiz mumkin.",
+    "bulkOperations": "Ommaviy operatsiyalar",
+    "selectParentsDescription": "Ommaviy operatsiyalarni bajarish uchun quyidagi jadvaldan ota-onalarni tanlang. Bu yerda faqat hali login qilmagan ota-onalar ko'rsatiladi.",
     "selectedCount": "{count}ta ota-ona tanlangan"
   },
   "loginBadge": {

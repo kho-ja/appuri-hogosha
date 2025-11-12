@@ -1262,7 +1262,7 @@
   "parentManagement": {
     "title": "保護者管理",
     "bulkOperations": "一括操作",
-    "selectParentsDescription": "一括操作を実行するには、下の表から保護者を選択してください。まだログインしていない保護者に一時パスワードを再送信できます。",
+    "selectParentsDescription": "一括操作を実行するには、下の表から保護者を選択してください。ここにはまだログインしていない保護者のみが表示されます。",
     "selectedCount": "{count}人の保護者が選択されています"
   },
   "loginBadge": {
