@@ -51,8 +51,8 @@ export function ParentTable({
 
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
-    ["parents", page, search],
-    { page, name: search }
+    ["parents", page, search, showOnlyNonLoggedIn],
+    { page, name: search, showOnlyNonLoggedIn }
   );
 
   const selectedParentIds = useMemo(
@@ -165,16 +165,8 @@ export function ParentTable({
           const given = (row.original.given_name || "").trim();
           const family = (row.original.family_name || "").trim();
           const hasName = given || family;
-          if (!hasName && (row.original.students?.length ?? 0) > 0) {
-            const s = row.original.students![0];
-            return (
-              <div className="capitalize">
-                {tName("name", {
-                  given_name: s.given_name,
-                  family_name: s.family_name,
-                })}
-              </div>
-            );
+          if (!hasName) {
+            return <div className="text-muted-foreground text-sm">—</div>;
           }
           return (
             <div className="capitalize">
@@ -205,27 +197,16 @@ export function ParentTable({
     [t, tParents, tName]
   );
 
-  const filteredParents = useMemo(() => {
-    const parents = data?.parents ?? [];
-    if (showOnlyNonLoggedIn) {
-      return parents.filter(
-        (parent) =>
-          (!parent.last_login_at || parent.last_login_at === "") &&
-          (!parent.arn || parent.arn === "")
-      );
-    }
-    return parents;
-  }, [data, showOnlyNonLoggedIn]);
-
   const table = useReactTable({
-    data: filteredParents,
+    data: data?.parents ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
       if (typeof updater === "function") {
         const newSelection = updater(rowSelection);
+        const parents = data?.parents ?? [];
         const newSelectedParents =
-          filteredParents.filter((parent) => newSelection[parent.id]) || [];
+          parents.filter((parent) => newSelection[parent.id]) || [];
         setSelectedParents((prev) => {
           const prevIds = new Set(prev.map((p) => p.id));
           return [
@@ -284,12 +265,15 @@ export function ParentTable({
                 const given = (parent.given_name || "").trim();
                 const family = (parent.family_name || "").trim();
                 const hasName = given || family;
-                return hasName
-                  ? tName("name", {
-                      given_name: parent.given_name,
-                      family_name: parent.family_name,
-                    })
-                  : parent.phone_number || parent.email || String(parent.id);
+                if (!hasName) {
+                  return (
+                    parent.phone_number || parent.email || String(parent.id)
+                  );
+                }
+                return tName("name", {
+                  given_name: parent.given_name,
+                  family_name: parent.family_name,
+                });
               })()}
               <Trash2 className="h-4" />
             </Badge>

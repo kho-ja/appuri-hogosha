@@ -2060,6 +2060,7 @@ class ParentController implements IController {
             const email = (req.body.email as string) || '';
             const phone_number = (req.body.phone_number as string) || '';
             const name = (req.body.name as string) || '';
+            const showOnlyNonLoggedIn = req.body.showOnlyNonLoggedIn || false;
 
             const filters: string[] = [];
             const params: any = {
@@ -2081,6 +2082,11 @@ class ParentController implements IController {
                     '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
                 );
                 params.name = `%${name}%`;
+            }
+            if (showOnlyNonLoggedIn) {
+                filters.push(
+                    'p.last_login_at IS NULL AND (p.arn IS NULL OR p.arn = "")'
+                );
             }
 
             const whereClause =
