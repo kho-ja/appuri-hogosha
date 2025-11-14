@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,6 +48,19 @@ export function ParentTable({
   const { data: session } = useSession();
 
   const { page, setPage, search, setSearch } = useTableQuery();
+  const [localSearch, setLocalSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(localSearch);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [localSearch, setSearch]);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
 
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
@@ -69,7 +82,7 @@ export function ParentTable({
   }, [selectedParentIds]);
 
   const { data: selectedParentsData } = useQuery<{ parents: Parent[] }>({
-    queryKey: ["selectedParents", Array.from(selectedParentIds)],
+    queryKey: ["selectedParents", Array.from(selectedParentIds).sort()],
     queryFn: async () => {
       if (selectedParentIds.size === 0) {
         return { parents: [] };
@@ -94,6 +107,7 @@ export function ParentTable({
       return response.json();
     },
     enabled: !!session?.sessionToken && selectedParentIds.size > 0,
+    staleTime: 30000, 
   });
 
   const columns: ColumnDef<Parent>[] = useMemo(
@@ -282,8 +296,9 @@ export function ParentTable({
         <div className="flex items-center">
           <Input
             placeholder={t("filter")}
+            value={localSearch}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
+              setLocalSearch(e.target.value);
               setPage(1);
             }}
             className="max-w-sm"
