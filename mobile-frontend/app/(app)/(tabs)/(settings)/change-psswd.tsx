@@ -1,10 +1,15 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { useSession } from '@/contexts/auth-context';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import Toast from 'react-native-root-toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -23,6 +28,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 16,
     flex: 1,
+    paddingBottom: 120,
   },
   scrollContainer: {
     flexGrow: 1,
@@ -63,6 +69,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
   },
+  inputsContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  buttonWrapper: {
+    flexShrink: 0,
+    marginTop: 'auto',
+  },
 });
 
 export default function Index() {
@@ -71,6 +85,7 @@ export default function Index() {
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -172,95 +187,113 @@ export default function Index() {
     mutate();
   };
 
+  const handleConfirmPasswordFocus = () => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 200);
+  };
+
   return (
-    <ScrollView
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={[styles.container, { backgroundColor }]}
-      contentContainerStyle={styles.scrollContainer}
-      showsVerticalScrollIndicator={false}
+      enabled={true}
     >
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={[styles.container, { backgroundColor }]}
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps='handled'
+        scrollEnabled={true}
+      >
         <View style={[styles.contentContainer, { backgroundColor }]}>
-          <ThemedView style={styles.header}>
-            <ThemedView>
-              <ThemedText style={styles.title}>
-                {i18n[language].changePassword}
-              </ThemedText>
-              <ThemedText style={styles.subtitle}>
-                {i18n[language].changePasswordText}
-              </ThemedText>
+          <View style={styles.inputsContainer}>
+            <ThemedView style={styles.header}>
+              <ThemedView>
+                <ThemedText style={styles.title}>
+                  {i18n[language].changePassword}
+                </ThemedText>
+                <ThemedText style={styles.subtitle}>
+                  {i18n[language].changePasswordText}
+                </ThemedText>
+              </ThemedView>
             </ThemedView>
-          </ThemedView>
 
-          {errorMessage !== '' && (
-            <ThemedText
-              style={[
-                styles.errorText,
-                {
-                  backgroundColor:
-                    theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
-                  borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
-                },
-              ]}
-            >
-              {errorMessage}
-            </ThemedText>
-          )}
+            {errorMessage !== '' && (
+              <ThemedText
+                style={[
+                  styles.errorText,
+                  {
+                    backgroundColor:
+                      theme.mode === 'light' ? '#FEF2F2' : '#450A0A',
+                    borderColor: theme.mode === 'light' ? '#FECACA' : '#7F1D1D',
+                  },
+                ]}
+              >
+                {errorMessage}
+              </ThemedText>
+            )}
 
-          <SecureInput
-            label={i18n[language].currentPassword}
-            placeholder={i18n[language].enterOldPassword}
-            onChangeText={setOldPassword}
-            value={oldPassword}
-            textContentType='password'
-            autoCapitalize='none'
-          />
+            <SecureInput
+              label={i18n[language].currentPassword}
+              placeholder={i18n[language].enterOldPassword}
+              onChangeText={setOldPassword}
+              value={oldPassword}
+              textContentType='password'
+              autoCapitalize='none'
+            />
 
-          <SecureInput
-            label={i18n[language].newPassword}
-            placeholder={i18n[language].enterNewPassword}
-            onChangeText={setNewPassword}
-            value={newPassword}
-            textContentType='newPassword'
-            autoCapitalize='none'
-          />
+            <SecureInput
+              label={i18n[language].newPassword}
+              placeholder={i18n[language].enterNewPassword}
+              onChangeText={setNewPassword}
+              value={newPassword}
+              textContentType='newPassword'
+              autoCapitalize='none'
+            />
 
-          {newPassword.length > 0 && (
-            <View style={styles.strengthAndRequirementsContainer}>
-              <PasswordRequirements
-                password={newPassword}
-                requirements={{
-                  minLength: i18n[language].minLength,
-                  hasNumber: i18n[language].hasNumber,
-                  hasUppercase: i18n[language].hasUppercase,
-                  hasLowercase: i18n[language].hasLowercase,
-                  hasSpecialChar: i18n[language].hasSpecialChar,
-                  passwordStrength: i18n[language].passwordStrength,
-                  weak: i18n[language].weak,
-                  medium: i18n[language].medium,
-                  strong: i18n[language].strong,
-                }}
-              />
-            </View>
-          )}
+            {newPassword.length > 0 && (
+              <View style={styles.strengthAndRequirementsContainer}>
+                <PasswordRequirements
+                  password={newPassword}
+                  requirements={{
+                    minLength: i18n[language].minLength,
+                    hasNumber: i18n[language].hasNumber,
+                    hasUppercase: i18n[language].hasUppercase,
+                    hasLowercase: i18n[language].hasLowercase,
+                    hasSpecialChar: i18n[language].hasSpecialChar,
+                    passwordStrength: i18n[language].passwordStrength,
+                    weak: i18n[language].weak,
+                    medium: i18n[language].medium,
+                    strong: i18n[language].strong,
+                  }}
+                />
+              </View>
+            )}
 
-          <SecureInput
-            label={i18n[language].confirmPassword}
-            placeholder={i18n[language].enterConfirmPassword}
-            onChangeText={setConfirmPassword}
-            value={confirmPassword}
-            textContentType='newPassword'
-            autoCapitalize='none'
-          />
+            <SecureInput
+              label={i18n[language].confirmPassword}
+              placeholder={i18n[language].enterConfirmPassword}
+              onChangeText={setConfirmPassword}
+              value={confirmPassword}
+              textContentType='newPassword'
+              autoCapitalize='none'
+              onFocus={handleConfirmPasswordFocus}
+            />
+          </View>
 
-          <Button
-            onPress={handlePress}
-            title={i18n[language].savePassword}
-            buttonStyle={styles.submitButton}
-            disabled={isPending}
-            loading={isPending}
-          />
+          <View style={styles.buttonWrapper}>
+            <Button
+              onPress={handlePress}
+              title={i18n[language].savePassword}
+              buttonStyle={styles.submitButton}
+              disabled={isPending}
+              loading={isPending}
+            />
+          </View>
         </View>
-      </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
