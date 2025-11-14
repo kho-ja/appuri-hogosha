@@ -107,7 +107,7 @@ export function ParentTable({
       return response.json();
     },
     enabled: !!session?.sessionToken && selectedParentIds.size > 0,
-    staleTime: 30000, 
+    staleTime: 30000,
   });
 
   const columns: ColumnDef<Parent>[] = useMemo(
