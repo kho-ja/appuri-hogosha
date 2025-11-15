@@ -211,8 +211,10 @@ export function ParentTable({
     [t, tParents, tName]
   );
 
+  const tableData = useMemo(() => data?.parents ?? [], [data?.parents]);
+
   const table = useReactTable({
-    data: data?.parents ?? [],
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
