@@ -119,18 +119,17 @@ function GroupRow({
           className="flex items-center gap-2"
           style={{ paddingLeft: `${level * 24}px` }}
         >
-          <button
-            {...attributes}
-            {...listeners}
-            className={cn(
-              "cursor-move touch-none hover:text-primary transition-colors",
-              !showHandle && "pointer-events-none opacity-0"
-            )}
-            aria-hidden={!showHandle}
-            tabIndex={showHandle ? 0 : -1}
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </button>
+          {showHandle && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-move touch-none hover:text-primary transition-colors"
+              aria-hidden={!showHandle}
+              tabIndex={showHandle ? 0 : -1}
+            >
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
           <Link href={`/groups/${group.id}`}>{group.name}</Link>
         </div>
       </TableCell>
@@ -503,46 +502,28 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
-          <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("moveGroupToParent")}</DialogTitle>
-                <DialogDescription>
-                  {selectedGroupToMove && (
-                    <>
-                      {t("moveGroupDescription")}: &quot;
-                      {selectedGroupToMove.name}&quot;
-                    </>
-                  )}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t("selectParentGroup")}</Label>
-                  <GroupSelect
-                    value={targetParentGroupId}
-                    onChange={setTargetParentGroupId}
-                    placeholder={t("selectParentGroup")}
-                    allowEmpty
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">{t("cancel")}</Button>
-                </DialogClose>
-                <Button onClick={handleMoveGroup} disabled={isMovingGroup}>
-                  {isMovingGroup ? t("moving") : t("move")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Link href={`/groups/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("creategroup")}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isEditMode ? "secondary" : "outline"}
+              className={cn(
+                "h-10 px-4 text-sm min-w-[140px] justify-center",
+                isEditMode && "bg-secondary"
+              )}
+              onClick={() => setIsEditMode((prev) => !prev)}
+            >
+              {isEditMode
+                ? t("done", { defaultMessage: "Done" })
+                : t("editGroups", { defaultMessage: "Edit groups" })}
             </Button>
-          </Link>
+            <Link href={`/groups/create`}>
+              <Button
+                className="h-10 px-4 min-w-[140px] justify-center"
+                icon={<Plus className="h-5 w-5" />}
+              >
+                {t("creategroup")}
+              </Button>
+            </Link>
+          </div>
         </PageHeader>
 
         <div className="flex flex-col sm:flex-row justify-between">
@@ -562,16 +543,6 @@ export default function Groups() {
 
         <div className="space-y-2 align-left">
           <div className="flex justify-end items-center gap-2">
-            <Button
-              size="sm"
-              variant={isEditMode ? "secondary" : "outline"}
-              className="h-7 text-sm"
-              onClick={() => setIsEditMode((prev) => !prev)}
-            >
-              {isEditMode
-                ? t("done", { defaultMessage: "Done" })
-                : t("editGroups", { defaultMessage: "Edit groups" })}
-            </Button>
             <Button
               onClick={() => exportGroups()}
               size="sm"
