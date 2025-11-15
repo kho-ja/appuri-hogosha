@@ -49,9 +49,6 @@ export function GroupSelect({
   allowEmpty = true,
 }: GroupSelectProps) {
   const t = useTranslations("groups");
-  const queryClient = useQueryClient();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
 
   const { data: groupsResp } = useApiQuery<{ groups: Group[] }>(
     `group/list?page=1&name=`,
@@ -60,88 +57,27 @@ export function GroupSelect({
 
   const groups = groupsResp?.groups ?? [];
 
-  const { mutate: createGroup, isPending } = useApiMutation<
-    { id: number; name: string },
-    CreateGroupPayload
-  >("group/create", "POST", ["create-group"], {
-    onSuccess: (data) => {
-      toast({ title: t("groupCreated"), description: data.name });
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-      setNewGroupName("");
-      setIsCreateDialogOpen(false);
-      onChange(data.id);
-    },
-  });
-
-  const handleCreateGroup = () => {
-    if (!newGroupName.trim()) return;
-    createGroup({ name: newGroupName.trim() });
-  };
-
   return (
-    <div className="flex gap-2">
-      <Select
-        value={value?.toString() || "none"}
-        onValueChange={(val) => onChange(val === "none" ? null : parseInt(val))}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder={placeholder || t("selectParentGroup")} />
-        </SelectTrigger>
-        <SelectContent>
-          {allowEmpty && <SelectItem value="none">{t("noParent")}</SelectItem>}
-          {groups.map((g) => (
-            <SelectItem key={g.id} value={g.id.toString()}>
-              {g.name}{" "}
-              {g.member_count !== undefined && (
-                <span className="text-muted-foreground ml-1">
-                  ({g.member_count})
-                </span>
-              )}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogTrigger asChild>
-          <Button type="button" variant="outline" size="icon">
-            <FolderPlus className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("createGroup")}</DialogTitle>
-            <DialogDescription>{t("createGroupDescription")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="group-name">{t("groupName")}</Label>
-              <Input
-                id="group-name"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder={t("enterGroupName")}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsCreateDialogOpen(false)}
-            >
-              {t("cancel")}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleCreateGroup}
-              disabled={!newGroupName.trim() || isPending}
-            >
-              {isPending ? t("creating") : t("create")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <Select
+      value={value?.toString() || "none"}
+      onValueChange={(val) => onChange(val === "none" ? null : parseInt(val))}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder || t("selectParentGroup")} />
+      </SelectTrigger>
+      <SelectContent>
+        {allowEmpty && <SelectItem value="none">{t("noParent")}</SelectItem>}
+        {groups.map((g) => (
+          <SelectItem key={g.id} value={g.id.toString()}>
+            {g.name}{" "}
+            {g.member_count !== undefined && (
+              <span className="text-muted-foreground ml-1">
+                ({g.member_count})
+              </span>
+            )}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

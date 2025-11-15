@@ -6,7 +6,6 @@ import {
   Edit3Icon,
   FileIcon,
   Trash2Icon,
-  FolderPlus,
   FolderIcon,
   GripVertical,
   Unlink2Icon,
@@ -80,17 +79,20 @@ function GroupRow({
   renderActionCell,
   isOver,
   isDragging,
+  showHandle,
 }: {
   group: GroupTreeNode;
   renderActionCell: (group: Group) => React.ReactNode;
   isOver?: boolean;
   isDragging?: boolean;
+  showHandle: boolean;
 }) {
   const level = group.level ?? 0;
 
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: group.id,
+      disabled: !showHandle,
     });
 
   // Apply transform only to the item being actively dragged
@@ -120,7 +122,12 @@ function GroupRow({
           <button
             {...attributes}
             {...listeners}
-            className="cursor-move touch-none hover:text-primary transition-colors"
+            className={cn(
+              "cursor-move touch-none hover:text-primary transition-colors",
+              !showHandle && "pointer-events-none opacity-0"
+            )}
+            aria-hidden={!showHandle}
+            tabIndex={showHandle ? 0 : -1}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </button>
@@ -145,12 +152,6 @@ export default function Groups() {
   ]);
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
-  const [isCreateCategoryDialogOpen, setIsCreateCategoryDialogOpen] =
-    useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-  const [selectedGroupsForParent, setSelectedGroupsForParent] = useState<
-    Group[]
-  >([]);
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
   const [selectedGroupToMove, setSelectedGroupToMove] = useState<Group | null>(
     null
@@ -160,6 +161,7 @@ export default function Groups() {
   );
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -461,85 +463,6 @@ export default function Groups() {
     }
   );
 
-  const { mutate: createParentGroup, isPending: isCreatingCategory } =
-    useApiMutation<{ id: number; name: string }, { name: string }>(
-      "group/create",
-      "POST",
-      ["create-group"],
-      {
-        onSuccess: (mutationData) => {
-          if (selectedGroupsForParent.length > 0) {
-            moveSelectedGroupsToParent(mutationData.id);
-          }
-
-          toast({
-            title: t("groupCreated"),
-            description: mutationData.name,
-          });
-          queryClient.invalidateQueries({ queryKey: ["groups"] });
-          setNewCategoryName("");
-          setSelectedGroupsForParent([]);
-          setIsCreateCategoryDialogOpen(false);
-        },
-      }
-    );
-
-  const moveSelectedGroupsToParent = async (parentGroupId: number) => {
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const group of selectedGroupsForParent) {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${group.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.sessionToken}`,
-            },
-            body: JSON.stringify({
-              name: group.name,
-              sub_group_id: parentGroupId,
-            }),
-          }
-        );
-
-        if (response.ok) {
-          successCount++;
-        } else {
-          errorCount++;
-        }
-      } catch (error) {
-        errorCount++;
-      }
-    }
-
-    if (successCount > 0) {
-      toast({
-        title: t("groupsMoved"),
-        description: t("groupsMovedDescription", {
-          count: successCount,
-        }),
-      });
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
-    }
-
-    if (errorCount > 0) {
-      toast({
-        title: t("error"),
-        description: t("failedToMoveGroups"),
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCreateCategory = () => {
-    if (!newCategoryName.trim()) return;
-
-    createParentGroup({ name: newCategoryName.trim() });
-  };
-
   const { mutate: moveGroupToParent, isPending: isMovingGroup } =
     useApiMutation<
       { message: string },
@@ -580,60 +503,6 @@ export default function Groups() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
-          <Dialog
-            open={isCreateCategoryDialogOpen}
-            onOpenChange={setIsCreateCategoryDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                icon={<FolderPlus className="h-5 w-5" />}
-              >
-                {t("createParentGroup")}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("createParentGroup")}</DialogTitle>
-                <DialogDescription>
-                  {t("createParentGroupDescription")}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category-name">{t("groupName")}</Label>
-                  <Input
-                    id="category-name"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder={t("enterGroupName")}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>{t("selectGroupsToMove")}</Label>
-                  <div className="max-h-64 overflow-y-auto border rounded-md p-2">
-                    <GroupTable
-                      selectedGroups={selectedGroupsForParent}
-                      setSelectedGroups={setSelectedGroupsForParent}
-                      useIndependentState={true}
-                    />
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">{t("cancel")}</Button>
-                </DialogClose>
-                <Button
-                  onClick={handleCreateCategory}
-                  disabled={!newCategoryName.trim() || isCreatingCategory}
-                >
-                  {isCreatingCategory ? t("creating") : t("create")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
           <Dialog open={isMoveDialogOpen} onOpenChange={setIsMoveDialogOpen}>
             <DialogContent>
               <DialogHeader>
@@ -692,7 +561,17 @@ export default function Groups() {
         </div>
 
         <div className="space-y-2 align-left">
-          <div className="flex justify-end items-center">
+          <div className="flex justify-end items-center gap-2">
+            <Button
+              size="sm"
+              variant={isEditMode ? "secondary" : "outline"}
+              className="h-7 text-sm"
+              onClick={() => setIsEditMode((prev) => !prev)}
+            >
+              {isEditMode
+                ? t("done", { defaultMessage: "Done" })
+                : t("editGroups", { defaultMessage: "Edit groups" })}
+            </Button>
             <Button
               onClick={() => exportGroups()}
               size="sm"
@@ -737,6 +616,7 @@ export default function Groups() {
                         renderActionCell={renderActionCell}
                         isOver={overId === group.id}
                         isDragging={activeId === group.id}
+                        showHandle={isEditMode}
                       />
                     ))}
                   </SortableContext>
