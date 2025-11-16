@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useCallback, useState } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,19 +48,6 @@ export function ParentTable({
   const { data: session } = useSession();
 
   const { page, setPage, search, setSearch } = useTableQuery();
-  const [localSearch, setLocalSearch] = useState(search);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(localSearch);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [localSearch, setSearch]);
-
-  useEffect(() => {
-    setLocalSearch(search);
-  }, [search]);
 
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
@@ -211,10 +198,8 @@ export function ParentTable({
     [t, tParents, tName]
   );
 
-  const tableData = useMemo(() => data?.parents ?? [], [data?.parents]);
-
   const table = useReactTable({
-    data: tableData,
+    data: useMemo(() => data?.parents ?? [], [data]),
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
@@ -298,9 +283,9 @@ export function ParentTable({
         <div className="flex items-center">
           <Input
             placeholder={t("filter")}
-            value={localSearch}
+            value={search}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setLocalSearch(e.target.value);
+              setSearch(e.target.value);
               setPage(1);
             }}
             className="max-w-sm"
