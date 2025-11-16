@@ -525,7 +525,8 @@
     "parentDeleted": "Ota-ona muvaffaqiyatli o'chirildi",
     "export": "Yuklab olish",
     "Students": "Talabalar",
-    "noStudents": "Talabalar mavjud emas"
+    "noStudents": "Talabalar mavjud emas",
+    "bulkOperations": "Jamoaviy amallar"
   },
   "posts": {
     "messages": "Xabarlar",
@@ -1241,6 +1242,27 @@
     "resendPasswordDescription": "Bu foydalanuvchi email manziliga yangi vaqtinchalik parol yuboradi.",
     "resendPasswordDescriptionPhone": "Bu adminning telefon raqamiga yangi vaqtinchalik parol yuboradi.",
     "userAlreadyActive": "Foydalanuvchi allaqachon faol. Vaqtinchalik parolni qayta yuborish mumkin emas."
+  },
+  "BulkResendPasswordDialog": {
+    "bulkResendPassword": "Barcha ota-onalarga parol qayta jo'natish",
+    "bulkResendDescription": "Bu hali login qilmagan tanlangan barcha ota-onalarga SMS orqali yangi vaqtinchalik parollar jo'natadi.",
+    "bulkResendConfirm": "Tanlangan ota-onalarga vaqtinchalik parollarni jo'natishni xohlaysizmi?",
+    "bulkResendSuccess": "Parollar muvaffaqiyatli jo'natildi",
+    "bulkResendSuccessDescription": "{total}ta ota-onadan {successful}tasiga muvaffaqiyatli parol jo'natildi.",
+    "bulkResendError": "Parol jo'natishda xatolik",
+    "parentsWillReceiveSMS": "{count}ta ota-ona SMS oladi",
+    "alreadyLoggedInParents": "Login qilgan ota-onalar",
+    "skippingLoggedInParents": "Allaqachon login qilgan {count}ta ota-ona o'tkazib yuboriladi",
+    "noParentsSelected": "Ota-onalar tanlanmagan. Iltimos, quyidagi jadvaldan ota-onalarni tanlang.",
+    "allParentsAlreadyLoggedIn": "Tanlangan barcha ota-onalar allaqachon login qilgan va yangi parolga muhtoj emas.",
+    "sendPasswordsToParents": "{count}ta ota-onaga parol jo'natish",
+    "cancel": "Bekor qilish"
+  },
+  "parentManagement": {
+    "title": "Ota-onalarni boshqarish",
+    "bulkOperations": "Ommaviy operatsiyalar",
+    "selectParentsDescription": "Ommaviy operatsiyalarni bajarish uchun quyidagi jadvaldan ota-onalarni tanlang. Bu yerda faqat hali login qilmagan ota-onalar ko'rsatiladi.",
+    "selectedCount": "{count}ta ota-ona tanlangan"
   },
   "loginBadge": {
     "loggedIn": "Login qilgan",

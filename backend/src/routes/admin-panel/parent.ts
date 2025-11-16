@@ -88,6 +88,11 @@ class ParentController implements IController {
             verifyToken,
             this.resendTemporaryPassword
         );
+        this.router.post(
+            '/bulk-resend-password',
+            verifyToken,
+            this.bulkResendTemporaryPassword
+        );
 
         this.router.get('/:id/students', verifyToken, this.parentStudents);
         this.router.post(
@@ -166,6 +171,152 @@ class ParentController implements IController {
                 .end();
         } catch (e: any) {
             console.error('Error resending temporary password:', e);
+
+            if (e.status) {
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
+            } else {
+                return res
+                    .status(500)
+                    .json({
+                        error: 'Internal server error',
+                    })
+                    .end();
+            }
+        }
+    };
+
+    bulkResendTemporaryPassword = async (
+        req: ExtendedRequest,
+        res: Response
+    ) => {
+        try {
+            const { parentIds } = req.body;
+
+            if (!Array.isArray(parentIds) || parentIds.length === 0) {
+                return res
+                    .status(400)
+                    .json({
+                        error: 'Invalid parent IDs array',
+                    })
+                    .end();
+            }
+
+            for (const id of parentIds) {
+                if (!isValidId(id)) {
+                    return res
+                        .status(400)
+                        .json({
+                            error: `Invalid parent ID: ${id}`,
+                        })
+                        .end();
+                }
+            }
+
+            const placeholders = parentIds.map(() => '?').join(', ');
+            const parents = await DB.query(
+                `
+                SELECT
+                    p.id,
+                    p.email,
+                    p.phone_number,
+                    p.given_name,
+                    p.family_name,
+                    p.last_login_at,
+                    p.arn
+                FROM Parent p
+                WHERE p.id IN (${placeholders})
+            `,
+                parentIds
+            );
+
+            if (parents.length === 0) {
+                return res
+                    .status(404)
+                    .json({
+                        error: 'No parents found',
+                    })
+                    .end();
+            }
+
+            const parentsNeedingPassword = parents.filter(
+                (parent: any) => !parent.last_login_at && !parent.arn
+            );
+
+            if (parentsNeedingPassword.length === 0) {
+                return res
+                    .status(200)
+                    .json({
+                        message: 'All selected parents have already logged in',
+                        successful_count: 0,
+                        failed_count: 0,
+                        results: [],
+                    })
+                    .end();
+            }
+
+            const parentPromises = parentsNeedingPassword.map(
+                async (parent: any) => {
+                    try {
+                        const phoneNumber = parent.phone_number.startsWith('+')
+                            ? parent.phone_number
+                            : `+${parent.phone_number}`;
+
+                        const result =
+                            await this.cognitoClient.resendTemporaryPassword(
+                                phoneNumber
+                            );
+
+                        return {
+                            parent_id: parent.id,
+                            success: true,
+                            message: result.message,
+                        };
+                    } catch (e: any) {
+                        console.error(
+                            'Error resending password for a parent:',
+                            e
+                        );
+                        return {
+                            parent_id: parent.id,
+                            success: false,
+                            message: e.message || 'Failed to resend password',
+                        };
+                    }
+                }
+            );
+
+            const results = await Promise.allSettled(parentPromises);
+            const processedResults = results.map(result =>
+                result.status === 'fulfilled'
+                    ? result.value
+                    : {
+                          parent_id: 'unknown',
+                          success: false,
+                          message: 'Promise failed to execute',
+                      }
+            );
+
+            const successfulCount = processedResults.filter(
+                r => r.success
+            ).length;
+            const failedCount = processedResults.filter(r => !r.success).length;
+
+            return res
+                .status(200)
+                .json({
+                    message: `Bulk password resend completed. ${successfulCount} successful, ${failedCount} failed.`,
+                    successful_count: successfulCount,
+                    failed_count: failedCount,
+                    results: processedResults,
+                })
+                .end();
+        } catch (e: any) {
+            console.error('Error in bulk resend temporary password:', e);
 
             if (e.status) {
                 return res
@@ -1909,6 +2060,7 @@ class ParentController implements IController {
             const email = (req.body.email as string) || '';
             const phone_number = (req.body.phone_number as string) || '';
             const name = (req.body.name as string) || '';
+            const showOnlyNonLoggedIn = req.body.showOnlyNonLoggedIn || false;
 
             const filters: string[] = [];
             const params: any = {
@@ -1930,6 +2082,11 @@ class ParentController implements IController {
                     '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
                 );
                 params.name = `%${name}%`;
+            }
+            if (showOnlyNonLoggedIn) {
+                filters.push(
+                    'p.last_login_at IS NULL AND (p.arn IS NULL OR p.arn = "")'
+                );
             }
 
             const whereClause =
