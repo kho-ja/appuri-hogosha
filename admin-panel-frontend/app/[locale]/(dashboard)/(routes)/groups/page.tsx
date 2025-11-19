@@ -6,10 +6,12 @@ import {
   Edit3Icon,
   FileIcon,
   Trash2Icon,
-  FolderIcon,
   GripVertical,
+  Plus,
   Unlink2Icon,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/use-toast";
 import {
   DndContext,
   closestCenter,
@@ -25,13 +27,10 @@ import {
 import {
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
@@ -48,16 +47,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
-import { GroupSelect } from "@/components/GroupSelect";
-import { GroupTable } from "@/components/GroupTable";
 import {
   Table,
   TableBody,
@@ -66,13 +60,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 interface GroupTreeNode extends Group {
   children?: GroupTreeNode[];
   level?: number;
 }
+
+const buildTreeStructure = (groups: Group[] = []): GroupTreeNode[] => {
+  const map = new Map<number, GroupTreeNode>();
+  const roots: GroupTreeNode[] = [];
+
+  groups.forEach((group) => map.set(group.id, { ...group, children: [] }));
+
+  groups.forEach((group) => {
+    const node = map.get(group.id)!;
+    if (group.sub_group_id) {
+      const parent = map.get(group.sub_group_id);
+      parent ? parent.children!.push(node) : roots.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
+};
+
+const flattenTree = (nodes: GroupTreeNode[], level = 0): GroupTreeNode[] =>
+  nodes.flatMap((node) => [
+    { ...node, level },
+    ...(node.children ? flattenTree(node.children, level + 1) : []),
+  ]);
 
 function GroupRow({
   group,
@@ -144,83 +162,31 @@ export default function Groups() {
   const t = useTranslations("groups");
   const { data: session } = useSession();
   const { page, setPage, search, setSearch } = useTableQuery();
-
   const { data } = useApiQuery<GroupApi>(`group/list?name=${search}&all=true`, [
     "groups",
     search,
   ]);
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
-  const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
-  const [selectedGroupToMove, setSelectedGroupToMove] = useState<Group | null>(
-    null
-  );
-  const [targetParentGroupId, setTargetParentGroupId] = useState<number | null>(
-    null
-  );
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
   const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [unlinkingId, setUnlinkingId] = useState<number | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  // Build tree structure from flat list
-  const buildTreeStructure = (groups: Group[]): GroupTreeNode[] => {
-    const groupMap = new Map<number, GroupTreeNode>();
-    const rootGroups: GroupTreeNode[] = [];
-
-    groups.forEach((group) => {
-      groupMap.set(group.id, { ...group, children: [] });
-    });
-
-    groups.forEach((group) => {
-      const node = groupMap.get(group.id)!;
-      if (group.sub_group_id) {
-        const parent = groupMap.get(group.sub_group_id);
-        if (parent) {
-          parent.children!.push(node);
-        } else {
-          rootGroups.push(node);
-        }
-      } else {
-        rootGroups.push(node);
-      }
-    });
-
-    return rootGroups;
-  };
-
-  const flattenTree = (
-    nodes: GroupTreeNode[],
-    level: number = 0
-  ): GroupTreeNode[] => {
-    const result: GroupTreeNode[] = [];
-    nodes.forEach((node) => {
-      result.push({ ...node, level });
-      if (node.children && node.children.length > 0) {
-        result.push(...flattenTree(node.children, level + 1));
-      }
-    });
-    return result;
-  };
-
   const treeData = useMemo(
-    () => buildTreeStructure(data?.groups ?? []),
+    () => buildTreeStructure(data?.groups),
     [data?.groups]
   );
   const flatData = useMemo(() => flattenTree(treeData), [treeData]);
-
-  // Get all items for SortableContext
-  const allIds = useMemo(() => flatData.map((g) => g.id), [flatData]);
+  const allIds = useMemo(
+    () => flatData.map((g: GroupTreeNode) => g.id),
+    [flatData]
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id);
@@ -279,7 +245,9 @@ export default function Groups() {
         });
         return;
       }
-      const parent = flatData.find((g) => g.id === current.sub_group_id);
+      const parent = flatData.find(
+        (g: GroupTreeNode) => g.id === current.sub_group_id
+      );
       if (!parent) break;
       current = parent;
     }
@@ -347,61 +315,58 @@ export default function Groups() {
     }
   };
 
-  const handleUnlinkGroup = async (groupToUnlink: Group) => {
-    // Optimistic update: set parent to null
-    queryClient.setQueryData<GroupApi>(["groups", page, search], (oldData) => {
-      if (!oldData) return oldData;
-      const updatedGroups = oldData.groups.map((g) =>
-        g.id === groupToUnlink.id
-          ? { ...g, sub_group_id: null, sub_group_name: undefined }
-          : g
-      );
-      return { ...oldData, groups: updatedGroups };
-    });
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
+
+  const handleUnlinkGroup = async (group: GroupTreeNode) => {
+    if (!group.sub_group_id) return;
+
+    const accessToken =
+      session?.sessionToken ||
+      (session?.user as any)?.accessToken ||
+      (session?.user as any)?.token ||
+      "";
 
     try {
+      setUnlinkingId(group.id);
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${groupToUnlink.id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${group.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.sessionToken}`,
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
           },
           body: JSON.stringify({
-            name: groupToUnlink.name,
-            sub_group_id: null, // Unlink by setting parent to null
+            name: group.name,
+            sub_group_id: null,
           }),
         }
       );
 
-      if (response.ok) {
-        toast({
-          title: t("groupUnlinked"),
-          description: t("groupUnlinkedDescription"),
-        });
-        queryClient.invalidateQueries({ queryKey: ["groups"] });
-      } else {
-        toast({
-          title: t("error"),
-          description: t("failedToUnlinkGroup"),
-          variant: "destructive",
-        });
-        queryClient.invalidateQueries({ queryKey: ["groups"] }); // Revert on error
+      if (!response.ok) {
+        throw new Error("Failed to unlink group");
       }
+
+      toast({
+        title: t("groupUnlinked"),
+        description: t("groupUnlinkedDescription"),
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     } catch (error) {
+      console.error(error);
       toast({
         title: t("error"),
         description: t("failedToUnlinkGroup"),
-        variant: "destructive",
+        className: "bg-amber-500 text-black",
       });
-      queryClient.invalidateQueries({ queryKey: ["groups"] }); // Revert on error
+    } finally {
+      setUnlinkingId(null);
     }
-  };
-
-  const handleDragCancel = () => {
-    setActiveId(null);
-    setOverId(null);
   };
 
   const renderActionCell = (group: Group) => (
@@ -409,15 +374,16 @@ export default function Groups() {
       <Link href={`/groups/edit/${group.id}`}>
         <Edit3Icon className="h-5 w-5" />
       </Link>
-      <FolderIcon
-        className="text-blue-500 cursor-pointer h-5 w-5"
-        onClick={() => openMoveDialog(group)}
-      />
       {group.sub_group_id && (
-        <Unlink2Icon
-          className="text-yellow-500 cursor-pointer h-5 w-5"
-          onClick={() => handleUnlinkGroup(group)}
-        />
+        <button
+          type="button"
+          onClick={() => handleUnlinkGroup(group as GroupTreeNode)}
+          className="text-amber-400 hover:text-amber-300 transition-colors disabled:opacity-50"
+          disabled={unlinkingId === group.id}
+          aria-label={t("groupUnlinked")}
+        >
+          <Unlink2Icon className="h-5 w-5" />
+        </button>
       )}
       <Dialog>
         <DialogTrigger asChild>
@@ -461,37 +427,6 @@ export default function Groups() {
       },
     }
   );
-
-  const { mutate: moveGroupToParent, isPending: isMovingGroup } =
-    useApiMutation<
-      { message: string },
-      { name: string; sub_group_id: number | null; students?: number[] }
-    >(`group/${selectedGroupToMove?.id}`, "PUT", ["move-group-to-parent"], {
-      onSuccess: () => {
-        toast({
-          title: t("groupMoved"),
-          description: t("groupMoved"),
-        });
-        queryClient.invalidateQueries({ queryKey: ["groups"] });
-        setIsMoveDialogOpen(false);
-        setSelectedGroupToMove(null);
-        setTargetParentGroupId(null);
-      },
-    });
-
-  const handleMoveGroup = () => {
-    if (!selectedGroupToMove) return;
-    moveGroupToParent({
-      name: selectedGroupToMove.name,
-      sub_group_id: targetParentGroupId,
-    });
-  };
-
-  const openMoveDialog = (group: Group) => {
-    setSelectedGroupToMove(group);
-    setTargetParentGroupId(group.sub_group_id || null);
-    setIsMoveDialogOpen(true);
-  };
 
   const { mutate: exportGroups } = useFileMutation<{ message: string }>(
     `group/export`,

@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -10,36 +8,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useApiQuery from "@/lib/useApiQuery";
+import { useTranslations } from "next-intl";
 import Group from "@/types/group";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FolderPlus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import useApiMutation from "@/lib/useApiMutation";
-import { toast } from "@/components/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 
 interface GroupSelectProps {
-  value?: number | null;
+  value: number | null | undefined;
   onChange: (value: number | null) => void;
   placeholder?: string;
   allowEmpty?: boolean;
-}
-
-interface CreateGroupPayload {
-  name: string;
-  students?: number[];
-  sub_group_id?: number | null;
 }
 
 export function GroupSelect({
