@@ -1,18 +1,42 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
-import { Edit3Icon, FileIcon, Trash2Icon } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import PaginationApi from "@/components/PaginationApi";
+import {
+  Edit3Icon,
+  FileIcon,
+  Trash2Icon,
+  GripVertical,
+  Plus,
+  Unlink2Icon,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/use-toast";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+  UniqueIdentifier,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { Input } from "@/components/ui/input";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
-import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -23,105 +47,420 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
 import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+
+interface GroupTreeNode extends Group {
+  children?: GroupTreeNode[];
+  level?: number;
+}
+
+const buildTreeStructure = (groups: Group[] = []): GroupTreeNode[] => {
+  const map = new Map<number, GroupTreeNode>();
+  const roots: GroupTreeNode[] = [];
+
+  groups.forEach((group) => map.set(group.id, { ...group, children: [] }));
+
+  groups.forEach((group) => {
+    const node = map.get(group.id)!;
+    if (group.sub_group_id) {
+      const parent = map.get(group.sub_group_id);
+      parent ? parent.children!.push(node) : roots.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
+};
+
+const flattenTree = (nodes: GroupTreeNode[], level = 0): GroupTreeNode[] =>
+  nodes.flatMap((node) => [
+    { ...node, level },
+    ...(node.children ? flattenTree(node.children, level + 1) : []),
+  ]);
+
+function GroupRow({
+  group,
+  renderActionCell,
+  isOver,
+  isDragging,
+  showHandle,
+}: {
+  group: GroupTreeNode;
+  renderActionCell: (group: Group) => React.ReactNode;
+  isOver?: boolean;
+  isDragging?: boolean;
+  showHandle: boolean;
+}) {
+  const level = group.level ?? 0;
+
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({
+      id: group.id,
+      disabled: !showHandle,
+    });
+
+  // Apply transform only to the item being actively dragged
+  const style = {
+    transform: isDragging ? CSS.Transform.toString(transform) : undefined,
+    transition: isDragging ? transition : undefined,
+    zIndex: isDragging ? 1 : "auto", // Ensure dragged item is on top
+  };
+
+  const isDropTarget = !!isOver;
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "hover:bg-muted/10 transition-colors relative border-b border-border/50",
+        // When dragging, the original row itself moves, so no opacity change needed
+        isDropTarget && "border-b-2 border-b-white"
+      )}
+    >
+      <TableCell className="font-medium">
+        <div
+          className="flex items-center gap-2"
+          style={{ paddingLeft: `${level * 24}px` }}
+        >
+          {showHandle && (
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-move touch-none hover:text-primary transition-colors"
+              aria-hidden={!showHandle}
+              tabIndex={showHandle ? 0 : -1}
+            >
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+          <Link href={`/groups/${group.id}`}>{group.name}</Link>
+        </div>
+      </TableCell>
+      <TableCell>{group.sub_group_name ?? "—"}</TableCell>
+      <TableCell className="text-right">{group.member_count ?? 0}</TableCell>
+      <TableCell className="text-right">{renderActionCell(group)}</TableCell>
+    </TableRow>
+  );
+}
 
 export default function Groups() {
   const t = useTranslations("groups");
+  const { data: session } = useSession();
   const { page, setPage, search, setSearch } = useTableQuery();
-
-  const { data } = useApiQuery<GroupApi>(
-    `group/list?page=${page}&name=${search}`,
-    ["groups", page, search]
-  );
+  const { data } = useApiQuery<GroupApi>(`group/list?name=${search}&all=true`, [
+    "groups",
+    search,
+  ]);
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const [overId, setOverId] = useState<UniqueIdentifier | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [unlinkingId, setUnlinkingId] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const treeData = useMemo(
+    () => buildTreeStructure(data?.groups),
+    [data?.groups]
+  );
+  const flatData = useMemo(() => flattenTree(treeData), [treeData]);
+  const allIds = useMemo(
+    () => flatData.map((g: GroupTreeNode) => g.id),
+    [flatData]
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    setOverId(over?.id ?? null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    setActiveId(null);
+    setOverId(null);
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const activeGroup = flatData.find((g) => g.id === active.id);
+    const overGroup = flatData.find((g) => g.id === over.id);
+
+    if (!activeGroup || !overGroup) {
+      return;
+    }
+
+    // A group can only be dropped on a parent group (a group that is not a child itself).
+    // if (overGroup.sub_group_id) {
+    //   toast({
+    //     title: t("error"),
+    //     description: t("cannotDropOnChild"),
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+
+    // Don't drop on self
+    if (activeGroup.id === overGroup.id) {
+      return;
+    }
+
+    // Don't drop on same parent
+    if (activeGroup.sub_group_id === overGroup.id) {
+      return;
+    }
+
+    // Prevent dropping a parent into its own child
+    let current = overGroup;
+    while (current.sub_group_id) {
+      if (current.sub_group_id === activeGroup.id) {
+        toast({
+          title: t("error"),
+          description: t("cannotCreateCircularDependency"),
+          variant: "destructive",
+        });
+        return;
+      }
+      const parent = flatData.find(
+        (g: GroupTreeNode) => g.id === current.sub_group_id
+      );
+      if (!parent) break;
+      current = parent;
+    }
+
+    // Optimistic update - update cache immediately
+    queryClient.setQueryData<GroupApi>(["groups", page, search], (oldData) => {
+      if (!oldData) return oldData;
+
+      const updatedGroups = oldData.groups.map((group) =>
+        group.id === activeGroup.id
+          ? {
+              ...group,
+              sub_group_id: overGroup.id,
+              sub_group_name: overGroup.name,
+            }
+          : group
+      );
+
+      return {
+        ...oldData,
+        groups: updatedGroups,
+      };
+    });
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${activeGroup.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.sessionToken}`,
+          },
+          body: JSON.stringify({
+            name: activeGroup.name,
+            sub_group_id: overGroup.id,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: t("groupMoved"),
+          description: t("groupMovedDescription"),
+        });
+        // Refresh to get latest data from server
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+      } else {
+        toast({
+          title: t("error"),
+          description: t("failedToMoveGroup"),
+          variant: "destructive",
+        });
+        // Revert optimistic update on error
+        queryClient.invalidateQueries({ queryKey: ["groups"] });
+      }
+    } catch (error) {
+      toast({
+        title: t("error"),
+        description: t("failedToMoveGroup"),
+        variant: "destructive",
+      });
+      // Revert optimistic update on error
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+  };
+
+  const handleUnlinkGroup = async (group: GroupTreeNode) => {
+    if (!group.sub_group_id) return;
+
+    const accessToken =
+      session?.sessionToken ||
+      (session?.user as any)?.accessToken ||
+      (session?.user as any)?.token ||
+      "";
+
+    try {
+      setUnlinkingId(group.id);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/${group.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({
+            name: group.name,
+            sub_group_id: null,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to unlink group");
+      }
+
+      toast({
+        title: t("groupUnlinked"),
+        description: t("groupUnlinkedDescription"),
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: t("error"),
+        description: t("failedToUnlinkGroup"),
+        className: "bg-amber-500 text-black",
+      });
+    } finally {
+      setUnlinkingId(null);
+    }
+  };
+
+  const renderActionCell = (group: Group) => (
+    <div className="flex items-center justify-end gap-2">
+      <Link href={`/groups/edit/${group.id}`}>
+        <Edit3Icon className="h-5 w-5" />
+      </Link>
+      {group.sub_group_id && (
+        <button
+          type="button"
+          onClick={() => handleUnlinkGroup(group as GroupTreeNode)}
+          className="text-amber-400 hover:text-amber-300 transition-colors disabled:opacity-50"
+          disabled={unlinkingId === group.id}
+          aria-label={t("groupUnlinked")}
+        >
+          <Unlink2Icon className="h-5 w-5" />
+        </button>
+      )}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Trash2Icon className="text-red-500 cursor-pointer h-5 w-5" />
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{group.name}</DialogTitle>
+            <DialogDescription>{group.member_count}</DialogDescription>
+          </DialogHeader>
+          <div>{t("doYouWantToDeleteGroup")}</div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">{t("cancel")}</Button>
+            </DialogClose>
+            <Button
+              onClick={() => {
+                setGroupId(group.id);
+                mutate();
+              }}
+            >
+              {t("confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+
   const { mutate } = useApiMutation<{ message: string }>(
     `group/${groupId}`,
     "DELETE",
     ["deleteGroup"],
     {
-      onSuccess: (data) => {
+      onSuccess: (mutationData) => {
         queryClient.invalidateQueries({ queryKey: ["groups"] });
         toast({
           title: t("groupDeleted"),
-          description: t(data?.message),
+          description: t(mutationData?.message),
         });
       },
     }
   );
+
   const { mutate: exportGroups } = useFileMutation<{ message: string }>(
     `group/export`,
     ["exportGroups"]
   );
 
-  const columns: ColumnDef<Group>[] = [
-    {
-      accessorKey: "name",
-      header: t("groupName"),
-    },
-    {
-      accessorKey: "member_count",
-      header: t("studentCount"),
-      cell: ({ row }) => row.getValue("member_count"),
-    },
-    {
-      header: t("action"),
-      meta: {
-        notClickable: true,
-      },
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Link href={`/groups/edit/${row.original.id}`}>
-            <Edit3Icon />
-          </Link>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Trash2Icon className="text-red-500 cursor-pointer" />
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{row?.original.name}</DialogTitle>
-                <DialogDescription>
-                  {row.original.member_count}
-                </DialogDescription>
-              </DialogHeader>
-              <div>{t("DouYouDeleteGroup")}</div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
-                </DialogClose>
-                <Button
-                  onClick={() => {
-                    setGroupId(row.original.id);
-                    mutate();
-                  }}
-                >
-                  {t("confirm")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("groups")} variant="list">
-          <Link href={`/groups/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("creategroup")}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isEditMode ? "secondary" : "outline"}
+              className={cn(
+                "h-10 px-4 text-sm justify-center",
+                isEditMode && "bg-secondary"
+              )}
+              onClick={() => setIsEditMode((prev) => !prev)}
+            >
+              {isEditMode
+                ? t("done", { defaultMessage: "Done" })
+                : t("editGroups", { defaultMessage: "Edit groups" })}
             </Button>
-          </Link>
+            <Link href={`/groups/create`}>
+              <Button
+                className="h-10 px-4 justify-center"
+                icon={<Plus className="h-5 w-5" />}
+              >
+                {t("creategroup")}
+              </Button>
+            </Link>
+          </div>
         </PageHeader>
+
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
@@ -132,12 +471,13 @@ export default function Groups() {
             }}
             className="sm:max-w-sm mb-4"
           />
-          <div className="">
-            <PaginationApi data={data?.pagination || null} setPage={setPage} />
+          <div>
+            {/* <PaginationApi data={data?.pagination || null} setPage={setPage} /> */}
           </div>
         </div>
+
         <div className="space-y-2 align-left">
-          <div className="flex justify-end items-center">
+          <div className="flex justify-end items-center gap-2">
             <Button
               onClick={() => exportGroups()}
               size="sm"
@@ -148,13 +488,49 @@ export default function Groups() {
               <span className="sr-only sm:not-sr-only">{t("export")}</span>
             </Button>
           </div>
-          <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi
-              linkPrefix="/groups"
-              data={data?.groups ?? null}
-              columns={columns}
-            />
-          </Card>
+
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+              modifiers={[restrictToVerticalAxis]}
+            >
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("groupName")}</TableHead>
+                    <TableHead className="w-40">{t("parent")}</TableHead>
+                    <TableHead className="w-24 text-right">
+                      {t("studentCount")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("action")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* We still use SortableContext to get useSortable hooks, but without a sorting strategy */}
+                  <SortableContext items={allIds}>
+                    {flatData.map((group) => (
+                      <GroupRow
+                        key={group.id}
+                        group={group}
+                        renderActionCell={renderActionCell}
+                        isOver={overId === group.id}
+                        isDragging={activeId === group.id}
+                        showHandle={isEditMode}
+                      />
+                    ))}
+                  </SortableContext>
+                </TableBody>
+              </Table>
+              {/* DragOverlay is completely removed */}
+            </DndContext>
+          </div>
         </div>
       </div>
     </div>

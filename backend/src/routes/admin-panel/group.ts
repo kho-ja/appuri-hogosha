@@ -47,6 +47,7 @@ class GroupController implements IController {
         this.router.get('/:id', verifyToken, this.groupView);
         this.router.delete('/:id', verifyToken, this.groupDelete);
         this.router.put('/:id', verifyToken, this.groupEdit);
+        this.router.get('/:id/sub-groups', verifyToken, this.getSubGroups);
     }
 
     exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
@@ -396,7 +397,7 @@ class GroupController implements IController {
             }
             const groupInfo = await DB.query(
                 `SELECT
-                    id, name, created_at, school_id
+                    id, name, created_at, school_id, sub_group_id
                     FROM StudentGroup
                     WHERE id = :id AND school_id = :school_id`,
                 {
@@ -414,7 +415,7 @@ class GroupController implements IController {
 
             const group = groupInfo[0];
 
-            const { name, students } = req.body;
+            const { name, students, sub_group_id } = req.body;
 
             if (!name || !isValidString(name)) {
                 throw {
@@ -423,11 +424,50 @@ class GroupController implements IController {
                 };
             }
 
+            // Use provided sub_group_id if explicitly passed, otherwise keep current value
+            const finalSubGroupId =
+                sub_group_id !== undefined ? sub_group_id : group.sub_group_id;
+
+            // Validate sub group if it's being changed
+            if (finalSubGroupId !== null && finalSubGroupId !== undefined) {
+                if (!isValidId(finalSubGroupId)) {
+                    throw {
+                        status: 400,
+                        message: 'invalid_sub_group_id',
+                    };
+                }
+
+                // Check if sub group exists and belongs to same school
+                const subGroupExists = await DB.query(
+                    `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
+                    {
+                        id: finalSubGroupId,
+                        school_id: req.user.school_id,
+                    }
+                );
+
+                if (subGroupExists.length === 0) {
+                    throw {
+                        status: 404,
+                        message: 'sub_group_not_found',
+                    };
+                }
+
+                // Prevent circular references
+                if (parseInt(finalSubGroupId) === parseInt(group.id)) {
+                    throw {
+                        status: 400,
+                        message: 'cannot_reference_self_as_sub_group',
+                    };
+                }
+            }
+
             await DB.execute(
-                'UPDATE StudentGroup SET name = :name WHERE id = :id',
+                'UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id WHERE id = :id',
                 {
                     id: group.id,
                     name: name,
+                    sub_group_id: finalSubGroupId,
                 }
             );
 
@@ -644,8 +684,15 @@ class GroupController implements IController {
                 };
             }
             const groupInfo = await DB.query(
-                `SELECT id,name,created_at FROM StudentGroup
-                WHERE id = :id AND school_id = :school_id`,
+                `SELECT 
+                    sg.id, 
+                    sg.name, 
+                    sg.created_at, 
+                    sg.sub_group_id,
+                    parent_sg.name as sub_group_name
+                FROM StudentGroup sg
+                LEFT JOIN StudentGroup parent_sg ON sg.sub_group_id = parent_sg.id
+                WHERE sg.id = :id AND sg.school_id = :school_id`,
                 {
                     id: groupId,
                     school_id: req.user.school_id,
@@ -768,15 +815,19 @@ class GroupController implements IController {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
+            const all = req.query.all === 'true';
 
             const name = (req.query.name as string) || '';
 
             const filters: string[] = [];
             const params: any = {
                 school_id: req.user.school_id,
-                limit: limit,
-                offset: offset,
             };
+
+            if (!all) {
+                params.limit = limit;
+                params.offset = offset;
+            }
 
             if (name) {
                 filters.push('sg.name LIKE :name');
@@ -786,15 +837,26 @@ class GroupController implements IController {
             const whereClause =
                 filters.length > 0 ? 'AND ' + filters.join(' AND ') : '';
 
+            const limitClause = all ? '' : 'LIMIT :limit OFFSET :offset';
+
             const groupList = await DB.query(
-                `SELECT sg.id, sg.name,
-                (SELECT COUNT(*) AS total FROM GroupMember WHERE group_id = sg.id) as member_count
+                `SELECT 
+                    sg.id, 
+                    sg.name,
+                    sg.sub_group_id,
+                    parent_sg.name as sub_group_name,
+                    (SELECT COUNT(*) AS total FROM GroupMember WHERE group_id = sg.id) as member_count
                 FROM StudentGroup as sg
+                LEFT JOIN StudentGroup parent_sg ON sg.sub_group_id = parent_sg.id
                 WHERE sg.school_id = :school_id ${whereClause}
                 ORDER BY sg.id DESC
-                LIMIT :limit OFFSET :offset;`,
+                ${limitClause};`,
                 params
             );
+
+            if (all) {
+                return res.status(200).json({ groups: groupList }).end();
+            }
 
             const totalGroups = (
                 await DB.query(
@@ -844,13 +906,38 @@ class GroupController implements IController {
 
     createGroup = async (req: ExtendedRequest, res: Response) => {
         try {
-            const { name, students } = req.body;
+            const { name, students, sub_group_id } = req.body;
 
             if (!name || !isValidString(name)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_group_name',
                 };
+            }
+
+            // Validate sub group if provided
+            if (sub_group_id) {
+                if (!isValidId(sub_group_id)) {
+                    throw {
+                        status: 400,
+                        message: 'invalid_sub_group_id',
+                    };
+                }
+
+                const subGroupExists = await DB.query(
+                    `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
+                    {
+                        id: sub_group_id,
+                        school_id: req.user.school_id,
+                    }
+                );
+
+                if (subGroupExists.length === 0) {
+                    throw {
+                        status: 404,
+                        message: 'sub_group_not_found',
+                    };
+                }
             }
 
             // Check if the group name already exists
@@ -870,11 +957,12 @@ class GroupController implements IController {
             }
 
             const groupInsert = await DB.execute(
-                `INSERT INTO StudentGroup(name, created_at, school_id)
-                VALUE (:name, NOW(), :school_id);`,
+                `INSERT INTO StudentGroup(name, created_at, school_id, sub_group_id)
+                VALUE (:name, NOW(), :school_id, :sub_group_id);`,
                 {
                     name: name,
                     school_id: req.user.school_id,
+                    sub_group_id: sub_group_id || null,
                 }
             );
 
@@ -931,6 +1019,7 @@ class GroupController implements IController {
                     group: {
                         id: groupId,
                         name: name,
+                        sub_group_id: sub_group_id || null,
                         members: attachedMembers,
                     },
                 })
@@ -973,6 +1062,161 @@ class GroupController implements IController {
         } catch (e: any) {
             console.error('Error generating CSV template:', e);
             return res.status(500).json({ error: 'internal_server_error' });
+        }
+    };
+
+    getSubGroups = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const groupId = req.params.id;
+
+            if (!groupId || !isValidId(groupId)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_or_missing_group_id',
+                };
+            }
+
+            // Check if group exists
+            const groupExists = await DB.query(
+                `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
+                {
+                    id: groupId,
+                    school_id: req.user.school_id,
+                }
+            );
+
+            if (groupExists.length === 0) {
+                throw {
+                    status: 404,
+                    message: 'group_not_found',
+                };
+            }
+
+            // Get all sub-groups for this group
+            const subGroups = await DB.query(
+                `SELECT 
+                    sg.id, 
+                    sg.name, 
+                    sg.created_at,
+                    (SELECT COUNT(*) FROM GroupMember WHERE group_id = sg.id) as member_count
+                FROM StudentGroup sg
+                WHERE sg.sub_group_id = :group_id AND sg.school_id = :school_id
+                ORDER BY sg.name`,
+                {
+                    group_id: groupId,
+                    school_id: req.user.school_id,
+                }
+            );
+
+            return res
+                .status(200)
+                .json({
+                    sub_groups: subGroups,
+                })
+                .end();
+        } catch (e: any) {
+            if (e.status) {
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
+            } else {
+                return res
+                    .status(500)
+                    .json({
+                        error: 'internal_server_error',
+                    })
+                    .end();
+            }
+        }
+    };
+
+    updateGroup = async (req: ExtendedRequest, res: Response) => {
+        try {
+            const groupId = parseInt(req.params.groupId);
+            const { name, students, sub_group_id } = req.body;
+
+            if (!groupId || isNaN(groupId)) {
+                return res
+                    .status(400)
+                    .json({
+                        error: 'invalid_group_id',
+                        details: {
+                            field: 'groupId',
+                            value: groupId,
+                        },
+                    })
+                    .end();
+            }
+
+            // Fetch current group data to preserve sub_group_id if not provided
+            const currentGroup = await DB.query(
+                `SELECT sub_group_id FROM StudentGroup WHERE id = :groupId AND school_id = :school_id`,
+                { groupId, school_id: req.user.school_id }
+            );
+
+            if (currentGroup.length === 0) {
+                return res
+                    .status(404)
+                    .json({
+                        error: 'group_not_found',
+                        details: {
+                            groupId,
+                        },
+                    })
+                    .end();
+            }
+
+            // Use provided sub_group_id, or fall back to current value if not provided
+            const finalSubGroupId =
+                sub_group_id !== undefined
+                    ? sub_group_id
+                    : currentGroup[0].sub_group_id;
+
+            await DB.execute(
+                `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id WHERE id = :groupId`,
+                { name, sub_group_id: finalSubGroupId, groupId }
+            );
+
+            if (students && Array.isArray(students)) {
+                await DB.execute(
+                    `DELETE FROM GroupMember WHERE group_id = :groupId`,
+                    { groupId }
+                );
+
+                if (students.length > 0) {
+                    const insertData = students.map((studentId: number) => [
+                        groupId,
+                        studentId,
+                    ]);
+                    const placeholders = insertData
+                        .map(() => '(?, ?)')
+                        .join(', ');
+                    const flatValues = insertData.flat();
+
+                    await DB.query(
+                        `INSERT INTO GroupMember (group_id, student_id) VALUES ${placeholders}`,
+                        flatValues
+                    );
+                }
+            }
+
+            return res
+                .status(200)
+                .json({
+                    message: 'Group updated successfully',
+                })
+                .end();
+        } catch (e: any) {
+            console.log('Error occurred while updating group:', e);
+            return res
+                .status(500)
+                .json({
+                    error: 'internal_server_error',
+                })
+                .end();
         }
     };
 }

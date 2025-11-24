@@ -6,9 +6,10 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  Row,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,16 +21,81 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Group from "@/types/group";
-import { useSession } from "next-auth/react";
 import GroupApi from "@/types/groupApi";
-import PaginationApi from "./PaginationApi";
 import { Badge } from "./ui/badge";
 import { Trash2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiQuery from "@/lib/useApiQuery";
-import useTableQuery from "@/lib/useTableQuery";
 import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
+
+// Define the tree node structure
+interface GroupTreeNode extends Group {
+  level: number;
+  children: GroupTreeNode[];
+}
+
+// Helper to build the tree
+const buildTree = (groups: Group[]): GroupTreeNode[] => {
+  const groupMap = new Map<number, GroupTreeNode>();
+  const rootGroups: GroupTreeNode[] = [];
+
+  groups.forEach((group) => {
+    groupMap.set(group.id, { ...group, children: [], level: 0 });
+  });
+
+  groups.forEach((group) => {
+    const node = groupMap.get(group.id);
+    if (node) {
+      if (group.sub_group_id) {
+        const parent = groupMap.get(group.sub_group_id);
+        if (parent) {
+          parent.children.push(node);
+        } else {
+          rootGroups.push(node); // It's a root if its parent is not in the list
+        }
+      } else {
+        rootGroups.push(node);
+      }
+    }
+  });
+
+  const setLevels = (nodes: GroupTreeNode[], level: number) => {
+    nodes.forEach((node) => {
+      node.level = level;
+      setLevels(node.children, level + 1);
+    });
+  };
+
+  setLevels(rootGroups, 0);
+  return rootGroups;
+};
+
+// Helper to flatten the tree for rendering
+const flattenTree = (nodes: GroupTreeNode[]): GroupTreeNode[] => {
+  const flattened: GroupTreeNode[] = [];
+  const traverse = (nodesToTraverse: GroupTreeNode[]) => {
+    nodesToTraverse.forEach((node) => {
+      flattened.push(node);
+      if (node.children.length > 0) {
+        traverse(node.children);
+      }
+    });
+  };
+  traverse(nodes);
+  return flattened;
+};
+
+// Helper to get all descendants of a node
+const getDescendants = (
+  node: GroupTreeNode,
+  descendants: GroupTreeNode[] = []
+): GroupTreeNode[] => {
+  for (const child of node.children) {
+    descendants.push(child);
+    getDescendants(child, descendants);
+  }
+  return descendants;
+};
 
 export function GroupTable({
   selectedGroups,
@@ -41,87 +107,71 @@ export function GroupTable({
   useIndependentState?: boolean;
 }) {
   const t = useTranslations("GroupTable");
-  const { data: session } = useSession();
-
-  const urlTableQuery = useTableQuery();
   const independentTableQuery = useIndependentTableQuery("group");
 
   const {
-    page,
-    setPage,
     search: searchName,
     setSearch: setSearchName,
-  } = useIndependentState ? independentTableQuery : urlTableQuery;
+    setPage,
+  } = independentTableQuery;
 
-  const { data } = useApiQuery<GroupApi>(
-    `group/list?page=${page}&name=${searchName}`,
-    ["groups", page, searchName]
+  // Fetch all groups, disable pagination
+  const { data, isLoading } = useApiQuery<GroupApi>(
+    `group/list?all=true&name=${searchName}`,
+    ["groups", searchName]
   );
+
+  const allGroups = useMemo(() => data?.groups ?? [], [data]);
+  const tree = useMemo(() => buildTree(allGroups), [allGroups]);
+  const flatData = useMemo(() => flattenTree(tree), [tree]);
 
   const selectedGroupIds = useMemo(
     () => new Set(selectedGroups.map((group) => group.id)),
     [selectedGroups]
   );
 
-  const rowSelection = useMemo(() => {
-    const selection: Record<string, boolean> = {};
-    selectedGroupIds.forEach((id) => {
-      selection[id] = true;
+  const handleRowSelection = (row: Row<GroupTreeNode>, isSelected: boolean) => {
+    const group = row.original;
+    const descendants = getDescendants(group);
+    const affectedGroups = [group, ...descendants];
+    const affectedGroupIds = new Set(affectedGroups.map((g) => g.id));
+
+    setSelectedGroups((prev) => {
+      if (isSelected) {
+        const newGroups = [...prev];
+        affectedGroups.forEach((g) => {
+          if (!newGroups.some((sg) => sg.id === g.id)) {
+            newGroups.push(g);
+          }
+        });
+        return newGroups;
+      } else {
+        return prev.filter((g) => !affectedGroupIds.has(g.id));
+      }
     });
-    return selection;
-  }, [selectedGroupIds]);
+  };
 
-  const { data: selectedGroupData } = useQuery<{
-    groupList: Group[];
-  }>({
-    queryKey: ["selectedGroups", Array.from(selectedGroupIds)],
-    queryFn: async () => {
-      if (selectedGroupIds.size === 0) {
-        return { groupList: [] };
-      }
-      const data = { groupIds: Array.from(selectedGroupIds) };
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/group/ids`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.sessionToken}`,
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error);
-      }
-
-      return response.json();
-    },
-    enabled: !!session?.sessionToken && selectedGroupIds.size > 0,
-  });
-
-  const columns: ColumnDef<Group>[] = useMemo(
+  const columns: ColumnDef<GroupTreeNode>[] = useMemo(
     () => [
       {
         id: "select",
         header: ({ table }) => (
           <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
+            checked={table.getIsAllRowsSelected()}
+            onCheckedChange={(value) => {
+              table.toggleAllRowsSelected(!!value);
+              setSelectedGroups(!!value ? flatData : []);
+            }}
             aria-label="Select all"
           />
         ),
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onCheckedChange={(value) => {
+              row.toggleSelected(!!value);
+              handleRowSelection(row, !!value);
+            }}
             aria-label="Select row"
           />
         ),
@@ -132,67 +182,62 @@ export function GroupTable({
         accessorKey: "name",
         header: t("groupName"),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("name")}</div>
+          <div
+            className="capitalize"
+            style={{ paddingLeft: `${row.original.level * 1.5}rem` }}
+          >
+            {row.getValue("name")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "sub_group_name",
+        header: t("parent"),
+        cell: ({ row }) => (
+          <div className="capitalize">{row.original.sub_group_name ?? "—"}</div>
         ),
       },
       {
         accessorKey: "member_count",
-        header: ({ column: _column }) => (
-          <div className="capitalize">{t("studentCount")}</div>
-        ),
+        header: () => <div className="text-right">{t("studentCount")}</div>,
         cell: ({ row }) => (
-          <div className="lowercase">{row.getValue("member_count")}</div>
+          <div className="text-right">{row.getValue("member_count")}</div>
         ),
       },
     ],
-    [t]
+    [t, flatData, setSelectedGroups]
   );
 
   const table = useReactTable({
-    data: useMemo(
-      () =>
-        (data?.groups ?? []).filter((group) => (group.member_count ?? 0) > 0),
-      [data]
-    ),
+    data: flatData,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: (updater) => {
-      if (typeof updater === "function") {
-        const newSelection = updater(rowSelection);
-        const newSelectedGroups =
-          data?.groups.filter((group) => newSelection[group.id]) || [];
-        setSelectedGroups((prev) => {
-          const prevIds = new Set(prev.map((g) => g.id));
-          return [
-            ...prev.filter((g) => newSelection[g.id]),
-            ...newSelectedGroups.filter((g) => !prevIds.has(g.id)),
-          ];
-        });
-      }
-    },
     getRowId: (row) => row.id.toString(),
     state: {
-      rowSelection,
+      rowSelection: useMemo(() => {
+        const selection: Record<string, boolean> = {};
+        selectedGroupIds.forEach((id) => {
+          selection[id.toString()] = true;
+        });
+        return selection;
+      }, [selectedGroupIds]),
     },
   });
 
   const handleDeleteGroup = useCallback(
     (group: Group) => {
-      setSelectedGroups((prev) => prev.filter((g) => g.id !== group.id));
-    },
-    [setSelectedGroups]
-  );
-
-  useEffect(() => {
-    if (selectedGroupData) {
-      setSelectedGroups((prevSelected) => {
-        const newSelectedMap = new Map(
-          selectedGroupData.groupList.map((g) => [g.id, g])
+      const groupInTree = flatData.find((g) => g.id === group.id);
+      if (groupInTree) {
+        handleRowSelection(
+          { original: groupInTree } as Row<GroupTreeNode>,
+          false
         );
-        return prevSelected.map((g) => newSelectedMap.get(g.id) || g);
-      });
-    }
-  }, [selectedGroupData, setSelectedGroups]);
+      } else {
+        setSelectedGroups((prev) => prev.filter((g) => g.id !== group.id));
+      }
+    },
+    [setSelectedGroups, flatData]
+  );
 
   return (
     <div className="w-full space-y-4 mt-4">
@@ -225,23 +270,21 @@ export function GroupTable({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {!data ? (
+            {isLoading ? (
               <SkeletonLoader columnCount={columns.length} rowCount={5} />
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
@@ -275,13 +318,11 @@ export function GroupTable({
       <div className="flex justify-end flex-wrap gap-2 sm:flex-row sm:justify-between sm:items-center">
         <div className="flex-1 text-sm text-muted-foreground w-full sm:w-auto">
           {t("rowsSelected", {
-            count: table.getFilteredSelectedRowModel().rows.length,
-            total: table.getFilteredRowModel().rows.length,
+            count: selectedGroups.length,
+            total: flatData.length,
           })}
         </div>
-        <div className="w-full sm:w-auto">
-          <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
-        </div>
+        {/* Pagination is removed as we show all groups */}
       </div>
     </div>
   );

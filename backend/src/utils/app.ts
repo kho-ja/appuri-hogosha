@@ -8,7 +8,6 @@ const allowedOrigins = [
     process.env.FRONTEND_URL?.replace(/\/$/, ''),
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
 ];
-
 class App {
     public app: Application;
 
