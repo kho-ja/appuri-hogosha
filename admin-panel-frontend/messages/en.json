@@ -757,7 +757,8 @@
     "student_number": "Student Number"
   },
   "table": {
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "noData": "No data available."
   },
   "names": {
     "name": "{given_name} {family_name}"

@@ -714,7 +714,8 @@
     "student_number": "Номер студента"
   },
   "table": {
-    "noResults": "Результатов не найдено"
+    "noResults": "Результатов не найдено",
+    "noData": "Нет данных."
   },
   "names": {
     "name": "{given_name} {family_name}"

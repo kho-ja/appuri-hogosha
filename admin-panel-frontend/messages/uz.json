@@ -718,7 +718,8 @@
     "student_number": "Talaba Raqami"
   },
   "table": {
-    "noResults": "Natijalar topilmadi."
+    "noResults": "Natijalar topilmadi.",
+    "noData": "Ma'lumot yo'q."
   },
   "names": {
     "name": "{family_name} {given_name}"

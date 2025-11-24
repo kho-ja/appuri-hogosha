@@ -716,7 +716,8 @@
     "student_number": "学生番号"
   },
   "table": {
-    "noResults": "結果がありません。"
+    "noResults": "結果がありません。",
+    "noData": "データがありません。"
   },
   "names": {
     "name": "{family_name} {given_name}"
