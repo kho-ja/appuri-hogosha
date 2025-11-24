@@ -1,5 +1,11 @@
 import { Badge } from "./ui/badge";
+import { useTranslations } from "next-intl";
 
 export default function YesBadge() {
-  return <Badge className="text-green-600 bg-green-200">● Yes</Badge>;
+  const t = useTranslations("loginBadge");
+  return (
+    <Badge className="text-green-600 bg-green-200 text-nowrap">
+      ● {t("loggedIn")}
+    </Badge>
+  );
 }

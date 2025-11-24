@@ -382,7 +382,7 @@ class AuthController implements IController {
             try {
                 // const endpoint = await ParentsSNS.createEndpoint(token)
                 await DB.execute(
-                    `UPDATE Parent SET arn = :arn WHERE id = :id;`,
+                    `UPDATE Parent SET last_login_at = NOW(), arn = :arn WHERE id = :id;`,
                     {
                         id: parent.id,
                         arn: normalizedToken,

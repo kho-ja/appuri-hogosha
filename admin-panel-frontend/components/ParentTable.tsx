@@ -30,13 +30,17 @@ import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
 import useTableQuery from "@/lib/useTableQuery";
+import YesBadge from "./yesbadge";
+import NoBadge from "./nobadge";
 
 export function ParentTable({
   selectedParents,
   setSelectedParents,
+  showOnlyNonLoggedIn = false,
 }: {
   selectedParents: Parent[];
   setSelectedParents: React.Dispatch<React.SetStateAction<Parent[]>>;
+  showOnlyNonLoggedIn?: boolean;
 }) {
   const t = useTranslations("ParentTable");
   const tParents = useTranslations("parents");
@@ -47,8 +51,8 @@ export function ParentTable({
 
   const { data, isLoading } = useApiPostQuery<ParentApi>(
     "parent/list",
-    ["parents", page, search],
-    { page, name: search }
+    ["parents", page, search, showOnlyNonLoggedIn],
+    { page, name: search, showOnlyNonLoggedIn }
   );
 
   const selectedParentIds = useMemo(
@@ -65,7 +69,7 @@ export function ParentTable({
   }, [selectedParentIds]);
 
   const { data: selectedParentsData } = useQuery<{ parents: Parent[] }>({
-    queryKey: ["selectedParents", Array.from(selectedParentIds)],
+    queryKey: ["selectedParents", Array.from(selectedParentIds).sort()],
     queryFn: async () => {
       if (selectedParentIds.size === 0) {
         return { parents: [] };
@@ -90,6 +94,7 @@ export function ParentTable({
       return response.json();
     },
     enabled: !!session?.sessionToken && selectedParentIds.size > 0,
+    staleTime: 30000,
   });
 
   const columns: ColumnDef<Parent>[] = useMemo(
@@ -161,16 +166,8 @@ export function ParentTable({
           const given = (row.original.given_name || "").trim();
           const family = (row.original.family_name || "").trim();
           const hasName = given || family;
-          if (!hasName && (row.original.students?.length ?? 0) > 0) {
-            const s = row.original.students![0];
-            return (
-              <div className="capitalize">
-                {tName("name", {
-                  given_name: s.given_name,
-                  family_name: s.family_name,
-                })}
-              </div>
-            );
+          if (!hasName) {
+            return <div className="text-muted-foreground text-sm">—</div>;
           }
           return (
             <div className="capitalize">
@@ -189,6 +186,14 @@ export function ParentTable({
           <div className="lowercase">{row.getValue("email")}</div>
         ),
       },
+      {
+        accessorKey: "last_login_at || arn",
+        header: t("loginStatus"),
+        cell: ({ row }) => {
+          const isLoggedIn = row.original.last_login_at || row.original.arn;
+          return isLoggedIn ? <YesBadge /> : <NoBadge />;
+        },
+      },
     ],
     [t, tParents, tName]
   );
@@ -200,8 +205,9 @@ export function ParentTable({
     onRowSelectionChange: (updater) => {
       if (typeof updater === "function") {
         const newSelection = updater(rowSelection);
+        const parents = data?.parents ?? [];
         const newSelectedParents =
-          data?.parents.filter((parent) => newSelection[parent.id]) || [];
+          parents.filter((parent) => newSelection[parent.id]) || [];
         setSelectedParents((prev) => {
           const prevIds = new Set(prev.map((p) => p.id));
           return [
@@ -260,12 +266,15 @@ export function ParentTable({
                 const given = (parent.given_name || "").trim();
                 const family = (parent.family_name || "").trim();
                 const hasName = given || family;
-                return hasName
-                  ? tName("name", {
-                      given_name: parent.given_name,
-                      family_name: parent.family_name,
-                    })
-                  : parent.phone_number || parent.email || String(parent.id);
+                if (!hasName) {
+                  return (
+                    parent.phone_number || parent.email || String(parent.id)
+                  );
+                }
+                return tName("name", {
+                  given_name: parent.given_name,
+                  family_name: parent.family_name,
+                });
               })()}
               <Trash2 className="h-4" />
             </Badge>
@@ -274,6 +283,7 @@ export function ParentTable({
         <div className="flex items-center">
           <Input
             placeholder={t("filter")}
+            value={search}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);

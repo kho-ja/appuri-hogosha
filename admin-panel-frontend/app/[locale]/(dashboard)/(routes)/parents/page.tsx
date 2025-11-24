@@ -1,7 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
-import { Edit3Icon, File, Trash2Icon } from "lucide-react";
+import { Edit3Icon, File, Trash2Icon, RefreshCcw } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ import useTableQuery from "@/lib/useTableQuery";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import YesBadge from "@/components/yesbadge";
+import NoBadge from "@/components/nobadge";
 
 export default function Info() {
   const t = useTranslations("parents");
@@ -111,6 +113,18 @@ export default function Info() {
       header: t("Email"),
     },
     {
+      accessorKey: "last_login_at",
+      header: t("loginStatus"),
+      meta: { notClickable: true },
+      cell: ({ row }) => {
+        const lastLoginAt = row.original.last_login_at;
+        const arn = row.original.arn;
+        // Parent is considered logged in if they have either last_login_at OR arn token
+        const isLoggedIn = lastLoginAt || arn;
+        return isLoggedIn ? <YesBadge /> : <NoBadge />;
+      },
+    },
+    {
       header: t("action"),
       meta: {
         notClickable: true,
@@ -159,11 +173,21 @@ export default function Info() {
     <div className="w-full">
       <div className="space-y-4">
         <PageHeader title={t("parents")} variant="list">
-          <Link href={`/parents/create`}>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("createparent")}
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/parents/management`}>
+              <Button
+                variant="outline"
+                icon={<RefreshCcw className="h-5 w-5" />}
+              >
+                {t("bulkOperations")}
+              </Button>
+            </Link>
+            <Link href={`/parents/create`}>
+              <Button icon={<Plus className="h-5 w-5" />}>
+                {t("createparent")}
+              </Button>
+            </Link>
+          </div>
         </PageHeader>
         <div className="flex flex-col sm:flex-row justify-between">
           <Input

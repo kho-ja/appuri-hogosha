@@ -1,5 +1,11 @@
 import { Badge } from "./ui/badge";
+import { useTranslations } from "next-intl";
 
 export default function NoBadge() {
-  return <Badge className="text-red-600 bg-red-200">● Not yet</Badge>;
+  const t = useTranslations("loginBadge");
+  return (
+    <Badge className="text-red-600 bg-red-200 text-nowrap">
+      ● {t("notLoggedIn")}
+    </Badge>
+  );
 }

@@ -8,7 +8,7 @@ import Student from "@/types/student";
 import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { FormatDateTime } from "@/lib/utils";
+import { useFormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
@@ -24,6 +24,7 @@ export default function ThisParent({
 }) {
   const t = useTranslations("ThisParent");
   const tName = useTranslations("names");
+  const formatDateTime = useFormatDateTime();
   const { data: parentData, isError } = useApiQuery<{
     parent: Parent;
     students: Student[];
@@ -49,7 +50,17 @@ export default function ThisParent({
     },
   ];
 
-  const dateValue = FormatDateTime(parentData?.parent.created_at ?? "");
+  const dateValue = parentData?.parent.created_at
+    ? formatDateTime(parentData.parent.created_at)
+    : "";
+
+  const lastLoginValue =
+    (parentData?.parent?.last_login_at
+      ? formatDateTime(parentData.parent.last_login_at)
+      : "") ||
+    (parentData?.parent?.arn
+      ? t("parentLoggedInViaApp")
+      : t("parentNotLoggedIn"));
 
   if (isError) return <NotFound />;
 
@@ -60,7 +71,10 @@ export default function ThisParent({
         {parentData?.parent && (
           <ResendPasswordDialog
             id={parentData.parent.id}
-            name={tName("name", { ...parentData.parent } as any)}
+            name={tName("name", {
+              given_name: parentData.parent.given_name,
+              family_name: parentData.parent.family_name,
+            })}
             identifier={parentData.parent.phone_number}
             type="parent"
             variant="button"
@@ -88,6 +102,10 @@ export default function ThisParent({
           <DisplayProperty
             property={t("parentPhoneNumber")}
             value={parentData?.parent.phone_number}
+          />
+          <DisplayProperty
+            property={t("parentLastLogin")}
+            value={lastLoginValue}
           />
           <DisplayProperty
             property={t("parentCreationDate")}

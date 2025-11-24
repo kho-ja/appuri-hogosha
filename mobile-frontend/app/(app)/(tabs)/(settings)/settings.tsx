@@ -7,16 +7,18 @@ import React, {
 } from 'react';
 import {
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useSession } from '@/contexts/auth-context';
-import { BottomSheet, Button, useTheme } from '@rneui/themed';
+import { Button, useTheme } from '@rneui/themed';
 import { I18nContext } from '@/contexts/i18n-context';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -200,208 +202,224 @@ export default function SettingsScreen() {
   // Backdrop press is handled via BottomSheetBackdrop 'pressBehavior="close"'
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingTop: 16 }}
-      style={[styles.container, { backgroundColor }]}
-    >
-      <View style={styles.infoCard}>
-        <ThemedText style={styles.sectionTitle}>
-          {i18n[language].personalInfo}
-        </ThemedText>
-        <View style={styles.infoRow}>
-          {displayName ? (
-            <View style={styles.row}>
-              <Ionicons
-                name='person-outline'
-                size={22}
-                color={theme.colors.grey1}
-                style={styles.infoIcon}
-              />
-              <View>
-                <ThemedText
-                  style={[styles.profileInitial, { color: theme.colors.grey1 }]}
-                >
-                  {i18n[language].name}
-                </ThemedText>
-                <ThemedText style={styles.profileText}>
-                  {user && `${user.given_name} ${user.family_name}`}
-                </ThemedText>
+    <View style={{ flex: 1, backgroundColor }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+        style={[styles.container, { backgroundColor }]}
+      >
+        <SafeAreaView style={[styles.container, { backgroundColor }]}>
+          <View style={[styles.container, { backgroundColor }]}>
+            <View style={styles.infoCard}>
+              <ThemedText style={styles.sectionTitle}>
+                {i18n[language].personalInfo}
+              </ThemedText>
+              <View style={styles.infoRow}>
+                {displayName ? (
+                  <View style={styles.row}>
+                    <Ionicons
+                      name='person-outline'
+                      size={22}
+                      color={theme.colors.grey1}
+                      style={styles.infoIcon}
+                    />
+                    <View>
+                      <ThemedText
+                        style={[
+                          styles.profileInitial,
+                          { color: theme.colors.grey1 },
+                        ]}
+                      >
+                        {i18n[language].name}
+                      </ThemedText>
+                      <ThemedText style={styles.profileText}>
+                        {user && `${user.given_name} ${user.family_name}`}
+                      </ThemedText>
+                    </View>
+                  </View>
+                ) : null}
+                <View style={styles.row}>
+                  <Ionicons
+                    name='call-outline'
+                    size={22}
+                    color={theme.colors.grey1}
+                    style={styles.infoIcon}
+                  />
+                  <View>
+                    <ThemedText
+                      style={[
+                        styles.profileInitial,
+                        { color: theme.colors.grey1 },
+                      ]}
+                    >
+                      {i18n[language].phoneNumber}
+                    </ThemedText>
+                    <ThemedText style={styles.profileText}>
+                      +{user && user.phone_number}
+                    </ThemedText>
+                  </View>
+                </View>
               </View>
             </View>
-          ) : null}
-          <View style={styles.row}>
-            <Ionicons
-              name='call-outline'
-              size={22}
-              color={theme.colors.grey1}
-              style={styles.infoIcon}
-            />
-            <View>
-              <ThemedText
-                style={[styles.profileInitial, { color: theme.colors.grey1 }]}
+            <View style={styles.infoCard}>
+              <ThemedText style={styles.sectionTitle}>
+                {i18n[language].preferences}
+              </ThemedText>
+              <Pressable onPress={handlePresentModal} style={styles.row}>
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='language-outline' size={20} />
+                </View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].language}
+                </ThemedText>
+                <View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <Pressable
+                onPress={() => router.navigate('change-psswd' as Href)}
+                style={styles.row}
               >
-                {i18n[language].phoneNumber}
-              </ThemedText>
-              <ThemedText style={styles.profileText}>
-                +{user && user.phone_number}
-              </ThemedText>
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+                </View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].changePassword}
+                </ThemedText>
+                <View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <Pressable
+                style={styles.row}
+                onPress={handlePresentFontSizeModal}
+              >
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='text' size={20} />
+                </View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].textSize}
+                </ThemedText>
+                <View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <ThemeSwitcher />
             </View>
+            <View
+              style={{
+                marginTop: 40,
+                marginBottom: 20,
+              }}
+            >
+              <Button
+                buttonStyle={styles.submitButton}
+                onPress={handlePress}
+                title={i18n[language].logout}
+                titleStyle={styles.text}
+                icon={
+                  <Ionicons name='log-out-outline' size={30} color='#FF4444' />
+                }
+              />
+            </View>
+          </View>
+        </SafeAreaView>
+      </ScrollView>
+      <Modal
+        visible={isLanguageOpen}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setIsLanguageOpen(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.35)',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Pressable
+            onPress={() => setIsLanguageOpen(false)}
+            style={{ flex: 1 }}
+          />
+          <View
+            style={[
+              {
+                backgroundColor: theme.colors.background,
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                paddingTop: 8,
+                paddingBottom: 30,
+                paddingHorizontal: 15,
+              },
+            ]}
+          >
+            <ThemedText
+              style={{
+                marginTop: 18,
+                marginBottom: 18,
+                fontSize: 18,
+                alignSelf: 'flex-start',
+              }}
+            >
+              {i18n[language].language}
+            </ThemedText>
+            <ThemedView style={{ width: '100%' }}>
+              {languageData.map(l => (
+                <LanguageSelection
+                  key={l.language}
+                  language={l.language}
+                  selectedLanguage={selectedLanguage}
+                  onSelect={handleLanguageSelect}
+                  flag={l.flag}
+                  isDark={isDark}
+                />
+              ))}
+            </ThemedView>
           </View>
         </View>
-      </View>
-      <View style={styles.infoCard}>
-        <ThemedText style={styles.sectionTitle}>
-          {i18n[language].preferences}
-        </ThemedText>
-        <Pressable onPress={handlePresentModal} style={styles.row}>
-          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-            <Ionicons color='#fff' name='language-outline' size={20} />
-          </View>
-          <ThemedText style={styles.rowLabel}>
-            {i18n[language].language}
-          </ThemedText>
-          <View style={styles.rowSpacer} />
-          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-        </Pressable>
-        <Pressable
-          onPress={() => router.navigate('change-psswd' as Href)}
-          style={styles.row}
-        >
-          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-            <Ionicons color='#fff' name='lock-closed-outline' size={20} />
-          </View>
-          <ThemedText style={styles.rowLabel}>
-            {i18n[language].changePassword}
-          </ThemedText>
-          <View style={styles.rowSpacer} />
-          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-        </Pressable>
-        <Pressable style={styles.row} onPress={handlePresentFontSizeModal}>
-          <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-            <Ionicons color='#fff' name='text' size={20} />
-          </View>
-          <ThemedText style={styles.rowLabel}>
-            {i18n[language].textSize}
-          </ThemedText>
-          <View style={styles.rowSpacer} />
-          <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-        </Pressable>
-        <ThemeSwitcher />
-      </View>
-      <BottomSheet
-        isVisible={isLanguageOpen}
-        onBackdropPress={() => setIsLanguageOpen(false)}
-        modalProps={{
-          transparent: true,
-          statusBarTranslucent: true,
-          // Disable slide so the backdrop doesn't animate from bottom
-          animationType: 'none',
-        }}
-        containerStyle={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+      </Modal>
+      <Modal
+        visible={isFontSizeOpen}
+        transparent
+        animationType='fade'
+        onRequestClose={() => setIsFontSizeOpen(false)}
       >
-        <ThemedView
-          style={[
-            styles.contentContainer,
-            {
-              backgroundColor: theme.colors.background,
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              paddingTop: 8,
-            },
-          ]}
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.35)',
+            justifyContent: 'flex-end',
+          }}
         >
-          <ThemedText
-            style={{
-              marginTop: 18,
-              marginBottom: 18,
-              fontSize: 18,
-              alignSelf: 'flex-start',
-            }}
-          >
-            {i18n[language].language}
-          </ThemedText>
-          <ThemedView style={{ width: '100%' }}>
-            {languageData.map(l => (
-              <LanguageSelection
-                key={l.language}
-                language={l.language}
-                selectedLanguage={selectedLanguage}
-                onSelect={handleLanguageSelect}
-                flag={l.flag}
-                isDark={isDark}
-              />
-            ))}
-          </ThemedView>
-        </ThemedView>
-      </BottomSheet>
-      <BottomSheet
-        isVisible={isFontSizeOpen}
-        onBackdropPress={() => setIsFontSizeOpen(false)}
-        modalProps={{
-          transparent: true,
-          statusBarTranslucent: true,
-          // Disable slide so the backdrop doesn't animate from bottom
-          animationType: 'none',
-        }}
-        containerStyle={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
-      >
-        <ThemedView
-          style={[
-            styles.contentContainer,
-            {
-              backgroundColor: theme.colors.background,
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              paddingTop: 8,
-            },
-          ]}
-        >
-          <SampleText
-            text={
-              translation[language as keyof typeof translation]?.sampleText ||
-              'Choose the text size that suits you best for a more comfortable reading experience.'
-            }
-            overrideMultiplier={fontPreviewMultiplier}
+          <Pressable
+            onPress={() => setIsFontSizeOpen(false)}
+            style={{ flex: 1 }}
           />
+          <View
+            style={[
+              {
+                backgroundColor: theme.colors.background,
+                borderTopLeftRadius: 16,
+                borderTopRightRadius: 16,
+                paddingTop: 8,
+                paddingBottom: 30,
+                paddingHorizontal: 15,
+              },
+            ]}
+          >
+            <SampleText
+              text={
+                translation[language as keyof typeof translation]?.sampleText ||
+                'Choose the text size that suits you best for a more comfortable reading experience.'
+              }
+              overrideMultiplier={fontPreviewMultiplier}
+            />
 
-          <ThemedView style={styles.fontSizeContainer}>
-            <View style={styles.sliderWithLabels}>
-              <ThemedText
-                style={{
-                  fontSize: 14,
-                  color: '#8E8E93',
-                  fontWeight: '500',
-                }}
-              >
-                A
-              </ThemedText>
-              <View style={styles.sliderFixedContainer}>
-                <FontSizeSlider onPreviewChange={setFontPreviewMultiplier} />
-              </View>
-              <ThemedText
-                style={{
-                  fontSize: 24,
-                  color: '#8E8E93',
-                  fontWeight: '600',
-                }}
-              >
-                A
-              </ThemedText>
-            </View>
-          </ThemedView>
-        </ThemedView>
-      </BottomSheet>
-      <View style={{ marginTop: 40, marginBottom: 20 }}>
-        <Button
-          buttonStyle={styles.submitButton}
-          onPress={handlePress}
-          title={i18n[language].logout}
-          titleStyle={styles.text}
-          icon={<Ionicons name='log-out-outline' size={30} color='#FF4444' />}
-        />
-      </View>
-    </ScrollView>
+            <ThemedView style={styles.fontSizeContainer}>
+              <FontSizeSlider onPreviewChange={setFontPreviewMultiplier} />
+            </ThemedView>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
 
@@ -516,16 +534,5 @@ const styles = StyleSheet.create({
   // Font Size Sheet styles
   fontSizeContainer: {
     paddingVertical: 20,
-  },
-  sliderWithLabels: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15,
-  },
-  sliderFixedContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 10,
   },
 });
