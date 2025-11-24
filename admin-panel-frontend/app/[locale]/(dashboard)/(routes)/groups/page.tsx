@@ -441,7 +441,7 @@ export default function Groups() {
             <Button
               variant={isEditMode ? "secondary" : "outline"}
               className={cn(
-                "h-10 px-4 text-sm min-w-[140px] justify-center",
+                "h-10 px-4 text-sm justify-center",
                 isEditMode && "bg-secondary"
               )}
               onClick={() => setIsEditMode((prev) => !prev)}
@@ -452,7 +452,7 @@ export default function Groups() {
             </Button>
             <Link href={`/groups/create`}>
               <Button
-                className="h-10 px-4 min-w-[140px] justify-center"
+                className="h-10 px-4 justify-center"
                 icon={<Plus className="h-5 w-5" />}
               >
                 {t("creategroup")}
