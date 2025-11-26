@@ -54,7 +54,7 @@ export default function Recievers({
   }, [selectedStudents, selectedGroups, mutate]);
 
   const { data } = useApiQuery<{ students: Student[]; groups: Group[] }>(
-    `schedule/${messageId}/recievers`,
+    `post/schedule/${messageId}/recievers`,
     ["scheduled-receivers", messageId]
   );
 

@@ -886,11 +886,20 @@ class PostController implements IController {
                 };
             }
 
-            Images3Client.deleteFile('images/' + postInfo[0].image);
+            // Start transaction
+            await DB.query('START TRANSACTION');
 
             await DB.execute('DELETE FROM Post WHERE id = :id;', {
                 id: postId,
             });
+
+            // Commit transaction
+            await DB.query('COMMIT');
+
+            // Delete image after successful transaction
+            if (postInfo[0].image) {
+                Images3Client.deleteFile('images/' + postInfo[0].image);
+            }
 
             return res
                 .status(200)
@@ -899,6 +908,13 @@ class PostController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            // Rollback transaction on error
+            try {
+                await DB.query('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+
             if (e.status) {
                 return res
                     .status(e.status)
@@ -947,11 +963,8 @@ class PostController implements IController {
                 };
             }
 
-            for (const post of postsInfo) {
-                if (post.image) {
-                    await Images3Client.deleteFile('images/' + post.image);
-                }
-            }
+            // Start transaction
+            await DB.query('START TRANSACTION');
 
             await DB.execute(
                 `
@@ -962,6 +975,16 @@ class PostController implements IController {
                 [req.user.school_id, ...postIds]
             );
 
+            // Commit transaction
+            await DB.query('COMMIT');
+
+            // Delete images after successful transaction
+            for (const post of postsInfo) {
+                if (post.image) {
+                    Images3Client.deleteFile('images/' + post.image);
+                }
+            }
+
             return res
                 .status(200)
                 .json({
@@ -970,6 +993,13 @@ class PostController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            // Rollback transaction on error
+            try {
+                await DB.query('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+
             if (e.status) {
                 return res
                     .status(e.status)
@@ -1044,6 +1074,10 @@ class PostController implements IController {
 
             const post = postInfo[0];
 
+            await DB.query('START TRANSACTION');
+
+            let newImageName = null;
+
             if (image && image !== post.image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
 
@@ -1066,12 +1100,12 @@ class PostController implements IController {
                     };
                 }
 
-                const imageName =
+                newImageName =
                     randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = `images/${imageName}`;
+                const imagePath = `images/${newImageName}`;
                 await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
-                post.image = imageName; // Assign new image to post object
+                post.image = newImageName; // Assign new image to post object
             } else if (!image) {
                 post.image = null; // Set image to null if none is provided
             }
@@ -1107,6 +1141,9 @@ class PostController implements IController {
                 }
             );
 
+            // Commit transaction
+            await DB.query('COMMIT');
+
             return res
                 .status(200)
                 .json({
@@ -1114,6 +1151,13 @@ class PostController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            // Rollback transaction on error
+            try {
+                await DB.query('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+
             if (e.status) {
                 return res
                     .status(e.status)
@@ -2061,7 +2105,10 @@ class PostController implements IController {
                 };
             }
 
+            await DB.query('START TRANSACTION');
+
             let postInsert;
+            let imageName = null;
             if (image) {
                 const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
                 if (!matches || matches.length !== 3) {
@@ -2080,8 +2127,7 @@ class PostController implements IController {
                     };
                 }
 
-                const imageName =
-                    randomImageName() + mimeType.replace('image/', '.');
+                imageName = randomImageName() + mimeType.replace('image/', '.');
                 const imagePath = 'images/' + imageName;
                 await Images3Client.uploadFile(buffer, mimeType, imagePath);
 
@@ -2150,9 +2196,13 @@ class PostController implements IController {
                                     parent.parent_id,
                                 ]
                             );
+                            const placeholders = parentInsertData
+                                .map(() => '(?, ?)')
+                                .join(', ');
+                            const flatValues = parentInsertData.flat();
                             await DB.execute(
-                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ?`,
-                                [parentInsertData]
+                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${placeholders}`,
+                                flatValues
                             );
                         }
                     }
@@ -2201,13 +2251,13 @@ class PostController implements IController {
                             }) => [postId, student.student_id, student.group_id]
                         );
 
-                        // Use DB.query() instead of DB.execute() for bulk insert with VALUES ?
+                        // Use DB.execute() for bulk insert
                         const placeholders = postStudentInsertData
                             .map(() => '(?, ?, ?)')
                             .join(', ');
                         const flatValues = postStudentInsertData.flat();
 
-                        const postStudentResult = await DB.query(
+                        const postStudentResult = await DB.execute(
                             `INSERT INTO PostStudent (post_id, student_id, group_id) VALUES ${placeholders}`,
                             flatValues
                         );
@@ -2275,7 +2325,7 @@ class PostController implements IController {
                                     .filter(Boolean);
 
                                 if (allParentInsertData.length > 0) {
-                                    // Use DB.query() for bulk insert
+                                    // Use DB.execute() for bulk insert
                                     const parentPlaceholders =
                                         allParentInsertData
                                             .map(() => '(?, ?)')
@@ -2283,7 +2333,7 @@ class PostController implements IController {
                                     const flatParentValues =
                                         allParentInsertData.flat();
 
-                                    const parentResult = await DB.query(
+                                    const parentResult = await DB.execute(
                                         `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${parentPlaceholders}`,
                                         flatParentValues
                                     );
@@ -2298,6 +2348,8 @@ class PostController implements IController {
                 }
             }
 
+            await DB.query('COMMIT');
+
             return res
                 .status(200)
                 .json({
@@ -2310,6 +2362,12 @@ class PostController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            try {
+                await DB.query('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Rollback error:', rollbackError);
+            }
+
             if (e.status) {
                 return res
                     .status(e.status)
