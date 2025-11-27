@@ -2155,7 +2155,7 @@ class PostController implements IController {
                                     .map(() => '(?, ?)')
                                     .join(', ');
                                 const flatValues = parentInsertData.flat();
-                                await DB.query(
+                                await DB.execute(
                                     `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${placeholders}`,
                                     flatValues
                                 );
@@ -2225,7 +2225,7 @@ class PostController implements IController {
 
                         // 4. Get all parents for all students in one query
                         const newPostStudents = (await DB.query(
-                            `SELECT id, student_id FROM PostStudent WHERE post_id = :postId`,
+                            `SELECT id, student_id FROM PostStudent WHERE post_id = :postId AND group_id IS NOT NULL`,
                             { postId: postId }
                         )) as { id: number; student_id: number }[];
 
