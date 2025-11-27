@@ -2150,14 +2150,16 @@ class PostController implements IController {
                                     parent.parent_id,
                                 ]
                             );
-                            const placeholders = parentInsertData
-                                .map(() => '(?, ?)')
-                                .join(', ');
-                            const flatValues = parentInsertData.flat();
-                            await DB.query(
-                                `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${placeholders}`,
-                                flatValues
-                            );
+                            if (parentInsertData.length > 0) {
+                                const placeholders = parentInsertData
+                                    .map(() => '(?, ?)')
+                                    .join(', ');
+                                const flatValues = parentInsertData.flat();
+                                await DB.query(
+                                    `INSERT INTO PostParent (post_student_id, parent_id) VALUES ${placeholders}`,
+                                    flatValues
+                                );
+                            }
                         }
                     }
                 }
@@ -2223,7 +2225,7 @@ class PostController implements IController {
 
                         // 4. Get all parents for all students in one query
                         const newPostStudents = (await DB.query(
-                            `SELECT id, student_id FROM PostStudent WHERE post_id = :postId AND group_id IS NOT NULL`,
+                            `SELECT id, student_id FROM PostStudent WHERE post_id = :postId`,
                             { postId: postId }
                         )) as { id: number; student_id: number }[];
 
