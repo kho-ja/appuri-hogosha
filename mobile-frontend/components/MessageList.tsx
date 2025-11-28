@@ -218,7 +218,13 @@ const groupMessages = (
   return Array.from(messageMap, ([key, messages]) => ({ key, messages }));
 };
 
-const MessageList = ({ studentId }: { studentId: number }) => {
+const MessageList = ({
+  studentId,
+  onRefreshStudents,
+}: {
+  studentId: number;
+  onRefreshStudents?: () => void;
+}) => {
   // Contexts and hooks
   const db = useSQLiteContext();
   const { isOnline } = useNetwork();
@@ -232,6 +238,8 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // State management
   const [student, setStudent] = useState<Student | null>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  // Track if offline data has been loaded at least once
+  const [hasLoadedOffline, setHasLoadedOffline] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoadingMoreOffline, setIsLoadingMoreOffline] = useState(false);
   const readButNotSentMessageIDs = useRef<number[]>([]);
@@ -381,13 +389,22 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   // Load offline messages when component mounts or goes offline
   useEffect(() => {
     const loadOfflineData = async () => {
-      if (!student || isDemoMode || isOnline) return;
+      if (!student) {
+        return;
+      }
+
+      if (isDemoMode || isOnline) {
+        setHasLoadedOffline(true);
+        return;
+      }
 
       try {
         const messages = await fetchMessagesFromDB(db, student.student_number);
         setLocalMessages(messages);
       } catch (error) {
         console.error('Error loading offline messages:', error);
+      } finally {
+        setHasLoadedOffline(true);
       }
     };
     loadOfflineData();
@@ -515,6 +532,11 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
+      // Also refresh students list to check if new students were added
+      if (onRefreshStudents) {
+        onRefreshStudents();
+      }
+
       if (isDemoMode) {
         // Demo mode: simulate refresh but don't actually fetch new data
         await demoModeService.simulateNetworkDelay(300, 600);
@@ -572,10 +594,12 @@ const MessageList = ({ studentId }: { studentId: number }) => {
   }, [isDemoMode, isOnline, data, localMessages]);
 
   // Show loading state during initial load
+  // For offline mode, show loading until hasLoadedOffline is true
   if (
     !student ||
     (!isDemoMode && isOnline && !session) ||
-    (isLoading && (isDemoMode || (isOnline && session)))
+    (isLoading && (isDemoMode || (isOnline && session))) ||
+    (!isOnline && !isDemoMode && !hasLoadedOffline)
   ) {
     return <MessageListLoading />;
   }
