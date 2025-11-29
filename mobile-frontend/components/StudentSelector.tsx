@@ -69,11 +69,18 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
         !isDeepLinkNavigation
       ) {
         setHasAutoNavigated(true);
+        // Navigate immediately
         handleStudentSelect(students[0], true);
       } else if (students?.length !== 1) {
         setHasAutoNavigated(false);
       }
     }, [students, handleStudentSelect, hasAutoNavigated, isDeepLinkNavigation]);
+
+    // Don't render anything if single student - we're auto-navigating
+    if (students?.length === 1) {
+      return null;
+    }
+
     const avatarColors = [
       '#fc958d',
       '#fc9abc',

@@ -46,16 +46,51 @@ export function StudentProvider(props: PropsWithChildren) {
   const { isOnline } = useNetwork();
   const [students, setStudents] = useState<Student[] | null>(null);
   const [activeStudent, setActiveStudent] = useState<Student | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const db = useSQLiteContext();
   const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
-  const previousSessionRef = React.useRef<string | null>(session);
+  const previousSessionRef = React.useRef<string | null | undefined>(undefined);
 
+  // Load cache FIRST on mount - show cached data immediately
   React.useEffect(() => {
+    const loadCache = async () => {
+      if (!session) {
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        const cachedStudents = await fetchStudentsFromDB(db);
+        if (cachedStudents && cachedStudents.length > 0) {
+          setStudents(cachedStudents);
+        }
+      } catch (err) {
+        console.error('[StudentContext] Failed to load cache:', err);
+      }
+      setIsInitializing(false);
+    };
+    loadCache();
+  }, [session, db]);
+
+  // Reset state only on actual session change (logout/login with different account)
+  React.useEffect(() => {
+    if (previousSessionRef.current === undefined) {
+      // First mount - just save the session
+      previousSessionRef.current = session;
+      return;
+    }
+
     if (previousSessionRef.current !== session) {
-      console.log('[StudentContext] Session changed, resetting student state');
-      setStudents(null);
-      setActiveStudent(null);
+      // Actual session change
+      if (
+        previousSessionRef.current !== null &&
+        session !== previousSessionRef.current
+      ) {
+        setStudents(null);
+        setActiveStudent(null);
+        setIsInitializing(true);
+      }
       previousSessionRef.current = session;
     }
   }, [session]);
@@ -85,14 +120,10 @@ export function StudentProvider(props: PropsWithChildren) {
 
   // Add import for demo service at the top of the file if not already imported
 
-  const {
-    data,
-    error,
-    isError,
-    isSuccess,
-    refetch,
-    isFetching: isLoading,
-  } = useQuery<Student[], Error>({
+  const { data, error, isError, isSuccess, refetch, isFetching } = useQuery<
+    Student[],
+    Error
+  >({
     queryKey: ['students', session],
     queryFn: async () => {
       if (isDemoMode) {
@@ -144,12 +175,15 @@ export function StudentProvider(props: PropsWithChildren) {
         return await fetchStudentsFromDB(db);
       }
     },
-    enabled: !!session,
-    staleTime: isDemoMode ? 0 : 2 * 60 * 1000, // Demo mode always fresh, regular mode 2 minutes
+    enabled: !!session && !isInitializing,
+    staleTime: isDemoMode ? 0 : 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: isDemoMode ? false : 5 * 60 * 1000, // No auto-refetch in demo mode
+    refetchInterval: isDemoMode ? false : 5 * 60 * 1000,
     refetchIntervalInBackground: false,
   });
+
+  // Compute final loading state: loading if initializing OR (fetching AND no cached data)
+  const isLoading = isInitializing || (isFetching && !students);
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -187,7 +221,13 @@ export function StudentProvider(props: PropsWithChildren) {
 
   return (
     <StudentContext.Provider
-      value={{ students, activeStudent, setActiveStudent, refetch, isLoading }}
+      value={{
+        students,
+        activeStudent,
+        setActiveStudent,
+        refetch,
+        isLoading,
+      }}
     >
       {props.children}
     </StudentContext.Provider>
