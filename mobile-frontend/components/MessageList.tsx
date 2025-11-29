@@ -238,8 +238,10 @@ const MessageList = ({
   // State management
   const [student, setStudent] = useState<Student | null>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  // Track if offline data has been loaded at least once
+  // Track if offline data has been loaded for current offline session
   const [hasLoadedOffline, setHasLoadedOffline] = useState(false);
+  // Track previous online state to detect transitions
+  const wasOnlineRef = useRef(isOnline);
   const [refreshing, setRefreshing] = useState(false);
   const [isLoadingMoreOffline, setIsLoadingMoreOffline] = useState(false);
   const readButNotSentMessageIDs = useRef<number[]>([]);
@@ -393,11 +395,14 @@ const MessageList = ({
         return;
       }
 
+      wasOnlineRef.current = isOnline;
+
       if (isDemoMode || isOnline) {
         setHasLoadedOffline(true);
         return;
       }
 
+      // Load from DB in background, but don't block UI if we have cached data
       try {
         const messages = await fetchMessagesFromDB(db, student.student_number);
         setLocalMessages(messages);
@@ -588,18 +593,32 @@ const MessageList = ({
   };
 
   const messageGroups = useMemo(() => {
-    const allMessages =
-      isDemoMode || isOnline ? data?.pages.flat() || [] : localMessages;
-    return groupMessages(allMessages);
+    // When online or demo mode, use data from query
+    if (isDemoMode || isOnline) {
+      return groupMessages(data?.pages.flat() || []);
+    }
+    // When offline, prefer localMessages, but fallback to cached query data if available
+    if (localMessages.length > 0) {
+      return groupMessages(localMessages);
+    }
+    // If we have cached query data, use it while loading from DB
+    if (data?.pages.flat().length) {
+      return groupMessages(data.pages.flat());
+    }
+    return groupMessages([]);
   }, [isDemoMode, isOnline, data, localMessages]);
 
+  // Check if we have any cached data available (either from React Query or local DB)
+  const hasCachedData =
+    (data?.pages.flat().length ?? 0) > 0 || localMessages.length > 0;
+
   // Show loading state during initial load
-  // For offline mode, show loading until hasLoadedOffline is true
+  // Don't show loading if we have cached data to display
   if (
     !student ||
     (!isDemoMode && isOnline && !session) ||
-    (isLoading && (isDemoMode || (isOnline && session))) ||
-    (!isOnline && !isDemoMode && !hasLoadedOffline)
+    (isLoading && (isDemoMode || (isOnline && session)) && !hasCachedData) ||
+    (!isOnline && !isDemoMode && !hasLoadedOffline && !hasCachedData)
   ) {
     return <MessageListLoading />;
   }
