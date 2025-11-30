@@ -1043,6 +1043,7 @@
     "invalid_or_missing_post_id": "Неверный или отсутствующий идентификатор поста",
     "post_not_found": "Пост не найден",
     "group_members_not_found": "Члены группы не найдены",
+    "parent_group_not_found": "Родительская группа не найдена",
     "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
     "post_receivers_updated_successfully": "Получатели поста успешно обновлены",
     "post_notification_replayed_successfully": "Уведомление о посте успешно отправлено повторно",

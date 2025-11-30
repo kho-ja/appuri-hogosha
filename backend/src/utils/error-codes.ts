@@ -15,7 +15,6 @@ export const ErrorKeys = {
     invalid_family_name: 'invalid_family_name',
     invalid_given_name_format: 'invalid_given_name_format',
     invalid_family_name_format: 'invalid_family_name_format',
-    // Post/message specific validation
     invalid_title: 'invalid_title',
     invalid_description: 'invalid_description',
     invalid_priority: 'invalid_priority',
@@ -35,6 +34,7 @@ export const ErrorKeys = {
     student_number_already_exists: 'student_number_already_exists',
     group_name_already_exists: 'group_name_already_exists',
     group_does_not_exist: 'group_does_not_exist',
+    parent_group_not_found: 'parent_group_not_found',
     parent_student_limit_exceeded: 'parent_student_limit_exceeded',
 
     // General errors
@@ -51,4 +51,14 @@ export function createErrorResponse(errorKey: string, details?: any) {
         error: errorKey,
         details,
     };
+}
+
+export function isValidString(value: any): boolean {
+    return typeof value === 'string' && value.trim().length > 0;
+}
+
+export function isValidStudentNumber(value: any): boolean {
+    if (typeof value !== 'string') return false;
+    const trimmed = value.trim();
+    return trimmed.length > 0 && trimmed.length <= 50;
 }

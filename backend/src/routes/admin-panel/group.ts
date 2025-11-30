@@ -22,7 +22,6 @@ import {
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 
-// Топологическая сортировка групп: родители создаются раньше детей
 function topologicalSortGroups<
     T extends { name: string; parent_group_name: string | null },
 >(groups: T[]): T[] {
@@ -34,7 +33,6 @@ function topologicalSortGroups<
         const key = group.name.toLowerCase();
         if (visited.has(key)) return;
 
-        // Сначала добавляем родителя
         if (group.parent_group_name) {
             const parent = nameToGroup.get(
                 group.parent_group_name.toLowerCase()
@@ -51,23 +49,6 @@ function topologicalSortGroups<
     groups.forEach(visit);
     return sorted;
 }
-
-// Экранирование CSV поля
-function escapeCsvField(field: string): string {
-    if (!field) return '';
-    // Если поле содержит запятую, кавычи или перенос строки - оборачиваем в кавычки
-    if (
-        field.includes(',') ||
-        field.includes('"') ||
-        field.includes('\n') ||
-        field.includes('\r')
-    ) {
-        return '"' + field.replace(/"/g, '""') + '"';
-    }
-    return field;
-}
-
-// Using shared CSV upload middleware from utils/csv-upload
 
 class GroupController implements IController {
     public router: Router = express.Router();
@@ -97,7 +78,6 @@ class GroupController implements IController {
 
     exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
         try {
-            // Получаем группы с информацией о родителе
             const groups = (await DB.query(
                 `SELECT
                     g.id,
@@ -126,7 +106,6 @@ class GroupController implements IController {
                 return res.status(404).json({ error: 'No groups found' }).end();
             }
 
-            // Получаем студентов для каждой группы
             for (const group of groups) {
                 const memberList = (await DB.query(
                     `SELECT st.student_number
@@ -140,7 +119,6 @@ class GroupController implements IController {
                 );
             }
 
-            // Используем библиотеку csv-stringify - она правильно обрабатывает кавычки
             const csvData = groups.map(group => ({
                 name: group.name || '',
                 parent_group_name: group.parent_group_name || '',
@@ -177,7 +155,7 @@ class GroupController implements IController {
                 .json(createErrorResponse(ErrorKeys.file_missing))
                 .end();
         }
-        // Response container
+
         const response = createBaseResponse<any>();
         try {
             const rows = await parseCSVBuffer(req.file.buffer);
@@ -186,7 +164,6 @@ class GroupController implements IController {
                 return res.status(200).json(response).end();
             }
 
-            // Merge logic with parent_group_name support
             interface GroupRow extends CSVRowBase {
                 name: string;
                 parent_group_name: string | null;
@@ -200,14 +177,12 @@ class GroupController implements IController {
                 const parentName =
                     String(raw.parent_group_name || '').trim() || null;
                 const snRaw = String(raw.student_numbers || '').trim();
-                // Поддержка разделителей: запятая или точка с запятой
                 const numbers = snRaw
                     .split(/[,;]/)
                     .map(s => s.trim())
                     .filter(Boolean);
                 const rowErrors: Record<string, string> = {};
 
-                // Если name пустой, но есть student_numbers - это продолжение предыдущей группы
                 if (!name && numbers.length > 0) {
                     const lastGroup = validGroups[validGroups.length - 1];
                     if (lastGroup) {
@@ -217,7 +192,7 @@ class GroupController implements IController {
                 }
 
                 if (!isValidString(name)) {
-                    if (numbers.length === 0) continue; // Пустая строка
+                    if (numbers.length === 0) continue;
                     rowErrors.name = ErrorKeys.invalid_name;
                 }
 
@@ -251,7 +226,6 @@ class GroupController implements IController {
                     const existing = validGroups.find(g => g.name === name);
                     if (existing) {
                         existing.student_numbers.push(...numbers);
-                        // Обновляем parent если указан
                         if (parentName) existing.parent_group_name = parentName;
                     } else {
                         validGroups.push({
@@ -263,7 +237,6 @@ class GroupController implements IController {
                 }
             }
 
-            // Deduplicate numbers
             for (const g of validGroups) {
                 g.student_numbers = Array.from(new Set(g.student_numbers));
             }
@@ -289,7 +262,6 @@ class GroupController implements IController {
                     .end();
             }
 
-            // Топологическая сортировка: родители перед детьми
             const sortedGroups = topologicalSortGroups(validGroups);
 
             const existingGroups = await DB.query(
@@ -303,7 +275,6 @@ class GroupController implements IController {
             const existingSet = new Set(existingGroups.map((g: any) => g.name));
 
             for (const group of sortedGroups) {
-                // Определяем sub_group_id по имени родителя
                 let subGroupId: number | null = null;
                 if (group.parent_group_name) {
                     const parentId = groupNameToId.get(
@@ -315,7 +286,8 @@ class GroupController implements IController {
                         response.errors.push({
                             row: group,
                             errors: {
-                                parent_group_name: 'parent_group_not_found',
+                                parent_group_name:
+                                    ErrorKeys.parent_group_not_found,
                             },
                         });
                         if (throwInErrorBool) continue;
@@ -343,7 +315,6 @@ class GroupController implements IController {
                     );
                     const groupId = insert.insertId;
 
-                    // Сохраняем новый ID для дочерних групп
                     groupNameToId.set(group.name.toLowerCase(), groupId);
                     existingSet.add(group.name);
 
@@ -390,7 +361,6 @@ class GroupController implements IController {
 
                     const gId = groupNameToId.get(group.name.toLowerCase())!;
 
-                    // Обновляем группу включая sub_group_id
                     await DB.execute(
                         `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id 
                          WHERE id = :id AND school_id = :school_id`,
@@ -527,11 +497,9 @@ class GroupController implements IController {
                 };
             }
 
-            // Use provided sub_group_id if explicitly passed, otherwise keep current value
             const finalSubGroupId =
                 sub_group_id !== undefined ? sub_group_id : group.sub_group_id;
 
-            // Validate sub group if it's being changed
             if (finalSubGroupId !== null && finalSubGroupId !== undefined) {
                 if (!isValidId(finalSubGroupId)) {
                     throw {
@@ -540,7 +508,6 @@ class GroupController implements IController {
                     };
                 }
 
-                // Check if sub group exists and belongs to same school
                 const subGroupExists = await DB.query(
                     `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
                     {
@@ -556,7 +523,6 @@ class GroupController implements IController {
                     };
                 }
 
-                // Prevent circular references
                 if (parseInt(finalSubGroupId) === parseInt(group.id)) {
                     throw {
                         status: 400,
@@ -619,7 +585,6 @@ class GroupController implements IController {
                 }
 
                 if (insertStudentIds.length > 0) {
-                    // Validate that all student IDs are valid integers
                     if (!isValidArrayId(insertStudentIds)) {
                         throw {
                             status: 400,
@@ -627,12 +592,8 @@ class GroupController implements IController {
                         };
                     }
 
-                    // Use safe bulk insert with parameterized queries
                     const insertData = insertStudentIds.map(
-                        (studentId: any) => [
-                            Number(studentId), // Ensure it's a number
-                            group.id,
-                        ]
+                        (studentId: any) => [Number(studentId), group.id]
                     );
                     for (const row of insertData) {
                         const [student_id, group_id] = row;
@@ -1018,7 +979,6 @@ class GroupController implements IController {
                 };
             }
 
-            // Validate sub group if provided
             if (sub_group_id) {
                 if (!isValidId(sub_group_id)) {
                     throw {
@@ -1043,7 +1003,6 @@ class GroupController implements IController {
                 }
             }
 
-            // Check if the group name already exists
             const existingGroup = await DB.query(
                 `SELECT id FROM StudentGroup WHERE name = :name AND school_id = :school_id`,
                 {
@@ -1087,7 +1046,6 @@ class GroupController implements IController {
                 );
 
                 if (studentRows.length > 0) {
-                    // Use safe bulk insert instead of string interpolation
                     const insertData = studentRows.map((student: any) => [
                         student.id,
                         groupId,
@@ -1148,30 +1106,7 @@ class GroupController implements IController {
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
-            const templateData = [
-                { name: 'Grade 1', parent_group_name: '', student_numbers: '' },
-                { name: 'Grade 2', parent_group_name: '', student_numbers: '' },
-                {
-                    name: 'Class 1-A',
-                    parent_group_name: 'Grade 1',
-                    student_numbers: 'STU001,STU002,STU003',
-                },
-                {
-                    name: 'Class 1-B',
-                    parent_group_name: 'Grade 1',
-                    student_numbers: 'STU004,STU005',
-                },
-                {
-                    name: 'Class 2-A',
-                    parent_group_name: 'Grade 2',
-                    student_numbers: 'STU006',
-                },
-            ];
-
-            const csvContent = stringify(templateData, {
-                header: true,
-                columns: ['name', 'parent_group_name', 'student_numbers'],
-            });
+            const csvContent = 'name,parent_group_name,student_numbers\r\n';
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader(
@@ -1197,7 +1132,6 @@ class GroupController implements IController {
                 };
             }
 
-            // Check if group exists
             const groupExists = await DB.query(
                 `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1213,7 +1147,6 @@ class GroupController implements IController {
                 };
             }
 
-            // Get all sub-groups for this group
             const subGroups = await DB.query(
                 `SELECT 
                     sg.id, 
@@ -1251,93 +1184,6 @@ class GroupController implements IController {
                     })
                     .end();
             }
-        }
-    };
-
-    updateGroup = async (req: ExtendedRequest, res: Response) => {
-        try {
-            const groupId = parseInt(req.params.groupId);
-            const { name, students, sub_group_id } = req.body;
-
-            if (!groupId || isNaN(groupId)) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'invalid_group_id',
-                        details: {
-                            field: 'groupId',
-                            value: groupId,
-                        },
-                    })
-                    .end();
-            }
-
-            // Fetch current group data to preserve sub_group_id if not provided
-            const currentGroup = await DB.query(
-                `SELECT sub_group_id FROM StudentGroup WHERE id = :groupId AND school_id = :school_id`,
-                { groupId, school_id: req.user.school_id }
-            );
-
-            if (currentGroup.length === 0) {
-                return res
-                    .status(404)
-                    .json({
-                        error: 'group_not_found',
-                        details: {
-                            groupId,
-                        },
-                    })
-                    .end();
-            }
-
-            // Use provided sub_group_id, or fall back to current value if not provided
-            const finalSubGroupId =
-                sub_group_id !== undefined
-                    ? sub_group_id
-                    : currentGroup[0].sub_group_id;
-
-            await DB.execute(
-                `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id WHERE id = :groupId`,
-                { name, sub_group_id: finalSubGroupId, groupId }
-            );
-
-            if (students && Array.isArray(students)) {
-                await DB.execute(
-                    `DELETE FROM GroupMember WHERE group_id = :groupId`,
-                    { groupId }
-                );
-
-                if (students.length > 0) {
-                    const insertData = students.map((studentId: number) => [
-                        groupId,
-                        studentId,
-                    ]);
-                    const placeholders = insertData
-                        .map(() => '(?, ?)')
-                        .join(', ');
-                    const flatValues = insertData.flat();
-
-                    await DB.query(
-                        `INSERT INTO GroupMember (group_id, student_id) VALUES ${placeholders}`,
-                        flatValues
-                    );
-                }
-            }
-
-            return res
-                .status(200)
-                .json({
-                    message: 'Group updated successfully',
-                })
-                .end();
-        } catch (e: any) {
-            console.log('Error occurred while updating group:', e);
-            return res
-                .status(500)
-                .json({
-                    error: 'internal_server_error',
-                })
-                .end();
         }
     };
 }
