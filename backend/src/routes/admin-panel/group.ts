@@ -140,18 +140,16 @@ class GroupController implements IController {
                 );
             }
 
-            // Формируем данные для CSV
+            // Используем библиотеку csv-stringify - она правильно обрабатывает кавычки
             const csvData = groups.map(group => ({
                 name: group.name || '',
                 parent_group_name: group.parent_group_name || '',
                 student_numbers: (group.student_numbers || []).join(','),
             }));
 
-            // Используем точку с запятой как разделитель (Excel-friendly)
             const csvContent = stringify(csvData, {
                 header: true,
                 columns: ['name', 'parent_group_name', 'student_numbers'],
-                delimiter: ';',
             });
 
             res.setHeader(
@@ -1173,7 +1171,6 @@ class GroupController implements IController {
             const csvContent = stringify(templateData, {
                 header: true,
                 columns: ['name', 'parent_group_name', 'student_numbers'],
-                delimiter: ';',
             });
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');

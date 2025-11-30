@@ -101,12 +101,12 @@ export const handleCSVUpload = (req: any, res: any, next: any) => {
 };
 
 export async function parseCSVBuffer(buffer: Buffer): Promise<any[]> {
-    const decoded = await iconv.decode(buffer, 'UTF-8');
+    const decoded = iconv.decode(buffer, 'UTF-8');
     const stream = Readable.from(decoded);
     const rows: any[] = [];
     await new Promise((resolve, reject) => {
         stream
-            .pipe(csv())
+            .pipe(csv({ separator: ',' }))
             .on('headers', (headers: string[]) => {
                 if (headers?.length && headers[0].charCodeAt(0) === 0xfeff) {
                     headers[0] = headers[0].slice(1);
