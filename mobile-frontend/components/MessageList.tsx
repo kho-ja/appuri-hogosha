@@ -15,7 +15,7 @@ import {
   Image,
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 import { Message, Student } from '@/constants/types';
 import { useNetwork } from '@/contexts/network-context';
@@ -432,80 +432,66 @@ const MessageList = ({
     prepareOnlineData();
   }, [student, isOnline, db, session]);
 
-  // Update unread count based on demo/online/offline status
-  const updateUnreadCount = useCallback(async () => {
-    if (!student) return;
-    try {
-      if (isDemoMode) {
-        // Demo mode: get unread count from demo service
-        const demoUnreadCount = demoModeService.getDemoUnreadCount(student.id);
-        setUnreadCount(demoUnreadCount);
-      } else if (isOnline && session) {
-        const res = await fetch(`${apiUrl}/unread`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session}`,
-          },
-        });
+  // Fetch unread count from API (online mode)
+  const fetchUnreadCount = async () => {
+    if (!student) return 0;
 
-        if (res.status === 401) {
-          refreshToken();
-          return;
-        } else if (res.status === 403) {
-          signOut();
-          return;
-        }
+    if (isDemoMode) {
+      // Demo mode: get unread count from demo service
+      return demoModeService.getDemoUnreadCount(student.id);
+    } else if (isOnline && session) {
+      const res = await fetch(`${apiUrl}/unread`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session}`,
+        },
+      });
 
-        const list = await res.json();
-        const entry = Array.isArray(list)
-          ? list.find((s: any) => s.id === student.id)
-          : null;
-        setUnreadCount(entry?.unread_count ?? 0);
-      } else {
-        // Offline mode: count unread messages from local DB
-        const row = await db.getFirstAsync<{ count: number }>(
-          'SELECT COUNT(DISTINCT title || "|-|" || content || "|-|" || sent_time) as count FROM message WHERE student_number = ? AND read_status = 0',
-          [student.student_number]
-        );
-        setUnreadCount(row?.count ?? 0);
+      if (res.status === 401) {
+        refreshToken();
+        return 0;
+      } else if (res.status === 403) {
+        signOut();
+        return 0;
       }
-    } catch (e) {
-      console.error('Failed to update unread count:', e);
-    }
-  }, [
-    student,
-    isDemoMode,
-    isOnline,
-    session,
-    apiUrl,
-    db,
-    setUnreadCount,
-    refreshToken,
-    signOut,
-  ]);
 
-  // Update unread count when component mounts or when online status changes
+      const list = await res.json();
+      const entry = Array.isArray(list)
+        ? list.find((s: any) => s.id === student.id)
+        : null;
+      return entry?.unread_count ?? 0;
+    } else {
+      // Offline mode: count unread messages from local DB
+      const row = await db.getFirstAsync<{ count: number }>(
+        'SELECT COUNT(DISTINCT title || "|-|" || content || "|-|" || sent_time) as count FROM message WHERE student_number = ? AND read_status = 0',
+        [student.student_number]
+      );
+      return row?.count ?? 0;
+    }
+  };
+
+  // Use React Query to fetch unread count
+  const { refetch: refetchUnreadCount } = useQuery({
+    queryKey: ['unreadCount', student?.id, isDemoMode ? 'demo' : 'regular'],
+    queryFn: async () => {
+      const count = await fetchUnreadCount();
+      setUnreadCount(count);
+      return count;
+    },
+    enabled: Boolean(student),
+    staleTime: isDemoMode ? 0 : 30 * 1000, // 30 seconds for online, always fresh for demo
+    retry: isDemoMode ? 0 : 1,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
+
+  // Refetch unread count when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      updateUnreadCount();
-    }, [updateUnreadCount])
+      refetchUnreadCount();
+    }, [refetchUnreadCount])
   );
-
-  // Update unread count when readButNotSentMessageIDs changes
-  useEffect(() => {
-    updateUnreadCount();
-  }, [updateUnreadCount]);
-
-  // Listen for database changes and update unread count
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Periodically update unread count to catch any database changes
-      updateUnreadCount();
-    }, 2000); // Check every 2 seconds
-
-    return () => clearInterval(interval);
-  }, [updateUnreadCount]);
 
   // Refresh data when screen comes into focus
   useFocusEffect(
@@ -527,10 +513,10 @@ const MessageList = ({
           );
           setLocalMessages(messages);
         }
-        updateUnreadCount();
+        refetchUnreadCount();
       };
       refreshData();
-    }, [student, isDemoMode, isOnline, db, session, updateUnreadCount])
+    }, [student, isDemoMode, isOnline, db, session, refetchUnreadCount])
   );
 
   // Handle pull-to-refresh
@@ -556,7 +542,7 @@ const MessageList = ({
         const messages = await fetchMessagesFromDB(db, student.student_number);
         setLocalMessages(messages);
       }
-      await updateUnreadCount();
+      await refetchUnreadCount();
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
