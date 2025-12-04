@@ -21,6 +21,7 @@ interface StudentContextValue {
   setActiveStudent: (student: Student) => void;
   refetch: () => void;
   isLoading: boolean;
+  clearAndRefetch: () => Promise<void>;
 }
 
 const StudentContext = createContext<StudentContextValue>({
@@ -29,6 +30,7 @@ const StudentContext = createContext<StudentContextValue>({
   setActiveStudent: () => {},
   refetch: () => {},
   isLoading: false,
+  clearAndRefetch: async () => {},
 });
 
 export function useStudents() {
@@ -219,6 +221,18 @@ export function StudentProvider(props: PropsWithChildren) {
     }
   }, [students, activeStudent]);
 
+  // Clear cache from DB and refetch - used for pull-to-refresh
+  const clearAndRefetch = useCallback(async () => {
+    try {
+      await db.execAsync('DELETE FROM student');
+      console.log('[StudentContext] Cleared student cache from DB');
+      refetch();
+    } catch (err) {
+      console.error('[StudentContext] Failed to clear and refetch:', err);
+      refetch(); // Still try to refetch even if clear fails
+    }
+  }, [db, refetch]);
+
   return (
     <StudentContext.Provider
       value={{
@@ -227,6 +241,7 @@ export function StudentProvider(props: PropsWithChildren) {
         setActiveStudent,
         refetch,
         isLoading,
+        clearAndRefetch,
       }}
     >
       {props.children}

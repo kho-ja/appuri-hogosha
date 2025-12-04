@@ -10,7 +10,7 @@ import NoStudentsScreen from '@/components/NoStudentsScreen';
 
 const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
-  const { students, refetch, isLoading } = useStudents();
+  const { students, refetch, isLoading, clearAndRefetch } = useStudents();
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
 
@@ -23,7 +23,7 @@ const HomeScreen = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await refetch();
+      await clearAndRefetch(); // Clear cache and fetch fresh data
     } catch (error) {
       console.error('Refresh failed:', error);
     } finally {
