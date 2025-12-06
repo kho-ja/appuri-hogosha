@@ -525,8 +525,10 @@ const MessageList = ({
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // Clear cache and refresh students list
-      await clearAndRefetch();
+      // Clear cache and refresh students list only when online
+      if (isOnline && !isDemoMode) {
+        await clearAndRefetch();
+      }
 
       if (isDemoMode) {
         // Demo mode: simulate refresh but don't actually fetch new data

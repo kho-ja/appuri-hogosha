@@ -221,17 +221,23 @@ export function StudentProvider(props: PropsWithChildren) {
     }
   }, [students, activeStudent]);
 
-  // Clear cache from DB and refetch - used for pull-to-refresh
+  // Clear cache and refetch only when online; otherwise keep cache untouched
   const clearAndRefetch = useCallback(async () => {
+    if (!isOnline || isDemoMode) {
+      // Offline or demo: do nothing, current state already has cache
+      // Don't re-fetch to avoid flicker
+      return;
+    }
+
     try {
       await db.execAsync('DELETE FROM student');
       console.log('[StudentContext] Cleared student cache from DB');
-      refetch();
+      await refetch();
     } catch (err) {
       console.error('[StudentContext] Failed to clear and refetch:', err);
-      refetch(); // Still try to refetch even if clear fails
+      // keep cache as-is on failure
     }
-  }, [db, refetch]);
+  }, [db, refetch, isOnline, isDemoMode]);
 
   return (
     <StudentContext.Provider
