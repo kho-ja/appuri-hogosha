@@ -24,10 +24,13 @@ import { ICountryName } from 'react-native-international-phone-number/lib/interf
 
 export default function SignIn() {
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1);
+  const [session, setSession] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
-  const { signIn } = useSession();
+  const { signIn, verifyOtp } = useSession();
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
@@ -111,8 +114,14 @@ export default function SignIn() {
   }, [handleBackPress]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async () =>
-      await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
+    mutationFn: async () => {
+      if (step === 1) {
+        return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
+      } else {
+        const fullPhone = selectedCountry?.callingCode + phoneNumber.replaceAll(' ', '');
+        return await verifyOtp(fullPhone, otp, session);
+      }
+    },
     onError: error => {
       // Check if this is a notification permission error
       if (
@@ -147,21 +156,32 @@ export default function SignIn() {
         });
       }
     },
-    onSuccess: async () => {
-      await AsyncStorage.setItem('hasEverLoggedIn', 'true');
+    onSuccess: async (data) => {
+      if (step === 1 && data?.session) {
+        setSession(data.session);
+        setStep(2);
+        Toast.show('Verification code sent', {
+          duration: Toast.durations.SHORT,
+          position: TOAST_POSITION,
+          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
+          textColor: 'white'
+        });
+      } else {
+        await AsyncStorage.setItem('hasEverLoggedIn', 'true');
 
-      Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
-      });
+        Toast.show(i18n[language].loginSuccess, {
+          duration: Toast.durations.SHORT,
+          position: TOAST_POSITION,
+          shadow: true,
+          animation: true,
+          hideOnPress: true,
+          textColor: 'white',
+          containerStyle: {
+            backgroundColor: 'green',
+            borderRadius: 5,
+          },
+        });
+      }
     },
   });
 
@@ -176,38 +196,48 @@ export default function SignIn() {
               {i18n[language].welcome.replace(', ', ',\n')}
             </ThemedText>
           </ThemedView>
-          <ThemedPhoneInput
-            label={i18n[language].phoneNumber}
-            value={phoneNumber}
-            onChangePhoneNumber={setPhoneNumber}
-            selectedCountry={selectedCountry}
-            onChangeSelectedCountry={setSelectedCountry}
-            placeholder={i18n[language].phoneNumber}
-            defaultCountry={'UZ' as ICountryCca2}
-          />
-          <SecureInput
-            label={i18n[language].password}
-            placeholder={i18n[language].enterPassword}
-            placeholderTextColor='grey'
-            onChangeText={setPassword}
-            maxLength={50}
-            value={password}
-            selectTextOnFocus
-            keyboardType='numbers-and-punctuation'
-            textContentType='password'
-            autoCapitalize='none'
-          />
-          <TouchableOpacity
-            style={styles.forgotPasswordContainer}
-            onPress={() => router.push('/forgot-password')}
-          >
-            <ThemedText style={styles.forgotPasswordText}>
-              {i18n[language].forgotPasswordLink}
-            </ThemedText>
-          </TouchableOpacity>
+          {step === 1 ? (
+            <>
+              <ThemedPhoneInput
+                label={i18n[language].phoneNumber}
+                value={phoneNumber}
+                onChangePhoneNumber={setPhoneNumber}
+                selectedCountry={selectedCountry}
+                onChangeSelectedCountry={setSelectedCountry}
+                placeholder={i18n[language].phoneNumber}
+                defaultCountry={'UZ' as ICountryCca2}
+              />
+              {/* Optional: Link to password login if needed */}
+            </>
+          ) : (
+            <SecureInput
+              label="Verification Code"
+              placeholder="Enter 6-digit code"
+              placeholderTextColor='grey'
+              onChangeText={setOtp}
+              maxLength={6}
+              value={otp}
+              keyboardType='number-pad'
+              textContentType='oneTimeCode'
+              autoCapitalize='none'
+            />
+          )}
+
+          {/* Hidden Password Input for Demo Mode or Fallback (optional, removing for now to enforce OTP) */}
+
+          {step === 1 && (
+            <TouchableOpacity
+              style={styles.forgotPasswordContainer}
+              onPress={() => router.push('/forgot-password')}
+            >
+              <ThemedText style={styles.forgotPasswordText}>
+                {i18n[language].forgotPasswordLink}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
           <Button
             onPress={() => mutate()}
-            title={i18n[language].loginToAccount}
+            title={step === 1 ? "Send Code" : "Verify"}
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}
             disabled={isPending}

@@ -7,6 +7,7 @@ import { UnifiedPushService } from './services/unified/push';
 import { PlayMobileService } from './services/playmobile/api';
 import { CognitoHandler } from './handlers/cognito/sms-handler';
 import { ApiHandler } from './handlers/api/sms-api';
+import { AuthChallengeHandler } from './handlers/cognito/auth-challenges';
 import { NotificationProcessor } from './handlers/notifications/push-notifications';
 import { detectEventSource } from './utils/event-detection';
 import {
@@ -29,6 +30,7 @@ const playMobileService = new PlayMobileService();
 
 // Initialize handlers
 const cognitoHandler = new CognitoHandler(playMobileService, awsSmsService);
+const authChallengeHandler = new AuthChallengeHandler(playMobileService, awsSmsService);
 const apiHandler = new ApiHandler(playMobileService, awsSmsService);
 const notificationProcessor = new NotificationProcessor(
     dbQueries,
@@ -48,10 +50,18 @@ export const handler = async (event: any, _context: any) => {
     try {
         switch (eventSource) {
             case 'COGNITO':
-                console.log('🔐 Processing Cognito SMS trigger');
-                return await cognitoHandler.handleCognitoSms(
-                    event as CognitoEvent
-                );
+                console.log('🔐 Processing Cognito trigger');
+                const cognitoEvent = event as CognitoEvent;
+
+                if (cognitoEvent.triggerSource.startsWith('DefineAuthChallenge')) {
+                    return await authChallengeHandler.handleDefineAuthChallenge(cognitoEvent);
+                } else if (cognitoEvent.triggerSource.startsWith('CreateAuthChallenge')) {
+                    return await authChallengeHandler.handleCreateAuthChallenge(cognitoEvent);
+                } else if (cognitoEvent.triggerSource.startsWith('VerifyAuthChallengeResponse')) {
+                    return await authChallengeHandler.handleVerifyAuthChallenge(cognitoEvent);
+                } else {
+                    return await cognitoHandler.handleCognitoSms(cognitoEvent);
+                }
 
             case 'API_GATEWAY':
                 console.log('🌐 Processing API Gateway request');

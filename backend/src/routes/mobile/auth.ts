@@ -85,6 +85,7 @@ class AuthController implements IController {
             this.authLimiter,
             this.forgotPasswordConfirm
         );
+        this.router.post('/verify-otp', this.authLimiter, this.verifyOtp);
     }
 
     forgotPasswordInitiate = async (req: Request, res: Response) => {
@@ -348,6 +349,13 @@ class AuthController implements IController {
         try {
             const { phone_number, password, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
+
+            // OTP Flow: If no password, initiate phone sign-in
+            if (!password) {
+                const result = await this.cognitoClient.signInWithPhone(phone_number);
+                return res.status(200).json(result).end();
+            }
+
             const authData = await this.cognitoClient.login(
                 phone_number,
                 password
@@ -525,6 +533,92 @@ class AuthController implements IController {
                 .end();
         } catch (e: any) {
             console.error('Error during sign in in auth:', e);
+            if (e.status) {
+                return res
+                    .status(e.status)
+                    .json({
+                        error: e.message,
+                    })
+                    .end();
+            } else {
+                return res
+                    .status(500)
+                    .json({
+                        error: 'Internal server error',
+                    })
+                    .end();
+            }
+        }
+    };
+
+    verifyOtp = async (req: Request, res: Response) => {
+        try {
+            const { phone_number, code, session, token } = req.body;
+            const normalizedToken = this.normalizeToken(token);
+
+            const authData = await this.cognitoClient.respondToAuthChallenge(
+                phone_number,
+                code,
+                session
+            );
+
+            const parents = await DB.query(
+                `SELECT
+                pa.id,pa.email,pa.phone_number,
+                pa.given_name,pa.family_name,
+                sc.name AS school_name
+            FROM Parent AS pa
+            INNER JOIN School AS sc ON sc.id = pa.school_id
+            WHERE pa.phone_number = :phone_number`,
+                {
+                    phone_number: phone_number.slice(1),
+                }
+            );
+
+            if (
+                parents.length <= 0 ||
+                normalizedToken == null ||
+                normalizedToken == '[object Object]'
+            ) {
+                // Note: Auth success but user not found in DB or invalid token
+                // In production might want to handle differently
+                throw {
+                    status: 401,
+                    message: 'User not found in database',
+                };
+            }
+
+            const parent = parents[0];
+
+            try {
+                await DB.execute(
+                    `UPDATE Parent SET last_login_at = NOW(), arn = :arn WHERE id = :id;`,
+                    {
+                        id: parent.id,
+                        arn: normalizedToken,
+                    }
+                );
+            } catch (error) {
+                console.error('Error during updating device token:', error);
+            }
+
+            return res
+                .status(200)
+                .json({
+                    access_token: authData.accessToken,
+                    refresh_token: authData.refreshToken,
+                    user: {
+                        id: parent.id,
+                        email: parent.email,
+                        phone_number: parent.phone_number,
+                        given_name: parent.given_name,
+                        family_name: parent.family_name,
+                    },
+                    school_name: parent.school_name,
+                })
+                .end();
+
+        } catch (e: any) {
             if (e.status) {
                 return res
                     .status(e.status)
