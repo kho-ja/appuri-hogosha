@@ -676,15 +676,34 @@ class CognitoClient {
             }
         } catch (e: any) {
             console.error('Sign in with phone error:', e);
+            console.error('Error name:', e.name);
+            console.error('Error message:', e.message);
+
             if (e.name === 'UserNotFoundException') {
                 throw {
                     status: 404,
                     message: 'User not found',
                 } as signInWithPhoneThrow;
             }
+
+            if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message: 'Custom auth flow not configured or not authorized',
+                } as signInWithPhoneThrow;
+            }
+
+            if (e.name === 'InvalidParameterException') {
+                throw {
+                    status: 400,
+                    message: `Invalid parameter: ${e.message}`,
+                } as signInWithPhoneThrow;
+            }
+
+            // Return the actual error message for debugging
             throw {
                 status: 500,
-                message: 'Internal server error',
+                message: `Authentication error: ${e.message || 'Internal server error'}`,
             } as signInWithPhoneThrow;
         }
     }
@@ -826,18 +845,13 @@ interface signInWithPhoneOutput {
     message: string;
 }
 
-interface signInWithPhoneThrow {
-    status: 400 | 404 | 500;
-    message: string;
-}
-
 interface signInWithPhoneOutput {
     session: string;
     message: string;
 }
 
 interface signInWithPhoneThrow {
-    status: 400 | 404 | 500;
+    status: 400 | 401 | 404 | 500;
     message: string;
 }
 

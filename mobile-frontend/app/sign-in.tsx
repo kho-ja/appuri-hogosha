@@ -27,6 +27,7 @@ export default function SignIn() {
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
   const [session, setSession] = useState('');
+  const [useOtpLogin, setUseOtpLogin] = useState(false); // Toggle for OTP vs Password
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
@@ -115,11 +116,17 @@ export default function SignIn() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      if (step === 1) {
-        return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
+      if (useOtpLogin) {
+        // OTP Flow
+        if (step === 1) {
+          return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
+        } else {
+          const fullPhone = selectedCountry?.callingCode + phoneNumber.replaceAll(' ', '');
+          return await verifyOtp(fullPhone, otp, session);
+        }
       } else {
-        const fullPhone = selectedCountry?.callingCode + phoneNumber.replaceAll(' ', '');
-        return await verifyOtp(fullPhone, otp, session);
+        // Password Flow
+        return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password);
       }
     },
     onError: error => {

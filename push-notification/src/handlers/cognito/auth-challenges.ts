@@ -1,6 +1,7 @@
 import { CognitoEvent } from '../../types/events';
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
+import { getUzbekistanOperatorRouting } from '../../utils/validation';
 
 export class AuthChallengeHandler {
     constructor(
@@ -62,23 +63,29 @@ export class AuthChallengeHandler {
         // Generate 6-digit code
         const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Send SMS
+        // Build message
         const message = `Your verification code is: ${secretCode}`;
 
+        // Get routing decision
+        const routing = getUzbekistanOperatorRouting(phoneNumber);
+
         try {
-            // Try PlayMobile first (Uzbekistan)
-            let sent = false;
-            if (phoneNumber.startsWith('+998')) {
-                sent = await this.playMobileService.sendSms(phoneNumber, message);
-            }
-
-            // Fallback to AWS SMS
-            if (!sent) {
+            if (!routing.isUzbekistan) {
+                // International number - use AWS directly
+                console.log(`🌍 Sending OTP via AWS for international number`);
                 await this.awsSmsService.sendSms(phoneNumber, message);
+                console.log(`✅ OTP sent via AWS to ${phoneNumber.slice(-4)}`);
+            } else {
+                // Uzbekistan number - use routing logic
+                console.log(`🇺🇿 Sending OTP for ${routing.operator}`);
+                const sent = await this.routeMessageWithFallback(phoneNumber, message, routing);
+
+                if (sent) {
+                    console.log(`✅ OTP sent successfully to ${phoneNumber.slice(-4)}`);
+                } else {
+                    console.error(`❌ Failed to send OTP to ${phoneNumber.slice(-4)}`);
+                }
             }
-
-            console.log(`✅ OTP sent to ${phoneNumber.slice(-4)}`);
-
         } catch (error) {
             console.error('❌ Failed to send OTP:', error);
             // We still proceed to set the challenge, but user won't get the code.
@@ -97,6 +104,64 @@ export class AuthChallengeHandler {
         };
 
         return event;
+    }
+
+    private async routeMessageWithFallback(
+        phoneNumber: string,
+        message: string,
+        routing: any
+    ): Promise<boolean> {
+        try {
+            if (routing.usePlayMobile) {
+                console.log(`📤 Attempting to send via PlayMobile (${routing.operator})`);
+                const success = await this.playMobileService.sendSms(phoneNumber, message);
+
+                if (success) {
+                    console.log(`✅ PlayMobile delivery successful for ${routing.operator}`);
+                    return true;
+                } else {
+                    console.warn(`⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`);
+                    // Try AWS as fallback for PlayMobile failure
+                    return await this.tryAwsFallback(phoneNumber, message, 'PlayMobile failure');
+                }
+            } else {
+                // Ucell bypass - use AWS directly
+                console.log(`📤 Attempting to send via AWS (${routing.operator} bypass)`);
+                const success = await this.awsSmsService.sendSms(phoneNumber, message);
+
+                if (success) {
+                    console.log(`✅ AWS delivery successful for ${routing.operator}`);
+                    return true;
+                } else {
+                    console.error(`❌ AWS delivery failed for ${routing.operator}`);
+                    return false;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Message routing failed:', error);
+            return false;
+        }
+    }
+
+    private async tryAwsFallback(
+        phoneNumber: string,
+        message: string,
+        reason: string
+    ): Promise<boolean> {
+        console.log(`🔄 Attempting AWS fallback (reason: ${reason})`);
+        try {
+            const success = await this.awsSmsService.sendSms(phoneNumber, message);
+            if (success) {
+                console.log(`✅ AWS fallback successful`);
+                return true;
+            } else {
+                console.error(`❌ AWS fallback failed`);
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ AWS fallback error:', error);
+            return false;
+        }
     }
 
     async handleVerifyAuthChallenge(event: CognitoEvent): Promise<CognitoEvent> {
