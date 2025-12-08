@@ -1,13 +1,19 @@
 import { CognitoEvent } from '../../types/events';
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
+import { CognitoTemplateService } from '../../services/cognito/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 
 export class AuthChallengeHandler {
+    private templateService: CognitoTemplateService;
+
     constructor(
         private playMobileService: PlayMobileService,
-        private awsSmsService: AwsSmsService
-    ) { }
+        private awsSmsService: AwsSmsService,
+        userPoolId?: string
+    ) {
+        this.templateService = new CognitoTemplateService(userPoolId);
+    }
 
     async handleDefineAuthChallenge(event: CognitoEvent): Promise<CognitoEvent> {
         console.log('🤔 Defining Auth Challenge');
@@ -63,8 +69,30 @@ export class AuthChallengeHandler {
         // Generate 6-digit code
         const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Build message
-        const message = `Your verification code is: ${secretCode}`;
+        // Try to get template from Cognito User Pool
+        console.log('📋 Fetching SMS authentication template from Cognito...');
+        const template = await this.templateService.getTemplate(
+            'CustomSMSSender_Authentication',
+            'sms'
+        );
+
+        let message: string;
+        if (template) {
+            // Use Cognito template with placeholders
+            const placeholders = {
+                code: secretCode,
+                username: phoneNumber,
+            };
+            message = this.templateService.processTemplate(template, placeholders);
+            console.log(`📤 Using Cognito template: "${template}"`);
+        } else {
+            // Fallback message if no template is configured
+            console.warn('⚠️ No Cognito template found, using fallback message');
+            message = `AppUri Hogosha: Tasdiqlash kodi: ${secretCode}. Ushbu kodni hech kimga bermang.`;
+        }
+
+        console.log(`📝 OTP Message: "${message}"`);
+        console.log(`📱 Phone Number: ${phoneNumber}`);
 
         // Get routing decision
         const routing = getUzbekistanOperatorRouting(phoneNumber);

@@ -30,7 +30,11 @@ const playMobileService = new PlayMobileService();
 
 // Initialize handlers
 const cognitoHandler = new CognitoHandler(playMobileService, awsSmsService);
-const authChallengeHandler = new AuthChallengeHandler(playMobileService, awsSmsService);
+const authChallengeHandler = new AuthChallengeHandler(
+    playMobileService,
+    awsSmsService,
+    ENVIRONMENT.COGNITO_USER_POOL_ID
+);
 const apiHandler = new ApiHandler(playMobileService, awsSmsService);
 const notificationProcessor = new NotificationProcessor(
     dbQueries,
