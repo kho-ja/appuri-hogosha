@@ -87,8 +87,9 @@ export class AuthChallengeHandler {
             console.log(`📤 Using Cognito template: "${template}"`);
         } else {
             // Fallback message if no template is configured
+            // Format optimized for iOS/Android OTP auto-fill
             console.warn('⚠️ No Cognito template found, using fallback message');
-            message = `AppUri Hogosha: Tasdiqlash kodi: ${secretCode}. Ushbu kodni hech kimga bermang.`;
+            message = `${secretCode} is your Appuri verification code.`;
         }
 
         console.log(`📝 OTP Message: "${message}"`);
