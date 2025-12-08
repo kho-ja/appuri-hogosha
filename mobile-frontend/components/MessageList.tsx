@@ -32,6 +32,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
+import { useStudents } from '@/contexts/student-context';
 import demoModeService from '@/services/demo-mode-service';
 
 // Styles for the component
@@ -234,6 +235,7 @@ const MessageList = ({
   const textColor = useThemeColor({}, 'text');
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
   const { setUnreadCount } = useMessageContext();
+  const { clearAndRefetch } = useStudents();
 
   // State management
   const [student, setStudent] = useState<Student | null>(null);
@@ -523,9 +525,9 @@ const MessageList = ({
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      // Also refresh students list to check if new students were added
-      if (onRefreshStudents) {
-        onRefreshStudents();
+      // Clear cache and refresh students list only when online
+      if (isOnline && !isDemoMode) {
+        await clearAndRefetch();
       }
 
       if (isDemoMode) {
