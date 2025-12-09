@@ -1030,6 +1030,7 @@
     "invalid_student_numbers": "Неверные номера студентов",
     "group_name_already_exists": "Это название группы уже существует",
     "group_does_not_exist": "Группа не существует",
+    "parent_does_not_exist": "Родитель не существует",
     "student_number_already_exists": "Этот номер студента уже существует",
     "invalid_or_missing_group_id": "Неверный или отсутствующий идентификатор группы",
     "invalid_or_missing_group_name": "Неверное или отсутствующее название группы",

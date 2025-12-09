@@ -8,4 +8,5 @@ export default interface Group {
   student_numbers?: string[];
   sub_group_id?: number | null;
   sub_group_name?: string;
+  parent_group_name?: string | null; // добавлено
 }

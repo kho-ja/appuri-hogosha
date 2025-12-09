@@ -24,6 +24,9 @@ import process from 'node:process';
 import { stringify } from 'csv-stringify/sync';
 import { syncronizePosts } from '../../utils/messageHelper';
 
+// Простая уникализация массива
+const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr));
+
 // CSV upload handled by shared middleware
 
 class StudentController implements IController {
@@ -499,22 +502,35 @@ class StudentController implements IController {
                     .end();
             }
 
-            const existingStudents = await DB.query(
-                'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
-                {
-                    emails: valid.map(v => v.email),
-                    sns: valid.map(v => v.student_number),
-                    phones: valid.map(v => v.phone_number),
-                }
-            );
-            const existingEmailSet = new Set(
-                existingStudents.map((s: any) => s.email)
-            );
+            const emails = uniq(rows.map(r => r.email).filter(Boolean));
+            const sns = uniq(rows.map(r => r.student_number).filter(Boolean));
+            const phones = uniq(rows.map(r => r.phone_number).filter(Boolean));
+
+            let existing: Array<{
+                email: string;
+                student_number: string;
+                phone_number: string;
+            }> = [];
+            if (emails.length || sns.length || phones.length) {
+                existing = await DB.query(
+                    `SELECT email, student_number, phone_number
+                     FROM Student
+                     WHERE school_id = :school_id
+                       AND (
+                           (${emails.length ? 'email IN (:emails)' : '1=0'})
+                        OR (${sns.length ? 'student_number IN (:sns)' : '1=0'})
+                        OR (${phones.length ? 'phone_number IN (:phones)' : '1=0'})
+                       )`,
+                    { school_id: req.user.school_id, emails, sns, phones }
+                );
+            }
+
+            const existingEmailSet = new Set(existing.map((s: any) => s.email));
             const existingNumberSet = new Set(
-                existingStudents.map((s: any) => s.student_number)
+                existing.map((s: any) => s.student_number)
             );
             const existingPhoneSet = new Set(
-                existingStudents.map((s: any) => s.phone_number)
+                existing.map((s: any) => s.phone_number)
             );
 
             for (const row of valid) {

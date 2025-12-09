@@ -898,6 +898,7 @@
     "student_does_not_exist": "Student does not exist",
     "group_name_already_exists": "This group name already exists",
     "group_does_not_exist": "Group does not exist",
+    "parent_group_not_found": "Parent group not found",
     "parent_does_not_exist": "Parent does not exist",
     "invalid_title": "Invalid title",
     "invalid_description": "Invalid description",

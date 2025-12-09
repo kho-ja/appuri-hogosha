@@ -1047,6 +1047,7 @@
     "post_not_found": "投稿が見つかりません",
     "group_members_not_found": "グループメンバーが見つかりません",
     "parent_group_not_found": "親グループが見つかりません",
+    "parent_does_not_exist": "保護者が存在しません",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_receivers_updated_successfully": "投稿受信者が正常に更新されました",
     "post_notification_replayed_successfully": "投稿通知が正常に再送信されました",

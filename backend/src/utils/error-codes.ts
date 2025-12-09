@@ -52,13 +52,3 @@ export function createErrorResponse(errorKey: string, details?: any) {
         details,
     };
 }
-
-export function isValidString(value: any): boolean {
-    return typeof value === 'string' && value.trim().length > 0;
-}
-
-export function isValidStudentNumber(value: any): boolean {
-    if (typeof value !== 'string') return false;
-    const trimmed = value.trim();
-    return trimmed.length > 0 && trimmed.length <= 50;
-}
