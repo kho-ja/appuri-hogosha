@@ -1944,7 +1944,7 @@ class ParentController implements IController {
             }
             if (name) {
                 filters.push(
-                    '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
+                    '((p.given_name LIKE :name OR p.family_name LIKE :name OR p.phone_number LIKE :name OR p.email LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name OR st.student_number LIKE :name)))'
                 );
                 params.name = `%${name}%`;
             }
@@ -2079,7 +2079,7 @@ class ParentController implements IController {
             }
             if (name) {
                 filters.push(
-                    '((p.given_name LIKE :name OR p.family_name LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name)))'
+                    '((p.given_name LIKE :name OR p.family_name LIKE :name OR p.phone_number LIKE :name OR p.email LIKE :name) OR EXISTS (SELECT 1 FROM StudentParent sp INNER JOIN Student st ON st.id = sp.student_id WHERE sp.parent_id = p.id AND (st.given_name LIKE :name OR st.family_name LIKE :name OR st.student_number LIKE :name)))'
                 );
                 params.name = `%${name}%`;
             }

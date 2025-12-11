@@ -1183,7 +1183,7 @@ class StudentController implements IController {
 
             if (name) {
                 filters.push(
-                    '(given_name LIKE :name OR family_name LIKE :name OR email LIKE :name OR student_number LIKE :name)'
+                    '(given_name LIKE :name OR family_name LIKE :name OR email LIKE :name OR phone_number LIKE :name OR student_number LIKE :name)'
                 );
                 params.name = `%${name}%`;
             }
