@@ -11,7 +11,7 @@ export interface CSVRowBase {
 
 export interface RowError<T extends CSVRowBase> {
     row: T;
-    errors: Record<string, string>; // field -> error key
+    errors: Record<string, string>;
 }
 
 export interface CSVUploadSummary {
@@ -101,12 +101,18 @@ export const handleCSVUpload = (req: any, res: any, next: any) => {
 };
 
 export async function parseCSVBuffer(buffer: Buffer): Promise<any[]> {
-    const decoded = await iconv.decode(buffer, 'UTF-8');
+    const decoded = iconv.decode(buffer, 'UTF-8');
     const stream = Readable.from(decoded);
     const rows: any[] = [];
     await new Promise((resolve, reject) => {
         stream
-            .pipe(csv())
+            .pipe(
+                csv({
+                    separator: ';',
+                    mapHeaders: ({ header }) => header.trim(),
+                    mapValues: ({ value }) => value.trim(),
+                })
+            )
             .on('headers', (headers: string[]) => {
                 if (headers?.length && headers[0].charCodeAt(0) === 0xfeff) {
                     headers[0] = headers[0].slice(1);
@@ -145,7 +151,7 @@ export function finalizeResponse<T extends CSVRowBase>(
     resp: CSVUploadResponseShape<T>,
     withCSV: boolean
 ): CSVUploadResponseShape<T> {
-    resp.summary.total = resp.summary.processed + resp.summary.errors; // ensure total consistency
+    resp.summary.total = resp.summary.processed + resp.summary.errors;
     if (resp.errors.length > 0) {
         resp.message = 'csv_processed_with_errors';
         if (withCSV && !resp.csvFile) {
