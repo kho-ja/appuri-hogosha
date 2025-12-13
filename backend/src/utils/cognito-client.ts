@@ -689,7 +689,8 @@ class CognitoClient {
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
-                    message: 'Custom auth flow not configured or not authorized',
+                    message:
+                        'Custom auth flow not configured or not authorized',
                 } as signInWithPhoneThrow;
             }
 
@@ -729,8 +730,10 @@ class CognitoClient {
 
             if (authData.AuthenticationResult) {
                 return {
-                    accessToken: authData.AuthenticationResult.AccessToken ?? '',
-                    refreshToken: authData.AuthenticationResult.RefreshToken ?? '',
+                    accessToken:
+                        authData.AuthenticationResult.AccessToken ?? '',
+                    refreshToken:
+                        authData.AuthenticationResult.RefreshToken ?? '',
                 };
             } else {
                 throw {

@@ -350,14 +350,20 @@ class AuthController implements IController {
             const { phone_number, password, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
 
+            const formattedPhoneNumber = phone_number.startsWith('+')
+                ? phone_number
+                : `+${phone_number}`;
             // OTP Flow: If no password, initiate phone sign-in
             if (!password) {
-                const result = await this.cognitoClient.signInWithPhone(phone_number);
+                const result =
+                    await this.cognitoClient.signInWithPhone(
+                        formattedPhoneNumber
+                    );
                 return res.status(200).json(result).end();
             }
 
             const authData = await this.cognitoClient.login(
-                phone_number,
+                formattedPhoneNumber,
                 password
             );
 
@@ -370,7 +376,7 @@ class AuthController implements IController {
             INNER JOIN School AS sc ON sc.id = pa.school_id
             WHERE pa.phone_number = :phone_number`,
                 {
-                    phone_number: phone_number.slice(1),
+                    phone_number: formattedPhoneNumber.slice(1),
                 }
             );
 
@@ -556,8 +562,12 @@ class AuthController implements IController {
             const { phone_number, code, session, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
 
+            let formattedPhoneNumber = phone_number.startsWith('+')
+                ? phone_number
+                : `+${phone_number}`;
+
             const authData = await this.cognitoClient.respondToAuthChallenge(
-                phone_number,
+                formattedPhoneNumber,
                 code,
                 session
             );
@@ -571,7 +581,7 @@ class AuthController implements IController {
             INNER JOIN School AS sc ON sc.id = pa.school_id
             WHERE pa.phone_number = :phone_number`,
                 {
-                    phone_number: phone_number.slice(1),
+                    phone_number: formattedPhoneNumber.slice(1),
                 }
             );
 
@@ -617,7 +627,6 @@ class AuthController implements IController {
                     school_name: parent.school_name,
                 })
                 .end();
-
         } catch (e: any) {
             if (e.status) {
                 return res

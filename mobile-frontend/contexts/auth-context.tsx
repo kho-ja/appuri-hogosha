@@ -8,6 +8,7 @@ import { registerForPushNotificationsAsync } from '@/utils/notifications';
 import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
 import DemoModeService from '@/services/demo-mode-service';
+import { normalizePhone } from '@/utils/phone';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -16,6 +17,7 @@ const AuthContext = React.createContext<{
     password?: string
   ) => Promise<any>;
   verifyOtp: (
+    country: ICountry | null,
     phoneNumber: string,
     code: string,
     session: string
@@ -91,15 +93,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: async (country, phoneNumber, password) => {
-          phoneNumber = phoneNumber.startsWith('0')
-            ? phoneNumber.slice(1)
-            : phoneNumber;
+          const fullPhoneNumber = normalizePhone(country, phoneNumber);
 
-          const fullPhoneNumber =
-            country?.callingCode + phoneNumber.replaceAll(' ', '');
-
-          // Check if demo credentials
-          if (password && DemoModeService.isDemoCredentials(fullPhoneNumber, password)) {
+          // Check if demo credentials (password-based demo)
+          if (
+            password &&
+            DemoModeService.isDemoCredentials(fullPhoneNumber, password)
+          ) {
             // Enable demo mode
             await DemoModeService.enableDemoMode();
             setIsDemoMode(true);
@@ -138,6 +138,22 @@ export function SessionProvider(props: React.PropsWithChildren) {
             return;
           }
 
+          // Check if demo OTP phone (OTP-based demo)
+          if (!password && DemoModeService.isDemoOtpPhone(fullPhoneNumber)) {
+            // Store demo credentials for OTP flow
+            await AsyncStorage.setItem('phoneNumber', phoneNumber);
+            await AsyncStorage.setItem('country', JSON.stringify(country));
+
+            // Simulate network delay for realistic experience
+            await DemoModeService.simulateNetworkDelay();
+
+            // Return demo session for OTP verification
+            const demoSession = DemoModeService.getDemoSessionData();
+            return {
+              session: demoSession.access_token,
+            };
+          }
+
           // Regular authentication flow
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
@@ -156,8 +172,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                phone_number:
-                  country?.callingCode + phoneNumber.replaceAll(' ', ''),
+                phone_number: fullPhoneNumber,
                 password,
                 token,
               }),
@@ -165,7 +180,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
 
             if (response.status === 403) {
               await AsyncStorage.setItem('phoneNumber', phoneNumber);
-              if (password) await AsyncStorage.setItem('temp_password', password);
+              if (password)
+                await AsyncStorage.setItem('temp_password', password);
               return router.push('/new-psswd');
             }
 
@@ -184,7 +200,10 @@ export function SessionProvider(props: React.PropsWithChildren) {
             // Standard Login Flow
             const sessionData: Session = data;
             setSession(sessionData.access_token);
-            await AsyncStorage.setItem('refresh_token', sessionData.refresh_token);
+            await AsyncStorage.setItem(
+              'refresh_token',
+              sessionData.refresh_token
+            );
 
             // Clear existing user data and insert new
             await db.execAsync('DELETE FROM user');
@@ -220,8 +239,46 @@ export function SessionProvider(props: React.PropsWithChildren) {
             }
           }
         },
-        verifyOtp: async (phoneNumber, code, session) => {
+        verifyOtp: async (country, phoneNumber, code, session) => {
           try {
+            const fullPhoneNumber = normalizePhone(country, phoneNumber);
+
+            // Check if demo OTP credentials
+            if (DemoModeService.isDemoOtpCredentials(fullPhoneNumber, code)) {
+              // Enable demo mode
+              await DemoModeService.enableDemoMode();
+              setIsDemoMode(true);
+
+              // Simulate network delay for realistic experience
+              await DemoModeService.simulateNetworkDelay();
+
+              // Get demo session data
+              const demoSession = DemoModeService.getDemoSessionData();
+
+              // Set demo session
+              setSession(demoSession.access_token);
+              await AsyncStorage.setItem(
+                'refresh_token',
+                demoSession.refresh_token
+              );
+
+              // Clear existing user data and insert demo user
+              await db.execAsync('DELETE FROM user');
+              await db.runAsync(
+                'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
+                [
+                  demoSession.user.given_name,
+                  demoSession.user.family_name,
+                  demoSession.user.phone_number,
+                  demoSession.user.email,
+                ]
+              );
+
+              router.replace('/');
+              return demoSession;
+            }
+
+            // Regular OTP verification flow
             const token = await registerForPushNotificationsAsync();
 
             const response = await fetch(`${apiUrl}/verify-otp`, {
@@ -230,10 +287,10 @@ export function SessionProvider(props: React.PropsWithChildren) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                phone_number: phoneNumber,
+                phone_number: fullPhoneNumber,
                 code,
                 session,
-                token
+                token,
               }),
             });
 

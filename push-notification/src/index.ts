@@ -57,12 +57,26 @@ export const handler = async (event: any, _context: any) => {
                 console.log('🔐 Processing Cognito trigger');
                 const cognitoEvent = event as CognitoEvent;
 
-                if (cognitoEvent.triggerSource.startsWith('DefineAuthChallenge')) {
-                    return await authChallengeHandler.handleDefineAuthChallenge(cognitoEvent);
-                } else if (cognitoEvent.triggerSource.startsWith('CreateAuthChallenge')) {
-                    return await authChallengeHandler.handleCreateAuthChallenge(cognitoEvent);
-                } else if (cognitoEvent.triggerSource.startsWith('VerifyAuthChallengeResponse')) {
-                    return await authChallengeHandler.handleVerifyAuthChallenge(cognitoEvent);
+                if (
+                    cognitoEvent.triggerSource.startsWith('DefineAuthChallenge')
+                ) {
+                    return await authChallengeHandler.handleDefineAuthChallenge(
+                        cognitoEvent
+                    );
+                } else if (
+                    cognitoEvent.triggerSource.startsWith('CreateAuthChallenge')
+                ) {
+                    return await authChallengeHandler.handleCreateAuthChallenge(
+                        cognitoEvent
+                    );
+                } else if (
+                    cognitoEvent.triggerSource.startsWith(
+                        'VerifyAuthChallengeResponse'
+                    )
+                ) {
+                    return await authChallengeHandler.handleVerifyAuthChallenge(
+                        cognitoEvent
+                    );
                 } else {
                     return await cognitoHandler.handleCognitoSms(cognitoEvent);
                 }

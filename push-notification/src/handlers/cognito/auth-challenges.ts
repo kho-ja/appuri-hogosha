@@ -15,7 +15,9 @@ export class AuthChallengeHandler {
         this.templateService = new CognitoTemplateService(userPoolId);
     }
 
-    async handleDefineAuthChallenge(event: CognitoEvent): Promise<CognitoEvent> {
+    async handleDefineAuthChallenge(
+        event: CognitoEvent
+    ): Promise<CognitoEvent> {
         console.log('🤔 Defining Auth Challenge');
 
         // If user is not found or other error
@@ -57,7 +59,9 @@ export class AuthChallengeHandler {
         return event;
     }
 
-    async handleCreateAuthChallenge(event: CognitoEvent): Promise<CognitoEvent> {
+    async handleCreateAuthChallenge(
+        event: CognitoEvent
+    ): Promise<CognitoEvent> {
         console.log('🎲 Creating Auth Challenge');
 
         const phoneNumber = event.request.userAttributes.phone_number;
@@ -67,7 +71,9 @@ export class AuthChallengeHandler {
         }
 
         // Generate 6-digit code
-        const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const secretCode = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
 
         // Try to get template from Cognito User Pool
         console.log('📋 Fetching SMS authentication template from Cognito...');
@@ -83,12 +89,17 @@ export class AuthChallengeHandler {
                 code: secretCode,
                 username: phoneNumber,
             };
-            message = this.templateService.processTemplate(template, placeholders);
+            message = this.templateService.processTemplate(
+                template,
+                placeholders
+            );
             console.log(`📤 Using Cognito template: "${template}"`);
         } else {
             // Fallback message if no template is configured
             // Format optimized for iOS/Android OTP auto-fill
-            console.warn('⚠️ No Cognito template found, using fallback message');
+            console.warn(
+                '⚠️ No Cognito template found, using fallback message'
+            );
             message = `${secretCode} is your Appuri verification code.`;
         }
 
@@ -107,12 +118,20 @@ export class AuthChallengeHandler {
             } else {
                 // Uzbekistan number - use routing logic
                 console.log(`🇺🇿 Sending OTP for ${routing.operator}`);
-                const sent = await this.routeMessageWithFallback(phoneNumber, message, routing);
+                const sent = await this.routeMessageWithFallback(
+                    phoneNumber,
+                    message,
+                    routing
+                );
 
                 if (sent) {
-                    console.log(`✅ OTP sent successfully to ${phoneNumber.slice(-4)}`);
+                    console.log(
+                        `✅ OTP sent successfully to ${phoneNumber.slice(-4)}`
+                    );
                 } else {
-                    console.error(`❌ Failed to send OTP to ${phoneNumber.slice(-4)}`);
+                    console.error(
+                        `❌ Failed to send OTP to ${phoneNumber.slice(-4)}`
+                    );
                 }
             }
         } catch (error) {
@@ -124,12 +143,12 @@ export class AuthChallengeHandler {
         // Set private parameters (server-side only)
         event.response = {
             publicChallengeParameters: {
-                phone_number: phoneNumber
+                phone_number: phoneNumber,
             },
             privateChallengeParameters: {
-                code: secretCode
+                code: secretCode,
             },
-            challengeMetadata: 'OTP_CHALLENGE'
+            challengeMetadata: 'OTP_CHALLENGE',
         };
 
         return event;
@@ -142,27 +161,49 @@ export class AuthChallengeHandler {
     ): Promise<boolean> {
         try {
             if (routing.usePlayMobile) {
-                console.log(`📤 Attempting to send via PlayMobile (${routing.operator})`);
-                const success = await this.playMobileService.sendSms(phoneNumber, message);
+                console.log(
+                    `📤 Attempting to send via PlayMobile (${routing.operator})`
+                );
+                const success = await this.playMobileService.sendSms(
+                    phoneNumber,
+                    message
+                );
 
                 if (success) {
-                    console.log(`✅ PlayMobile delivery successful for ${routing.operator}`);
+                    console.log(
+                        `✅ PlayMobile delivery successful for ${routing.operator}`
+                    );
                     return true;
                 } else {
-                    console.warn(`⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`);
+                    console.warn(
+                        `⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`
+                    );
                     // Try AWS as fallback for PlayMobile failure
-                    return await this.tryAwsFallback(phoneNumber, message, 'PlayMobile failure');
+                    return await this.tryAwsFallback(
+                        phoneNumber,
+                        message,
+                        'PlayMobile failure'
+                    );
                 }
             } else {
                 // Ucell bypass - use AWS directly
-                console.log(`📤 Attempting to send via AWS (${routing.operator} bypass)`);
-                const success = await this.awsSmsService.sendSms(phoneNumber, message);
+                console.log(
+                    `📤 Attempting to send via AWS (${routing.operator} bypass)`
+                );
+                const success = await this.awsSmsService.sendSms(
+                    phoneNumber,
+                    message
+                );
 
                 if (success) {
-                    console.log(`✅ AWS delivery successful for ${routing.operator}`);
+                    console.log(
+                        `✅ AWS delivery successful for ${routing.operator}`
+                    );
                     return true;
                 } else {
-                    console.error(`❌ AWS delivery failed for ${routing.operator}`);
+                    console.error(
+                        `❌ AWS delivery failed for ${routing.operator}`
+                    );
                     return false;
                 }
             }
@@ -179,7 +220,10 @@ export class AuthChallengeHandler {
     ): Promise<boolean> {
         console.log(`🔄 Attempting AWS fallback (reason: ${reason})`);
         try {
-            const success = await this.awsSmsService.sendSms(phoneNumber, message);
+            const success = await this.awsSmsService.sendSms(
+                phoneNumber,
+                message
+            );
             if (success) {
                 console.log(`✅ AWS fallback successful`);
                 return true;
@@ -193,7 +237,9 @@ export class AuthChallengeHandler {
         }
     }
 
-    async handleVerifyAuthChallenge(event: CognitoEvent): Promise<CognitoEvent> {
+    async handleVerifyAuthChallenge(
+        event: CognitoEvent
+    ): Promise<CognitoEvent> {
         console.log('✅ Verifying Auth Challenge');
 
         const expectedAnswer = event.request.privateChallengeParameters?.code;

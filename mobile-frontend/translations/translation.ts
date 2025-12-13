@@ -34,6 +34,7 @@ const translations: Translations = {
     codeWillExpire: 'Code will expire in {seconds} seconds.',
     codeExpired: 'Code has expired',
     resendCode: 'Resend Code',
+    verify: 'Verify',
     createNewPasswordTitle: 'Create New Password',
     passwordCreatedSuccessfully:
       'Password created successfully! You can now log in with your new password.',
@@ -282,6 +283,7 @@ const translations: Translations = {
     codeExpired: 'コードの有効期限が切れました',
     resendCode: 'コードを再送信',
     codeWillExpire: 'コードは{seconds}秒で期限切れになります。',
+    verify: '確認',
     createNewPasswordTitle: '新しいパスワードを作成',
     passwordCreatedSuccessfully:
       'パスワードが正常に作成されました！新しいパスワードでログインできます。',
@@ -532,6 +534,7 @@ const translations: Translations = {
     resendCode: 'Kodni qayta yuborish',
     codeWillExpire:
       'Kodni qayta yuborish {seconds} soniyadan keyin faollashadi.',
+    verify: 'Tasdiqlash',
     createNewPasswordTitle: 'Parol yaratish',
     passwordCreatedSuccessfully:
       'Parol muvaffaqiyatli yaratildi! Endi yangi parolingiz bilan kirishingiz mumkin.',
@@ -782,6 +785,7 @@ const translations: Translations = {
     codeExpired: 'Код истек',
     resendCode: 'Отправить код заново',
     codeWillExpire: 'Код истечет через {seconds} секунд.',
+    verify: 'Подтвердить',
     createNewPasswordTitle: 'Создать новый пароль',
     passwordCreatedSuccessfully:
       'Пароль успешно создан! Теперь вы можете войти с новым паролем.',

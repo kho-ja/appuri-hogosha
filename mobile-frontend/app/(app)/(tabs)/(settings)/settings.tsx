@@ -23,7 +23,6 @@ import { I18nContext } from '@/contexts/i18n-context';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
-import { Href, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';

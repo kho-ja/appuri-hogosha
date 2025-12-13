@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   DEMO_CREDENTIALS,
+  DEMO_OTP_CREDENTIALS,
   DEMO_USER,
   DEMO_STUDENTS,
   DEMO_MESSAGES,
@@ -27,6 +28,23 @@ class DemoModeService {
       phoneNumber === DEMO_CREDENTIALS.phoneNumber &&
       password === DEMO_CREDENTIALS.password
     );
+  }
+
+  /**
+   * Check if OTP credentials are demo OTP credentials
+   */
+  isDemoOtpCredentials(phoneNumber: string, otp: string): boolean {
+    return (
+      phoneNumber === DEMO_OTP_CREDENTIALS.phoneNumber &&
+      otp === DEMO_OTP_CREDENTIALS.otp
+    );
+  }
+
+  /**
+   * Check if phone number participates in demo OTP flow
+   */
+  isDemoOtpPhone(phoneNumber: string): boolean {
+    return phoneNumber === DEMO_OTP_CREDENTIALS.phoneNumber;
   }
 
   /**
