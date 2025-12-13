@@ -464,12 +464,13 @@ const MessageList = ({
         : null;
       return entry?.unread_count ?? 0;
     } else {
-      // Offline mode: count unread messages from local DB
-      const row = await db.getFirstAsync<{ count: number }>(
-        'SELECT COUNT(DISTINCT title || "|-|" || content || "|-|" || sent_time) as count FROM message WHERE student_number = ? AND read_status = 0',
-        [student.student_number]
+      // Offline mode: get unread_count from student table (cached from server)
+      // This contains the actual count from the server, not just loaded messages
+      const row = await db.getFirstAsync<{ unread_count: number }>(
+        'SELECT unread_count FROM student WHERE id = ?',
+        [student.id]
       );
-      return row?.count ?? 0;
+      return row?.unread_count ?? 0;
     }
   };
 
