@@ -1,6 +1,7 @@
 export interface CognitoEvent {
     triggerSource: string;
     userPoolId?: string;
+    userName?: string;
     request: {
         userAttributes: {
             phone_number: string;
@@ -12,11 +13,28 @@ export interface CognitoEvent {
         linkParameter?: string;
         code?: string;
         type?: string;
+        // For Auth Challenges
+        session?: Array<{
+            challengeName: string;
+            challengeResult: boolean;
+            challengeMetadata?: string;
+        }>;
+        challengeName?: string;
+        privateChallengeParameters?: Record<string, string>;
+        challengeAnswer?: string;
     };
     response?: {
         smsMessage?: string;
         emailMessage?: string;
         emailSubject?: string;
+        // For Auth Challenges
+        challengeName?: string;
+        issueTokens?: boolean;
+        failAuthentication?: boolean;
+        publicChallengeParameters?: Record<string, string>;
+        privateChallengeParameters?: Record<string, string>;
+        challengeMetadata?: string;
+        answerCorrect?: boolean;
     };
 }
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 493-login-with-otp
     paths:
       - "backend/**"
 

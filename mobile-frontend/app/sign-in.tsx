@@ -4,11 +4,9 @@ import {
   Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
-  TouchableOpacity,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
@@ -23,7 +21,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
 
 export default function SignIn() {
-  const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
@@ -31,7 +28,7 @@ export default function SignIn() {
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
-  const params = useLocalSearchParams<{ phone?: string; code?: string }>();
+  const params = useLocalSearchParams<{ phone?: string }>();
   const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   React.useEffect(() => {
@@ -54,7 +51,6 @@ export default function SignIn() {
 
   React.useEffect(() => {
     const phone = (params?.phone as string) || '';
-    const code = (params?.code as string) || '';
 
     if (phone) {
       // Handle E.164 (e.g., +99890XXXXXXX) for Uzbekistan by default
@@ -70,10 +66,6 @@ export default function SignIn() {
         // Fallback: keep as-is; user can adjust country selector
         setPhoneNumber(phone.replace(/^\+/, ''));
       }
-    }
-    if (code) {
-      // For invites, code may be a temporary password
-      setPassword(code);
     }
   }, [params]);
 
@@ -100,7 +92,7 @@ export default function SignIn() {
       BackHandler.exitApp();
       return true;
     }
-  }, [backPressCount, i18n, language]);
+  }, [backPressCount, i18n, language, TOAST_POSITION]);
 
   React.useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -111,8 +103,9 @@ export default function SignIn() {
   }, [handleBackPress]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async () =>
-      await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
+    mutationFn: async () => {
+      return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
+    },
     onError: error => {
       // Check if this is a notification permission error
       if (
@@ -147,21 +140,24 @@ export default function SignIn() {
         });
       }
     },
-    onSuccess: async () => {
-      await AsyncStorage.setItem('hasEverLoggedIn', 'true');
-
-      Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
-      });
+    onSuccess: async data => {
+      if (data?.session) {
+        Toast.show('Verification code sent', {
+          duration: Toast.durations.SHORT,
+          position: TOAST_POSITION,
+          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
+          textColor: 'white',
+        });
+        // Navigate to verify-otp screen with params
+        router.push({
+          pathname: '/verify-otp',
+          params: {
+            country: JSON.stringify(selectedCountry),
+            phone: phoneNumber.replaceAll(' ', ''),
+            session: data.session,
+          },
+        });
+      }
     },
   });
 
@@ -185,29 +181,10 @@ export default function SignIn() {
             placeholder={i18n[language].phoneNumber}
             defaultCountry={'UZ' as ICountryCca2}
           />
-          <SecureInput
-            label={i18n[language].password}
-            placeholder={i18n[language].enterPassword}
-            placeholderTextColor='grey'
-            onChangeText={setPassword}
-            maxLength={50}
-            value={password}
-            selectTextOnFocus
-            keyboardType='numbers-and-punctuation'
-            textContentType='password'
-            autoCapitalize='none'
-          />
-          <TouchableOpacity
-            style={styles.forgotPasswordContainer}
-            onPress={() => router.push('/forgot-password')}
-          >
-            <ThemedText style={styles.forgotPasswordText}>
-              {i18n[language].forgotPasswordLink}
-            </ThemedText>
-          </TouchableOpacity>
+
           <Button
             onPress={() => mutate()}
-            title={i18n[language].loginToAccount}
+            title={i18n[language].sendCode}
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}
             disabled={isPending}
@@ -242,14 +219,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-  },
-  forgotPasswordContainer: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    color: '#4285F4',
-    textDecorationLine: 'underline',
   },
 });

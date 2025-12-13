@@ -27,6 +27,7 @@ export type TranslationKeys = {
   codeExpired: string;
   resendCode: string;
   codeWillExpire: string;
+  verify: string;
   createNewPasswordTitle: string;
   passwordCreatedSuccessfully: string;
   enterNewPasswordText: string;
