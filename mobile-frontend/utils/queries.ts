@@ -61,6 +61,21 @@ export const saveMessagesToDB = async (
   activeStudent: string,
   activeStudentID: number
 ) => {
+  // First, get IDs of messages that were read locally but not synced yet
+  const messageIds = messages.map(m => m.id);
+  const locallyReadMessages = new Set<number>();
+
+  if (messageIds.length > 0) {
+    const placeholders = messageIds.map(() => '?').join(',');
+    const locallyRead = await database.getAllAsync<{ id: number }>(
+      `SELECT id FROM message WHERE id IN (${placeholders}) AND read_status = 1 AND sent_status = 0`,
+      messageIds
+    );
+    for (const msg of locallyRead) {
+      locallyReadMessages.add(msg.id);
+    }
+  }
+
   const statement = await database.prepareAsync(
     'INSERT OR REPLACE INTO message (id, student_number, student_id, title, content, priority, group_name, edited_at, images, sent_time, read_status, read_time, sent_status, came_time) VALUES ($id, $student_number, $student_id, $title, $content, $priority, $group_name, $edited_at, $images, $sent_time, $read_status, $read_time, $sent_status, $came_time)'
   );
@@ -71,6 +86,12 @@ export const saveMessagesToDB = async (
           ? item.images
           : [item.images]
         : null;
+
+      // Preserve local read status if message was read locally but not synced
+      const isLocallyRead = locallyReadMessages.has(item.id);
+      const readStatus = isLocallyRead ? 1 : item.viewed_at ? 1 : 0;
+      const sentStatus = item.viewed_at ? 1 : isLocallyRead ? 0 : 0;
+
       await statement.executeAsync({
         $id: item.id,
         $student_number: activeStudent,
@@ -82,9 +103,9 @@ export const saveMessagesToDB = async (
         $edited_at: item.edited_at,
         $images: imagesArray ? JSON.stringify(imagesArray) : null,
         $sent_time: item.sent_time,
-        $read_status: item.viewed_at ? 1 : 0,
+        $read_status: readStatus,
         $read_time: item.viewed_at,
-        $sent_status: item.viewed_at ? 1 : 0,
+        $sent_status: sentStatus,
         $came_time: new Date().toLocaleDateString(),
       });
     }

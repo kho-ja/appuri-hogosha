@@ -9,7 +9,8 @@ CREATE TABLE student (
     family_name TEXT NOT NULL,
     given_name TEXT NOT NULL,
     phone_number TEXT,
-    email TEXT UNIQUE
+    email TEXT UNIQUE,
+    unread_count INTEGER DEFAULT 0
 );
 DROP TABLE IF EXISTS message;
 CREATE TABLE message (

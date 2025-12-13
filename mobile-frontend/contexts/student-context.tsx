@@ -99,11 +99,32 @@ export function StudentProvider(props: PropsWithChildren) {
 
   const saveStudentsToDB = useCallback(
     async (studentList: Student[]) => {
+      // Count locally read messages that haven't been synced yet
+      // These should be subtracted from server's unread_count
+      const localReadCounts = new Map<number, number>();
+
+      for (const student of studentList) {
+        const result = await db.getFirstAsync<{ count: number }>(
+          'SELECT COUNT(*) as count FROM message WHERE student_id = ? AND read_status = 1 AND sent_status = 0',
+          [student.id]
+        );
+        if (result && result.count > 0) {
+          localReadCounts.set(student.id, result.count);
+        }
+      }
+
       const statement = await db.prepareAsync(
-        'INSERT OR REPLACE INTO student (id, student_number, family_name, given_name, phone_number, email) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT OR REPLACE INTO student (id, student_number, family_name, given_name, phone_number, email, unread_count) VALUES (?, ?, ?, ?, ?, ?, ?)'
       );
       try {
         for (const student of studentList) {
+          // Adjust unread_count: server value minus locally read messages
+          const localReadCount = localReadCounts.get(student.id) || 0;
+          const adjustedUnreadCount = Math.max(
+            0,
+            (student.unread_count || 0) - localReadCount
+          );
+
           await statement.executeAsync([
             student.id,
             student.student_number,
@@ -111,6 +132,7 @@ export function StudentProvider(props: PropsWithChildren) {
             student.given_name,
             student.phone_number,
             student.email,
+            adjustedUnreadCount,
           ]);
         }
       } finally {

@@ -167,6 +167,12 @@ export default function DetailsScreen() {
           [currentTime, isOnline ? 1 : 0, messageId]
         );
 
+        // Decrement unread_count in student table (ensure it doesn't go below 0)
+        await db.runAsync(
+          `UPDATE student SET unread_count = CASE WHEN unread_count > 0 THEN unread_count - 1 ELSE 0 END WHERE id = ?`,
+          [targetStudentId]
+        );
+
         // Sync with backend if online
         if (isOnline && session) {
           const response = await fetch(`${apiUrl}/view`, {
