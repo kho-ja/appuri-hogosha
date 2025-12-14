@@ -364,7 +364,8 @@
     "noResults": "Результатов не найдено.",
     "rowsSelected": "{count} из {total} строк выбрано.",
     "previous": "Предыдущая",
-    "next": "Следующая"
+    "next": "Следующая",
+    "admissionYearPlaceholder": "Год поступления (например, 2022)"
   },
   "ThisForms": {
     "Forms": "Формы",

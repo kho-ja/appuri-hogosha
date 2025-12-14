@@ -365,7 +365,8 @@
     "noResults": "結果がありません。",
     "rowsSelected": "{count} 件の {total} 件が選択されました。",
     "previous": "前へ",
-    "next": "次へ"
+    "next": "次へ",
+    "admissionYearPlaceholder": "入学年度（例：2022）"
   },
   "ThisForms": {
     "Forms": "フォーム",

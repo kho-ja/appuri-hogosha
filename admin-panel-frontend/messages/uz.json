@@ -368,7 +368,8 @@
     "noResults": "Natijalar yo'q.",
     "rowsSelected": "{total} qatordan {count} tasi tanlandi.",
     "previous": "Oldingi",
-    "next": "Keyingi"
+    "next": "Keyingi",
+    "admissionYearPlaceholder": "Qabul yili (masalan: 2022)"
   },
   "ThisForms": {
     "Forms": "Formlar",

@@ -369,7 +369,8 @@
     "noResults": "No results.",
     "rowsSelected": "{count} of {total} rows selected.",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "admissionYearPlaceholder": "Admission year (e.g., 2022)"
   },
   "ThisForms": {
     "Forms": "Forms",

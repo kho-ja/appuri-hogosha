@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -47,14 +47,58 @@ export function StudentTable({
   const urlTableQuery = useTableQuery();
   const independentTableQuery = useIndependentTableQuery("student");
 
-  const { page, setPage, search, setSearch } = useIndependentState
+  const tableQuery: any = useIndependentState
     ? independentTableQuery
     : urlTableQuery;
+  const { page, setPage, search, setSearch } = tableQuery;
+  const queryYearValue =
+    tableQuery.year_prefix ??
+    tableQuery.year ??
+    tableQuery.yearFilter ??
+    tableQuery.year_prefix_value ??
+    "";
+  const querySetYear =
+    tableQuery.setYear ??
+    tableQuery.setYearPrefix ??
+    tableQuery.setYearFilter ??
+    null;
+  const derivePrefix = (display: string) => {
+    const digits = String(display || "").replace(/\D/g, "");
+    if (digits.length === 4) return digits.slice(-2);
+    return "";
+  };
+  const initialDisplay =
+    String(queryYearValue ?? "").length === 2
+      ? `20${queryYearValue}`
+      : String(queryYearValue ?? "");
+  const [localYearDisplay, setLocalYearDisplay] =
+    useState<string>(initialDisplay);
+  const [localYear, setLocalYear] = useState<string>(
+    derivePrefix(initialDisplay)
+  );
+
+  const [allMatchingCount, setAllMatchingCount] = useState<number | null>(null);
+  const [allSelectedAllPages, setAllSelectedAllPages] = useState(false);
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
+
+  useEffect(() => {
+    const display =
+      String(queryYearValue ?? "").length === 2
+        ? `20${queryYearValue}`
+        : String(queryYearValue ?? "");
+    setLocalYearDisplay(display);
+    setLocalYear(derivePrefix(display));
+  }, [queryYearValue]);
+
+  useEffect(() => {
+    setAllMatchingCount(null);
+    setAllSelectedAllPages(false);
+  }, [search, localYearDisplay, page]);
 
   const { data } = useApiPostQuery<StudentApi>(
     "student/list",
-    ["students", page, search],
-    { page, name: search }
+    ["students", page, search, localYear],
+    { page, name: search, year_prefix: localYear }
   );
 
   const selectedStudentIds = useMemo(
@@ -95,21 +139,85 @@ export function StudentTable({
     enabled: !!session?.sessionToken && selectedStudentIds.size > 0,
   });
 
+  const fetchAllMatchingStudents = async () => {
+    try {
+      const firstBody = { page: 1, name: search, year_prefix: localYear };
+      const resp1 = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/student/list`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.sessionToken}`,
+          },
+          body: JSON.stringify(firstBody),
+        }
+      );
+      if (!resp1.ok) return null;
+      const json1 = await resp1.json();
+      const studentsAccum: Student[] = [...(json1.students ?? [])];
+      const totalPages = json1.pagination?.total_pages ?? 1;
+      for (let p = 2; p <= totalPages; p++) {
+        const body = { page: p, name: search, year_prefix: localYear };
+        const resp = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/student/list`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.sessionToken}`,
+            },
+            body: JSON.stringify(body),
+          }
+        );
+        if (!resp.ok) continue;
+        const js = await resp.json();
+        studentsAccum.push(...(js.students ?? []));
+      }
+      return studentsAccum;
+    } catch (err) {
+      console.error("fetchAllMatchingStudents error", err);
+      return null;
+    }
+  };
+
+  const handleHeaderToggleAll = async (value: any) => {
+    if (!value) {
+      setSelectedStudents([]);
+      setAllMatchingCount(null);
+      setAllSelectedAllPages(false);
+      return;
+    }
+    setIsSelectingAll(true);
+    try {
+      const all = await fetchAllMatchingStudents();
+      if (all) {
+        setSelectedStudents(all);
+        setAllMatchingCount(all.length);
+        setAllSelectedAllPages(true);
+      }
+    } finally {
+      setIsSelectingAll(false);
+    }
+  };
+
   const columns: ColumnDef<Student>[] = useMemo(
     () => [
       {
         id: "selectStudent",
         header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label="Select all"
-          />
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={
+                allSelectedAllPages ||
+                table.getIsAllPageRowsSelected() ||
+                (table.getIsSomePageRowsSelected() && "indeterminate")
+              }
+              disabled={isSelectingAll}
+              onCheckedChange={(value) => handleHeaderToggleAll(value)}
+              aria-label="Select all"
+            />
+          </div>
         ),
         cell: ({ row }) => (
           <Checkbox
@@ -158,7 +266,7 @@ export function StudentTable({
         ),
       },
     ],
-    [t, tName]
+    [t, tName, allSelectedAllPages, handleHeaderToggleAll, isSelectingAll]
   );
 
   const table = useReactTable({
@@ -166,6 +274,7 @@ export function StudentTable({
     columns,
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: (updater) => {
+      setAllSelectedAllPages(false);
       if (typeof updater === "function") {
         const newSelection = updater(rowSelection);
         const newSelectedStudents =
@@ -226,6 +335,28 @@ export function StudentTable({
               setPage(1);
             }}
             className="max-w-sm"
+          />
+          <Input
+            placeholder={t("admissionYearPlaceholder")}
+            value={localYearDisplay}
+            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const digits = e.currentTarget.value
+                .replace(/\D/g, "")
+                .slice(0, 4);
+              const display = digits;
+              const prefix = derivePrefix(display);
+
+              setLocalYearDisplay(display);
+              setLocalYear(prefix);
+
+              if (querySetYear) {
+                querySetYear(display.length === 4 ? display : "");
+              }
+
+              setPage(1);
+            }}
+            className="w-64 ml-1"
+            maxLength={4}
           />
         </div>
       </div>
