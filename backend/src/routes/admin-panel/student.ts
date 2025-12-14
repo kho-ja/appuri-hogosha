@@ -1173,6 +1173,7 @@ class StudentController implements IController {
             const offset = (page - 1) * limit;
 
             const name = (req.body.name as string) || '';
+            const year_prefix = (req.body.year_prefix as string) || '';
 
             const filters: string[] = [];
             const params: any = {
@@ -1186,6 +1187,11 @@ class StudentController implements IController {
                     '(given_name LIKE :name OR family_name LIKE :name OR email LIKE :name OR phone_number LIKE :name OR student_number LIKE :name)'
                 );
                 params.name = `%${name}%`;
+            }
+
+            if (year_prefix) {
+                filters.push('student_number LIKE :year_prefix');
+                params.year_prefix = `${year_prefix}%`;
             }
 
             const whereClause =

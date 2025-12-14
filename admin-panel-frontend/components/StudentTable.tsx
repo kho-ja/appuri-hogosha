@@ -183,7 +183,18 @@ export function StudentTable({
 
   const handleHeaderToggleAll = async (value: any) => {
     if (!value) {
-      setSelectedStudents([]);
+      setIsSelectingAll(true);
+      try {
+        const currentFilteredStudents = await fetchAllMatchingStudents();
+        if (currentFilteredStudents) {
+          const currentIds = new Set(currentFilteredStudents.map((s) => s.id));
+          setSelectedStudents((prev) =>
+            prev.filter((s) => !currentIds.has(s.id))
+          );
+        }
+      } finally {
+        setIsSelectingAll(false);
+      }
       setAllMatchingCount(null);
       setAllSelectedAllPages(false);
       return;
@@ -192,7 +203,11 @@ export function StudentTable({
     try {
       const all = await fetchAllMatchingStudents();
       if (all) {
-        setSelectedStudents(all);
+        setSelectedStudents((prev) => {
+          const existingIds = new Set(prev.map((s) => s.id));
+          const newStudents = all.filter((s) => !existingIds.has(s.id));
+          return [...prev, ...newStudents];
+        });
         setAllMatchingCount(all.length);
         setAllSelectedAllPages(true);
       }
@@ -200,6 +215,17 @@ export function StudentTable({
       setIsSelectingAll(false);
     }
   };
+  const isAllCurrentPageSelected = useMemo(() => {
+    if (!data?.students || data.students.length === 0) return false;
+    return data.students.every((s) => selectedStudentIds.has(s.id));
+  }, [data, selectedStudentIds]);
+  const isSomeCurrentPageSelected = useMemo(() => {
+    if (!data?.students || data.students.length === 0) return false;
+    return (
+      data.students.some((s) => selectedStudentIds.has(s.id)) &&
+      !isAllCurrentPageSelected
+    );
+  }, [data, selectedStudentIds, isAllCurrentPageSelected]);
 
   const columns: ColumnDef<Student>[] = useMemo(
     () => [
@@ -209,9 +235,8 @@ export function StudentTable({
           <div className="flex items-center gap-2">
             <Checkbox
               checked={
-                allSelectedAllPages ||
-                table.getIsAllPageRowsSelected() ||
-                (table.getIsSomePageRowsSelected() && "indeterminate")
+                isAllCurrentPageSelected ||
+                (isSomeCurrentPageSelected && "indeterminate")
               }
               disabled={isSelectingAll}
               onCheckedChange={(value) => handleHeaderToggleAll(value)}
@@ -266,7 +291,14 @@ export function StudentTable({
         ),
       },
     ],
-    [t, tName, allSelectedAllPages, handleHeaderToggleAll, isSelectingAll]
+    [
+      t,
+      tName,
+      isAllCurrentPageSelected,
+      isSomeCurrentPageSelected,
+      handleHeaderToggleAll,
+      isSelectingAll,
+    ]
   );
 
   const table = useReactTable({
