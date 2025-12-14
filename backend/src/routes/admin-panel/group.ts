@@ -278,7 +278,6 @@ class GroupController implements IController {
             existingGroups.forEach((g: any) =>
                 groupNameToId.set(g.name.toLowerCase(), g.id)
             );
-            // сравниваем имена без учета регистра
             const existingSet = new Set(
                 existingGroups.map((g: any) => g.name.toLowerCase())
             );

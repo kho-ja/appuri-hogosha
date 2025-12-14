@@ -139,9 +139,7 @@ export default function CreateFromCsv() {
               const prev = map.get(key)!;
               map.set(key, {
                 ...prev,
-                // объединяем все ошибки полей
                 errors: { ...prev.errors, ...e.errors },
-                // объединяем данные строки (не теряем поля)
                 row: { ...prev.row, ...e.row },
               });
             } else {
@@ -391,7 +389,7 @@ const ErrorTable = ({
                   <span>{group?.name}</span>
                 </TableCell>
                 <TableCell>
-                  <span>{(group as any)?.parent_group_name}</span>
+                  <span>{group?.parent_group_name}</span>
                 </TableCell>
                 <TableCell>
                   <span>{group?.student_numbers?.join(", ")}</span>
