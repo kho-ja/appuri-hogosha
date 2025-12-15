@@ -435,16 +435,17 @@ export class CognitoHandler {
         const username = this.extractUsername(event);
         const link = this.buildAuthDeepLink();
 
-        // Fallback templates (AWS default format)
+        // Standardized Uzbek SMS templates
         switch (event.triggerSource) {
             case 'CustomSMSSender_AdminCreateUser':
-                return `Your username is ${username} and temporary password is ${decryptedCode} ${link ? ` ${link}` : ''}`;
-            case 'CustomSMSSender_Authentication':
+                return `Assalomu alaykum! Appuri-Hogosha tizimiga xush kelibsiz. Foydalanuvchi nomi: ${username} Vaqtinchalik parol: ${decryptedCode} Havola: ${link}`;
             case 'CustomSMSSender_ForgotPassword':
+                return `Parolni tiklash kodi: ${decryptedCode} Agar siz so'ramagan bo'lsangiz, bu xabarni e'tiborsiz qoldiring. Havola: ${link}`;
+            case 'CustomSMSSender_Authentication':
             case 'CustomSMSSender_ResendCode':
-                return `Your verification code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
+                return `Kirish tasdiqlash kodi: ${decryptedCode} Bu kod 5 daqiqa amal qiladi. Havola: ${link}`;
             default:
-                return `Your code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
+                return `Tasdiqlash kodi: ${decryptedCode} Havola: ${link}`;
         }
     }
 

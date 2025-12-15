@@ -22,7 +22,7 @@ export const getLocalizedText = (
         uz: {
             title: `Yangi post: ${data.title}`,
             body: `${studentName} uchun yangi xabar`,
-            sms: `Yangi post: ${data.title} - ${data.description ? data.description.substring(0, 50) + '...' : ''} ${studentName} uchun havola: ${link}`,
+            sms: `Yangi xabar: ${data.title} ${studentName} uchun. Havola: ${link}`,
         },
     };
 
@@ -30,7 +30,9 @@ export const getLocalizedText = (
 };
 
 export const generateSmsText = (post: NotificationPost): string => {
+    const studentName = `${post.given_name} ${post.family_name}`;
     const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
+
     if (post.language === 'jp') {
         return (
             '新しい投稿: ' +
@@ -50,13 +52,7 @@ export const generateSmsText = (post: NotificationPost): string => {
             link
         );
     } else {
-        return (
-            'Yangi post: ' +
-            post.title +
-            ' uchun ' +
-            post.family_name +
-            ' havola: ' +
-            link
-        );
+        // Uzbek - standardized format
+        return `Yangi xabar: ${post.title} ${studentName} uchun. Havola: ${link}`;
     }
 };
