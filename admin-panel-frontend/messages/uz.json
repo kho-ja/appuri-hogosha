@@ -368,7 +368,11 @@
     "noResults": "Natijalar yo'q.",
     "rowsSelected": "{total} qatordan {count} tasi tanlandi.",
     "previous": "Oldingi",
-    "next": "Keyingi"
+    "next": "Keyingi",
+    "selectAll": "Barchasini tanlash",
+    "selectAllFiltered": "Filterlangan barchasini tanlash",
+    "selecting": "Tanlanmoqda...",
+    "unselectAll": "Barchasini bekor qilish"
   },
   "ThisForms": {
     "Forms": "Formlar",

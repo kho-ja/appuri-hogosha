@@ -364,7 +364,11 @@
     "noResults": "Результатов не найдено.",
     "rowsSelected": "{count} из {total} строк выбрано.",
     "previous": "Предыдущая",
-    "next": "Следующая"
+    "next": "Следующая",
+    "selectAll": "Выбрать всех",
+    "selectAllFiltered": "Выбрать всех отфильтрованных",
+    "selecting": "Выбор...",
+    "unselectAll": "Снять выбор со всех"
   },
   "ThisForms": {
     "Forms": "Формы",

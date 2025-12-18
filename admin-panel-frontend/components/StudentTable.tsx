@@ -8,9 +8,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -23,7 +24,7 @@ import Student from "@/types/student";
 import StudentApi from "@/types/studentApi";
 import { useSession } from "next-auth/react";
 import PaginationApi from "./PaginationApi";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckSquare, Loader2, XSquare } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
@@ -43,6 +44,7 @@ export function StudentTable({
   const t = useTranslations("StudentTable");
   const tName = useTranslations("names");
   const { data: session } = useSession();
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
 
   const urlTableQuery = useTableQuery();
   const independentTableQuery = useIndependentTableQuery("student");
@@ -94,6 +96,52 @@ export function StudentTable({
     },
     enabled: !!session?.sessionToken && selectedStudentIds.size > 0,
   });
+
+  const handleToggleAllStudents = useCallback(async () => {
+    if (!session?.sessionToken || !data?.pagination) return;
+    const totalStudents = data.pagination.total_students;
+    const isAllSelected = selectedStudents.length === totalStudents;
+
+    if (isAllSelected) {
+      setSelectedStudents([]);
+      return;
+    }
+    setIsSelectingAll(true);
+    try {
+      const allStudents: Student[] = [];
+      const totalPages = data.pagination.total_pages;
+      for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/student/list`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session?.sessionToken}`,
+            },
+            body: JSON.stringify({
+              page: currentPage,
+              name: search,
+            }),
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch students");
+        }
+        const pageData: StudentApi = await response.json();
+        allStudents.push(...pageData.students);
+      }
+      setSelectedStudents((prev) => {
+        const prevIds = new Set(prev.map((s) => s.id));
+        const newStudents = allStudents.filter((s) => !prevIds.has(s.id));
+        return [...prev, ...newStudents];
+      });
+    } catch (error) {
+      console.error("Error selecting all students:", error);
+    } finally {
+      setIsSelectingAll(false);
+    }
+  }, [session, search, setSelectedStudents, data, selectedStudents.length]);
 
   const columns: ColumnDef<Student>[] = useMemo(
     () => [
@@ -202,6 +250,9 @@ export function StudentTable({
       });
     }
   }, [selectedStudentsData, setSelectedStudents]);
+  const totalStudents = data?.pagination?.total_students || 0;
+  const isAllSelected =
+    selectedStudents.length === totalStudents && totalStudents > 0;
 
   return (
     <div className="w-full space-y-4 mt-4">
@@ -218,15 +269,41 @@ export function StudentTable({
             </Badge>
           ))}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center gap-5">
           <Input
             placeholder={t("filter")}
+            value={search}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);
             }}
             className="max-w-sm"
           />
+          <Button
+            type="button"
+            onClick={handleToggleAllStudents}
+            disabled={isSelectingAll || !data?.pagination}
+            variant={isAllSelected ? "default" : "outline"}
+            size="sm"
+            className="whitespace-nowrap"
+          >
+            {isSelectingAll ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t("selecting")}
+              </>
+            ) : isAllSelected ? (
+              <>
+                <XSquare className="h-4 w-4 mr-2" />
+                {t("unselectAll")}
+              </>
+            ) : (
+              <>
+                <CheckSquare className="h-4 w-4 mr-2" />
+                {search ? t("selectAllFiltered") : t("selectAll")}
+              </>
+            )}
+          </Button>
         </div>
       </div>
       <div className="rounded-md border">

@@ -369,7 +369,11 @@
     "noResults": "No results.",
     "rowsSelected": "{count} of {total} rows selected.",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "selectAll": "Select all",
+    "selectAllFiltered": "Select all filtered",
+    "selecting": "Selecting...",
+    "unselectAll": "Unselect all"
   },
   "ThisForms": {
     "Forms": "Forms",
