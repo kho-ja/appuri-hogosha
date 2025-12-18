@@ -29,6 +29,7 @@ import PageHeader from "@/components/PageHeader";
 
 const GetFormSchema = (t: (key: string) => string) => {
   return z.object({
+    email: z.string().email().min(1).max(100),
     phone_number: z
       .string()
       .min(10)
@@ -55,7 +56,7 @@ export default function CreateStudent({
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
   const formSchema = GetFormSchema(t);
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
@@ -71,6 +72,7 @@ export default function CreateStudent({
     student: Student;
   }>(`student/${studentId}`, ["student", studentId]);
   interface EditStudentPayload {
+    email: string;
     phone_number: string;
     given_name: string;
     family_name: string;
@@ -93,6 +95,7 @@ export default function CreateStudent({
 
   useEffect(() => {
     if (data) {
+      form.setValue("email", data.student.email);
       form.setValue("given_name", data.student.given_name);
       form.setValue("family_name", data.student.family_name);
       form.setValue("phone_number", `+${data.student.phone_number}`);
@@ -112,6 +115,7 @@ export default function CreateStudent({
         <form
           onSubmit={form.handleSubmit((values) =>
             mutate({
+              email: values.email,
               phone_number: values.phone_number.slice(1),
               given_name: values.given_name,
               family_name: values.family_name,
