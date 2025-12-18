@@ -7,5 +7,6 @@ export default interface Student {
   student_number: string;
   given_name: string;
   family_name: string;
+  cohort?: number;
   parents?: Parent[];
 }

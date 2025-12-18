@@ -20,6 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -35,10 +42,11 @@ export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
+  const [filterBy, setFilterBy] = useState<string>("all");
   const { data: studentData } = useApiPostQuery<StudentApi>(
     "student/list",
-    ["students", page, search],
-    { page, name: search }
+    ["students", page, search, filterBy],
+    { page, filterBy, filterValue: search }
   );
   const queryClient = useQueryClient();
   const [studentId, setStudentId] = useState<number | null>(null);
@@ -74,6 +82,14 @@ export default function Students() {
     {
       accessorKey: "student_number",
       header: t("studentId"),
+    },
+    {
+      accessorKey: "cohort",
+      header: t("cohort"),
+      cell: ({ row }) => {
+        const cohort = row.getValue("cohort") as number | undefined;
+        return cohort !== null && cohort !== undefined ? cohort : "-";
+      },
     },
     {
       accessorKey: "phone_number",
@@ -130,16 +146,32 @@ export default function Students() {
           </Button>
         </Link>
       </PageHeader>
-      <div className="flex flex-col sm:flex-row justify-between w-full">
-        <Input
-          placeholder={t("filter")}
-          value={search}
-          onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="sm:max-w-xs mb-4"
-        />
+      <div className="flex flex-col sm:flex-row justify-between w-full gap-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:max-w-xl w-full">
+          <Select value={filterBy} onValueChange={setFilterBy}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder={t("filterBy")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("filterAll")}</SelectItem>
+              <SelectItem value="student_number">{t("studentId")}</SelectItem>
+              <SelectItem value="cohort">{t("cohort")}</SelectItem>
+              <SelectItem value="email">{t("email")}</SelectItem>
+              <SelectItem value="phone_number">{t("phoneNumber")}</SelectItem>
+              <SelectItem value="given_name">{t("givenName")}</SelectItem>
+              <SelectItem value="family_name">{t("familyName")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            placeholder={t("filterPlaceholder")}
+            value={search}
+            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="flex-1"
+          />
+        </div>
         <div>
           <PaginationApi
             data={studentData?.pagination ?? null}

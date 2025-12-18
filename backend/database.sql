@@ -51,6 +51,7 @@ CREATE TABLE
     `given_name` varchar(255) NOT NULL,
     `family_name` varchar(255) NOT NULL,
     `student_number` varchar(255) NOT NULL,
+    `cohort` int DEFAULT NULL,
     `school_id` int NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `email` (`email`),

@@ -47,6 +47,7 @@ const GetFormSchema = (t: (key: string) => string) => {
       .min(1)
       .max(10)
       .refine((v) => !/\s/.test(v), { message: t("NoSpacesAllowed") }),
+    cohort: z.coerce.number().int().positive().optional(),
   });
 };
 
@@ -64,6 +65,7 @@ export default function CreateStudent() {
       given_name: "",
       family_name: "",
       student_number: "",
+      cohort: undefined,
     },
   });
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
@@ -74,6 +76,7 @@ export default function CreateStudent() {
     given_name: string;
     family_name: string;
     student_number: string;
+    cohort?: number;
     parents: number[];
   }
   const { mutate } = useApiMutation<{ student: Student }, CreateStudentPayload>(
@@ -102,6 +105,7 @@ export default function CreateStudent() {
       form.setValue("given_name", parsedFormData.given_name);
       form.setValue("phone_number", parsedFormData.phone_number);
       form.setValue("student_number", parsedFormData.student_number);
+      if (parsedFormData.cohort) form.setValue("cohort", parsedFormData.cohort);
     }
 
     const subscription = form.watch((values) => {
@@ -141,6 +145,7 @@ export default function CreateStudent() {
               given_name: values.given_name,
               family_name: values.family_name,
               student_number: values.student_number,
+              cohort: values.cohort,
               parents: selectedParents.map((parent) => parent.id),
             })
           )}
@@ -205,6 +210,30 @@ export default function CreateStudent() {
                   <FormMessage>
                     {formState.errors.student_number?.message}
                   </FormMessage>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cohort"
+              render={({ field, formState }) => (
+                <FormItem>
+                  <FormLabel>{t("Cohort")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      placeholder={t("Cohort")}
+                      value={field.value || ""}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? parseInt(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage>{formState.errors.cohort?.message}</FormMessage>
                 </FormItem>
               )}
             />
