@@ -8,9 +8,16 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -51,10 +58,12 @@ export function StudentTable({
     ? independentTableQuery
     : urlTableQuery;
 
+  const [filterBy, setFilterBy] = useState<string>("all");
+
   const { data } = useApiPostQuery<StudentApi>(
     "student/list",
-    ["students", page, search],
-    { page, name: search }
+    ["students", page, search, filterBy],
+    { page, filterBy, filterValue: search }
   );
 
   const selectedStudentIds = useMemo(
@@ -151,6 +160,18 @@ export function StudentTable({
         },
       },
       {
+        accessorKey: "cohort",
+        header: () => <div className="text-left">{t("cohort")}</div>,
+        cell: ({ row }) => {
+          const cohort = row.getValue("cohort") as number | undefined;
+          return (
+            <div className="text-left">
+              {cohort !== null && cohort !== undefined ? cohort : "-"}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "phone_number",
         header: t("phoneNumber"),
         cell: ({ row }) => (
@@ -218,14 +239,28 @@ export function StudentTable({
             </Badge>
           ))}
         </div>
-        <div className="flex items-center">
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
+          <Select value={filterBy} onValueChange={setFilterBy}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder={t("filterBy")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("filterAll")}</SelectItem>
+              <SelectItem value="student_number">{t("studentId")}</SelectItem>
+              <SelectItem value="cohort">{t("cohort")}</SelectItem>
+              <SelectItem value="email">{t("email")}</SelectItem>
+              <SelectItem value="phone_number">{t("phoneNumber")}</SelectItem>
+              <SelectItem value="given_name">{t("givenName")}</SelectItem>
+              <SelectItem value="family_name">{t("familyName")}</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
-            placeholder={t("filter")}
+            placeholder={t("filterPlaceholder")}
             onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="max-w-sm"
+            className="flex-1 max-w-sm"
           />
         </div>
       </div>

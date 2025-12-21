@@ -740,7 +740,7 @@ class GroupController implements IController {
                 groupMembers = await DB.query(
                     `SELECT
                     st.id,st.phone_number,st.email,
-                    st.student_number, st.given_name, st.family_name
+                    st.student_number, st.given_name, st.family_name, st.cohort
                 FROM GroupMember AS gm
                 INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause}
@@ -752,7 +752,7 @@ class GroupController implements IController {
                 groupMembers = await DB.query(
                     `SELECT
                     st.id,st.phone_number,st.email,
-                    st.student_number, st.given_name, st.family_name
+                    st.student_number, st.given_name, st.family_name, st.cohort
                 FROM GroupMember AS gm
                 INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause}

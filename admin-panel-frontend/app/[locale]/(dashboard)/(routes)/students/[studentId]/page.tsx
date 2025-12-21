@@ -82,6 +82,16 @@ export default function ThisStudent({
             value={studentData?.student.student_number}
           />
           <DisplayProperty
+            property={t("cohort")}
+            value={
+              studentData?.student.cohort
+                ? studentData.student.cohort.toString()
+                : studentData
+                  ? "-"
+                  : undefined
+            }
+          />
+          <DisplayProperty
             property={t("email")}
             value={studentData?.student.email}
           />

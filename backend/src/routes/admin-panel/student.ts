@@ -368,7 +368,7 @@ class StudentController implements IController {
         try {
             const students = await DB.query(
                 `SELECT
-                email, phone_number, given_name, family_name, student_number
+                email, phone_number, given_name, family_name, student_number, cohort
                 FROM Student
                 WHERE school_id = :school_id`,
                 {
@@ -391,6 +391,7 @@ class StudentController implements IController {
                 given_name: student.given_name,
                 family_name: student.family_name,
                 student_number: student.student_number,
+                cohort: student.cohort,
             }));
 
             const csvContent = stringify(csvData, {
@@ -401,6 +402,7 @@ class StudentController implements IController {
                     'given_name',
                     'family_name',
                     'student_number',
+                    'cohort',
                 ],
             });
 
@@ -910,6 +912,7 @@ class StudentController implements IController {
                 given_name,
                 family_name,
                 student_number: studentNumber,
+                cohort,
             } = req.body;
 
             const student_number = studentNumber.replace(/\D+/g, '');
@@ -990,13 +993,15 @@ class StudentController implements IController {
                         student_number = :student_number,
                         phone_number = :phone_number,
                         family_name = :family_name,
-                        given_name = :given_name
+                        given_name = :given_name,
+                        cohort = :cohort
                     WHERE id = :id`,
                 {
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
+                    cohort: cohort || null,
                     id: student.id,
                 }
             );
@@ -1011,6 +1016,7 @@ class StudentController implements IController {
                         given_name: given_name,
                         family_name: family_name,
                         student_number: student_number,
+                        cohort: cohort || null,
                     },
                 })
                 .end();
@@ -1046,7 +1052,7 @@ class StudentController implements IController {
             const studentInfo = await DB.query(
                 `SELECT
                 id, email, given_name, family_name,
-                phone_number, student_number
+                phone_number, student_number, cohort
                 FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1172,7 +1178,27 @@ class StudentController implements IController {
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const name = (req.body.name as string) || '';
+            const filterBy = (req.body.filterBy as string) || 'all';
+            const filterValue = (req.body.filterValue as string) || '';
+
+            // Whitelist of allowed columns for filtering
+            const allowedFilterColumns = [
+                'all',
+                'student_number',
+                'cohort',
+                'email',
+                'phone_number',
+                'given_name',
+                'family_name',
+            ];
+
+            // Validate filterBy parameter
+            if (!allowedFilterColumns.includes(filterBy)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_filter_column',
+                };
+            }
 
             const filters: string[] = [];
             const params: any = {
@@ -1181,11 +1207,22 @@ class StudentController implements IController {
                 offset: offset,
             };
 
-            if (name) {
-                filters.push(
-                    '(given_name LIKE :name OR family_name LIKE :name OR email LIKE :name OR phone_number LIKE :name OR student_number LIKE :name)'
-                );
-                params.name = `%${name}%`;
+            if (filterValue && filterValue.trim() !== '') {
+                if (filterBy === 'all') {
+                    filters.push(
+                        '(given_name LIKE :filterValue OR family_name LIKE :filterValue OR email LIKE :filterValue OR phone_number LIKE :filterValue OR student_number LIKE :filterValue OR CAST(cohort AS CHAR) LIKE :filterValue)'
+                    );
+                    params.filterValue = `%${filterValue}%`;
+                } else if (filterBy === 'cohort') {
+                    const cohortValue = parseInt(filterValue);
+                    if (!isNaN(cohortValue)) {
+                        filters.push('cohort = :filterValue');
+                        params.filterValue = cohortValue;
+                    }
+                } else {
+                    filters.push(`${filterBy} LIKE :filterValue`);
+                    params.filterValue = `%${filterValue}%`;
+                }
             }
 
             const whereClause =
@@ -1194,7 +1231,7 @@ class StudentController implements IController {
             const studentList = await DB.query(
                 `SELECT
                 id, email, given_name, family_name,
-                phone_number, student_number
+                phone_number, student_number, cohort
                 FROM Student
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC
@@ -1256,6 +1293,7 @@ class StudentController implements IController {
                 given_name,
                 family_name,
                 student_number: studentNumber,
+                cohort,
                 parents,
             } = req.body;
 
@@ -1330,14 +1368,15 @@ class StudentController implements IController {
             }
 
             const studentInsert = await DB.execute(
-                `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
-                VALUE (:email,:phone_number,:given_name,:family_name,:student_number,:school_id)`,
+                `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, cohort, school_id)
+                VALUE (:email,:phone_number,:given_name,:family_name,:student_number,:cohort,:school_id)`,
                 {
                     email: email,
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
+                    cohort: cohort || null,
                     school_id: req.user.school_id,
                 }
             );
