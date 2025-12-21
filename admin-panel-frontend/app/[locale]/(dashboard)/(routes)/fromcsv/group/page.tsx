@@ -119,38 +119,7 @@ export default function CreateFromCsv() {
     }
   }
 
-  // Deduplicate errors by group identity (name + parent_group_name + student_numbers)
-  const uniqueErrors =
-    errors?.errors &&
-    Array.from(
-      errors.errors
-        .reduce(
-          (
-            map: Map<string, Upload<Group>["errors"][number]>,
-            e: Upload<Group>["errors"][number]
-          ) => {
-            const key = `${e.row?.name || ""}|${e.row?.parent_group_name || ""}|${
-              Array.isArray(e.row?.student_numbers)
-                ? e.row?.student_numbers.join(",")
-                : e.row?.student_numbers || ""
-            }`;
-
-            if (map.has(key)) {
-              const prev = map.get(key)!;
-              map.set(key, {
-                ...prev,
-                errors: { ...prev.errors, ...e.errors },
-                row: { ...prev.row, ...e.row },
-              });
-            } else {
-              map.set(key, e);
-            }
-            return map;
-          },
-          new Map<string, Upload<Group>["errors"][number]>()
-        )
-        .values()
-    );
+  const rowErrors = errors?.errors ?? [];
 
   return (
     <main className="space-y-4">
@@ -263,9 +232,8 @@ export default function CreateFromCsv() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {uniqueErrors &&
-                uniqueErrors.length > 0 &&
-                uniqueErrors.map((error, index) => (
+              {rowErrors.length > 0 &&
+                rowErrors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <ErrorCell name="name" error={error} />
