@@ -207,6 +207,39 @@ export type TranslationKeys = {
   unableToSaveInDevelopment: string;
   permissionDenied: string;
   downloadError: string;
+
+  // Error messages - Authentication
+  authenticationFailed: string;
+  incorrectCredentials: string;
+  authConfigError: string;
+
+  // Error messages - Phone number
+  phoneNumberNotFound: string;
+  invalidPhoneNumber: string;
+  invalidPhoneFormat: string;
+
+  // Error messages - OTP
+  invalidOtp: string;
+  otpExpired: string;
+
+  // Error messages - Password
+  invalidPassword: string;
+  passwordTooShort: string;
+  temporaryPasswordRequired: string;
+
+  // Error messages - Input
+  invalidInput: string;
+
+  // Error messages - Network
+  networkError: string;
+  requestTimeout: string;
+  serviceUnavailable: string;
+  serverError: string;
+
+  // Error messages - General
+  accessDenied: string;
+  notFound: string;
+  tooManyAttempts: string;
 };
 
 export type Language = 'en' | 'ja' | 'uz' | 'ru';

@@ -19,6 +19,7 @@ import { ICountry } from 'react-native-international-phone-number';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { OtpInput } from 'react-native-otp-entry';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthErrorHandler } from '@/lib/errorHandler';
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState('');
@@ -119,7 +120,15 @@ export default function VerifyOtp() {
           },
         });
       } else {
-        Toast.show(i18n[language].loginFailed, {
+        const parsedError = AuthErrorHandler.parseError(error);
+        const errorMessageKey =
+          parsedError.userMessage as keyof (typeof i18n)[typeof language];
+        const errorMessage =
+          (i18n[language][errorMessageKey] as string | undefined) ||
+          i18n[language].loginFailed ||
+          parsedError.userMessage;
+
+        Toast.show(String(errorMessage), {
           duration: Toast.durations.LONG,
           position: TOAST_POSITION,
           shadow: true,

@@ -19,6 +19,7 @@ import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
+import { AuthErrorHandler } from '@/lib/errorHandler';
 
 export default function SignIn() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -126,7 +127,15 @@ export default function SignIn() {
           },
         });
       } else {
-        Toast.show(i18n[language].loginFailed, {
+        const parsedError = AuthErrorHandler.parseError(error);
+        const errorMessageKey =
+          parsedError.userMessage as keyof (typeof i18n)[typeof language];
+        const errorMessage =
+          (i18n[language][errorMessageKey] as string | undefined) ||
+          i18n[language].loginFailed ||
+          parsedError.userMessage;
+
+        Toast.show(String(errorMessage), {
           duration: Toast.durations.LONG,
           position: TOAST_POSITION,
           shadow: true,
