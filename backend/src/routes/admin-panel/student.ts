@@ -1052,7 +1052,7 @@ class StudentController implements IController {
             const studentInfo = await DB.query(
                 `SELECT
                 id, email, given_name, family_name,
-                phone_number, student_number
+                phone_number, student_number, cohort
                 FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
