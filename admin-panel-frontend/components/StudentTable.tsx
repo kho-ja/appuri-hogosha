@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useEffect, useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ import { useSession } from "next-auth/react";
 import PaginationApi from "./PaginationApi";
 import { Trash2, CheckSquare, Loader2, XSquare } from "lucide-react";
 import { Badge } from "./ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import useApiPostQuery from "@/lib/useApiPostQuery";
 import useTableQuery from "@/lib/useTableQuery";
@@ -44,7 +44,6 @@ export function StudentTable({
   const t = useTranslations("StudentTable");
   const tName = useTranslations("names");
   const { data: session } = useSession();
-  const [isSelectingAll, setIsSelectingAll] = useState(false);
 
   const urlTableQuery = useTableQuery();
   const independentTableQuery = useIndependentTableQuery("student");
@@ -97,17 +96,11 @@ export function StudentTable({
     enabled: !!session?.sessionToken && selectedStudentIds.size > 0,
   });
 
-  const handleToggleAllStudents = useCallback(async () => {
-    if (!session?.sessionToken || !data?.pagination) return;
-    const totalStudents = data.pagination.total_students;
-    const isAllSelected = selectedStudents.length === totalStudents;
-
-    if (isAllSelected) {
-      setSelectedStudents([]);
-      return;
-    }
-    setIsSelectingAll(true);
-    try {
+  const selectAllMutation = useMutation({
+    mutationFn: async () => {
+      if (!session?.sessionToken || !data?.pagination) {
+        throw new Error("Invalid session or pagination data");
+      }
       const allStudents: Student[] = [];
       const totalPages = data.pagination.total_pages;
       for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
@@ -131,17 +124,24 @@ export function StudentTable({
         const pageData: StudentApi = await response.json();
         allStudents.push(...pageData.students);
       }
+      return allStudents;
+    },
+    onSuccess: (allStudents) => {
       setSelectedStudents((prev) => {
         const prevIds = new Set(prev.map((s) => s.id));
         const newStudents = allStudents.filter((s) => !prevIds.has(s.id));
         return [...prev, ...newStudents];
       });
-    } catch (error) {
-      console.error("Error selecting all students:", error);
-    } finally {
-      setIsSelectingAll(false);
+    },
+  });
+
+  const handleToggleAllStudents = useCallback(() => {
+    if (selectedStudents.length > 0) {
+      setSelectedStudents([]);
+    } else {
+      selectAllMutation.mutate();
     }
-  }, [session, search, setSelectedStudents, data, selectedStudents.length]);
+  }, [selectedStudents.length, setSelectedStudents, selectAllMutation]);
 
   const columns: ColumnDef<Student>[] = useMemo(
     () => [
@@ -250,9 +250,7 @@ export function StudentTable({
       });
     }
   }, [selectedStudentsData, setSelectedStudents]);
-  const totalStudents = data?.pagination?.total_students || 0;
-  const isAllSelected =
-    selectedStudents.length === totalStudents && totalStudents > 0;
+  const showUnselectButton = selectedStudents.length > 0;
 
   return (
     <div className="w-full space-y-4 mt-4">
@@ -282,17 +280,17 @@ export function StudentTable({
           <Button
             type="button"
             onClick={handleToggleAllStudents}
-            disabled={isSelectingAll || !data?.pagination}
-            variant={isAllSelected ? "default" : "outline"}
+            disabled={selectAllMutation.isPending || !data?.pagination}
+            variant={showUnselectButton ? "default" : "outline"}
             size="sm"
             className="whitespace-nowrap"
           >
-            {isSelectingAll ? (
+            {selectAllMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 {t("selecting")}
               </>
-            ) : isAllSelected ? (
+            ) : showUnselectButton ? (
               <>
                 <XSquare className="h-4 w-4 mr-2" />
                 {t("unselectAll")}
