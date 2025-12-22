@@ -15,6 +15,8 @@ export type TranslationKeys = {
   loginFailed: string;
   loginFailedNotifications: string;
   loginSuccess: string;
+  usePasswordInstead: string;
+  useOtpInstead: string;
 
   // Forgot password pages
   resetPasswordTitle: string;

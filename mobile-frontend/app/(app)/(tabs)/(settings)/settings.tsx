@@ -23,6 +23,7 @@ import { I18nContext } from '@/contexts/i18n-context';
 import { User } from '@/constants/types';
 import { useSQLiteContext } from 'expo-sqlite';
 import { ThemedView } from '@/components/ThemedView';
+import { Href, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
@@ -270,6 +271,19 @@ export default function SettingsScreen() {
                 </View>
                 <ThemedText style={styles.rowLabel}>
                   {i18n[language].language}
+                </ThemedText>
+                <View style={styles.rowSpacer} />
+                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+              </Pressable>
+              <Pressable
+                onPress={() => router.navigate('change-psswd' as Href)}
+                style={styles.row}
+              >
+                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                  <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+                </View>
+                <ThemedText style={styles.rowLabel}>
+                  {i18n[language].changePassword}
                 </ThemedText>
                 <View style={styles.rowSpacer} />
                 <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />

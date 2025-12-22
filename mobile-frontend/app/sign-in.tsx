@@ -4,6 +4,8 @@ import {
   Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,11 +22,14 @@ import { ICountryCca2 } from 'react-native-international-phone-number/lib/interf
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
 import { AuthErrorHandler } from '@/lib/errorHandler';
+import SecureInput from '@/components/atomic/secure-input';
 
 export default function SignIn() {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
+  const [usePassword, setUsePassword] = useState(false);
   const { signIn } = useSession();
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
@@ -103,7 +108,8 @@ export default function SignIn() {
     return () => backHandler.remove();
   }, [handleBackPress]);
 
-  const { mutate, isPending } = useMutation({
+  // OTP Login mutation
+  const otpMutation = useMutation({
     mutationFn: async () => {
       return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
     },
@@ -170,6 +176,59 @@ export default function SignIn() {
     },
   });
 
+  // Password Login mutation
+  const passwordMutation = useMutation({
+    mutationFn: async () => {
+      return await signIn(
+        selectedCountry,
+        phoneNumber.replaceAll(' ', ''),
+        password
+      );
+    },
+    onError: error => {
+      const parsedError = AuthErrorHandler.parseError(error);
+      const errorMessageKey =
+        parsedError.userMessage as keyof (typeof i18n)[typeof language];
+      const errorMessage =
+        (i18n[language][errorMessageKey] as string | undefined) ||
+        i18n[language].loginFailed ||
+        parsedError.userMessage;
+
+      Toast.show(String(errorMessage), {
+        duration: Toast.durations.LONG,
+        position: TOAST_POSITION,
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+        textColor: 'white',
+        containerStyle: {
+          backgroundColor: 'red',
+          borderRadius: 5,
+        },
+      });
+    },
+    onSuccess: async () => {
+      Toast.show(i18n[language].loginSuccess, {
+        duration: Toast.durations.SHORT,
+        position: TOAST_POSITION,
+        containerStyle: { backgroundColor: 'green', borderRadius: 5 },
+        textColor: 'white',
+      });
+      // Navigate to main app tabs
+      router.replace('/(tabs)');
+    },
+  });
+
+  const handleSubmit = () => {
+    if (usePassword) {
+      passwordMutation.mutate();
+    } else {
+      otpMutation.mutate();
+    }
+  };
+
+  const isPending = otpMutation.isPending || passwordMutation.isPending;
+
   const backgroundColor = theme.colors.background;
 
   return (
@@ -191,14 +250,52 @@ export default function SignIn() {
             defaultCountry={'UZ' as ICountryCca2}
           />
 
+          {usePassword && (
+            <SecureInput
+              style={styles.passwordContainer}
+              label={i18n[language].password}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={i18n[language].enterPassword}
+              autoCapitalize='none'
+            />
+          )}
+
+          {usePassword && (
+            <TouchableOpacity
+              style={styles.forgotPasswordContainer}
+              onPress={() => router.push('/forgot-password')}
+            >
+              <ThemedText style={styles.forgotPasswordText}>
+                {i18n[language].forgotPasswordLink}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
+
           <Button
-            onPress={() => mutate()}
-            title={i18n[language].sendCode}
+            onPress={handleSubmit}
+            title={
+              usePassword
+                ? i18n[language].loginToAccount
+                : i18n[language].sendCode
+            }
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}
             disabled={isPending}
             loading={isPending}
           />
+
+          <TouchableOpacity
+            onPress={() => setUsePassword(!usePassword)}
+            style={styles.linkButton}
+          >
+            <ThemedText style={styles.linkText}>
+              {usePassword
+                ? i18n[language].useOtpInstead ||
+                  'Use verification code instead'
+                : i18n[language].usePasswordInstead || 'Use password instead'}
+            </ThemedText>
+          </TouchableOpacity>
         </ThemedView>
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -228,5 +325,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  passwordContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  forgotPasswordContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#4285F4',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  linkButton: {
+    marginTop: 20,
+    alignItems: 'center',
+    padding: 10,
+  },
+  linkText: {
+    color: '#4285F4',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
