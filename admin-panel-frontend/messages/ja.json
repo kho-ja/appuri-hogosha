@@ -372,7 +372,11 @@
     "noResults": "結果がありません。",
     "rowsSelected": "{count} 件の {total} 件が選択されました。",
     "previous": "前へ",
-    "next": "次へ"
+    "next": "次へ",
+    "selectAll": "すべて選択",
+    "selectAllFiltered": "絞り込み結果をすべて選択",
+    "selecting": "選択中...",
+    "unselectAll": "すべて解除"
   },
   "ThisForms": {
     "Forms": "フォーム",
