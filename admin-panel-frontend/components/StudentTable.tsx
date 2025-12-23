@@ -280,27 +280,25 @@ export function StudentTable({
           <Button
             type="button"
             onClick={handleToggleAllStudents}
-            disabled={selectAllMutation.isPending || !data?.pagination}
+            isLoading={selectAllMutation.isPending || !data?.pagination}
+            icon={
+              showUnselectButton ? (
+                <XSquare size={16} />
+              ) : (
+                <CheckSquare size={16} />
+              )
+            }
             variant={showUnselectButton ? "default" : "outline"}
             size="sm"
             className="whitespace-nowrap"
           >
-            {selectAllMutation.isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t("selecting")}
-              </>
-            ) : showUnselectButton ? (
-              <>
-                <XSquare className="h-4 w-4 mr-2" />
-                {t("unselectAll")}
-              </>
-            ) : (
-              <>
-                <CheckSquare className="h-4 w-4 mr-2" />
-                {search ? t("selectAllFiltered") : t("selectAll")}
-              </>
-            )}
+            {selectAllMutation.isPending
+              ? t("selecting")
+              : showUnselectButton
+                ? t("unselectAll")
+                : search
+                  ? t("selectAllFiltered")
+                  : t("selectAll")}
           </Button>
         </div>
       </div>
