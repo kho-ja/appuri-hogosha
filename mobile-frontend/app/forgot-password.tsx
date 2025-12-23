@@ -71,22 +71,22 @@ const normalizePhoneNumber = (
 
   let phone = rawPhone.replace(/\s+/g, '').replace(/-/g, ''); // bo'shliq va chiziqlarni olib tashlash
 
-  // Agar 00 bilan boshlangan bo‘lsa → + ga o‘zgartiramiz
+  // Agar 00 bilan boshlangan bo'lsa → + ga o'zgartiramiz
   if (phone.startsWith('00')) {
     phone = `+${phone.slice(2)}`;
   }
 
-  // Agar + bilan boshlangan bo‘lsa → to‘g‘ridan-to‘g‘ri qaytaramiz
+  // Agar + bilan boshlangan bo'lsa → to'g'ridan-to'g'ri qaytaramiz
   if (phone.startsWith('+')) {
     return phone;
   }
 
-  // Agar 0 bilan boshlangan bo‘lsa → uni olib tashlaymiz
+  // Agar 0 bilan boshlangan bo'lsa → uni olib tashlaymiz
   if (phone.startsWith('0')) {
     phone = phone.slice(1);
   }
 
-  // Oxirida country code ni oldiga qo‘shamiz
+  // Oxirida country code ni oldiga qo'shamiz
   return `${callingCode}${phone}`;
 };
 

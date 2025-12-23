@@ -1,8 +1,13 @@
 import { Student, Message, User } from './types';
 
 export const DEMO_CREDENTIALS = {
-  phoneNumber: '+998901234567',
+  phoneNumber: '998901234567',
   password: 'Demo123!',
+};
+
+export const DEMO_OTP_CREDENTIALS = {
+  phoneNumber: '998901234567',
+  otp: '654321',
 };
 
 export const DEMO_USER: User = {
