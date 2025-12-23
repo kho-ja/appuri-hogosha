@@ -67,6 +67,7 @@ class StudentController implements IController {
                             st.student_number,
                             st.email,
                             st.phone_number,
+                            st.cohort,
                             COUNT(DISTINCT ps.id) AS messageCount,
                             COUNT(DISTINCT CASE WHEN pp.viewed_at IS NULL THEN pp.id END) AS unread_count
                         FROM StudentParent AS sp
@@ -75,7 +76,7 @@ class StudentController implements IController {
                         LEFT JOIN PostParent AS pp ON pp.post_student_id = ps.id
                             AND pp.parent_id = sp.parent_id
                         WHERE sp.parent_id = :parent_id
-                        GROUP BY st.id, st.family_name, st.given_name, st.student_number, st.email, st.phone_number;
+                        GROUP BY st.id, st.family_name, st.given_name, st.student_number, st.email, st.phone_number, st.cohort;
             `,
                 {
                     parent_id: req.user.id,

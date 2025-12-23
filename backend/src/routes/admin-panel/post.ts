@@ -1328,6 +1328,7 @@ class PostController implements IController {
                                                            st.family_name,
                                                            st.phone_number,
                                                            st.student_number,
+                                                           st.cohort,
                                                            ps.id AS post_student_id
                                                     FROM PostStudent AS ps
                                                              INNER JOIN Student AS st on ps.student_id = st.id
@@ -1717,6 +1718,7 @@ class PostController implements IController {
                                                            st.family_name,
                                                            st.phone_number,
                                                            st.student_number,
+                                                           st.cohort,
                                                            ps.id AS post_student_id
                                                     FROM PostStudent AS ps
                                                              INNER JOIN Student AS st on ps.student_id = st.id
