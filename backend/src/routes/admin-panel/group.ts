@@ -128,7 +128,8 @@ class GroupController implements IController {
             const csvContent = stringify(csvData, {
                 header: true,
                 columns: ['name', 'parent_group_name', 'student_numbers'],
-                delimiter: ';',
+                delimiter: ',', // ✅ только запятая
+                record_delimiter: '\r\n', // Excel/Windows-friendly
             });
 
             res.setHeader(
@@ -827,7 +828,7 @@ class GroupController implements IController {
                 groupMembers = await DB.query(
                     `SELECT
                     st.id,st.phone_number,st.email,
-                    st.student_number, st.given_name, st.family_name
+                    st.student_number, st.given_name, st.family_name, st.cohort
                 FROM GroupMember AS gm
                 INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause}
@@ -839,7 +840,7 @@ class GroupController implements IController {
                 groupMembers = await DB.query(
                     `SELECT
                     st.id,st.phone_number,st.email,
-                    st.student_number, st.given_name, st.family_name
+                    st.student_number, st.given_name, st.family_name, st.cohort
                 FROM GroupMember AS gm
                 INNER JOIN Student AS st on gm.student_id = st.id
                 WHERE gm.group_id = :group_id ${whereClause}
@@ -1129,7 +1130,7 @@ class GroupController implements IController {
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
-            const csvContent = 'name;parent_group_name;student_numbers\r\n';
+            const csvContent = 'name,parent_group_name,student_numbers\r\n';
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader(
