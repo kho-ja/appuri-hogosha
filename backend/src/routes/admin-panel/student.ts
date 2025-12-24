@@ -447,12 +447,19 @@ class StudentController implements IController {
             const seenNumbers = new Set<string>();
 
             for (const raw of rows) {
+                const cohortRaw = String(raw.cohort ?? '').trim();
+                const cohort =
+                    cohortRaw === '' || !/^\d+$/.test(cohortRaw)
+                        ? null
+                        : parseInt(cohortRaw, 10);
+
                 const normalized = {
                     email: String(raw.email || '').trim(),
                     phone_number: String(raw.phone_number || '').trim(),
                     given_name: String(raw.given_name || '').trim(),
                     family_name: String(raw.family_name || '').trim(),
                     student_number: String(raw.student_number || '').trim(),
+                    cohort,
                 };
                 const rowErrors: Record<string, string> = {};
                 if (!isValidEmail(normalized.email))
@@ -549,8 +556,8 @@ class StudentController implements IController {
                         continue;
                     }
                     await DB.execute(
-                        `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
-                         VALUE (:email, :phone_number, :given_name, :family_name, :student_number, :school_id);`,
+                        `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, cohort, school_id)
+                         VALUE (:email, :phone_number, :given_name, :family_name, :student_number, :cohort, :school_id);`,
                         { ...row, school_id: req.user.school_id }
                     );
                     response.inserted.push(row);
@@ -567,7 +574,8 @@ class StudentController implements IController {
                             phone_number = :phone_number,
                             given_name = :given_name,
                             family_name = :family_name,
-                            student_number = :student_number
+                            student_number = :student_number,
+                            cohort = :cohort
                          WHERE email = :email AND school_id = :school_id`,
                         { ...row, school_id: req.user.school_id }
                     );
@@ -1464,6 +1472,7 @@ class StudentController implements IController {
                 'given_name',
                 'family_name',
                 'student_number',
+                'cohort',
             ];
 
             const csvContent = stringify([headers], {
