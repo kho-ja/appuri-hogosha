@@ -24,9 +24,6 @@ import process from 'node:process';
 import { stringify } from 'csv-stringify/sync';
 import { syncronizePosts } from '../../utils/messageHelper';
 
-// Простая уникализация массива
-const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr));
-
 // CSV upload handled by shared middleware
 
 class StudentController implements IController {
@@ -371,7 +368,7 @@ class StudentController implements IController {
         try {
             const students = await DB.query(
                 `SELECT
-                email, phone_number, given_name, family_name, student_number
+                email, phone_number, given_name, family_name, student_number, cohort
                 FROM Student
                 WHERE school_id = :school_id`,
                 {
@@ -394,6 +391,7 @@ class StudentController implements IController {
                 given_name: student.given_name,
                 family_name: student.family_name,
                 student_number: student.student_number,
+                cohort: student.cohort,
             }));
 
             const csvContent = stringify(csvData, {
@@ -404,6 +402,7 @@ class StudentController implements IController {
                     'given_name',
                     'family_name',
                     'student_number',
+                    'cohort',
                 ],
             });
 
@@ -502,35 +501,22 @@ class StudentController implements IController {
                     .end();
             }
 
-            const emails = uniq(rows.map(r => r.email).filter(Boolean));
-            const sns = uniq(rows.map(r => r.student_number).filter(Boolean));
-            const phones = uniq(rows.map(r => r.phone_number).filter(Boolean));
-
-            let existing: Array<{
-                email: string;
-                student_number: string;
-                phone_number: string;
-            }> = [];
-            if (emails.length || sns.length || phones.length) {
-                existing = await DB.query(
-                    `SELECT email, student_number, phone_number
-                     FROM Student
-                     WHERE school_id = :school_id
-                       AND (
-                           (${emails.length ? 'email IN (:emails)' : '1=0'})
-                        OR (${sns.length ? 'student_number IN (:sns)' : '1=0'})
-                        OR (${phones.length ? 'phone_number IN (:phones)' : '1=0'})
-                       )`,
-                    { school_id: req.user.school_id, emails, sns, phones }
-                );
-            }
-
-            const existingEmailSet = new Set(existing.map((s: any) => s.email));
+            const existingStudents = await DB.query(
+                'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
+                {
+                    emails: valid.map(v => v.email),
+                    sns: valid.map(v => v.student_number),
+                    phones: valid.map(v => v.phone_number),
+                }
+            );
+            const existingEmailSet = new Set(
+                existingStudents.map((s: any) => s.email)
+            );
             const existingNumberSet = new Set(
-                existing.map((s: any) => s.student_number)
+                existingStudents.map((s: any) => s.student_number)
             );
             const existingPhoneSet = new Set(
-                existing.map((s: any) => s.phone_number)
+                existingStudents.map((s: any) => s.phone_number)
             );
 
             for (const row of valid) {
@@ -926,6 +912,7 @@ class StudentController implements IController {
                 given_name,
                 family_name,
                 student_number: studentNumber,
+                cohort,
             } = req.body;
 
             const student_number = studentNumber.replace(/\D+/g, '');
@@ -1006,13 +993,15 @@ class StudentController implements IController {
                         student_number = :student_number,
                         phone_number = :phone_number,
                         family_name = :family_name,
-                        given_name = :given_name
+                        given_name = :given_name,
+                        cohort = :cohort
                     WHERE id = :id`,
                 {
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
+                    cohort: cohort || null,
                     id: student.id,
                 }
             );
@@ -1027,6 +1016,7 @@ class StudentController implements IController {
                         given_name: given_name,
                         family_name: family_name,
                         student_number: student_number,
+                        cohort: cohort || null,
                     },
                 })
                 .end();
@@ -1062,7 +1052,7 @@ class StudentController implements IController {
             const studentInfo = await DB.query(
                 `SELECT
                 id, email, given_name, family_name,
-                phone_number, student_number
+                phone_number, student_number, cohort
                 FROM Student
                 WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1188,7 +1178,27 @@ class StudentController implements IController {
             const limit = parseInt(process.env.PER_PAGE + '');
             const offset = (page - 1) * limit;
 
-            const name = (req.body.name as string) || '';
+            const filterBy = (req.body.filterBy as string) || 'all';
+            const filterValue = (req.body.filterValue as string) || '';
+
+            // Whitelist of allowed columns for filtering
+            const allowedFilterColumns = [
+                'all',
+                'student_number',
+                'cohort',
+                'email',
+                'phone_number',
+                'given_name',
+                'family_name',
+            ];
+
+            // Validate filterBy parameter
+            if (!allowedFilterColumns.includes(filterBy)) {
+                throw {
+                    status: 400,
+                    message: 'invalid_filter_column',
+                };
+            }
 
             const filters: string[] = [];
             const params: any = {
@@ -1197,11 +1207,22 @@ class StudentController implements IController {
                 offset: offset,
             };
 
-            if (name) {
-                filters.push(
-                    '(given_name LIKE :name OR family_name LIKE :name OR email LIKE :name OR student_number LIKE :name)'
-                );
-                params.name = `%${name}%`;
+            if (filterValue && filterValue.trim() !== '') {
+                if (filterBy === 'all') {
+                    filters.push(
+                        '(given_name LIKE :filterValue OR family_name LIKE :filterValue OR email LIKE :filterValue OR phone_number LIKE :filterValue OR student_number LIKE :filterValue OR CAST(cohort AS CHAR) LIKE :filterValue)'
+                    );
+                    params.filterValue = `%${filterValue}%`;
+                } else if (filterBy === 'cohort') {
+                    const cohortValue = parseInt(filterValue);
+                    if (!isNaN(cohortValue)) {
+                        filters.push('cohort = :filterValue');
+                        params.filterValue = cohortValue;
+                    }
+                } else {
+                    filters.push(`${filterBy} LIKE :filterValue`);
+                    params.filterValue = `%${filterValue}%`;
+                }
             }
 
             const whereClause =
@@ -1210,7 +1231,7 @@ class StudentController implements IController {
             const studentList = await DB.query(
                 `SELECT
                 id, email, given_name, family_name,
-                phone_number, student_number
+                phone_number, student_number, cohort
                 FROM Student
                 WHERE school_id = :school_id ${whereClause}
                 ORDER BY id DESC
@@ -1272,6 +1293,7 @@ class StudentController implements IController {
                 given_name,
                 family_name,
                 student_number: studentNumber,
+                cohort,
                 parents,
             } = req.body;
 
@@ -1346,14 +1368,15 @@ class StudentController implements IController {
             }
 
             const studentInsert = await DB.execute(
-                `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, school_id)
-                VALUE (:email,:phone_number,:given_name,:family_name,:student_number,:school_id)`,
+                `INSERT INTO Student(email, phone_number, given_name, family_name, student_number, cohort, school_id)
+                VALUE (:email,:phone_number,:given_name,:family_name,:student_number,:cohort,:school_id)`,
                 {
                     email: email,
                     phone_number: phone_number,
                     given_name: given_name,
                     family_name: family_name,
                     student_number: student_number,
+                    cohort: cohort || null,
                     school_id: req.user.school_id,
                 }
             );

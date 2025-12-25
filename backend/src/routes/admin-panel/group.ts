@@ -91,9 +91,7 @@ class GroupController implements IController {
                     CASE WHEN g.sub_group_id IS NULL THEN 0 ELSE 1 END,
                     g.sub_group_id,
                     g.name`,
-                {
-                    school_id: req.user.school_id,
-                }
+                { school_id: req.user.school_id }
             )) as Array<{
                 id: number;
                 name: string;
@@ -114,14 +112,13 @@ class GroupController implements IController {
                     WHERE gm.group_id = :group_id`,
                     { group_id: group.id }
                 )) as Array<{ student_number: string }>;
-                group.student_numbers = memberList.map(
-                    member => member.student_number
-                );
+                group.student_numbers = memberList.map(m => m.student_number);
             }
 
             const csvData = groups.map(group => ({
                 name: group.name || '',
                 parent_group_name: group.parent_group_name || '',
+                // внутри ячейки допустимы запятые — stringify сам экранирует/кавычит
                 student_numbers: (group.student_numbers || []).join(','),
             }));
 
@@ -129,7 +126,7 @@ class GroupController implements IController {
                 header: true,
                 columns: ['name', 'parent_group_name', 'student_numbers'],
                 delimiter: ',', // ✅ только запятая
-                record_delimiter: '\r\n', // Excel/Windows-friendly
+                record_delimiter: '\r\n', // единый формат строк
             });
 
             res.setHeader(
@@ -343,6 +340,7 @@ class GroupController implements IController {
                                 for (const st of studentRows) {
                                     await DB.execute(
                                         `INSERT INTO GroupMember (group_id, student_id) VALUES (:group_id, :student_id)`,
+
                                         { group_id: groupId, student_id: st.id }
                                     );
                                 }
@@ -1130,7 +1128,12 @@ class GroupController implements IController {
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
-            const csvContent = 'name,parent_group_name,student_numbers\r\n';
+            const headers = ['name', 'parent_group_name', 'student_numbers'];
+
+            const csvContent = stringify([headers], {
+                header: false,
+                delimiter: ',',
+            });
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader(
@@ -1138,7 +1141,8 @@ class GroupController implements IController {
                 'attachment; filename="group_template.csv"'
             );
 
-            res.send('\uFEFF' + csvContent);
+            const bom = '\uFEFF';
+            res.send(bom + csvContent);
         } catch (e: any) {
             console.error('Error generating CSV template:', e);
             return res.status(500).json({ error: 'internal_server_error' });
