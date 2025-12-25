@@ -72,6 +72,7 @@ class StudentController implements IController {
             email_field,
             phone_number_field,
             student_number_field,
+            cohort_field,
         } = req.body;
         const kintoneRecords: any[] = [];
         const errors: any[] = [];
@@ -182,6 +183,9 @@ class StudentController implements IController {
                     let email: any = record[email_field];
                     let phone_number: any = record[phone_number_field];
                     let student_number: any = record[student_number_field];
+                    let cohort: any = cohort_field
+                        ? record[cohort_field]
+                        : undefined;
 
                     const rowErrors: any = {};
 
@@ -236,12 +240,32 @@ class StudentController implements IController {
                         }
                     }
 
+                    // Validate cohort (optional but must be positive if provided)
+                    if (
+                        cohort !== undefined &&
+                        cohort !== null &&
+                        cohort !== ''
+                    ) {
+                        cohort = parseKintoneRow(cohort);
+                        const cohortNum = Number(cohort);
+                        if (isNaN(cohortNum) || !Number.isInteger(cohortNum)) {
+                            rowErrors.cohort = 'invalid_cohort_format';
+                        } else if (cohortNum < 0) {
+                            rowErrors.cohort = 'cohort_must_be_positive';
+                        } else {
+                            cohort = cohortNum;
+                        }
+                    } else {
+                        cohort = null;
+                    }
+
                     const row = {
                         given_name,
                         family_name,
                         email,
                         phone_number,
                         student_number,
+                        cohort,
                     };
 
                     if (Object.keys(rowErrors).length === 0) {
@@ -448,10 +472,18 @@ class StudentController implements IController {
 
             for (const raw of rows) {
                 const cohortRaw = String(raw.cohort ?? '').trim();
-                const cohort =
-                    cohortRaw === '' || !/^\d+$/.test(cohortRaw)
-                        ? null
-                        : parseInt(cohortRaw, 10);
+                let cohort: number | null = null;
+
+                // Validate cohort if provided
+                if (cohortRaw !== '') {
+                    const cohortNum = Number(cohortRaw);
+                    if (isNaN(cohortNum) || !Number.isInteger(cohortNum)) {
+                        // Invalid cohort format - will be caught in validation
+                        cohort = null;
+                    } else {
+                        cohort = cohortNum;
+                    }
+                }
 
                 const normalized = {
                     email: String(raw.email || '').trim(),
@@ -472,6 +504,16 @@ class StudentController implements IController {
                     rowErrors.family_name = ErrorKeys.invalid_family_name;
                 if (!isValidStudentNumber(normalized.student_number))
                     rowErrors.student_number = ErrorKeys.invalid_student_number;
+
+                // Validate cohort
+                if (cohortRaw !== '') {
+                    const cohortNum = Number(cohortRaw);
+                    if (isNaN(cohortNum) || !Number.isInteger(cohortNum)) {
+                        rowErrors.cohort = ErrorKeys.invalid_cohort_format;
+                    } else if (cohortNum < 0) {
+                        rowErrors.cohort = ErrorKeys.cohort_must_be_positive;
+                    }
+                }
                 if (seenEmails.has(normalized.email))
                     rowErrors.email = ErrorKeys.email_already_exists;
                 if (seenNumbers.has(normalized.student_number))
@@ -508,6 +550,13 @@ class StudentController implements IController {
                     .end();
             }
 
+            // If no valid rows, return early with errors
+            if (valid.length === 0) {
+                response.summary.errors = response.errors.length;
+                finalizeResponse(response, withCSVBool);
+                return res.status(400).json(response).end();
+            }
+
             const existingStudents = await DB.query(
                 'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
                 {
@@ -528,31 +577,20 @@ class StudentController implements IController {
 
             for (const row of valid) {
                 if (action === 'create') {
+                    const rowErrors: Record<string, string> = {};
                     if (existingEmailSet.has(row.email)) {
-                        response.errors.push({
-                            row,
-                            errors: {
-                                email: 'student_email_already_exists',
-                            },
-                        });
-                        continue;
+                        rowErrors.email =
+                            ErrorKeys.student_email_already_exists;
                     }
                     if (existingNumberSet.has(row.student_number)) {
-                        response.errors.push({
-                            row,
-                            errors: {
-                                student_number: 'student_number_already_exists',
-                            },
-                        });
-                        continue;
+                        rowErrors.student_number =
+                            ErrorKeys.student_number_already_exists;
                     }
                     if (existingPhoneSet.has(row.phone_number)) {
-                        response.errors.push({
-                            row,
-                            errors: {
-                                phone_number: 'phone_number_already_exists',
-                            },
-                        });
+                        rowErrors.phone_number = ErrorKeys.phone_already_exists;
+                    }
+                    if (Object.keys(rowErrors).length > 0) {
+                        response.errors.push({ row, errors: rowErrors });
                         continue;
                     }
                     await DB.execute(

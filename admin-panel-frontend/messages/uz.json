@@ -910,6 +910,8 @@
     "csv_processed_with_errors": "CSV muvaffaqiyatli qayta ishlandi, lekin xatoliklar bilan",
     "csv_processed_successfully": "CSV muvaffaqiyatli qayta ishlandi",
     "student_email_already_exists": "Talabaning emaili allaqachon mavjud",
+    "invalid_cohort_format": "Cohort formati noto'g'ri. Cohort butun son bo'lishi kerak",
+    "cohort_must_be_positive": "Cohort musbat son bo'lishi kerak",
     "phone_number_already_exists": "Bu telefon raqami allaqachon mavjud",
     "student_does_not_exist": "Talaba mavjud emas",
     "group_name_already_exists": "Bu guruh nomi allaqachon mavjud",
@@ -977,6 +979,9 @@
     "student_numbersDescription": "Kintone dasturidagi talaba raqamlarini kiriting.",
     "student_number": "Talaba raqami",
     "student_numberDescription": "Kintone dasturidagi talaba raqamini kiriting.",
+    "cohort": "Kohort",
+    "cohortDescription": "Kintone dasturidagi kohort maydonini kiriting (ixtiyoriy).",
+    "optional": "Ixtiyoriy",
     "export": "Yuklab olish",
     "back": "Orqaga"
   },
