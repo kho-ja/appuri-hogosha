@@ -119,6 +119,8 @@ export default function CreateFromCsv() {
     }
   }
 
+  const rowErrors = errors?.errors ?? [];
+
   return (
     <main className="space-y-4">
       <PageHeader title={t("createGroupFromCsv")}>
@@ -225,20 +227,23 @@ export default function CreateFromCsv() {
             <TableHeader>
               <TableRow>
                 <TableHead>name</TableHead>
-                <TableHead>student_number</TableHead>
+                <TableHead>parent_group_name</TableHead>
+                <TableHead>student_numbers</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {errors?.errors &&
-                errors.errors.length > 0 &&
-                errors.errors.map((error, index) => (
+              {rowErrors.length > 0 &&
+                rowErrors.map((error, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <ErrorCell name="name" error={error} />
                     </TableCell>
                     <TableCell>
+                      <ErrorCell name="parent_group_name" error={error} />
+                    </TableCell>
+                    <TableCell>
                       {error?.row && (
-                        <div className="flex justify-between">
+                        <div className="flex justify-between gap-2">
                           {Array.isArray(error?.row?.student_numbers)
                             ? error?.row?.student_numbers.join(", ")
                             : error?.row?.student_numbers}
@@ -303,7 +308,7 @@ const ErrorCell = ({
 }) => {
   const t = useTranslations("fromcsv");
   return (
-    <div className="w-full flex justify-between">
+    <div className="w-full flex justify-between gap-2">
       {error?.row[name] !== undefined && <span>{error?.row[name]}</span>}
       {error?.errors[name] && (
         <HoverCard>
@@ -341,6 +346,7 @@ const ErrorTable = ({
           <TableHeader>
             <TableRow>
               <TableHead>name</TableHead>
+              <TableHead>parent_group_name</TableHead>
               <TableHead>student_numbers</TableHead>
             </TableRow>
           </TableHeader>
@@ -349,6 +355,9 @@ const ErrorTable = ({
               <TableRow key={index}>
                 <TableCell>
                   <span>{group?.name}</span>
+                </TableCell>
+                <TableCell>
+                  <span>{group?.parent_group_name}</span>
                 </TableCell>
                 <TableCell>
                   <span>{group?.student_numbers?.join(", ")}</span>
