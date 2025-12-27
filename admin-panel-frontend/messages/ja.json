@@ -977,6 +977,9 @@
     "student_numbersDescription": "学生番号に対応するKintoneインスタンスのフィールドを入力してください。",
     "student_number": "学生番号",
     "student_numberDescription": "学生番号に対応するKintoneインスタンスのフィールドを入力してください。",
+    "cohort": "期生",
+    "cohortDescription": "Kintoneプラットフォームの期生のフィールドを入力します（オプション）。",
+    "optional": "オプション",
     "export": "エクスポート",
     "back": "戻る"
   },
@@ -1010,6 +1013,8 @@
     "invalid_phone_number_format": "電話番号の形式が無効です",
     "missing_or_empty_student_number": "学生番号のフィールドが存在しないか空です",
     "invalid_student_number_format": "学生番号の形式が無効です",
+    "invalid_cohort_format": "コホートの形式が無効です。コホートは整数でなければなりません",
+    "cohort_must_be_positive": "コホートは正の数でなければなりません",
     "student_email_already_exists": "学生のメールアドレスはすでに存在します",
     "student_does_not_exist": "学生が存在しません",
     "bad_request": "不正なリクエスト",
