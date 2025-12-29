@@ -124,7 +124,6 @@ class GroupController implements IController {
             const csvContent = stringify(csvData, {
                 header: true,
                 columns: ['name', 'parent_group_name', 'student_numbers'],
-                delimiter: ',',
             });
 
             res.setHeader(
