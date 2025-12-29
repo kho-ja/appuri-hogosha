@@ -4,13 +4,13 @@ import { ExpoPushService } from './services/expo/push';
 import { TelegramService } from './services/telegram/bot';
 import { AwsSmsService } from './services/aws/sms';
 import { PlayMobileService } from './services/playmobile/api';
+import { SmsTemplateService } from './services/sms/template-service';
 import {
     analyzeToken,
     detectTokenType,
     isExpoPushToken,
 } from './utils/token-detection';
 import { getUzbekistanOperatorRouting } from './utils/validation';
-import { generateSmsText } from './utils/localization';
 import { NotificationPost } from './types/events';
 import { ENVIRONMENT, getEnvironmentInfo } from './config/environment';
 
@@ -47,6 +47,7 @@ class NotificationTokenTester {
     private telegramService: TelegramService;
     private awsSmsService: AwsSmsService;
     private playMobileService: PlayMobileService;
+    private smsTemplateService: SmsTemplateService;
 
     constructor() {
         this.unifiedPushService = new UnifiedPushService();
@@ -54,6 +55,7 @@ class NotificationTokenTester {
         this.telegramService = new TelegramService();
         this.awsSmsService = new AwsSmsService();
         this.playMobileService = new PlayMobileService();
+        this.smsTemplateService = new SmsTemplateService();
     }
 
     /**
@@ -199,8 +201,30 @@ class NotificationTokenTester {
 
         try {
             console.log('\n📤 Sending SMS...');
-            const text = generateSmsText(testPost);
+            
+            // Generate SMS using template service
+            const studentName = `${testPost.given_name} ${testPost.family_name}`;
+            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${testPost.student_id}/message/${testPost.id}`;
+            
+            const text = this.smsTemplateService.generateNotificationSms(
+                {
+                    title: testPost.title,
+                    description: testPost.description,
+                    studentName: studentName,
+                    link: link,
+                },
+                {
+                    language: testPost.language as 'ja' | 'ru' | 'uz' | 'en' || 'uz',
+                }
+            );
+            
             console.log(`SMS Text: ${text}`);
+            
+            // Analyze message
+            const analysis = this.smsTemplateService.analyzeMessage(text);
+            console.log(
+                `📊 SMS Analysis: ${analysis.length} chars, ${analysis.encoding}, ${analysis.parts} part(s)`
+            );
 
             // International numbers use AWS, Uzbekistan numbers use PlayMobile
             if (!routing.isUzbekistan) {

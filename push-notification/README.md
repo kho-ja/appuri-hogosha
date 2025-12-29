@@ -152,18 +152,26 @@ npm run deploy       # Build and prepare for deployment
 
 ### SMS Routing
 
-- **Uzbekistan operators**:
-  - Beeline (90, 99) → PlayMobile
-  - UMS (95) → PlayMobile
-  - Mobiuz (97, 98) → PlayMobile
-  - Ucell (91, 93, 94) → AWS SMS (bypass)
-- **International** → AWS SMS
+**Simplified Routing Logic:**
+- **Uzbekistan numbers** (all operators: Beeline, UMS, Mobiuz, Ucell, etc.) → **PlayMobile**
+- **International numbers** → **AWS SMS**
+
+### SMS Template Service
+
+The new `SmsTemplateService` provides:
+- **Multi-language support**: Japanese (ja), Russian (ru), Uzbek (uz), English (en)
+- **Template types**: 
+  - `generateAuthSms()` - For verification codes and authentication
+  - `generateNotificationSms()` - For posts and announcements
+- **Automatic message shortening**: Optimizes message length to avoid multi-part SMS charges
+- **Cost analysis**: Provides encoding detection and SMS part count
 
 ### Multi-language Support
 
-- Japanese (jp)
+- Japanese (ja)
 - Russian (ru)
 - Uzbek (uz)
+- English (en)
 
 ## 🛡️ Error Handling & Diagnostics
 
@@ -172,18 +180,20 @@ npm run deploy       # Build and prepare for deployment
 - Configurable daily/hourly limits
 - Cost protection for SMS
 - Character limit validation
+- Automatic message optimization
 
 ### Monitoring
 
 - Message status tracking
 - Delivery diagnostics
 - Performance metrics
+- SMS cost analysis (encoding, parts, length)
 
-### Fallback Strategies
+### SMS Template Features
 
-- PlayMobile → AWS SMS fallback
-- Retry mechanisms with exponential backoff
-- Graceful degradation
+- Smart message truncation (preserves links)
+- Description removal for length optimization
+- Single-SMS targeting (160 chars GSM, 70 chars Unicode)
 
 ## 🔧 Configuration
 
