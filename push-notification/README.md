@@ -161,10 +161,15 @@ npm run deploy       # Build and prepare for deployment
 The new `SmsTemplateService` provides:
 - **Multi-language support**: Japanese (ja), Russian (ru), Uzbek (uz), English (en)
 - **Template types**: 
-  - `generateAuthSms()` - For verification codes and authentication
-  - `generateNotificationSms()` - For posts and announcements
+  - `generateAccountCreationSms()` - Account setup with login credentials
+  - `generateLoginCodeSms()` - OTP login with expiration time
+  - `generatePasswordResetSms()` - Password reset codes with expiration
+  - `generateNotificationSms()` - Post/message notifications with student info
+  - `generateAuthSms()` - Generic authentication (deprecated, use specific types)
 - **Automatic message shortening**: Optimizes message length to avoid multi-part SMS charges
 - **Cost analysis**: Provides encoding detection and SMS part count
+
+See [Template Usage Guide](./src/services/sms/TEMPLATE_USAGE.md) for detailed examples.
 
 ### Multi-language Support
 

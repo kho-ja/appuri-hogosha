@@ -4,7 +4,7 @@
  */
 
 export type SmsLanguage = 'ja' | 'ru' | 'uz' | 'en';
-export type SmsType = 'auth' | 'notification';
+export type SmsType = 'auth' | 'notification' | 'account_creation' | 'login_code' | 'password_reset';
 
 export interface SmsTemplateOptions {
     language?: SmsLanguage;
@@ -24,6 +24,22 @@ export interface AuthData {
     appLink?: string;
 }
 
+export interface AccountCreationData {
+    login: string;
+    tempPassword: string;
+    appLink: string;
+}
+
+export interface LoginCodeData {
+    code: string;
+    expiryMinutes: number;
+}
+
+export interface PasswordResetData {
+    code: string;
+    expiryMinutes: number;
+}
+
 /**
  * SMS Template Service
  * Creates localized SMS messages with automatic shortening
@@ -36,7 +52,77 @@ export class SmsTemplateService {
     private readonly SMS_SINGLE_UNICODE = 70;
 
     /**
+     * Generate account creation SMS (login, password, link)
+     */
+    generateAccountCreationSms(data: AccountCreationData, options?: SmsTemplateOptions): string {
+        const language = options?.language || this.defaultLanguage;
+        const maxLength = options?.maxLength;
+
+        const templates: Record<SmsLanguage, string> = {
+            en: `Account created for Parent Notification. Login: ${data.login} Temporary password: ${data.tempPassword} Access: ${data.appLink}`,
+            ja: `Parent Notification アカウントが作成されました。ログイン: ${data.login} 一時パスワード: ${data.tempPassword} アクセス: ${data.appLink}`,
+            ru: `Создан аккаунт Parent Notification. Логин: ${data.login} Временный пароль: ${data.tempPassword} Вход: ${data.appLink}`,
+            uz: `Parent Notification tizimiga kirish uchun hisob ochildi. Login: ${data.login} Vaqtinchalik parol: ${data.tempPassword} Kirish: ${data.appLink}`,
+        };
+
+        let message = templates[language] || templates[this.defaultLanguage];
+
+        if (maxLength) {
+            message = this.shortenMessage(message, maxLength, language);
+        }
+
+        return message;
+    }
+
+    /**
+     * Generate login code SMS (verification code with expiry)
+     */
+    generateLoginCodeSms(data: LoginCodeData, options?: SmsTemplateOptions): string {
+        const language = options?.language || this.defaultLanguage;
+        const maxLength = options?.maxLength;
+
+        const templates: Record<SmsLanguage, string> = {
+            en: `${data.code} — Parent Notification login code. Do not share the code. Valid for ${data.expiryMinutes} minutes.`,
+            ja: `${data.code} — Parent Notification ログインコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
+            ru: `${data.code} — код входа Parent Notification. Никому не сообщайте код. Действителен ${data.expiryMinutes} минут.`,
+            uz: `${data.code} — Parent Notification kirish kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
+        };
+
+        let message = templates[language] || templates[this.defaultLanguage];
+
+        if (maxLength) {
+            message = this.shortenMessage(message, maxLength, language);
+        }
+
+        return message;
+    }
+
+    /**
+     * Generate password reset SMS (reset code with expiry)
+     */
+    generatePasswordResetSms(data: PasswordResetData, options?: SmsTemplateOptions): string {
+        const language = options?.language || this.defaultLanguage;
+        const maxLength = options?.maxLength;
+
+        const templates: Record<SmsLanguage, string> = {
+            en: `${data.code} — Parent Notification password reset code. Do not share the code. Valid for ${data.expiryMinutes} minutes.`,
+            ja: `${data.code} — Parent Notification パスワードリセットコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
+            ru: `${data.code} — код восстановления пароля Parent Notification. Никому не сообщайте код. Действителен ${data.expiryMinutes} минут.`,
+            uz: `${data.code} — Parent Notification parolni tiklash kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
+        };
+
+        let message = templates[language] || templates[this.defaultLanguage];
+
+        if (maxLength) {
+            message = this.shortenMessage(message, maxLength, language);
+        }
+
+        return message;
+    }
+
+    /**
      * Generate authentication SMS (verification codes, passwords)
+     * @deprecated Use generateLoginCodeSms or generatePasswordResetSms for better templates
      */
     generateAuthSms(data: AuthData, options?: SmsTemplateOptions): string {
         const language = options?.language || this.defaultLanguage;
@@ -66,10 +152,10 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength || this.getRecommendedMaxLength(language);
 
         const templates: Record<SmsLanguage, (data: NotificationData) => string> = {
-            en: (d) => `New post: ${d.title}${d.description ? ` - ${d.description}` : ''} for ${d.studentName}${d.link ? ` ${d.link}` : ''}`,
-            ja: (d) => `新しい投稿: ${d.title}${d.description ? ` - ${d.description}` : ''} ${d.studentName}宛${d.link ? ` ${d.link}` : ''}`,
-            ru: (d) => `Новый пост: ${d.title}${d.description ? ` - ${d.description}` : ''} для ${d.studentName}${d.link ? ` ${d.link}` : ''}`,
-            uz: (d) => `Yangi post: ${d.title}${d.description ? ` - ${d.description}` : ''} ${d.studentName} uchun${d.link ? ` ${d.link}` : ''}`,
+            en: (d) => `Parent Notification: you have a new message${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} Student: ${d.studentName}${d.link ? ` Details: ${d.link}` : ''}`,
+            ja: (d) => `Parent Notification: 新しいメッセージがあります${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} 生徒: ${d.studentName}${d.link ? ` 詳細: ${d.link}` : ''}`,
+            ru: (d) => `Parent Notification: у вас новое сообщение${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} Ученик: ${d.studentName}${d.link ? ` Подробнее: ${d.link}` : ''}`,
+            uz: (d) => `Parent Notification: sizga yangi xabar bor${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} O'quvchi: ${d.studentName}${d.link ? ` Batafsil: ${d.link}` : ''}`,
         };
 
         const template = templates[language] || templates[this.defaultLanguage];
@@ -125,19 +211,20 @@ export class SmsTemplateService {
         
         if (contentWithoutLink.length > availableSpace) {
             // Define language-specific separators for description removal
+            // Updated patterns to match new notification format
             const descriptionPatterns: Record<SmsLanguage, RegExp> = {
-                en: /( - )(.+?)( for )/,
-                ja: /( - )(.+?)(宛)/,
-                ru: /( - )(.+?)( для )/,
-                uz: /( - )(.+?)( uchun )/,
+                en: /( )([^ ]+[^\s]+ Student:)/,  // Remove description between title and "Student:"
+                ja: /( )([^ ]+[^\s]+ 生徒:)/,    // Remove description between title and "生徒:"
+                ru: /( )([^ ]+[^\s]+ Ученик:)/,  // Remove description between title and "Ученик:"
+                uz: /( )([^ ]+[^\s]+ O'quvchi:)/, // Remove description between title and "O'quvchi:"
             };
             
             const pattern = descriptionPatterns[language] || descriptionPatterns.uz;
             const descMatch = contentWithoutLink.match(pattern);
             
             if (descMatch) {
-                // Remove description (keep the separator after description like " for " or "宛")
-                const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[3]);
+                // Remove description (keep the separator after description like "Student:" or "O'quvchi:")
+                const withoutDesc = contentWithoutLink.replace(descMatch[0], ` ${descMatch[2]}`);
                 
                 if (withoutDesc.length <= availableSpace) {
                     return withoutDesc + (link ? ` ${link}` : '');
