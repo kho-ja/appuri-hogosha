@@ -4,7 +4,7 @@ import {
     ChannelType,
 } from '@aws-sdk/client-pinpoint';
 import { config } from 'dotenv';
-import DatabaseClient from './db-client';
+import DatabaseClient from '../db-client';
 
 config();
 

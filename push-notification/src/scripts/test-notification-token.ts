@@ -1,18 +1,18 @@
 import { config } from 'dotenv';
-import { UnifiedPushService } from './services/unified/push';
-import { ExpoPushService } from './services/expo/push';
-import { TelegramService } from './services/telegram/bot';
-import { AwsSmsService } from './services/aws/sms';
-import { PlayMobileService } from './services/playmobile/api';
-import { SmsTemplateService } from './services/sms/template-service';
+import { UnifiedPushService } from '../services/unified/push';
+import { ExpoPushService } from '../services/expo/push';
+import { TelegramService } from '../services/telegram/bot';
+import { AwsSmsService } from '../services/aws/sms';
+import { PlayMobileService } from '../services/playmobile/api';
 import {
     analyzeToken,
     detectTokenType,
     isExpoPushToken,
-} from './utils/token-detection';
-import { getUzbekistanOperatorRouting } from './utils/validation';
-import { NotificationPost } from './types/events';
-import { ENVIRONMENT, getEnvironmentInfo } from './config/environment';
+} from '../utils/token-detection';
+import { getUzbekistanOperatorRouting } from '../utils/validation';
+import { generateSmsText } from '../utils/localization';
+import { NotificationPost } from '../types/events';
+import { ENVIRONMENT, getEnvironmentInfo } from '../config/environment';
 
 config();
 
@@ -47,7 +47,6 @@ class NotificationTokenTester {
     private telegramService: TelegramService;
     private awsSmsService: AwsSmsService;
     private playMobileService: PlayMobileService;
-    private smsTemplateService: SmsTemplateService;
 
     constructor() {
         this.unifiedPushService = new UnifiedPushService();
@@ -55,7 +54,6 @@ class NotificationTokenTester {
         this.telegramService = new TelegramService();
         this.awsSmsService = new AwsSmsService();
         this.playMobileService = new PlayMobileService();
-        this.smsTemplateService = new SmsTemplateService();
     }
 
     /**
@@ -188,7 +186,9 @@ class NotificationTokenTester {
         console.log('\n📊 Phone Analysis:');
         console.log(`   Is Uzbekistan: ${routing.isUzbekistan ? '✅' : '❌'}`);
         console.log(`   Operator: ${routing.operator}`);
-        console.log(`   Routing: ${routing.isUzbekistan ? 'PlayMobile' : 'AWS (International)'}`);
+        console.log(
+            `   Use PlayMobile: ${routing.usePlayMobile ? '✅' : '❌'}`
+        );
 
         // Create test post
         const testPost: NotificationPost = {
@@ -201,34 +201,12 @@ class NotificationTokenTester {
 
         try {
             console.log('\n📤 Sending SMS...');
-            
-            // Generate SMS using template service
-            const studentName = `${testPost.given_name} ${testPost.family_name}`;
-            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${testPost.student_id}/message/${testPost.id}`;
-            
-            const text = this.smsTemplateService.generateNotificationSms(
-                {
-                    title: testPost.title,
-                    description: testPost.description,
-                    studentName: studentName,
-                    link: link,
-                },
-                {
-                    language: (testPost.language as 'ja' | 'ru' | 'uz' | 'en') || 'uz',
-                }
-            );
-            
+            const text = generateSmsText(testPost);
             console.log(`SMS Text: ${text}`);
-            
-            // Analyze message
-            const analysis = this.smsTemplateService.analyzeMessage(text);
-            console.log(
-                `📊 SMS Analysis: ${analysis.length} chars, ${analysis.encoding}, ${analysis.parts} part(s)`
-            );
 
-            // International numbers use AWS, Uzbekistan numbers use PlayMobile
+            // for International numbers, we send SMS via AWS SMS
             if (!routing.isUzbekistan) {
-                console.log('🌍 Sending SMS via AWS SMS (International)...');
+                console.log('🌐 Sending SMS via AWS SMS...');
                 const formattedPhone = phoneNumber.startsWith('+')
                     ? phoneNumber
                     : `+${phoneNumber}`;
@@ -236,13 +214,25 @@ class NotificationTokenTester {
                 return await this.awsSmsService.sendSms(formattedPhone, text);
             }
 
-            // All Uzbekistan numbers use PlayMobile
-            console.log('🇺🇿 Sending SMS via PlayMobile...');
-            const success = await this.playMobileService.sendSms(
-                phoneNumber,
-                text,
-                testPost.id
-            );
+            let success = false;
+
+            if (routing.usePlayMobile) {
+                console.log('📤 Using PlayMobile API...');
+                success = await this.playMobileService.sendSms(
+                    phoneNumber,
+                    text,
+                    testPost.id
+                );
+            } else {
+                console.log('📤 Using AWS SMS...');
+                const formattedPhone = phoneNumber.startsWith('+')
+                    ? phoneNumber
+                    : `+${phoneNumber}`;
+                success = await this.awsSmsService.sendSms(
+                    formattedPhone,
+                    text
+                );
+            }
 
             if (success) {
                 console.log('✅ SMS sent successfully!');
