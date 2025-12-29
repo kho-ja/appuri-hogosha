@@ -211,12 +211,12 @@ export class SmsTemplateService {
         
         if (contentWithoutLink.length > availableSpace) {
             // Define language-specific separators for description removal
-            // Updated patterns to match new notification format
+            // Remove text between title and student name marker
             const descriptionPatterns: Record<SmsLanguage, RegExp> = {
-                en: /( )([^ ]+[^\s]+ Student:)/,  // Remove description between title and "Student:"
-                ja: /( )([^ ]+[^\s]+ 生徒:)/,    // Remove description between title and "生徒:"
-                ru: /( )([^ ]+[^\s]+ Ученик:)/,  // Remove description between title and "Ученик:"
-                uz: /( )([^ ]+[^\s]+ O'quvchi:)/, // Remove description between title and "O'quvchi:"
+                en: /(\s)(.+?)(\s+Student:)/,      // Match text before "Student:"
+                ja: /(\s)(.+?)(\s+生徒:)/,         // Match text before "生徒:"
+                ru: /(\s)(.+?)(\s+Ученик:)/,       // Match text before "Ученик:"
+                uz: /(\s)(.+?)(\s+O'quvchi:)/,     // Match text before "O'quvchi:"
             };
             
             const pattern = descriptionPatterns[language] || descriptionPatterns.uz;
@@ -224,7 +224,7 @@ export class SmsTemplateService {
             
             if (descMatch) {
                 // Remove description (keep the separator after description like "Student:" or "O'quvchi:")
-                const withoutDesc = contentWithoutLink.replace(descMatch[0], ` ${descMatch[2]}`);
+                const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[3]);
                 
                 if (withoutDesc.length <= availableSpace) {
                     return withoutDesc + (link ? ` ${link}` : '');

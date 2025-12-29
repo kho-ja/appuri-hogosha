@@ -169,7 +169,7 @@ const message = smsService.generateNotificationSms({
     studentName: `${post.given_name} ${post.family_name}`,
     link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`
 }, { 
-    language: post.language as 'ja' | 'ru' | 'uz' | 'en' || 'uz'
+    language: (post.language as SmsLanguage) || 'uz'
 });
 
 const analysis = smsService.analyzeMessage(message);
