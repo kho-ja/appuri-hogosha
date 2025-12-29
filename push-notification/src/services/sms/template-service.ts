@@ -102,7 +102,7 @@ export class SmsTemplateService {
         console.log(`⚠️ Shortening SMS from ${message.length} to ${maxLength} chars`);
 
         // Strategy: Remove description first, then truncate title if needed
-        const ellipsis = language === 'en' ? '...' : '...';
+        const ellipsis = '...';
         
         // Find link at the end
         const linkMatch = message.match(/(https?:\/\/[^\s]+)$/);
@@ -124,11 +124,19 @@ export class SmsTemplateService {
         // Priority: title > name > description
         
         if (contentWithoutLink.length > availableSpace) {
-            // Find description part (between " - " and " for " or " uchun" or "宛")
-            const descMatch = contentWithoutLink.match(/( - )(.+?)( для | uchun |宛| for )/);
+            // Define language-specific separators for description removal
+            const descriptionPatterns: Record<SmsLanguage, RegExp> = {
+                en: /( - )(.+?)( for )/,
+                ja: /( - )(.+?)(宛)/,
+                ru: /( - )(.+?)( для )/,
+                uz: /( - )(.+?)( uchun )/,
+            };
+            
+            const pattern = descriptionPatterns[language] || descriptionPatterns.uz;
+            const descMatch = contentWithoutLink.match(pattern);
             
             if (descMatch) {
-                // Remove description
+                // Remove description (keep the separator after description like " for " or "宛")
                 const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[3]);
                 
                 if (withoutDesc.length <= availableSpace) {

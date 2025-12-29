@@ -214,7 +214,7 @@ class NotificationTokenTester {
                     link: link,
                 },
                 {
-                    language: testPost.language as 'ja' | 'ru' | 'uz' | 'en' || 'uz',
+                    language: (testPost.language as 'ja' | 'ru' | 'uz' | 'en') || 'uz',
                 }
             );
             

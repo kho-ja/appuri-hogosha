@@ -229,7 +229,7 @@ export class NotificationProcessor {
                     link: link,
                 },
                 {
-                    language: post.language as 'ja' | 'ru' | 'uz' | 'en' || 'uz',
+                    language: (post.language as 'ja' | 'ru' | 'uz' | 'en') || 'uz',
                 }
             );
 
