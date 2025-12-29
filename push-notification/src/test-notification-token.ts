@@ -186,9 +186,7 @@ class NotificationTokenTester {
         console.log('\n📊 Phone Analysis:');
         console.log(`   Is Uzbekistan: ${routing.isUzbekistan ? '✅' : '❌'}`);
         console.log(`   Operator: ${routing.operator}`);
-        console.log(
-            `   Use PlayMobile: ${routing.usePlayMobile ? '✅' : '❌'}`
-        );
+        console.log(`   Routing: ${routing.isUzbekistan ? 'PlayMobile' : 'AWS (International)'}`);
 
         // Create test post
         const testPost: NotificationPost = {
@@ -204,9 +202,9 @@ class NotificationTokenTester {
             const text = generateSmsText(testPost);
             console.log(`SMS Text: ${text}`);
 
-            // for International numbers, we send SMS via AWS SMS
+            // International numbers use AWS, Uzbekistan numbers use PlayMobile
             if (!routing.isUzbekistan) {
-                console.log('🌐 Sending SMS via AWS SMS...');
+                console.log('🌍 Sending SMS via AWS SMS (International)...');
                 const formattedPhone = phoneNumber.startsWith('+')
                     ? phoneNumber
                     : `+${phoneNumber}`;
@@ -214,25 +212,13 @@ class NotificationTokenTester {
                 return await this.awsSmsService.sendSms(formattedPhone, text);
             }
 
-            let success = false;
-
-            if (routing.usePlayMobile) {
-                console.log('📤 Using PlayMobile API...');
-                success = await this.playMobileService.sendSms(
-                    phoneNumber,
-                    text,
-                    testPost.id
-                );
-            } else {
-                console.log('📤 Using AWS SMS...');
-                const formattedPhone = phoneNumber.startsWith('+')
-                    ? phoneNumber
-                    : `+${phoneNumber}`;
-                success = await this.awsSmsService.sendSms(
-                    formattedPhone,
-                    text
-                );
-            }
+            // All Uzbekistan numbers use PlayMobile
+            console.log('🇺🇿 Sending SMS via PlayMobile...');
+            const success = await this.playMobileService.sendSms(
+                phoneNumber,
+                text,
+                testPost.id
+            );
 
             if (success) {
                 console.log('✅ SMS sent successfully!');

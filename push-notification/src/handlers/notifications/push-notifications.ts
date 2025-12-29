@@ -237,28 +237,13 @@ export class NotificationProcessor {
 
             const text = generateSmsText(post);
 
-            if (routing.usePlayMobile) {
-                console.log(
-                    `📤 Routing ${routing.operator} via PlayMobile API`
-                );
-                return await this.playMobileService.sendSms(
-                    post.phone_number,
-                    text,
-                    post.id
-                );
-            } else {
-                console.log(
-                    `📤 Routing ${routing.operator} via AWS SMS (PlayMobile bypass)`
-                );
-                let formattedPhoneNumber = post.phone_number;
-                if (!formattedPhoneNumber.startsWith('+')) {
-                    formattedPhoneNumber = `+${formattedPhoneNumber}`;
-                }
-                return await this.awsSmsService.sendSms(
-                    formattedPhoneNumber,
-                    text
-                );
-            }
+            // All Uzbekistan numbers use PlayMobile
+            console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
+            return await this.playMobileService.sendSms(
+                post.phone_number,
+                text,
+                post.id
+            );
         } catch (error) {
             console.error(`❌ Error sending SMS for post ${post.id}:`, error);
             return false;

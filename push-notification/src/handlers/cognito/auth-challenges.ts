@@ -118,7 +118,7 @@ export class AuthChallengeHandler {
             } else {
                 // Uzbekistan number - use routing logic
                 console.log(`🇺🇿 Sending OTP for ${routing.operator}`);
-                const sent = await this.routeMessageWithFallback(
+                const sent = await this.routeMessage(
                     phoneNumber,
                     message,
                     routing
@@ -154,15 +154,16 @@ export class AuthChallengeHandler {
         return event;
     }
 
-    private async routeMessageWithFallback(
+    private async routeMessage(
         phoneNumber: string,
         message: string,
         routing: any
     ): Promise<boolean> {
         try {
-            if (routing.usePlayMobile) {
+            if (routing.isUzbekistan) {
+                // All Uzbekistan numbers use PlayMobile
                 console.log(
-                    `📤 Attempting to send via PlayMobile (${routing.operator})`
+                    `📤 Sending via PlayMobile (${routing.operator})`
                 );
                 const success = await this.playMobileService.sendSms(
                     phoneNumber,
@@ -175,64 +176,29 @@ export class AuthChallengeHandler {
                     );
                     return true;
                 } else {
-                    console.warn(
-                        `⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`
+                    console.error(
+                        `❌ PlayMobile delivery failed for ${routing.operator}`
                     );
-                    // Try AWS as fallback for PlayMobile failure
-                    return await this.tryAwsFallback(
-                        phoneNumber,
-                        message,
-                        'PlayMobile failure'
-                    );
+                    return false;
                 }
             } else {
-                // Ucell bypass - use AWS directly
-                console.log(
-                    `📤 Attempting to send via AWS (${routing.operator} bypass)`
-                );
+                // International numbers use AWS
+                console.log(`📤 Sending via AWS (International)`);
                 const success = await this.awsSmsService.sendSms(
                     phoneNumber,
                     message
                 );
 
                 if (success) {
-                    console.log(
-                        `✅ AWS delivery successful for ${routing.operator}`
-                    );
+                    console.log(`✅ AWS delivery successful`);
                     return true;
                 } else {
-                    console.error(
-                        `❌ AWS delivery failed for ${routing.operator}`
-                    );
+                    console.error(`❌ AWS delivery failed`);
                     return false;
                 }
             }
         } catch (error) {
             console.error('❌ Message routing failed:', error);
-            return false;
-        }
-    }
-
-    private async tryAwsFallback(
-        phoneNumber: string,
-        message: string,
-        reason: string
-    ): Promise<boolean> {
-        console.log(`🔄 Attempting AWS fallback (reason: ${reason})`);
-        try {
-            const success = await this.awsSmsService.sendSms(
-                phoneNumber,
-                message
-            );
-            if (success) {
-                console.log(`✅ AWS fallback successful`);
-                return true;
-            } else {
-                console.error(`❌ AWS fallback failed`);
-                return false;
-            }
-        } catch (error) {
-            console.error('❌ AWS fallback error:', error);
             return false;
         }
     }

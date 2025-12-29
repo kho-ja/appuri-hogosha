@@ -81,9 +81,7 @@ export class DiagnosticsService {
         }
 
         console.log(`📶 Operator: ${routing.operator}`);
-        console.log(
-            `🚀 Routing: ${routing.usePlayMobile ? 'PlayMobile API' : 'AWS SMS (Ucell bypass)'}`
-        );
+        console.log(`🚀 Routing: ${routing.isUzbekistan ? 'PlayMobile API (Uzbekistan)' : 'AWS SMS (International)'}`);
 
         // Status analysis
         if (status) {
@@ -124,23 +122,18 @@ export class DiagnosticsService {
             `   4. If "Failed": Check originator name and API credentials`
         );
 
-        // Operator-specific troubleshooting
-        if (routing.operator === 'Ucell') {
-            console.log(`🔧 Ucell-specific info:`);
-            console.log(
-                `   📞 Ucell numbers (91, 93, 94) now route via AWS SMS`
-            );
-            console.log(`   🚀 This bypasses PlayMobile API issues with Ucell`);
-            console.log(
-                `   💰 Uses international AWS SMS rates instead of local rates`
-            );
-        } else if (routing.usePlayMobile) {
+        // Routing-specific troubleshooting
+        if (routing.isUzbekistan) {
             console.log(`🔧 PlayMobile routing info:`);
             console.log(`   📞 ${routing.operator} numbers use PlayMobile API`);
             console.log(`   💰 Uses local Uzbekistan SMS rates`);
             console.log(
                 `   🔗 Check PlayMobile account supports ${routing.operator} delivery`
             );
+        } else {
+            console.log(`🔧 AWS SMS routing info:`);
+            console.log(`   🌍 International numbers use AWS SMS`);
+            console.log(`   💰 Uses international AWS SMS rates`);
         }
     }
 }
