@@ -3,7 +3,7 @@
  * Provides localized SMS templates with message shortening for cost optimization
  */
 
-export type SmsLanguage = 'ja' | 'ru' | 'uz' | 'en';
+export type SmsLanguage = 'ja' | 'uz';
 export type SmsType = 'auth' | 'notification' | 'account_creation' | 'login_code' | 'password_reset';
 
 export interface SmsTemplateOptions {
@@ -59,9 +59,7 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            en: `Account created for Parent Notification. Login: ${data.login} Temporary password: ${data.tempPassword} Access: ${data.appLink}`,
-            ja: `Parent Notification アカウントが作成されました。ログイン: ${data.login} 一時パスワード: ${data.tempPassword} アクセス: ${data.appLink}`,
-            ru: `Создан аккаунт Parent Notification. Логин: ${data.login} Временный пароль: ${data.tempPassword} Вход: ${data.appLink}`,
+            ja: `Parent Notificationアカウントが作成されました。ログイン: ${data.login} 一時パスワード: ${data.tempPassword} アクセス: ${data.appLink}`,
             uz: `Parent Notification tizimiga kirish uchun hisob ochildi. Login: ${data.login} Vaqtinchalik parol: ${data.tempPassword} Kirish: ${data.appLink}`,
         };
 
@@ -82,9 +80,7 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            en: `${data.code} — Parent Notification login code. Do not share the code. Valid for ${data.expiryMinutes} minutes.`,
-            ja: `${data.code} — Parent Notification ログインコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
-            ru: `${data.code} — код входа Parent Notification. Никому не сообщайте код. Действителен ${data.expiryMinutes} минут.`,
+            ja: `${data.code} — Parent Notificationログインコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
             uz: `${data.code} — Parent Notification kirish kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
@@ -105,9 +101,7 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            en: `${data.code} — Parent Notification password reset code. Do not share the code. Valid for ${data.expiryMinutes} minutes.`,
-            ja: `${data.code} — Parent Notification パスワードリセットコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
-            ru: `${data.code} — код восстановления пароля Parent Notification. Никому не сообщайте код. Действителен ${data.expiryMinutes} минут.`,
+            ja: `${data.code} — Parent Notificationパスワードリセットコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
             uz: `${data.code} — Parent Notification parolni tiklash kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
@@ -129,9 +123,7 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            en: `Your verification code is ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
             ja: `確認コード: ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
-            ru: `Код подтверждения: ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
             uz: `Tasdiqlash kodi: ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
         };
 
@@ -152,10 +144,8 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength || this.getRecommendedMaxLength(language);
 
         const templates: Record<SmsLanguage, (data: NotificationData) => string> = {
-            en: (d) => `Parent Notification: you have a new message${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} Student: ${d.studentName}${d.link ? ` Details: ${d.link}` : ''}`,
-            ja: (d) => `Parent Notification: 新しいメッセージがあります${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} 生徒: ${d.studentName}${d.link ? ` 詳細: ${d.link}` : ''}`,
-            ru: (d) => `Parent Notification: у вас новое сообщение${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} Ученик: ${d.studentName}${d.link ? ` Подробнее: ${d.link}` : ''}`,
-            uz: (d) => `Parent Notification: sizga yangi xabar bor${d.title ? ` ${d.title}` : ''}${d.description ? ` ${d.description}` : ''} O'quvchi: ${d.studentName}${d.link ? ` Batafsil: ${d.link}` : ''}`,
+            ja: (d) => `Parent Notification: 新しいメッセージがあります${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}生徒: ${d.studentName}${d.link ? `詳細: ${d.link}` : ''}`,
+            uz: (d) => `Parent Notification: sizga yangi xabar bor${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}O'quvchi: ${d.studentName}${d.link ? `Batafsil: ${d.link}` : ''}`,
         };
 
         const template = templates[language] || templates[this.defaultLanguage];
@@ -171,8 +161,8 @@ export class SmsTemplateService {
      * Get recommended max length based on language
      */
     private getRecommendedMaxLength(language: SmsLanguage): number {
-        // Unicode for ja, ru; GSM for en, uz
-        return ['ja', 'ru'].includes(language) 
+        // Unicode for ja; GSM for uz
+        return language === 'ja'
             ? this.SMS_SINGLE_UNICODE 
             : this.SMS_SINGLE_GSM;
     }
@@ -213,18 +203,16 @@ export class SmsTemplateService {
             // Define language-specific separators for description removal
             // Remove text between title and student name marker
             const descriptionPatterns: Record<SmsLanguage, RegExp> = {
-                en: /(\s)(.+?)(\s+Student:)/,      // Match text before "Student:"
-                ja: /(\s)(.+?)(\s+生徒:)/,         // Match text before "生徒:"
-                ru: /(\s)(.+?)(\s+Ученик:)/,       // Match text before "Ученик:"
-                uz: /(\s)(.+?)(\s+O'quvchi:)/,     // Match text before "O'quvchi:"
+                ja: /(.+?)(生徒:)/,         // Match text before "生徒:"
+                uz: /(.+?)(O'quvchi:)/,     // Match text before "O'quvchi:"
             };
             
             const pattern = descriptionPatterns[language] || descriptionPatterns.uz;
             const descMatch = contentWithoutLink.match(pattern);
             
             if (descMatch) {
-                // Remove description (keep the separator after description like "Student:" or "O'quvchi:")
-                const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[3]);
+                // Remove description (keep the separator after description like "生徒:" or "O'quvchi:")
+                const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[2]);
                 
                 if (withoutDesc.length <= availableSpace) {
                     return withoutDesc + (link ? ` ${link}` : '');

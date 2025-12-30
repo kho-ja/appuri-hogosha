@@ -159,7 +159,9 @@ npm run deploy       # Build and prepare for deployment
 ### SMS Template Service
 
 The new `SmsTemplateService` provides:
-- **Multi-language support**: Japanese (ja), Russian (ru), Uzbek (uz), English (en)
+- **Language support**: 
+  - **Uzbek (uz)** - For Uzbekistan numbers
+  - **Japanese (ja)** - For international numbers
 - **Template types**: 
   - `generateAccountCreationSms()` - Account setup with login credentials
   - `generateLoginCodeSms()` - OTP login with expiration time
@@ -171,12 +173,12 @@ The new `SmsTemplateService` provides:
 
 See [Template Usage Guide](./src/services/sms/TEMPLATE_USAGE.md) for detailed examples.
 
-### Multi-language Support
+### Language Support
 
-- Japanese (ja)
-- Russian (ru)
-- Uzbek (uz)
-- English (en)
+- **Uzbek (uz)** - Used for all Uzbekistan numbers (PlayMobile routing)
+- **Japanese (ja)** - Used for all international numbers (AWS SMS routing)
+
+## 🛡️ Error Handling & Diagnostics
 
 ## 🛡️ Error Handling & Diagnostics
 

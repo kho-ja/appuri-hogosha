@@ -1,10 +1,12 @@
 # SMS Template Service Usage Guide
 
-The `SmsTemplateService` provides a flexible and type-safe way to generate SMS messages with multi-language support and automatic message shortening for cost optimization.
+The `SmsTemplateService` provides a flexible and type-safe way to generate SMS messages with language support and automatic message shortening for cost optimization.
 
 ## Features
 
-- ✅ **Multi-language support**: Japanese (ja), Russian (ru), Uzbek (uz), English (en)
+- ✅ **Language support**: 
+  - **Uzbek (uz)** - For Uzbekistan numbers
+  - **Japanese (ja)** - For international numbers
 - ✅ **Multiple template types**: Account creation, login codes, password reset, notifications
 - ✅ **Automatic message shortening**: Reduces SMS costs by keeping messages within single-SMS limits
 - ✅ **Cost analysis**: Analyzes message encoding, length, and parts
@@ -80,10 +82,9 @@ const message = smsService.generateNotificationSms({
 All templates support 4 languages:
 
 | Language | Code | Example |
+| Language | Code | Example |
 |----------|------|---------|
-| English | `en` | "Account created for Parent Notification..." |
-| Japanese | `ja` | "Parent Notification アカウントが作成されました..." |
-| Russian | `ru` | "Создан аккаунт Parent Notification..." |
+| Japanese | `ja` | "Parent Notificationアカウントが作成されました..." |
 | Uzbek | `uz` | "Parent Notification tizimiga kirish uchun hisob ochildi..." |
 
 ## Message Shortening
@@ -219,7 +220,7 @@ const text = smsService.generateNotificationSms({
 
 ```typescript
 // Test all languages
-const languages: SmsLanguage[] = ['en', 'ja', 'ru', 'uz'];
+const languages: SmsLanguage[] = ['ja', 'uz'];
 const smsService = new SmsTemplateService();
 
 languages.forEach(lang => {
