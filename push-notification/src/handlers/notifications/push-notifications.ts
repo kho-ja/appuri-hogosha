@@ -258,6 +258,9 @@ export class NotificationProcessor {
                 `🇺🇿 Uzbekistan number detected: ${post.phone_number} (${routing.operator})`
             );
 
+            // TODO: Delete this debug log later
+            console.log(`Message to send: ${text}`);
+
             // All Uzbekistan numbers use PlayMobile
             console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
             return await this.playMobileService.sendSms(
