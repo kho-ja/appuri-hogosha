@@ -2,10 +2,12 @@ import { CognitoEvent } from '../../types/events';
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { CognitoTemplateService } from '../../services/cognito/template-service';
+import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 
 export class AuthChallengeHandler {
     private templateService: CognitoTemplateService;
+    private smsTemplateService: SmsTemplateService;
 
     constructor(
         private playMobileService: PlayMobileService,
@@ -13,6 +15,16 @@ export class AuthChallengeHandler {
         userPoolId?: string
     ) {
         this.templateService = new CognitoTemplateService(userPoolId);
+        this.smsTemplateService = new SmsTemplateService();
+    }
+
+    /**
+     * Detect language based on phone number region
+     * Uzbekistan numbers (998) -> 'uz', all others -> 'ja'
+     */
+    private detectLanguageFromPhone(phoneNumber: string): 'uz' | 'ja' {
+        const routing = getUzbekistanOperatorRouting(phoneNumber);
+        return routing.isUzbekistan ? 'uz' : 'ja';
     }
 
     async handleDefineAuthChallenge(
@@ -95,12 +107,18 @@ export class AuthChallengeHandler {
             );
             console.log(`📤 Using Cognito template: "${template}"`);
         } else {
-            // Fallback message if no template is configured
-            // Format optimized for iOS/Android OTP auto-fill
-            console.warn(
-                '⚠️ No Cognito template found, using fallback message'
+            // Use SmsTemplateService for localized, optimized fallback message
+            console.log(
+                '📋 No Cognito template found, using SmsTemplateService'
             );
-            message = `${secretCode} is your Appuri verification code.`;
+            const language = this.detectLanguageFromPhone(phoneNumber);
+            message = this.smsTemplateService.generateLoginCodeSms(
+                {
+                    code: secretCode,
+                    expiryMinutes: 5,
+                },
+                { language }
+            );
         }
 
         console.log(`📝 OTP Message: "${message}"`);
@@ -162,9 +180,7 @@ export class AuthChallengeHandler {
         try {
             if (routing.isUzbekistan) {
                 // All Uzbekistan numbers use PlayMobile
-                console.log(
-                    `📤 Sending via PlayMobile (${routing.operator})`
-                );
+                console.log(`📤 Sending via PlayMobile (${routing.operator})`);
                 const success = await this.playMobileService.sendSms(
                     phoneNumber,
                     message

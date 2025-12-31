@@ -121,7 +121,9 @@ export class ApiHandler {
                     messageId
                 );
                 provider = 'playmobile';
-                console.log(`📤 Uzbekistan number - using PlayMobile (${routing.operator})`);
+                console.log(
+                    `📤 Uzbekistan number - using PlayMobile (${routing.operator})`
+                );
             } else {
                 // Use AWS SMS for international numbers
                 success = await this.awsSmsService.sendSms(phone, message);
@@ -136,7 +138,9 @@ export class ApiHandler {
                     message: success ? 'SMS sent successfully' : 'SMS failed',
                     provider: provider,
                     operator: routing.operator,
-                    routing: routing.isUzbekistan ? 'PlayMobile' : 'AWS (International)',
+                    routing: routing.isUzbekistan
+                        ? 'PlayMobile'
+                        : 'AWS (International)',
                 }),
             };
         } catch (error) {
@@ -191,7 +195,9 @@ export class ApiHandler {
                             success,
                             provider,
                             operator: routing.operator,
-                            routing: routing.isUzbekistan ? 'PlayMobile' : 'AWS (International)',
+                            routing: routing.isUzbekistan
+                                ? 'PlayMobile'
+                                : 'AWS (International)',
                         };
                     } catch (error) {
                         return {

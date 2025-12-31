@@ -220,7 +220,7 @@ export class NotificationProcessor {
             // Generate SMS using template service with automatic shortening
             const studentName = `${post.given_name} ${post.family_name}`;
             const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
-            
+
             const text = this.smsTemplateService.generateNotificationSms(
                 {
                     title: post.title,

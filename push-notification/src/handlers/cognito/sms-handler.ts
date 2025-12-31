@@ -2,12 +2,14 @@ import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { KmsDecryptionService } from '../../services/aws/kms';
 import { CognitoTemplateService } from '../../services/cognito/template-service';
+import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
 
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
     private templateService: CognitoTemplateService;
+    private smsTemplateService: SmsTemplateService;
 
     constructor(
         private playMobileService: PlayMobileService,
@@ -16,6 +18,16 @@ export class CognitoHandler {
     ) {
         this.kmsService = new KmsDecryptionService();
         this.templateService = new CognitoTemplateService(userPoolId);
+        this.smsTemplateService = new SmsTemplateService();
+    }
+
+    /**
+     * Detect language based on phone number region
+     * Uzbekistan numbers (998) -> 'uz', all others -> 'ja'
+     */
+    private detectLanguageFromPhone(phoneNumber: string): 'uz' | 'ja' {
+        const routing = getUzbekistanOperatorRouting(phoneNumber);
+        return routing.isUzbekistan ? 'uz' : 'ja';
     }
 
     async handleCognitoSms(event: CognitoEvent): Promise<CognitoEvent> {
@@ -37,21 +49,17 @@ export class CognitoHandler {
                 return await this.handleInternationalNumber(event, phoneNumber);
             }
 
-            console.log(`🇺🇿 Uzbekistan number detected: ${routing.operator} - routing to PlayMobile`);
+            console.log(
+                `🇺🇿 Uzbekistan number detected: ${routing.operator} - routing to PlayMobile`
+            );
 
             // Handle CustomSMSSender triggers (modern approach with encrypted codes)
             if (triggerSource.startsWith('CustomSMSSender_')) {
-                return await this.handleCustomSMSSender(
-                    event,
-                    phoneNumber
-                );
+                return await this.handleCustomSMSSender(event, phoneNumber);
             }
 
             // Handle other triggers using templates
-            return await this.handleTemplateBasedSms(
-                event,
-                phoneNumber
-            );
+            return await this.handleTemplateBasedSms(event, phoneNumber);
         } catch (error) {
             console.error('❌ Cognito SMS handler error:', error);
             console.warn('⚠️ Falling back to Cognito due to handler error');
@@ -336,17 +344,38 @@ export class CognitoHandler {
     ): string {
         const username = this.extractUsername(event);
         const link = this.buildAuthDeepLink();
+        const phoneNumber = event.request.userAttributes.phone_number || '';
+        const language = this.detectLanguageFromPhone(phoneNumber);
 
-        // Fallback templates (AWS default format)
+        // Use SmsTemplateService for localized, optimized messages
         switch (event.triggerSource) {
             case 'CustomSMSSender_AdminCreateUser':
-                return `Your username is ${username} and temporary password is ${decryptedCode} ${link ? ` ${link}` : ''}`;
-            case 'CustomSMSSender_Authentication':
+                return this.smsTemplateService.generateAccountCreationSms(
+                    {
+                        login: username,
+                        tempPassword: decryptedCode,
+                        appLink: link,
+                    },
+                    { language }
+                );
             case 'CustomSMSSender_ForgotPassword':
+                return this.smsTemplateService.generatePasswordResetSms(
+                    {
+                        code: decryptedCode,
+                        expiryMinutes: 5,
+                    },
+                    { language }
+                );
+            case 'CustomSMSSender_Authentication':
             case 'CustomSMSSender_ResendCode':
-                return `Your verification code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
             default:
-                return `Your code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
+                return this.smsTemplateService.generateLoginCodeSms(
+                    {
+                        code: decryptedCode,
+                        expiryMinutes: 5,
+                    },
+                    { language }
+                );
         }
     }
 

@@ -4,7 +4,12 @@
  */
 
 export type SmsLanguage = 'ja' | 'uz';
-export type SmsType = 'auth' | 'notification' | 'account_creation' | 'login_code' | 'password_reset';
+export type SmsType =
+    | 'auth'
+    | 'notification'
+    | 'account_creation'
+    | 'login_code'
+    | 'password_reset';
 
 export interface SmsTemplateOptions {
     language?: SmsLanguage;
@@ -46,7 +51,7 @@ export interface PasswordResetData {
  */
 export class SmsTemplateService {
     private readonly defaultLanguage: SmsLanguage = 'uz';
-    
+
     // SMS length limits (to avoid multi-part SMS charges)
     private readonly SMS_SINGLE_GSM = 160;
     private readonly SMS_SINGLE_UNICODE = 70;
@@ -54,7 +59,10 @@ export class SmsTemplateService {
     /**
      * Generate account creation SMS (login, password, link)
      */
-    generateAccountCreationSms(data: AccountCreationData, options?: SmsTemplateOptions): string {
+    generateAccountCreationSms(
+        data: AccountCreationData,
+        options?: SmsTemplateOptions
+    ): string {
         const language = options?.language || this.defaultLanguage;
         const maxLength = options?.maxLength;
 
@@ -75,7 +83,10 @@ export class SmsTemplateService {
     /**
      * Generate login code SMS (verification code with expiry)
      */
-    generateLoginCodeSms(data: LoginCodeData, options?: SmsTemplateOptions): string {
+    generateLoginCodeSms(
+        data: LoginCodeData,
+        options?: SmsTemplateOptions
+    ): string {
         const language = options?.language || this.defaultLanguage;
         const maxLength = options?.maxLength;
 
@@ -96,7 +107,10 @@ export class SmsTemplateService {
     /**
      * Generate password reset SMS (reset code with expiry)
      */
-    generatePasswordResetSms(data: PasswordResetData, options?: SmsTemplateOptions): string {
+    generatePasswordResetSms(
+        data: PasswordResetData,
+        options?: SmsTemplateOptions
+    ): string {
         const language = options?.language || this.defaultLanguage;
         const maxLength = options?.maxLength;
 
@@ -139,13 +153,22 @@ export class SmsTemplateService {
     /**
      * Generate notification SMS (posts, announcements)
      */
-    generateNotificationSms(data: NotificationData, options?: SmsTemplateOptions): string {
+    generateNotificationSms(
+        data: NotificationData,
+        options?: SmsTemplateOptions
+    ): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength = options?.maxLength || this.getRecommendedMaxLength(language);
+        const maxLength =
+            options?.maxLength || this.getRecommendedMaxLength(language);
 
-        const templates: Record<SmsLanguage, (data: NotificationData) => string> = {
-            ja: (d) => `Parent Notification: 新しいメッセージがあります${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\n生徒: ${d.studentName}${d.link ? `\n詳細: ${d.link}` : ''}`,
-            uz: (d) => `Parent Notification: sizga yangi xabar bor${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\nO'quvchi: ${d.studentName}${d.link ? `\nBatafsil: ${d.link}` : ''}`,
+        const templates: Record<
+            SmsLanguage,
+            (data: NotificationData) => string
+        > = {
+            ja: d =>
+                `Parent Notification: 新しいメッセージがあります\n${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\n生徒: ${d.studentName}${d.link ? `\n詳細: ${d.link}` : ''}`,
+            uz: d =>
+                `Parent Notification: sizga yangi xabar bor\n${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\nO'quvchi: ${d.studentName}${d.link ? `\nBatafsil: ${d.link}` : ''}`,
         };
 
         const template = templates[language] || templates[this.defaultLanguage];
@@ -163,23 +186,29 @@ export class SmsTemplateService {
     private getRecommendedMaxLength(language: SmsLanguage): number {
         // Unicode for ja; GSM for uz
         return language === 'ja'
-            ? this.SMS_SINGLE_UNICODE 
+            ? this.SMS_SINGLE_UNICODE
             : this.SMS_SINGLE_GSM;
     }
 
     /**
      * Shorten message to fit within length limit
      */
-    private shortenMessage(message: string, maxLength: number, language: SmsLanguage): string {
+    private shortenMessage(
+        message: string,
+        maxLength: number,
+        language: SmsLanguage
+    ): string {
         if (message.length <= maxLength) {
             return message;
         }
 
-        console.log(`⚠️ Shortening SMS from ${message.length} to ${maxLength} chars`);
+        console.log(
+            `⚠️ Shortening SMS from ${message.length} to ${maxLength} chars`
+        );
 
         // Strategy: Remove description first, then truncate title if needed
         const ellipsis = '...';
-        
+
         // Find link at the end
         const linkMatch = message.match(/(https?:\/\/[^\s]+)$/);
         const link = linkMatch ? linkMatch[1] : '';
@@ -194,37 +223,49 @@ export class SmsTemplateService {
         }
 
         // Extract main content without link
-        const contentWithoutLink = link ? message.substring(0, message.length - linkLength) : message;
+        const contentWithoutLink = link
+            ? message.substring(0, message.length - linkLength)
+            : message;
 
         // Try to preserve the structure: "New post: [title] - [description] for [name]"
         // Priority: title > name > description
-        
+
         if (contentWithoutLink.length > availableSpace) {
             // Define language-specific separators for description removal
             // Remove text between title and student name marker
             const descriptionPatterns: Record<SmsLanguage, RegExp> = {
-                ja: /(.+?)(生徒:)/,         // Match text before "生徒:"
-                uz: /(.+?)(O'quvchi:)/,     // Match text before "O'quvchi:"
+                ja: /(.+?)(生徒:)/, // Match text before "生徒:"
+                uz: /(.+?)(O'quvchi:)/, // Match text before "O'quvchi:"
             };
-            
-            const pattern = descriptionPatterns[language] || descriptionPatterns.uz;
+
+            const pattern =
+                descriptionPatterns[language] || descriptionPatterns.uz;
             const descMatch = contentWithoutLink.match(pattern);
-            
+
             if (descMatch) {
                 // Remove description (keep the separator after description like "生徒:" or "O'quvchi:")
-                const withoutDesc = contentWithoutLink.replace(descMatch[0], descMatch[2]);
-                
+                const withoutDesc = contentWithoutLink.replace(
+                    descMatch[0],
+                    descMatch[2]
+                );
+
                 if (withoutDesc.length <= availableSpace) {
                     return withoutDesc + (link ? ` ${link}` : '');
                 }
-                
+
                 // Still too long, truncate title
-                const truncated = withoutDesc.substring(0, availableSpace - ellipsis.length) + ellipsis;
+                const truncated =
+                    withoutDesc.substring(0, availableSpace - ellipsis.length) +
+                    ellipsis;
                 return truncated + (link ? ` ${link}` : '');
             }
-            
+
             // No description found, just truncate
-            const truncated = contentWithoutLink.substring(0, availableSpace - ellipsis.length) + ellipsis;
+            const truncated =
+                contentWithoutLink.substring(
+                    0,
+                    availableSpace - ellipsis.length
+                ) + ellipsis;
             return truncated + (link ? ` ${link}` : '');
         }
 
@@ -242,19 +283,22 @@ export class SmsTemplateService {
     } {
         const hasUnicode = /[^\x00-\x7F]/.test(message);
         const encoding = hasUnicode ? 'Unicode' : 'GSM-7';
-        
-        const singleLimit = encoding === 'Unicode' ? this.SMS_SINGLE_UNICODE : this.SMS_SINGLE_GSM;
+
+        const singleLimit =
+            encoding === 'Unicode'
+                ? this.SMS_SINGLE_UNICODE
+                : this.SMS_SINGLE_GSM;
         const multipartLimit = encoding === 'Unicode' ? 67 : 153;
-        
+
         const length = message.length;
         let parts: number;
-        
+
         if (length <= singleLimit) {
             parts = 1;
         } else {
             parts = Math.ceil(length / multipartLimit);
         }
-        
+
         return {
             length,
             encoding,

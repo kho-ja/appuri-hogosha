@@ -81,7 +81,9 @@ export class DiagnosticsService {
         }
 
         console.log(`📶 Operator: ${routing.operator}`);
-        console.log(`🚀 Routing: ${routing.isUzbekistan ? 'PlayMobile API (Uzbekistan)' : 'AWS SMS (International)'}`);
+        console.log(
+            `🚀 Routing: ${routing.isUzbekistan ? 'PlayMobile API (Uzbekistan)' : 'AWS SMS (International)'}`
+        );
 
         // Status analysis
         if (status) {
