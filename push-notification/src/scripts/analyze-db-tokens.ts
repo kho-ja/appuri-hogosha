@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import DatabaseClient from './db-client';
+import DatabaseClient from '../db-client';
 import { ChannelType } from '@aws-sdk/client-pinpoint';
 
 config();

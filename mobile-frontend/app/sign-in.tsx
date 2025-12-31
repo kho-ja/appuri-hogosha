@@ -5,10 +5,10 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
@@ -21,17 +21,20 @@ import { ICountry } from 'react-native-international-phone-number';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ICountryName } from 'react-native-international-phone-number/lib/interfaces/countryName';
+import { AuthErrorHandler } from '@/lib/errorHandler';
+import SecureInput from '@/components/atomic/secure-input';
 
 export default function SignIn() {
-  const [password, setPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<ICountry | null>(null);
   const [backPressCount, setBackPressCount] = useState(0);
+  const [usePassword, setUsePassword] = useState(false);
   const { signIn } = useSession();
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
-  const params = useLocalSearchParams<{ phone?: string; code?: string }>();
+  const params = useLocalSearchParams<{ phone?: string }>();
   const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   React.useEffect(() => {
@@ -54,7 +57,6 @@ export default function SignIn() {
 
   React.useEffect(() => {
     const phone = (params?.phone as string) || '';
-    const code = (params?.code as string) || '';
 
     if (phone) {
       // Handle E.164 (e.g., +99890XXXXXXX) for Uzbekistan by default
@@ -70,10 +72,6 @@ export default function SignIn() {
         // Fallback: keep as-is; user can adjust country selector
         setPhoneNumber(phone.replace(/^\+/, ''));
       }
-    }
-    if (code) {
-      // For invites, code may be a temporary password
-      setPassword(code);
     }
   }, [params]);
 
@@ -100,7 +98,7 @@ export default function SignIn() {
       BackHandler.exitApp();
       return true;
     }
-  }, [backPressCount, i18n, language]);
+  }, [backPressCount, i18n, language, TOAST_POSITION]);
 
   React.useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -110,9 +108,11 @@ export default function SignIn() {
     return () => backHandler.remove();
   }, [handleBackPress]);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async () =>
-      await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''), password),
+  // OTP Login mutation
+  const otpMutation = useMutation({
+    mutationFn: async () => {
+      return await signIn(selectedCountry, phoneNumber.replaceAll(' ', ''));
+    },
     onError: error => {
       // Check if this is a notification permission error
       if (
@@ -133,7 +133,15 @@ export default function SignIn() {
           },
         });
       } else {
-        Toast.show(i18n[language].loginFailed, {
+        const parsedError = AuthErrorHandler.parseError(error);
+        const errorMessageKey =
+          parsedError.userMessage as keyof (typeof i18n)[typeof language];
+        const errorMessage =
+          (i18n[language][errorMessageKey] as string | undefined) ||
+          i18n[language].loginFailed ||
+          parsedError.userMessage;
+
+        Toast.show(String(errorMessage), {
           duration: Toast.durations.LONG,
           position: TOAST_POSITION,
           shadow: true,
@@ -147,23 +155,79 @@ export default function SignIn() {
         });
       }
     },
-    onSuccess: async () => {
-      await AsyncStorage.setItem('hasEverLoggedIn', 'true');
+    onSuccess: async data => {
+      if (data?.session) {
+        Toast.show('Verification code sent', {
+          duration: Toast.durations.SHORT,
+          position: TOAST_POSITION,
+          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
+          textColor: 'white',
+        });
+        // Navigate to verify-otp screen with params
+        router.push({
+          pathname: '/verify-otp',
+          params: {
+            country: JSON.stringify(selectedCountry),
+            phone: phoneNumber.replaceAll(' ', ''),
+            session: data.session,
+          },
+        });
+      }
+    },
+  });
 
-      Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
+  // Password Login mutation
+  const passwordMutation = useMutation({
+    mutationFn: async () => {
+      return await signIn(
+        selectedCountry,
+        phoneNumber.replaceAll(' ', ''),
+        password
+      );
+    },
+    onError: error => {
+      const parsedError = AuthErrorHandler.parseError(error);
+      const errorMessageKey =
+        parsedError.userMessage as keyof (typeof i18n)[typeof language];
+      const errorMessage =
+        (i18n[language][errorMessageKey] as string | undefined) ||
+        i18n[language].loginFailed ||
+        parsedError.userMessage;
+
+      Toast.show(String(errorMessage), {
+        duration: Toast.durations.LONG,
         position: TOAST_POSITION,
         shadow: true,
         animation: true,
         hideOnPress: true,
         textColor: 'white',
         containerStyle: {
-          backgroundColor: 'green',
+          backgroundColor: 'red',
           borderRadius: 5,
         },
       });
     },
+    onSuccess: async () => {
+      Toast.show(i18n[language].loginSuccess, {
+        duration: Toast.durations.SHORT,
+        position: TOAST_POSITION,
+        containerStyle: { backgroundColor: 'green', borderRadius: 5 },
+        textColor: 'white',
+      });
+      // Navigate to main app tabs
+      router.replace('/(tabs)');
+    },
   });
+
+  const handleSubmit = () => {
+    if (usePassword) {
+      passwordMutation.mutate();
+    } else {
+      otpMutation.mutate();
+    }
+  };
+
+  const isPending = otpMutation.isPending || passwordMutation.isPending;
 
   const backgroundColor = theme.colors.background;
 
@@ -185,34 +249,53 @@ export default function SignIn() {
             placeholder={i18n[language].phoneNumber}
             defaultCountry={'UZ' as ICountryCca2}
           />
-          <SecureInput
-            label={i18n[language].password}
-            placeholder={i18n[language].enterPassword}
-            placeholderTextColor='grey'
-            onChangeText={setPassword}
-            maxLength={50}
-            value={password}
-            selectTextOnFocus
-            keyboardType='numbers-and-punctuation'
-            textContentType='password'
-            autoCapitalize='none'
-          />
-          <TouchableOpacity
-            style={styles.forgotPasswordContainer}
-            onPress={() => router.push('/forgot-password')}
-          >
-            <ThemedText style={styles.forgotPasswordText}>
-              {i18n[language].forgotPasswordLink}
-            </ThemedText>
-          </TouchableOpacity>
+
+          {usePassword && (
+            <SecureInput
+              style={styles.passwordContainer}
+              label={i18n[language].password}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={i18n[language].enterPassword}
+              autoCapitalize='none'
+            />
+          )}
+
+          {usePassword && (
+            <TouchableOpacity
+              style={styles.forgotPasswordContainer}
+              onPress={() => router.push('/forgot-password')}
+            >
+              <ThemedText style={styles.forgotPasswordText}>
+                {i18n[language].forgotPasswordLink}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
+
           <Button
-            onPress={() => mutate()}
-            title={i18n[language].loginToAccount}
+            onPress={handleSubmit}
+            title={
+              usePassword
+                ? i18n[language].loginToAccount
+                : i18n[language].sendCode
+            }
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}
             disabled={isPending}
             loading={isPending}
           />
+
+          <TouchableOpacity
+            onPress={() => setUsePassword(!usePassword)}
+            style={styles.linkButton}
+          >
+            <ThemedText style={styles.linkText}>
+              {usePassword
+                ? i18n[language].useOtpInstead ||
+                  'Use verification code instead'
+                : i18n[language].usePasswordInstead || 'Use password instead'}
+            </ThemedText>
+          </TouchableOpacity>
         </ThemedView>
       </SafeAreaView>
     </TouchableWithoutFeedback>
@@ -243,13 +326,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
+  passwordContainer: {
+    marginTop: 20,
+    marginBottom: 10,
+  },
   forgotPasswordContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
   },
   forgotPasswordText: {
     fontSize: 14,
     color: '#4285F4',
     textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  linkButton: {
+    marginTop: 20,
+    alignItems: 'center',
+    padding: 10,
+  },
+  linkText: {
+    color: '#4285F4',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

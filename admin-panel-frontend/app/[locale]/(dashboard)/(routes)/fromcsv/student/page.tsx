@@ -231,6 +231,7 @@ export default function CreateFromCsv() {
                 <TableHead>family_name</TableHead>
                 <TableHead>phone_number</TableHead>
                 <TableHead>student_number</TableHead>
+                <TableHead>cohort</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -252,6 +253,9 @@ export default function CreateFromCsv() {
                     </TableCell>
                     <TableCell>
                       <ErrorCell name="student_number" error={error} />
+                    </TableCell>
+                    <TableCell>
+                      <ErrorCell name="cohort" error={error} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -299,7 +303,7 @@ const ErrorCell = ({
   name: keyof Upload<Student>["errors"][0]["row"];
   error: Upload<Student>["errors"][0];
 }) => {
-  const t = useTranslations("fromcsv");
+  const t = useTranslations("errors");
   return (
     <div className="w-full flex justify-between">
       {error?.row[name] !== undefined && (
@@ -311,7 +315,7 @@ const ErrorCell = ({
             <Info className="text-red-500" />
           </HoverCardTrigger>
           <HoverCardContent className="text-red-500">
-            {t(error.errors[name] || "")}
+            {t(error.errors[name] || "unexpected_error")}
           </HoverCardContent>
         </HoverCard>
       )}
@@ -345,6 +349,7 @@ const ErrorTable = ({
               <TableHead>family_name</TableHead>
               <TableHead>phone_number</TableHead>
               <TableHead>student_number</TableHead>
+              <TableHead>cohort</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -364,6 +369,13 @@ const ErrorTable = ({
                 </TableCell>
                 <TableCell>
                   <span>{student?.student_number}</span>
+                </TableCell>
+                <TableCell>
+                  <span>
+                    {student?.cohort !== null && student?.cohort !== undefined
+                      ? student?.cohort
+                      : "-"}
+                  </span>
                 </TableCell>
               </TableRow>
             ))}

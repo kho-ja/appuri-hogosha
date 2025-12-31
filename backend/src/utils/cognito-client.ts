@@ -649,6 +649,112 @@ class CognitoClient {
             }
         }
     }
+
+    async signInWithPhone(phoneNumber: string): Promise<signInWithPhoneOutput> {
+        const params: InitiateAuthCommandInput = {
+            AuthFlow: 'CUSTOM_AUTH',
+            ClientId: this.client_id,
+            AuthParameters: {
+                USERNAME: phoneNumber,
+            },
+        };
+
+        try {
+            const command = new InitiateAuthCommand(params);
+            const authData = await this.client.send(command);
+
+            if (authData.ChallengeName === 'CUSTOM_CHALLENGE') {
+                return {
+                    session: authData.Session ?? '',
+                    message: 'OTP sent successfully',
+                };
+            } else {
+                throw {
+                    status: 400,
+                    message: 'Unexpected challenge type',
+                } as signInWithPhoneThrow;
+            }
+        } catch (e: any) {
+            console.error('Sign in with phone error:', e);
+            console.error('Error name:', e.name);
+            console.error('Error message:', e.message);
+
+            if (e.name === 'UserNotFoundException') {
+                throw {
+                    status: 404,
+                    message: 'User not found',
+                } as signInWithPhoneThrow;
+            }
+
+            if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message:
+                        'Custom auth flow not configured or not authorized',
+                } as signInWithPhoneThrow;
+            }
+
+            if (e.name === 'InvalidParameterException') {
+                throw {
+                    status: 400,
+                    message: `Invalid parameter: ${e.message}`,
+                } as signInWithPhoneThrow;
+            }
+
+            // Return the actual error message for debugging
+            throw {
+                status: 500,
+                message: `Authentication error: ${e.message || 'Internal server error'}`,
+            } as signInWithPhoneThrow;
+        }
+    }
+
+    async respondToAuthChallenge(
+        phoneNumber: string,
+        code: string,
+        session: string
+    ): Promise<loginOutput> {
+        const params: RespondToAuthChallengeCommandInput = {
+            ClientId: this.client_id,
+            ChallengeName: 'CUSTOM_CHALLENGE',
+            Session: session,
+            ChallengeResponses: {
+                USERNAME: phoneNumber,
+                ANSWER: code,
+            },
+        };
+
+        try {
+            const command = new RespondToAuthChallengeCommand(params);
+            const authData = await this.client.send(command);
+
+            if (authData.AuthenticationResult) {
+                return {
+                    accessToken:
+                        authData.AuthenticationResult.AccessToken ?? '',
+                    refreshToken:
+                        authData.AuthenticationResult.RefreshToken ?? '',
+                };
+            } else {
+                throw {
+                    status: 401,
+                    message: 'Invalid OTP',
+                } as loginThrow;
+            }
+        } catch (e: any) {
+            console.error('Respond to auth challenge error:', e);
+            if (e.name === 'NotAuthorizedException') {
+                throw {
+                    status: 401,
+                    message: 'Invalid OTP',
+                } as loginThrow;
+            }
+            throw {
+                status: 500,
+                message: 'Internal server error',
+            } as loginThrow;
+        }
+    }
 }
 
 interface forgotPasswordOutput {
@@ -734,6 +840,21 @@ interface deleteOutput {
 
 interface deleteThrow {
     status: 401 | 404 | 500;
+    message: string;
+}
+
+interface signInWithPhoneOutput {
+    session: string;
+    message: string;
+}
+
+interface signInWithPhoneOutput {
+    session: string;
+    message: string;
+}
+
+interface signInWithPhoneThrow {
+    status: 400 | 401 | 404 | 500;
     message: string;
 }
 

@@ -2,12 +2,14 @@ import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { KmsDecryptionService } from '../../services/aws/kms';
 import { CognitoTemplateService } from '../../services/cognito/template-service';
+import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
 
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
     private templateService: CognitoTemplateService;
+    private smsTemplateService: SmsTemplateService;
 
     constructor(
         private playMobileService: PlayMobileService,
@@ -16,6 +18,16 @@ export class CognitoHandler {
     ) {
         this.kmsService = new KmsDecryptionService();
         this.templateService = new CognitoTemplateService(userPoolId);
+        this.smsTemplateService = new SmsTemplateService();
+    }
+
+    /**
+     * Detect language based on phone number region
+     * Uzbekistan numbers (998) -> 'uz', all others -> 'ja'
+     */
+    private detectLanguageFromPhone(phoneNumber: string): 'uz' | 'ja' {
+        const routing = getUzbekistanOperatorRouting(phoneNumber);
+        return routing.isUzbekistan ? 'uz' : 'ja';
     }
 
     async handleCognitoSms(event: CognitoEvent): Promise<CognitoEvent> {
@@ -37,23 +49,17 @@ export class CognitoHandler {
                 return await this.handleInternationalNumber(event, phoneNumber);
             }
 
-            console.log(`🇺🇿 Uzbekistan number detected: ${routing.operator}`);
+            console.log(
+                `🇺🇿 Uzbekistan number detected: ${routing.operator} - routing to PlayMobile`
+            );
 
             // Handle CustomSMSSender triggers (modern approach with encrypted codes)
             if (triggerSource.startsWith('CustomSMSSender_')) {
-                return await this.handleCustomSMSSenderWithFallback(
-                    event,
-                    phoneNumber,
-                    routing
-                );
+                return await this.handleCustomSMSSender(event, phoneNumber);
             }
 
             // Handle other triggers using templates
-            return await this.handleTemplateBasedSmsWithFallback(
-                event,
-                phoneNumber,
-                routing
-            );
+            return await this.handleTemplateBasedSms(event, phoneNumber);
         } catch (error) {
             console.error('❌ Cognito SMS handler error:', error);
             console.warn('⚠️ Falling back to Cognito due to handler error');
@@ -174,10 +180,9 @@ export class CognitoHandler {
         }
     }
 
-    private async handleCustomSMSSenderWithFallback(
+    private async handleCustomSMSSender(
         event: CognitoEvent,
-        phoneNumber: string,
-        routing: any
+        phoneNumber: string
     ): Promise<CognitoEvent> {
         console.log(
             `🔐 CustomSMSSender trigger detected: ${event.triggerSource}`
@@ -226,11 +231,11 @@ export class CognitoHandler {
                 message = this.buildFallbackMessage(event, decryptedCode);
             }
 
-            // Try to send via local routing with fallback
-            const success = await this.routeMessageWithFallback(
+            // Send via PlayMobile for Uzbekistan numbers
+            console.log(`📤 Sending SMS via PlayMobile`);
+            const success = await this.playMobileService.sendSms(
                 phoneNumber,
-                message,
-                routing
+                message
             );
 
             if (success) {
@@ -239,10 +244,10 @@ export class CognitoHandler {
                     event.response = {};
                 }
                 event.response.smsMessage = '';
-                console.log('✅ SMS sent successfully via custom routing');
+                console.log('✅ SMS sent successfully via PlayMobile');
             } else {
                 console.warn(
-                    '⚠️ Custom routing failed completely, letting Cognito handle SMS'
+                    '⚠️ PlayMobile failed, letting Cognito handle SMS'
                 );
                 // Don't modify event.response - let Cognito send it
             }
@@ -255,10 +260,9 @@ export class CognitoHandler {
         }
     }
 
-    private async handleTemplateBasedSmsWithFallback(
+    private async handleTemplateBasedSms(
         event: CognitoEvent,
-        phoneNumber: string,
-        routing: any
+        phoneNumber: string
     ): Promise<CognitoEvent> {
         const shouldProcess =
             event.triggerSource.includes('SMS') ||
@@ -305,10 +309,11 @@ export class CognitoHandler {
             }
 
             if (message) {
-                const success = await this.routeMessageWithFallback(
+                // Send via PlayMobile for Uzbekistan numbers
+                console.log(`📤 Sending SMS via PlayMobile`);
+                const success = await this.playMobileService.sendSms(
                     phoneNumber,
-                    message,
-                    routing
+                    message
                 );
 
                 if (success) {
@@ -317,10 +322,10 @@ export class CognitoHandler {
                         event.response = {};
                     }
                     event.response.smsMessage = '';
-                    console.log('✅ SMS sent successfully via custom routing');
+                    console.log('✅ SMS sent successfully via PlayMobile');
                 } else {
                     console.warn(
-                        '⚠️ Custom routing failed, letting Cognito handle SMS'
+                        '⚠️ PlayMobile failed, letting Cognito handle SMS'
                     );
                     // Don't modify event.response - let Cognito send it
                 }
@@ -333,118 +338,44 @@ export class CognitoHandler {
         return event;
     }
 
-    private async routeMessageWithFallback(
-        phoneNumber: string,
-        message: string,
-        routing: any
-    ): Promise<boolean> {
-        try {
-            if (routing.usePlayMobile) {
-                console.log(
-                    `📤 Attempting to send via PlayMobile (${routing.operator})`
-                );
-                const success = await this.playMobileService.sendSms(
-                    phoneNumber,
-                    message
-                );
-
-                if (success) {
-                    console.log(
-                        `✅ PlayMobile delivery successful for ${routing.operator}`
-                    );
-                    return true;
-                } else {
-                    console.warn(
-                        `⚠️ PlayMobile failed for ${routing.operator}, trying AWS fallback`
-                    );
-
-                    // Try AWS as fallback for PlayMobile failure
-                    return await this.tryAwsFallback(
-                        phoneNumber,
-                        message,
-                        'PlayMobile failure'
-                    );
-                }
-            } else {
-                // Ucell bypass - use AWS directly
-                console.log(
-                    `📤 Attempting to send via AWS (${routing.operator} bypass)`
-                );
-                const success = await this.awsSmsService.sendSms(
-                    phoneNumber,
-                    message
-                );
-
-                if (success) {
-                    console.log(
-                        `✅ AWS delivery successful for ${routing.operator}`
-                    );
-                    return true;
-                } else {
-                    console.warn(
-                        `⚠️ AWS delivery failed for ${routing.operator}`
-                    );
-                    return false; // No more fallbacks for AWS failure
-                }
-            }
-        } catch (error) {
-            console.error('❌ Routing error:', error);
-
-            if (routing.usePlayMobile) {
-                console.warn('⚠️ PlayMobile error, trying AWS fallback');
-                return await this.tryAwsFallback(
-                    phoneNumber,
-                    message,
-                    'PlayMobile error'
-                );
-            }
-
-            return false;
-        }
-    }
-
-    private async tryAwsFallback(
-        phoneNumber: string,
-        message: string,
-        reason: string
-    ): Promise<boolean> {
-        try {
-            console.log(`🔄 AWS fallback attempt (reason: ${reason})`);
-            const success = await this.awsSmsService.sendSms(
-                phoneNumber,
-                message
-            );
-
-            if (success) {
-                console.log(`✅ AWS fallback successful`);
-                return true;
-            } else {
-                console.warn(`⚠️ AWS fallback also failed`);
-                return false;
-            }
-        } catch (fallbackError) {
-            console.error('❌ AWS fallback error:', fallbackError);
-            return false;
-        }
-    }
-
     private buildFallbackMessage(
         event: CognitoEvent,
         decryptedCode: string
     ): string {
         const username = this.extractUsername(event);
         const link = this.buildAuthDeepLink();
+        const phoneNumber = event.request.userAttributes.phone_number || '';
+        const language = this.detectLanguageFromPhone(phoneNumber);
 
-        // Fallback templates (AWS default format)
+        // Use SmsTemplateService for localized, optimized messages
         switch (event.triggerSource) {
             case 'CustomSMSSender_AdminCreateUser':
-                return `Your username is ${username} and temporary password is ${decryptedCode} ${link ? ` ${link}` : ''}`;
-            case 'CustomSMSSender_Authentication':
+                return this.smsTemplateService.generateAccountCreationSms(
+                    {
+                        login: username,
+                        tempPassword: decryptedCode,
+                        appLink: link,
+                    },
+                    { language }
+                );
             case 'CustomSMSSender_ForgotPassword':
+                return this.smsTemplateService.generatePasswordResetSms(
+                    {
+                        code: decryptedCode,
+                        expiryMinutes: 5,
+                    },
+                    { language }
+                );
+            case 'CustomSMSSender_Authentication':
             case 'CustomSMSSender_ResendCode':
-                return `Your verification code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
             default:
-                return `Your code is ${decryptedCode} ${link ? ` ${link}` : ''}`;
+                return this.smsTemplateService.generateLoginCodeSms(
+                    {
+                        code: decryptedCode,
+                        expiryMinutes: 5,
+                    },
+                    { language }
+                );
         }
     }
 

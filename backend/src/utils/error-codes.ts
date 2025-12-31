@@ -15,6 +15,9 @@ export const ErrorKeys = {
     invalid_family_name: 'invalid_family_name',
     invalid_given_name_format: 'invalid_given_name_format',
     invalid_family_name_format: 'invalid_family_name_format',
+    invalid_cohort_format: 'invalid_cohort_format',
+    cohort_must_be_positive: 'cohort_must_be_positive',
+    // Post/message specific validation
     invalid_title: 'invalid_title',
     invalid_description: 'invalid_description',
     invalid_priority: 'invalid_priority',

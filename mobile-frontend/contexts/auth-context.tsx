@@ -8,12 +8,19 @@ import { registerForPushNotificationsAsync } from '@/utils/notifications';
 import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
 import DemoModeService from '@/services/demo-mode-service';
+import { normalizePhone } from '@/utils/phone';
 
 const AuthContext = React.createContext<{
   signIn: (
     country: ICountry | null,
     phoneNumber: string,
-    password: string
+    password?: string
+  ) => Promise<any>;
+  verifyOtp: (
+    country: ICountry | null,
+    phoneNumber: string,
+    code: string,
+    session: string
   ) => Promise<any>;
   signOut: () => void;
   session?: string | null;
@@ -23,6 +30,7 @@ const AuthContext = React.createContext<{
   isDemoMode: boolean;
 }>({
   signIn: () => new Promise(() => null),
+  verifyOtp: () => new Promise(() => null),
   signOut: () => null,
   session: null,
   refreshToken: () => null,
@@ -85,15 +93,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
     <AuthContext.Provider
       value={{
         signIn: async (country, phoneNumber, password) => {
-          phoneNumber = phoneNumber.startsWith('0')
-            ? phoneNumber.slice(1)
-            : phoneNumber;
+          const fullPhoneNumber = normalizePhone(country, phoneNumber);
 
-          const fullPhoneNumber =
-            country?.callingCode + phoneNumber.replaceAll(' ', '');
-
-          // Check if demo credentials
-          if (DemoModeService.isDemoCredentials(fullPhoneNumber, password)) {
+          // Check if demo credentials (password-based demo)
+          if (
+            password &&
+            DemoModeService.isDemoCredentials(fullPhoneNumber, password)
+          ) {
             // Enable demo mode
             await DemoModeService.enableDemoMode();
             setIsDemoMode(true);
@@ -132,14 +138,32 @@ export function SessionProvider(props: React.PropsWithChildren) {
             return;
           }
 
+          // Check if demo OTP phone (OTP-based demo)
+          if (!password && DemoModeService.isDemoOtpPhone(fullPhoneNumber)) {
+            // Store demo credentials for OTP flow
+            await AsyncStorage.setItem('phoneNumber', phoneNumber);
+            await AsyncStorage.setItem('country', JSON.stringify(country));
+
+            // Simulate network delay for realistic experience
+            await DemoModeService.simulateNetworkDelay();
+
+            // Return demo session for OTP verification
+            const demoSession = DemoModeService.getDemoSessionData();
+            return {
+              session: demoSession.access_token,
+            };
+          }
+
           // Regular authentication flow
           await AsyncStorage.setItem('phoneNumber', phoneNumber);
           await AsyncStorage.setItem('country', JSON.stringify(country));
-          await AsyncStorage.setItem('password', password);
+          if (password) {
+            await AsyncStorage.setItem('password', password);
+          }
           try {
             // First, check and request push notification permissions
             const token = await registerForPushNotificationsAsync();
-
+            console.log('Login response status:', apiUrl);
             // If we get here, notifications are enabled and we have a token
             // Now proceed with login request
             const response = await fetch(`${apiUrl}/login`, {
@@ -148,8 +172,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                phone_number:
-                  country?.callingCode + phoneNumber.replaceAll(' ', ''),
+                phone_number: fullPhoneNumber,
                 password,
                 token,
               }),
@@ -157,7 +180,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
 
             if (response.status === 403) {
               await AsyncStorage.setItem('phoneNumber', phoneNumber);
-              await AsyncStorage.setItem('temp_password', password);
+              if (password)
+                await AsyncStorage.setItem('temp_password', password);
               return router.push('/new-psswd');
             }
 
@@ -166,9 +190,20 @@ export function SessionProvider(props: React.PropsWithChildren) {
               throw Error(errorData.error || 'Internal server error');
             }
 
-            const data: Session = await response.json();
-            setSession(data.access_token);
-            await AsyncStorage.setItem('refresh_token', data.refresh_token);
+            const data = await response.json();
+
+            // OTP Flow: If session is returned, return it to the caller
+            if (data.session) {
+              return data;
+            }
+
+            // Standard Login Flow
+            const sessionData: Session = data;
+            setSession(sessionData.access_token);
+            await AsyncStorage.setItem(
+              'refresh_token',
+              sessionData.refresh_token
+            );
 
             // Clear existing user data and insert new
             await db.execAsync('DELETE FROM user');
@@ -202,6 +237,87 @@ export function SessionProvider(props: React.PropsWithChildren) {
             } else {
               throw new Error('An unknown error occurred');
             }
+          }
+        },
+        verifyOtp: async (country, phoneNumber, code, session) => {
+          try {
+            const fullPhoneNumber = normalizePhone(country, phoneNumber);
+
+            // Check if demo OTP credentials
+            if (DemoModeService.isDemoOtpCredentials(fullPhoneNumber, code)) {
+              // Enable demo mode
+              await DemoModeService.enableDemoMode();
+              setIsDemoMode(true);
+
+              // Simulate network delay for realistic experience
+              await DemoModeService.simulateNetworkDelay();
+
+              // Get demo session data
+              const demoSession = DemoModeService.getDemoSessionData();
+
+              // Set demo session
+              setSession(demoSession.access_token);
+              await AsyncStorage.setItem(
+                'refresh_token',
+                demoSession.refresh_token
+              );
+
+              // Clear existing user data and insert demo user
+              await db.execAsync('DELETE FROM user');
+              await db.runAsync(
+                'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
+                [
+                  demoSession.user.given_name,
+                  demoSession.user.family_name,
+                  demoSession.user.phone_number,
+                  demoSession.user.email,
+                ]
+              );
+
+              router.replace('/');
+              return demoSession;
+            }
+
+            // Regular OTP verification flow
+            const token = await registerForPushNotificationsAsync();
+
+            const response = await fetch(`${apiUrl}/verify-otp`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                phone_number: fullPhoneNumber,
+                code,
+                session,
+                token,
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw Error(errorData.error || 'Invalid OTP');
+            }
+
+            const data: Session = await response.json();
+            setSession(data.access_token);
+            await AsyncStorage.setItem('refresh_token', data.refresh_token);
+
+            // Clear existing user data and insert new
+            await db.execAsync('DELETE FROM user');
+            await db.runAsync(
+              'INSERT INTO user (given_name, family_name, phone_number, email) VALUES (?, ?, ?, ?)',
+              [
+                data.user.given_name,
+                data.user.family_name,
+                data.user.phone_number,
+                data.user.email,
+              ]
+            );
+            router.replace('/');
+          } catch (error) {
+            console.error('Error verifying OTP:', error);
+            throw error;
           }
         },
         refreshToken: async () => {

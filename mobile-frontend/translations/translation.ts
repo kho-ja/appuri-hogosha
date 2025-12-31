@@ -19,6 +19,40 @@ const translations: Translations = {
     loginFailedNotifications:
       'Please enable notifications to continue. Check your device settings.',
     loginSuccess: 'Logged in successfully',
+    usePasswordInstead: 'Use password instead',
+    useOtpInstead: 'Use verification code instead',
+    // Error messages - Authentication
+    authenticationFailed: 'Authentication failed. Please try again.',
+    incorrectCredentials: 'Incorrect phone number or password.',
+    authConfigError:
+      'Authentication service is not properly configured. Please contact support.',
+    // Error messages - Phone number
+    phoneNumberNotFound:
+      'This phone number is not registered. Please check and try again.',
+    invalidPhoneNumber: 'Please enter a valid phone number.',
+    invalidPhoneFormat: 'Invalid phone number format.',
+    // Error messages - OTP
+    invalidOtp: 'Invalid verification code. Please try again.',
+    otpExpired: 'Verification code has expired. Please request a new one.',
+    // Error messages - Password
+    invalidPassword: 'Invalid password.',
+    passwordTooShort: 'Password must be at least 8 characters.',
+    temporaryPasswordRequired:
+      'Temporary password needs to be changed. Please set a new password.',
+    // Error messages - Input
+    invalidInput: 'Invalid input. Please check your entries.',
+    // Error messages - Network
+    networkError:
+      'Network connection error. Please check your internet connection.',
+    requestTimeout: 'Request timed out. Please try again.',
+    serviceUnavailable:
+      'Service temporarily unavailable. Please try again later.',
+    serverError: 'Server error. Please try again later.',
+    // Error messages - General
+    accessDenied: 'Access denied.',
+    notFound: 'Resource not found.',
+    tooManyAttempts:
+      'Too many login attempts. Please try again in a few minutes.',
     /*sign in page*/
 
     /*forgot password pages*/
@@ -34,6 +68,7 @@ const translations: Translations = {
     codeWillExpire: 'Code will expire in {seconds} seconds.',
     codeExpired: 'Code has expired',
     resendCode: 'Resend Code',
+    verify: 'Verify',
     createNewPasswordTitle: 'Create New Password',
     passwordCreatedSuccessfully:
       'Password created successfully! You can now log in with your new password.',
@@ -267,6 +302,42 @@ const translations: Translations = {
     loginFailedNotifications:
       '続行するには通知を有効にしてください。デバイスの設定を確認してください。',
     loginSuccess: 'ログインに成功しました',
+    usePasswordInstead: 'パスワードを使用する',
+    useOtpInstead: '確認コードを使用する',
+    // Error messages - Authentication
+    authenticationFailed: '認証に失敗しました。もう一度試してください。',
+    incorrectCredentials: '電話番号またはパスワードが間違っています。',
+    authConfigError:
+      '認証サービスが正しく設定されていません。サポートにお問い合わせください。',
+    // Error messages - Phone number
+    phoneNumberNotFound:
+      'この電話番号は登録されていません。確認してもう一度試してください。',
+    invalidPhoneNumber: '有効な電話番号を入力してください。',
+    invalidPhoneFormat: '電話番号の形式が無効です。',
+    // Error messages - OTP
+    invalidOtp: '無効な確認コード。もう一度試してください。',
+    otpExpired:
+      '確認コードの有効期限が切れました。新しいコードをリクエストしてください。',
+    // Error messages - Password
+    invalidPassword: '無効なパスワード。',
+    passwordTooShort: 'パスワードは8文字以上である必要があります。',
+    temporaryPasswordRequired:
+      '一時パスワードを変更する必要があります。新しいパスワードを設定してください。',
+    // Error messages - Input
+    invalidInput: '無効な入力。エントリを確認してください。',
+    // Error messages - Network
+    networkError:
+      'ネットワーク接続エラー。インターネット接続を確認してください。',
+    requestTimeout:
+      'リクエストがタイムアウトしました。もう一度試してください。',
+    serviceUnavailable:
+      'サービスは一時的に利用できません。後でもう一度試してください。',
+    serverError: 'サーバーエラー。後でもう一度試してください。',
+    // Error messages - General
+    accessDenied: 'アクセスが拒否されました。',
+    notFound: 'リソースが見つかりません。',
+    tooManyAttempts:
+      'ログイン試行が多すぎます。数分後にもう一度試してください。',
     /*sign in page*/
 
     /*forgot password pages*/
@@ -282,6 +353,7 @@ const translations: Translations = {
     codeExpired: 'コードの有効期限が切れました',
     resendCode: 'コードを再送信',
     codeWillExpire: 'コードは{seconds}秒で期限切れになります。',
+    verify: '確認',
     createNewPasswordTitle: '新しいパスワードを作成',
     passwordCreatedSuccessfully:
       'パスワードが正常に作成されました！新しいパスワードでログインできます。',
@@ -517,6 +589,42 @@ const translations: Translations = {
     loginFailedNotifications:
       'Davom etish uchun bildirishnomalarni yoqing. Qurilma sozlamalarini tekshiring.',
     loginSuccess: 'Muvaffaqiyatli kirdingiz',
+    usePasswordInstead: 'Parol bilan kirish',
+    useOtpInstead: 'Tasdiqlash kodi bilan kirish',
+    // Error messages - Authentication
+    authenticationFailed:
+      "Autentifikatsiya amalga oshmadi. Iltimos, qayta urinib ko'ring.",
+    incorrectCredentials: "Noto'g'ri telefon raqam yoki parol.",
+    authConfigError:
+      "Autentifikatsiya xizmati to'g'ri sozlanmagan. Iltimos, qo'llab-quvvatlagichga murojaat qiling.",
+    // Error messages - Phone number
+    phoneNumberNotFound:
+      "Bu telefon raqami ro'yxatdan o'tmagan. Iltimos, tekshiring va qayta urinib ko'ring.",
+    invalidPhoneNumber: "Iltimos, to'g'ri telefon raqamini kiriting.",
+    invalidPhoneFormat: "Noto'g'ri telefon raqam formati.",
+    // Error messages - OTP
+    invalidOtp: "Noto'g'ri tasdiqlash kodi. Iltimos, qayta urinib ko'ring.",
+    otpExpired:
+      "Tasdiqlash kodining muddati tugadi. Iltimos, yangi kod so'rang.",
+    // Error messages - Password
+    invalidPassword: "Parol noto'g'ri.",
+    passwordTooShort: "Parol kamida 8 ta belgidan iborat bo'lishi kerak.",
+    temporaryPasswordRequired:
+      "Vaqtinchalik parolni o'zgartirish kerak. Iltimos, yangi parol o'rnating.",
+    // Error messages - Input
+    invalidInput: "Noto'g'ri kiritish. Iltimos, yozuvlarni tekshiring.",
+    // Error messages - Network
+    networkError:
+      'Internet ulanishi bilan muammo. Iltimos, internet ulanishingizni tekshiring.',
+    requestTimeout: "Sorov vaqti tugadi. Iltimos, qayta urinib ko'ring.",
+    serviceUnavailable:
+      "Xizmat vaqtincha ishlamaydi. Iltimos, keyinroq urinib ko'ring.",
+    serverError: "Server xatosi. Iltimos, qayta urinib ko'ring.",
+    // Error messages - General
+    accessDenied: 'Kirish man etilgan.',
+    notFound: 'Resurs topilmadi.',
+    tooManyAttempts:
+      "Juda ko'p urinish. Iltimos, bir necha daqiqadan keyin qayta urinib ko'ring.",
     /*sign in page*/
 
     /*forgot password pages*/
@@ -532,6 +640,7 @@ const translations: Translations = {
     resendCode: 'Kodni qayta yuborish',
     codeWillExpire:
       'Kodni qayta yuborish {seconds} soniyadan keyin faollashadi.',
+    verify: 'Tasdiqlash',
     createNewPasswordTitle: 'Parol yaratish',
     passwordCreatedSuccessfully:
       'Parol muvaffaqiyatli yaratildi! Endi yangi parolingiz bilan kirishingiz mumkin.',
@@ -767,6 +876,43 @@ const translations: Translations = {
     loginFailedNotifications:
       'Для продолжения включите уведомления. Проверьте настройки устройства.',
     loginSuccess: 'Вы успешно вошли',
+    usePasswordInstead: 'Использовать пароль',
+    useOtpInstead: 'Использовать код подтверждения',
+    // Error messages - Authentication
+    authenticationFailed:
+      'Ошибка аутентификации. Пожалуйста, попробуйте снова.',
+    incorrectCredentials: 'Неверный номер телефона или пароль.',
+    authConfigError:
+      'Служба аутентификации неправильно настроена. Пожалуйста, обратитесь в поддержку.',
+    // Error messages - Phone number
+    phoneNumberNotFound:
+      'Этот номер телефона не зарегистрирован. Пожалуйста, проверьте и попробуйте снова.',
+    invalidPhoneNumber: 'Пожалуйста, введите корректный номер телефона.',
+    invalidPhoneFormat: 'Неверный формат номера телефона.',
+    // Error messages - OTP
+    invalidOtp: 'Неверный код подтверждения. Пожалуйста, попробуйте снова.',
+    otpExpired:
+      'Срок действия кода подтверждения истек. Пожалуйста, запросите новый код.',
+    // Error messages - Password
+    invalidPassword: 'Неверный пароль.',
+    passwordTooShort: 'Пароль должен содержать не менее 8 символов.',
+    temporaryPasswordRequired:
+      'Временный пароль должен быть изменен. Пожалуйста, установите новый пароль.',
+    // Error messages - Input
+    invalidInput: 'Неверный ввод. Пожалуйста, проверьте свои записи.',
+    // Error messages - Network
+    networkError:
+      'Ошибка подключения к сети. Пожалуйста, проверьте ваше интернет-соединение.',
+    requestTimeout:
+      'Время ожидания запроса истекло. Пожалуйста, попробуйте снова.',
+    serviceUnavailable:
+      'Сервис временно недоступен. Пожалуйста, попробуйте позже.',
+    serverError: 'Ошибка сервера. Пожалуйста, попробуйте снова.',
+    // Error messages - General
+    accessDenied: 'Доступ запрещен.',
+    notFound: 'Ресурс не найден.',
+    tooManyAttempts:
+      'Слишком много попыток входа. Пожалуйста, попробуйте снова через несколько минут.',
     /*sign in page*/
 
     /*forgot password pages*/
@@ -782,6 +928,7 @@ const translations: Translations = {
     codeExpired: 'Код истек',
     resendCode: 'Отправить код заново',
     codeWillExpire: 'Код истечет через {seconds} секунд.',
+    verify: 'Подтвердить',
     createNewPasswordTitle: 'Создать новый пароль',
     passwordCreatedSuccessfully:
       'Пароль успешно создан! Теперь вы можете войти с новым паролем.',

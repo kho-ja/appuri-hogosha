@@ -6,10 +6,26 @@ import { useFocusEffect } from '@react-navigation/native';
 import { I18nContext } from '@/contexts/i18n-context';
 
 const StudentMessagesScreen = () => {
-  const { studentId } = useLocalSearchParams();
+  const { studentId, isOnlyStudent } = useLocalSearchParams();
   const studentIdNumber = Number(studentId);
-  const { students, refetch, isLoading } = useStudents();
+  const { students, refetch: refetchStudents, isLoading } = useStudents();
   const { language, i18n } = useContext(I18nContext);
+
+  // If we came here as "only student" but now there are more students,
+  // redirect back to HomeScreen to show the student list
+  useEffect(() => {
+    if (!isLoading && students && isOnlyStudent === 'true') {
+      if (students.length > 1) {
+        console.log(
+          '[StudentScreen] Was only student, now there are',
+          students.length,
+          '- redirecting to home'
+        );
+        router.replace('/(tabs)/(home)');
+        return;
+      }
+    }
+  }, [students, isLoading, isOnlyStudent]);
 
   // Check if the current student exists in the students list
   useEffect(() => {
@@ -35,11 +51,16 @@ const StudentMessagesScreen = () => {
   // Refresh student data when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      refetch();
-    }, [refetch])
+      refetchStudents();
+    }, [refetchStudents])
   );
 
-  return <MessageList studentId={studentIdNumber} />;
+  return (
+    <MessageList
+      studentId={studentIdNumber}
+      onRefreshStudents={refetchStudents}
+    />
+  );
 };
 
 export default StudentMessagesScreen;

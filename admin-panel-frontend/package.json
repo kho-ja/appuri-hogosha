@@ -82,6 +82,7 @@
   "overrides": {
     "react-quill": {
       "quill": "^2.0.3"
-    }
+    },
+    "glob": "^10.5.0"
   }
 }

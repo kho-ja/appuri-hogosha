@@ -93,12 +93,12 @@ export const useUpdateAlerts = () => {
         }
       } catch (error: unknown) {
         console.error('[Updates] Check error:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error occurred';
-        Alert.alert(
-          i18n[language].updateCheckFailed,
-          `${i18n[language].error}: ${errorMessage}`
-        );
+        // const errorMessage =
+        //   error instanceof Error ? error.message : 'Unknown error occurred';
+        // Alert.alert(
+        //   i18n[language].updateCheckFailed,
+        //   `${i18n[language].error}: ${errorMessage}`
+        // );
       }
     };
 

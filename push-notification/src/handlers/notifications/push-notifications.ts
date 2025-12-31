@@ -3,13 +3,14 @@ import { UnifiedPushService } from '../../services/unified/push';
 import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { TelegramService } from '../../services/telegram/bot';
+import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
-import { generateSmsText } from '../../utils/localization';
 import { NotificationPost } from '../../types/events';
 import { NotificationResult } from 'types/responses';
 
 export class NotificationProcessor {
     private telegramService: TelegramService;
+    private smsTemplateService: SmsTemplateService;
 
     constructor(
         private dbQueries: DatabaseQueries,
@@ -18,6 +19,7 @@ export class NotificationProcessor {
         private awsSmsService: AwsSmsService
     ) {
         this.telegramService = new TelegramService();
+        this.smsTemplateService = new SmsTemplateService();
     }
 
     async processNotifications(): Promise<NotificationResult> {
@@ -215,16 +217,37 @@ export class NotificationProcessor {
         try {
             const routing = getUzbekistanOperatorRouting(post.phone_number);
 
+            // Generate SMS using template service with automatic shortening
+            const studentName = `${post.given_name} ${post.family_name}`;
+            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
+
+            const text = this.smsTemplateService.generateNotificationSms(
+                {
+                    title: post.title,
+                    description: post.description,
+                    studentName: studentName,
+                    link: link,
+                },
+                {
+                    language: (post.language as 'ja' | 'uz') || 'uz',
+                }
+            );
+
+            // Analyze message for cost optimization
+            const analysis = this.smsTemplateService.analyzeMessage(text);
+            console.log(
+                `📊 SMS Analysis: ${analysis.length} chars, ${analysis.encoding}, ${analysis.parts} part(s)`
+            );
+
             // Send with AWS SMS for non-Uzbekistan numbers
             if (!routing.isUzbekistan) {
                 console.log(
-                    `🌍 Non-Uzbekistan number detected: ${post.phone_number}`
+                    `🌍 International number detected: ${post.phone_number}`
                 );
                 let formattedPhoneNumber = post.phone_number;
                 if (!formattedPhoneNumber.startsWith('+')) {
                     formattedPhoneNumber = `+${formattedPhoneNumber}`;
                 }
-                const text = generateSmsText(post);
                 return await this.awsSmsService.sendSms(
                     formattedPhoneNumber,
                     text
@@ -235,30 +258,13 @@ export class NotificationProcessor {
                 `🇺🇿 Uzbekistan number detected: ${post.phone_number} (${routing.operator})`
             );
 
-            const text = generateSmsText(post);
-
-            if (routing.usePlayMobile) {
-                console.log(
-                    `📤 Routing ${routing.operator} via PlayMobile API`
-                );
-                return await this.playMobileService.sendSms(
-                    post.phone_number,
-                    text,
-                    post.id
-                );
-            } else {
-                console.log(
-                    `📤 Routing ${routing.operator} via AWS SMS (PlayMobile bypass)`
-                );
-                let formattedPhoneNumber = post.phone_number;
-                if (!formattedPhoneNumber.startsWith('+')) {
-                    formattedPhoneNumber = `+${formattedPhoneNumber}`;
-                }
-                return await this.awsSmsService.sendSms(
-                    formattedPhoneNumber,
-                    text
-                );
-            }
+            // All Uzbekistan numbers use PlayMobile
+            console.log(`📤 Routing ${routing.operator} via PlayMobile API`);
+            return await this.playMobileService.sendSms(
+                post.phone_number,
+                text,
+                post.id
+            );
         } catch (error) {
             console.error(`❌ Error sending SMS for post ${post.id}:`, error);
             return false;

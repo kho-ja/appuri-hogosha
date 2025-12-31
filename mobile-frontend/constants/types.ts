@@ -25,6 +25,7 @@ interface Student {
   student_number: string;
   email: string;
   phone_number: string;
+  cohort?: number;
   messageCount: number;
   unread_count: number;
 }
