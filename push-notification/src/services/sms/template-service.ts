@@ -1,6 +1,6 @@
 /**
  * SMS Template Service
- * Provides localized SMS templates with message shortening for cost optimization
+ * Provides localized SMS templates for notifications and authentication
  */
 
 export type SmsLanguage = 'ja' | 'uz';
@@ -13,7 +13,6 @@ export type SmsType =
 
 export interface SmsTemplateOptions {
     language?: SmsLanguage;
-    maxLength?: number;
 }
 
 export interface NotificationData {
@@ -47,14 +46,10 @@ export interface PasswordResetData {
 
 /**
  * SMS Template Service
- * Creates localized SMS messages with automatic shortening
+ * Creates localized SMS messages
  */
 export class SmsTemplateService {
     private readonly defaultLanguage: SmsLanguage = 'uz';
-
-    // SMS length limits (to avoid multi-part SMS charges)
-    private readonly SMS_SINGLE_GSM = 160;
-    private readonly SMS_SINGLE_UNICODE = 70;
 
     /**
      * Generate account creation SMS (login, password, link)
@@ -167,10 +162,7 @@ export class SmsTemplateService {
         const hasUnicode = /[^\x00-\x7F]/.test(message);
         const encoding = hasUnicode ? 'Unicode' : 'GSM-7';
 
-        const singleLimit =
-            encoding === 'Unicode'
-                ? this.SMS_SINGLE_UNICODE
-                : this.SMS_SINGLE_GSM;
+        const singleLimit = encoding === 'Unicode' ? 70 : 160;
         const multipartLimit = encoding === 'Unicode' ? 67 : 153;
 
         const length = message.length;
