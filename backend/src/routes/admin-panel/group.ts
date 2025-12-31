@@ -87,7 +87,7 @@ class GroupController implements IController {
                 FROM StudentGroup g
                 LEFT JOIN StudentGroup pg ON g.sub_group_id = pg.id
                 WHERE g.school_id = :school_id
-                ORDER BY 
+                ORDER BY
                     CASE WHEN g.sub_group_id IS NULL THEN 0 ELSE 1 END,
                     g.sub_group_id,
                     g.name`,
@@ -381,7 +381,7 @@ class GroupController implements IController {
                     const gId = groupNameToId.get(nameKey)!;
 
                     await DB.execute(
-                        `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id 
+                        `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id
                          WHERE id = :id AND school_id = :school_id`,
                         {
                             id: gId,
@@ -483,7 +483,7 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
@@ -501,7 +501,7 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'student_not_found',
+                    message: 'group_not_found',
                 };
             }
 
@@ -511,7 +511,7 @@ class GroupController implements IController {
 
             if (!name || !isValidString(name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_name',
                 };
             }
@@ -627,7 +627,7 @@ class GroupController implements IController {
             return res
                 .status(200)
                 .json({
-                    message: 'Group changed successfully',
+                    message: 'group_changed_successfully',
                 })
                 .end();
         } catch (e: any) {
@@ -655,7 +655,7 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
@@ -673,18 +673,30 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'student_not_found',
+                    message: 'group_not_found',
                 };
             }
 
-            await DB.execute('DELETE FROM StudentGroup WHERE id = :id;', {
+            await DB.execute('DELETE FROM GroupMember WHERE group_id = :id;', {
                 id: groupId,
             });
+
+            await DB.execute('DELETE FROM PostStudent WHERE group_id = :id;', {
+                id: groupId,
+            });
+
+            await DB.execute(
+                'DELETE FROM StudentGroup WHERE id = :id AND school_id = :school_id;',
+                {
+                    id: groupId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             return res
                 .status(200)
                 .json({
-                    message: 'groupDeleted',
+                    message: 'group_deleted',
                 })
                 .end();
         } catch (e: any) {
@@ -732,7 +744,7 @@ class GroupController implements IController {
                     .end();
             } else {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_id_list',
                 };
             }
@@ -762,15 +774,15 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
             const groupInfo = await DB.query(
-                `SELECT 
-                    sg.id, 
-                    sg.name, 
-                    sg.created_at, 
+                `SELECT
+                    sg.id,
+                    sg.name,
+                    sg.created_at,
                     sg.sub_group_id,
                     parent_sg.name as sub_group_name
                 FROM StudentGroup sg
@@ -923,8 +935,8 @@ class GroupController implements IController {
             const limitClause = all ? '' : 'LIMIT :limit OFFSET :offset';
 
             const groupList = await DB.query(
-                `SELECT 
-                    sg.id, 
+                `SELECT
+                    sg.id,
                     sg.name,
                     sg.sub_group_id,
                     parent_sg.name as sub_group_name,
@@ -993,7 +1005,7 @@ class GroupController implements IController {
 
             if (!name || !isValidString(name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_name',
                 };
             }
@@ -1173,9 +1185,9 @@ class GroupController implements IController {
             }
 
             const subGroups = await DB.query(
-                `SELECT 
-                    sg.id, 
-                    sg.name, 
+                `SELECT
+                    sg.id,
+                    sg.name,
                     sg.created_at,
                     (SELECT COUNT(*) FROM GroupMember WHERE group_id = sg.id) as member_count
                 FROM StudentGroup sg
