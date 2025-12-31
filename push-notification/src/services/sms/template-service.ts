@@ -68,7 +68,7 @@ export class SmsTemplateService {
 
         const templates: Record<SmsLanguage, string> = {
             ja: `Parent Notificationアカウントが作成されました。\nログイン: ${data.login}\n一時パスワード: ${data.tempPassword}\nアクセス: ${data.appLink}`,
-            uz: `Parent Notification tizimiga kirish uchun hisob ochildi.\nLogin: ${data.login}\nVaqtinchalik parol: ${data.tempPassword}\nKirish: ${data.appLink}`,
+            uz: `Parent Notification tizimiga kirish uchun hisob ochildi. \nLogin: ${data.login} \nVaqtinchalik parol: ${data.tempPassword} \nKirish: ${data.appLink}`,
         };
 
         let message = templates[language] || templates[this.defaultLanguage];
@@ -91,8 +91,8 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            ja: `${data.code} — Parent Notificationログインコード。\nコードを共有しないでください。\n${data.expiryMinutes}分間有効です。`,
-            uz: `${data.code} — Parent Notification kirish kodi.\nKodni hech kimga bermang.\n${data.expiryMinutes} daqiqa amal qiladi.`,
+            ja: `${data.code} — Parent Notificationログインコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
+            uz: `${data.code} — Parent Notification kirish kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
         let message = templates[language] || templates[this.defaultLanguage];
@@ -115,8 +115,8 @@ export class SmsTemplateService {
         const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
-            ja: `${data.code} — Parent Notificationパスワードリセットコード。\nコードを共有しないでください。\n${data.expiryMinutes}分間有効です。`,
-            uz: `${data.code} — Parent Notification parolni tiklash kodi.\nKodni hech kimga bermang.\n${data.expiryMinutes} daqiqa amal qiladi.`,
+            ja: `${data.code} — Parent Notificationパスワードリセットコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
+            uz: `${data.code} — Parent Notification parolni tiklash kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
         let message = templates[language] || templates[this.defaultLanguage];
@@ -166,9 +166,9 @@ export class SmsTemplateService {
             (data: NotificationData) => string
         > = {
             ja: d =>
-                `Parent Notification: 新しいメッセージがあります\n${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\n生徒: ${d.studentName}${d.link ? `\n詳細: ${d.link}` : ''}`,
+                `Parent Notification: 新しいメッセージがあります\n${d.title}\n生徒: ${d.studentName}\n詳細: ${d.link}`,
             uz: d =>
-                `Parent Notification: sizga yangi xabar bor\n${d.title ? `${d.title}` : ''}${d.description ? `${d.description}` : ''}\nO'quvchi: ${d.studentName}${d.link ? `\nBatafsil: ${d.link}` : ''}`,
+                `Parent Notification: sizga yangi xabar bor\n${d.title}\nO'quvchi: ${d.studentName}\nBatafsil: ${d.link}`,
         };
 
         const template = templates[language] || templates[this.defaultLanguage];
