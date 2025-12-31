@@ -196,7 +196,7 @@ export class SmsTemplateService {
     private shortenMessage(
         message: string,
         maxLength: number,
-        language: SmsLanguage
+        _language: SmsLanguage
     ): string {
         if (message.length <= maxLength) {
             return message;
@@ -227,43 +227,33 @@ export class SmsTemplateService {
             ? message.substring(0, message.length - linkLength)
             : message;
 
-        // Strategy: Preserve student name and link, shorten only the title
-        // Structure: "Parent Notification: sizga yangi xabar bor\n[TITLE]\nO'quvchi: [STUDENT_NAME]\nBatafsil: [LINK]"
+        // Strategy: Preserve student name and link, shorten ONLY the title
+        // Split message into parts and only shorten the title line
 
         if (contentWithoutLink.length > availableSpace) {
-            // Define language-specific patterns to extract student name and header
-            const patterns: Record<SmsLanguage, RegExp> = {
-                ja: /(Parent Notification: 新しいメッセージがあります)\n(.+)\n(生徒: .+)$/,
-                uz: /(Parent Notification: sizga yangi xabar bor)\n(.+)\n(O'quvchi: .+)$/,
-            };
+            // Split by newlines: [header, title, student_info]
+            const lines = contentWithoutLink.split('\n');
 
-            const pattern = patterns[language] || patterns.uz;
-            const match = contentWithoutLink.match(pattern);
+            if (lines.length >= 3) {
+                // Structure: "Parent Notification: ...\n[TITLE]\nO'quvchi: ..."
+                const header = lines[0];
+                const title = lines[1];
+                const studentInfo = lines.slice(2).join('\n');
 
-            if (match) {
-                // Extract parts: header, title, student section
-                const [, header, title, studentSection] = match;
+                // Calculate space for fixed parts
+                // header + newline + student_info + newline
+                const fixedLength = header.length + 1 + studentInfo.length + 1;
+                const maxTitleLength = availableSpace - fixedLength;
 
-                // Calculate available space for title only
-                // Available = max - header - newlines - student section - newlines
-                const fixedLength =
-                    header.length + 1 + studentSection.length + 1; // +1 for each newline
-                const maxTitleLength =
-                    availableSpace - fixedLength - ellipsis.length;
-
-                if (maxTitleLength > 0) {
-                    const shortenedTitle =
-                        title.substring(0, maxTitleLength) + ellipsis;
-                    return `${header}\n${shortenedTitle}\n${studentSection}${link ? ` ${link}` : ''}`;
+                if (maxTitleLength > 0 && title.length > maxTitleLength) {
+                    // Only shorten the title, keep student name intact
+                    const shortenedTitle = title.substring(0, maxTitleLength);
+                    return `${header}\n${shortenedTitle}\n${studentInfo}${link ? ` ${link}` : ''}`;
                 }
             }
 
-            // Fallback: just truncate from the start if pattern doesn't match
-            const truncated =
-                contentWithoutLink.substring(
-                    0,
-                    availableSpace - ellipsis.length
-                ) + ellipsis;
+            // Fallback: just truncate from the start if parsing fails
+            const truncated = contentWithoutLink.substring(0, availableSpace);
             return truncated + (link ? ` ${link}` : '');
         }
 
