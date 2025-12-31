@@ -227,40 +227,38 @@ export class SmsTemplateService {
             ? message.substring(0, message.length - linkLength)
             : message;
 
-        // Try to preserve the structure: "New post: [title] - [description] for [name]"
-        // Priority: title > name > description
+        // Strategy: Preserve student name and link, shorten only the title
+        // Structure: "Parent Notification: sizga yangi xabar bor\n[TITLE]\nO'quvchi: [STUDENT_NAME]\nBatafsil: [LINK]"
 
         if (contentWithoutLink.length > availableSpace) {
-            // Define language-specific separators for description removal
-            // Remove text between title and student name marker
-            const descriptionPatterns: Record<SmsLanguage, RegExp> = {
-                ja: /(.+?)(生徒:)/, // Match text before "生徒:"
-                uz: /(.+?)(O'quvchi:)/, // Match text before "O'quvchi:"
+            // Define language-specific patterns to extract student name and header
+            const patterns: Record<SmsLanguage, RegExp> = {
+                ja: /(Parent Notification: 新しいメッセージがあります)\n(.+)\n(生徒: .+)$/,
+                uz: /(Parent Notification: sizga yangi xabar bor)\n(.+)\n(O'quvchi: .+)$/,
             };
 
-            const pattern =
-                descriptionPatterns[language] || descriptionPatterns.uz;
-            const descMatch = contentWithoutLink.match(pattern);
+            const pattern = patterns[language] || patterns.uz;
+            const match = contentWithoutLink.match(pattern);
 
-            if (descMatch) {
-                // Remove description (keep the separator after description like "生徒:" or "O'quvchi:")
-                const withoutDesc = contentWithoutLink.replace(
-                    descMatch[0],
-                    descMatch[2]
-                );
+            if (match) {
+                // Extract parts: header, title, student section
+                const [, header, title, studentSection] = match;
 
-                if (withoutDesc.length <= availableSpace) {
-                    return withoutDesc + (link ? ` ${link}` : '');
+                // Calculate available space for title only
+                // Available = max - header - newlines - student section - newlines
+                const fixedLength =
+                    header.length + 1 + studentSection.length + 1; // +1 for each newline
+                const maxTitleLength =
+                    availableSpace - fixedLength - ellipsis.length;
+
+                if (maxTitleLength > 0) {
+                    const shortenedTitle =
+                        title.substring(0, maxTitleLength) + ellipsis;
+                    return `${header}\n${shortenedTitle}\n${studentSection}${link ? ` ${link}` : ''}`;
                 }
-
-                // Still too long, truncate title
-                const truncated =
-                    withoutDesc.substring(0, availableSpace - ellipsis.length) +
-                    ellipsis;
-                return truncated + (link ? ` ${link}` : '');
             }
 
-            // No description found, just truncate
+            // Fallback: just truncate from the start if pattern doesn't match
             const truncated =
                 contentWithoutLink.substring(
                     0,
