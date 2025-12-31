@@ -64,18 +64,13 @@ export class SmsTemplateService {
         options?: SmsTemplateOptions
     ): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
             ja: `Parent Notificationアカウントが作成されました。\nログイン: ${data.login}\n一時パスワード: ${data.tempPassword}\nアクセス: ${data.appLink}`,
             uz: `Parent Notification tizimiga kirish uchun hisob ochildi. \nLogin: ${data.login} \nVaqtinchalik parol: ${data.tempPassword} \nKirish: ${data.appLink}`,
         };
 
-        let message = templates[language] || templates[this.defaultLanguage];
-
-        if (maxLength) {
-            message = this.shortenMessage(message, maxLength, language);
-        }
+        const message = templates[language] || templates[this.defaultLanguage];
 
         return message;
     }
@@ -88,18 +83,13 @@ export class SmsTemplateService {
         options?: SmsTemplateOptions
     ): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
             ja: `${data.code} — Parent Notificationログインコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
             uz: `${data.code} — Parent Notification kirish kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
-        let message = templates[language] || templates[this.defaultLanguage];
-
-        if (maxLength) {
-            message = this.shortenMessage(message, maxLength, language);
-        }
+        const message = templates[language] || templates[this.defaultLanguage];
 
         return message;
     }
@@ -112,18 +102,13 @@ export class SmsTemplateService {
         options?: SmsTemplateOptions
     ): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
             ja: `${data.code} — Parent Notificationパスワードリセットコード。コードを共有しないでください。${data.expiryMinutes}分間有効です。`,
             uz: `${data.code} — Parent Notification parolni tiklash kodi. Kodni hech kimga bermang. ${data.expiryMinutes} daqiqa amal qiladi.`,
         };
 
-        let message = templates[language] || templates[this.defaultLanguage];
-
-        if (maxLength) {
-            message = this.shortenMessage(message, maxLength, language);
-        }
+        const message = templates[language] || templates[this.defaultLanguage];
 
         return message;
     }
@@ -134,18 +119,13 @@ export class SmsTemplateService {
      */
     generateAuthSms(data: AuthData, options?: SmsTemplateOptions): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength = options?.maxLength;
 
         const templates: Record<SmsLanguage, string> = {
             ja: `確認コード: ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
             uz: `Tasdiqlash kodi: ${data.code}${data.appLink ? ` ${data.appLink}` : ''}`,
         };
 
-        let message = templates[language] || templates[this.defaultLanguage];
-
-        if (maxLength) {
-            message = this.shortenMessage(message, maxLength, language);
-        }
+        const message = templates[language] || templates[this.defaultLanguage];
 
         return message;
     }
@@ -158,8 +138,6 @@ export class SmsTemplateService {
         options?: SmsTemplateOptions
     ): string {
         const language = options?.language || this.defaultLanguage;
-        const maxLength =
-            options?.maxLength || this.getRecommendedMaxLength(language);
 
         const templates: Record<
             SmsLanguage,
@@ -172,92 +150,9 @@ export class SmsTemplateService {
         };
 
         const template = templates[language] || templates[this.defaultLanguage];
-        let message = template(data);
-
-        // Shorten if needed
-        message = this.shortenMessage(message, maxLength, language);
+        const message = template(data);
 
         return message;
-    }
-
-    /**
-     * Get recommended max length based on language
-     */
-    private getRecommendedMaxLength(language: SmsLanguage): number {
-        // Unicode for ja; GSM for uz
-        return language === 'ja'
-            ? this.SMS_SINGLE_UNICODE
-            : this.SMS_SINGLE_GSM;
-    }
-
-    /**
-     * Shorten message to fit within length limit
-     */
-    private shortenMessage(
-        message: string,
-        maxLength: number,
-        _language: SmsLanguage
-    ): string {
-        if (message.length <= maxLength) {
-            return message;
-        }
-
-        console.log(
-            `⚠️ Shortening SMS from ${message.length} to ${maxLength} chars`
-        );
-
-        // Strategy: Remove description first, then truncate title if needed
-        const ellipsis = '...';
-
-        // Find link at the end
-        const linkMatch = message.match(/(https?:\/\/[^\s]+)$/);
-        const link = linkMatch ? linkMatch[1] : '';
-        const linkLength = link.length + 1; // +1 for space
-
-        // Calculate available space
-        const availableSpace = maxLength - linkLength - ellipsis.length;
-
-        if (availableSpace <= 0) {
-            // If even link doesn't fit, just return truncated message
-            return message.substring(0, maxLength - ellipsis.length) + ellipsis;
-        }
-
-        // Extract main content without link
-        const contentWithoutLink = link
-            ? message.substring(0, message.length - linkLength)
-            : message;
-
-        // Strategy: Preserve student name and link, shorten ONLY the title
-        // Split message into parts and only shorten the title line
-
-        if (contentWithoutLink.length > availableSpace) {
-            // Split by newlines: [header, title, student_info]
-            const lines = contentWithoutLink.split('\n');
-
-            if (lines.length >= 3) {
-                // Structure: "Parent Notification: ...\n[TITLE]\nO'quvchi: ..."
-                const header = lines[0];
-                const title = lines[1];
-                const studentInfo = lines.slice(2).join('\n');
-
-                // Calculate space for fixed parts
-                // header + newline + student_info + newline
-                const fixedLength = header.length + 1 + studentInfo.length + 1;
-                const maxTitleLength = availableSpace - fixedLength;
-
-                if (maxTitleLength > 0 && title.length > maxTitleLength) {
-                    // Only shorten the title, keep student name intact
-                    const shortenedTitle = title.substring(0, maxTitleLength);
-                    return `${header}\n${shortenedTitle}\n${studentInfo}${link ? ` ${link}` : ''}`;
-                }
-            }
-
-            // Fallback: just truncate from the start if parsing fails
-            const truncated = contentWithoutLink.substring(0, availableSpace);
-            return truncated + (link ? ` ${link}` : '');
-        }
-
-        return contentWithoutLink + (link ? ` ${link}` : '');
     }
 
     /**
