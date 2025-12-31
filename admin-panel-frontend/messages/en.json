@@ -916,6 +916,7 @@
     "student_does_not_exist": "Student does not exist",
     "group_name_already_exists": "This group name already exists",
     "group_does_not_exist": "Group does not exist",
+    "parent_group_not_found": "Parent group not found",
     "parent_does_not_exist": "Parent does not exist",
     "invalid_title": "Invalid title",
     "invalid_description": "Invalid description",
@@ -1080,7 +1081,8 @@
     "invalid_or_missing_priority": "Invalid or missing priority",
     "invalid_image_format": "Invalid image format. Make sure it is Base64 encoded.",
     "image_size_too_large": "Image size is too large (max 10MB)",
-    "missing_required_headers": "Missing required headers"
+    "missing_required_headers": "Missing required headers",
+    "parent_group_not_found": "Parent group not found"
   },
   "DocsPreparing": {
     "PreparingDocumentation": "Preparing the document",

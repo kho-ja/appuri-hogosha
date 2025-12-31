@@ -365,7 +365,7 @@ class StudentController implements IController {
             return res
                 .status(200)
                 .json({
-                    message: 'Kintone data uploaded successfully',
+                    message: 'kintone_data_uploaded_successfully',
                 })
                 .end();
         } catch (e: any) {
@@ -558,11 +558,12 @@ class StudentController implements IController {
             }
 
             const existingStudents = await DB.query(
-                'SELECT email, student_number, phone_number FROM Student WHERE email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones)',
+                'SELECT email, student_number, phone_number FROM Student WHERE school_id = :school_id AND (email IN (:emails) OR student_number IN (:sns) OR phone_number IN (:phones))',
                 {
                     emails: valid.map(v => v.email),
                     sns: valid.map(v => v.student_number),
                     phones: valid.map(v => v.phone_number),
+                    school_id: req.user.school_id,
                 }
             );
             const existingEmailSet = new Set(
@@ -657,7 +658,7 @@ class StudentController implements IController {
 
             if (!studentId || !isValidId(studentId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_id',
                 };
             }
@@ -793,12 +794,12 @@ class StudentController implements IController {
                 return res
                     .status(200)
                     .json({
-                        message: 'Parents changed successfully',
+                        message: 'parents_changed_successfully',
                     })
                     .end();
             } else {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_parents',
                 };
             }
@@ -827,7 +828,7 @@ class StudentController implements IController {
 
             if (!studentId || !isValidId(studentId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_id',
                 };
             }
@@ -899,7 +900,7 @@ class StudentController implements IController {
 
             if (!studentId || !isValidId(studentId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_id',
                 };
             }
@@ -922,14 +923,39 @@ class StudentController implements IController {
                 };
             }
 
-            await DB.execute('DELETE FROM Student WHERE id = :id;', {
-                id: studentId,
-            });
+            await DB.execute(
+                'DELETE FROM GroupMember WHERE student_id = :id;',
+                {
+                    id: studentId,
+                }
+            );
+
+            await DB.execute(
+                'DELETE FROM StudentParent WHERE student_id = :id;',
+                {
+                    id: studentId,
+                }
+            );
+
+            await DB.execute(
+                'DELETE FROM PostStudent WHERE student_id = :id;',
+                {
+                    id: studentId,
+                }
+            );
+
+            await DB.execute(
+                'DELETE FROM Student WHERE id = :id AND school_id = :school_id;',
+                {
+                    id: studentId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             return res
                 .status(200)
                 .json({
-                    message: 'studentDeleted',
+                    message: 'student_deleted',
                 })
                 .end();
         } catch (e: any) {
@@ -961,29 +987,32 @@ class StudentController implements IController {
                 cohort,
             } = req.body;
 
-            const student_number = studentNumber.replace(/\D+/g, '');
+            const student_number = String(studentNumber ?? '').replace(
+                /\D+/g,
+                ''
+            );
 
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_phone',
                 };
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_given_name',
                 };
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_family_name',
                 };
             }
             if (!student_number || !isValidStudentNumber(student_number)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_number',
                 };
             }
@@ -992,7 +1021,7 @@ class StudentController implements IController {
 
             if (!studentId || !isValidId(studentId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_id',
                 };
             }
@@ -1009,29 +1038,26 @@ class StudentController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found',
+                    message: 'student_not_found',
                 };
             }
 
             const student = studentInfo[0];
 
             const findDuplicates = await DB.query(
-                'SELECT id, phone_number FROM Student WHERE phone_number = :phone_number',
+                'SELECT id, phone_number FROM Student WHERE phone_number = :phone_number AND school_id = :school_id AND id != :id',
                 {
                     phone_number: phone_number,
+                    school_id: req.user.school_id,
+                    id: studentId,
                 }
             );
 
             if (findDuplicates.length >= 1) {
-                const duplicate = findDuplicates[0];
-                if (duplicate.id != studentId) {
-                    if (phone_number == duplicate.phone_number) {
-                        throw {
-                            status: 401,
-                            message: 'phone_number_already_exists',
-                        };
-                    }
-                }
+                throw {
+                    status: 400,
+                    message: 'phone_number_already_exists',
+                };
             }
 
             await DB.execute(
@@ -1041,7 +1067,7 @@ class StudentController implements IController {
                         family_name = :family_name,
                         given_name = :given_name,
                         cohort = :cohort
-                    WHERE id = :id`,
+                    WHERE id = :id AND school_id = :school_id`,
                 {
                     phone_number: phone_number,
                     given_name: given_name,
@@ -1049,6 +1075,7 @@ class StudentController implements IController {
                     student_number: student_number,
                     cohort: cohort || null,
                     id: student.id,
+                    school_id: req.user.school_id,
                 }
             );
 
@@ -1091,7 +1118,7 @@ class StudentController implements IController {
 
             if (!studentId || !isValidId(studentId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_id',
                 };
             }
@@ -1110,7 +1137,7 @@ class StudentController implements IController {
             if (studentInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'Student not found',
+                    message: 'student_not_found',
                 };
             }
 
@@ -1195,7 +1222,7 @@ class StudentController implements IController {
                     .end();
             } else {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_id_list',
                 };
             }
@@ -1343,35 +1370,38 @@ class StudentController implements IController {
                 parents,
             } = req.body;
 
-            const student_number = studentNumber.replace(/\D+/g, '');
+            const student_number = String(studentNumber ?? '').replace(
+                /\D+/g,
+                ''
+            );
 
             if (!email || !isValidEmail(email)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_email',
                 };
             }
             if (!phone_number || !isValidPhoneNumber(phone_number)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_phone',
                 };
             }
             if (!given_name || !isValidString(given_name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_given_name',
                 };
             }
             if (!family_name || !isValidString(family_name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_family_name',
                 };
             }
             if (!student_number || !isValidStudentNumber(student_number)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_student_number',
                 };
             }
@@ -1382,11 +1412,12 @@ class StudentController implements IController {
             }
 
             const findDuplicates = await DB.query(
-                'SELECT email, phone_number, student_number FROM Student WHERE email = :email OR phone_number = :phone_number OR student_number = :student_number',
+                'SELECT email, phone_number, student_number FROM Student WHERE school_id = :school_id AND (email = :email OR phone_number = :phone_number OR student_number = :student_number)',
                 {
                     email: email,
                     phone_number: phone_number,
                     student_number: student_number,
+                    school_id: req.user.school_id,
                 }
             );
 
@@ -1395,19 +1426,19 @@ class StudentController implements IController {
 
                 if (email == duplicate.email) {
                     throw {
-                        status: 401,
+                        status: 400,
                         message: 'email_already_exists',
                     };
                 }
                 if (phone_number == duplicate.phone_number) {
                     throw {
-                        status: 401,
+                        status: 400,
                         message: 'phone_number_already_exists',
                     };
                 }
                 if (student_number == duplicate.student_number) {
                     throw {
-                        status: 401,
+                        status: 400,
                         message: 'student_number_already_exists',
                     };
                 }

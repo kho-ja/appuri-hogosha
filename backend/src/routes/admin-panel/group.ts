@@ -22,7 +22,33 @@ import {
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
 
-// Using shared CSV upload middleware from utils/csv-upload
+function topologicalSortGroups<
+    T extends { name: string; parent_group_name: string | null },
+>(groups: T[]): T[] {
+    const sorted: T[] = [];
+    const visited = new Set<string>();
+    const nameToGroup = new Map(groups.map(g => [g.name.toLowerCase(), g]));
+
+    function visit(group: T) {
+        const key = group.name.toLowerCase();
+        if (visited.has(key)) return;
+
+        if (group.parent_group_name) {
+            const parent = nameToGroup.get(
+                group.parent_group_name.toLowerCase()
+            );
+            if (parent && !visited.has(parent.name.toLowerCase())) {
+                visit(parent);
+            }
+        }
+
+        visited.add(key);
+        sorted.push(group);
+    }
+
+    groups.forEach(visit);
+    return sorted;
+}
 
 class GroupController implements IController {
     public router: Router = express.Router();
@@ -52,59 +78,52 @@ class GroupController implements IController {
 
     exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
         try {
-            const groups = await DB.query(
+            const groups = (await DB.query(
                 `SELECT
-                id, name
-                FROM StudentGroup
-                WHERE school_id = :school_id`,
-                {
-                    school_id: req.user.school_id,
-                }
-            );
+                    g.id,
+                    g.name,
+                    g.sub_group_id,
+                    pg.name as parent_group_name
+                FROM StudentGroup g
+                LEFT JOIN StudentGroup pg ON g.sub_group_id = pg.id
+                WHERE g.school_id = :school_id
+                ORDER BY
+                    CASE WHEN g.sub_group_id IS NULL THEN 0 ELSE 1 END,
+                    g.sub_group_id,
+                    g.name`,
+                { school_id: req.user.school_id }
+            )) as Array<{
+                id: number;
+                name: string;
+                sub_group_id: number | null;
+                parent_group_name: string | null;
+                student_numbers?: string[];
+            }>;
 
             if (groups.length === 0) {
-                return res
-                    .status(404)
-                    .json({
-                        error: 'No groups found',
-                    })
-                    .end();
+                return res.status(404).json({ error: 'No groups found' }).end();
             }
 
             for (const group of groups) {
-                const memberList = await DB.query(
-                    `SELECT
-                    st.student_number
+                const memberList = (await DB.query(
+                    `SELECT st.student_number
                     FROM GroupMember AS gm
                     INNER JOIN Student as st ON gm.student_id = st.id
                     WHERE gm.group_id = :group_id`,
-                    {
-                        group_id: group.id,
-                    }
-                );
-                group.student_numbers = memberList.map(
-                    (member: any) => member.student_number
-                );
+                    { group_id: group.id }
+                )) as Array<{ student_number: string }>;
+                group.student_numbers = memberList.map(m => m.student_number);
             }
 
-            const csvData: any[] = [];
-            for (const group of groups) {
-                const student_numbers = group.student_numbers;
-                const first = student_numbers.splice(0, 1);
-                csvData.push({
-                    name: group.name,
-                    student_numbers: first[0],
-                });
-                for (const student_number of student_numbers) {
-                    csvData.push({
-                        student_numbers: student_number,
-                    });
-                }
-            }
+            const csvData = groups.map(group => ({
+                name: group.name || '',
+                parent_group_name: group.parent_group_name || '',
+                student_numbers: (group.student_numbers || []).join(','),
+            }));
 
             const csvContent = stringify(csvData, {
                 header: true,
-                columns: ['name', 'student_numbers'],
+                columns: ['name', 'parent_group_name', 'student_numbers'],
             });
 
             res.setHeader(
@@ -114,12 +133,10 @@ class GroupController implements IController {
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8'));
         } catch (e: any) {
+            console.error('Export error:', e);
             return res
                 .status(500)
-                .json({
-                    error: 'Internal server error',
-                    details: e.message,
-                })
+                .json({ error: 'Internal server error', details: e.message })
                 .end();
         }
     };
@@ -134,7 +151,7 @@ class GroupController implements IController {
                 .json(createErrorResponse(ErrorKeys.file_missing))
                 .end();
         }
-        // Response container
+
         const response = createBaseResponse<any>();
         try {
             const rows = await parseCSVBuffer(req.file.buffer);
@@ -143,9 +160,9 @@ class GroupController implements IController {
                 return res.status(200).json(response).end();
             }
 
-            // Merge logic similar to previous implementation
             interface GroupRow extends CSVRowBase {
                 name: string;
+                parent_group_name: string | null;
                 student_numbers: string[];
             }
             const validGroups: GroupRow[] = [];
@@ -153,14 +170,33 @@ class GroupController implements IController {
 
             for (const raw of rows) {
                 const name = String(raw.name || '').trim();
+                const parentName =
+                    String(raw.parent_group_name || '').trim() || null;
                 const snRaw = String(raw.student_numbers || '').trim();
+
                 const numbers = snRaw
-                    .split(',')
-                    .map(s => s.trim())
-                    .filter(Boolean);
+                    ? snRaw
+                          .replace(/^["']|["']$/g, '')
+                          .split(/[,;]/)
+                          .map(s => s.trim())
+                          .filter(Boolean)
+                    : [];
+
                 const rowErrors: Record<string, string> = {};
-                if (!isValidString(name))
+
+                if (!name && numbers.length > 0) {
+                    const lastGroup = validGroups[validGroups.length - 1];
+                    if (lastGroup) {
+                        lastGroup.student_numbers.push(...numbers);
+                        continue;
+                    }
+                }
+
+                if (!isValidString(name)) {
+                    if (numbers.length === 0) continue;
                     rowErrors.name = ErrorKeys.invalid_name;
+                }
+
                 if (numbers.length) {
                     for (const sn of numbers) {
                         if (!isValidStudentNumber(sn)) {
@@ -172,27 +208,36 @@ class GroupController implements IController {
                 }
 
                 if (Object.keys(rowErrors).length > 0) {
-                    // Attempt to merge student numbers into previous valid group with same name if only name invalid logic isn't triggered
                     const existingValid = validGroups.find(
                         g => g.name === name
                     );
                     if (existingValid && !rowErrors.student_numbers) {
                         existingValid.student_numbers.push(...numbers);
                     } else {
-                        // add error row (store numbers even if some invalid for diagnostic)
                         errors.push({
-                            row: { name, student_numbers: numbers },
+                            row: {
+                                name,
+                                parent_group_name: parentName,
+                                student_numbers: numbers,
+                            },
                             errors: rowErrors,
                         });
                     }
                 } else {
                     const existing = validGroups.find(g => g.name === name);
-                    if (existing) existing.student_numbers.push(...numbers);
-                    else validGroups.push({ name, student_numbers: numbers });
+                    if (existing) {
+                        existing.student_numbers.push(...numbers);
+                        if (parentName) existing.parent_group_name = parentName;
+                    } else {
+                        validGroups.push({
+                            name,
+                            parent_group_name: parentName,
+                            student_numbers: numbers,
+                        });
+                    }
                 }
             }
 
-            // Deduplicate numbers
             for (const g of validGroups) {
                 g.student_numbers = Array.from(new Set(g.student_numbers));
             }
@@ -218,15 +263,44 @@ class GroupController implements IController {
                     .end();
             }
 
-            const existingGroups = await DB.query(
-                'SELECT name FROM StudentGroup WHERE name IN (:names)',
-                { names: validGroups.map(g => g.name) }
-            );
-            const existingSet = new Set(existingGroups.map((g: any) => g.name));
+            const sortedGroups = topologicalSortGroups(validGroups);
 
-            for (const group of validGroups) {
+            const existingGroups = await DB.query(
+                'SELECT id, name FROM StudentGroup WHERE school_id = :school_id',
+                { school_id: req.user.school_id }
+            );
+            const groupNameToId = new Map<string, number>();
+            existingGroups.forEach((g: any) =>
+                groupNameToId.set(g.name.toLowerCase(), g.id)
+            );
+            const existingSet = new Set(
+                existingGroups.map((g: any) => g.name.toLowerCase())
+            );
+
+            for (const group of sortedGroups) {
+                const nameKey = group.name.toLowerCase();
+
+                let subGroupId: number | null = null;
+                if (group.parent_group_name) {
+                    const parentId = groupNameToId.get(
+                        group.parent_group_name.toLowerCase()
+                    );
+                    if (parentId) {
+                        subGroupId = parentId;
+                    } else {
+                        response.errors.push({
+                            row: group,
+                            errors: {
+                                parent_group_name:
+                                    ErrorKeys.parent_group_not_found,
+                            },
+                        });
+                        if (throwInErrorBool) continue;
+                    }
+                }
+
                 if (action === 'create') {
-                    if (existingSet.has(group.name)) {
+                    if (existingSet.has(nameKey)) {
                         response.errors.push({
                             row: group,
                             errors: {
@@ -235,65 +309,89 @@ class GroupController implements IController {
                         });
                         continue;
                     }
-                    const insert = await DB.execute(
-                        `INSERT INTO StudentGroup(name, created_at, school_id)
-                         VALUE (:name, NOW(), :school_id);`,
-                        { name: group.name, school_id: req.user.school_id }
-                    );
-                    const groupId = insert.insertId;
-                    const attachedMembers: any[] = [];
-                    if (group.student_numbers.length) {
-                        const studentRows = await DB.query(
-                            `SELECT id, student_number FROM Student WHERE student_number IN (:sns)`,
-                            { sns: group.student_numbers }
-                        );
-                        if (studentRows.length) {
-                            for (const st of studentRows) {
-                                await DB.execute(
-                                    `INSERT INTO GroupMember (group_id, student_id) VALUES (:group_id, :student_id)`,
-                                    { group_id: groupId, student_id: st.id }
-                                );
+                    try {
+                        const insert = await DB.execute(
+                            `INSERT INTO StudentGroup(name, created_at, school_id, sub_group_id)
+                             VALUE (:name, NOW(), :school_id, :sub_group_id);`,
+                            {
+                                name: group.name,
+                                school_id: req.user.school_id,
+                                sub_group_id: subGroupId,
                             }
-                            attachedMembers.push(...studentRows);
-                        } else {
+                        );
+                        const groupId = insert.insertId;
+
+                        groupNameToId.set(nameKey, groupId);
+                        existingSet.add(nameKey);
+
+                        const attachedMembers: any[] = [];
+                        if (group.student_numbers.length) {
+                            const studentRows = await DB.query(
+                                `SELECT id, student_number FROM Student WHERE student_number IN (:sns) AND school_id = :school_id`,
+                                {
+                                    sns: group.student_numbers,
+                                    school_id: req.user.school_id,
+                                }
+                            );
+                            if (studentRows.length) {
+                                for (const st of studentRows) {
+                                    await DB.execute(
+                                        `INSERT INTO GroupMember (group_id, student_id) VALUES (:group_id, :student_id)`,
+
+                                        { group_id: groupId, student_id: st.id }
+                                    );
+                                }
+                                attachedMembers.push(...studentRows);
+                            } else if (group.student_numbers.length > 0) {
+                                response.errors.push({
+                                    row: group,
+                                    errors: {
+                                        student_numbers:
+                                            ErrorKeys.invalid_student_numbers,
+                                    },
+                                });
+                            }
+                        }
+                        response.inserted.push({
+                            ...group,
+                            sub_group_id: subGroupId,
+                            members: attachedMembers,
+                        });
+                    } catch (err: any) {
+                        if (err?.code === 'ER_DUP_ENTRY') {
                             response.errors.push({
                                 row: group,
                                 errors: {
-                                    student_numbers:
-                                        ErrorKeys.invalid_student_numbers,
+                                    name: ErrorKeys.group_name_already_exists,
                                 },
                             });
+                            continue;
                         }
+                        throw err;
                     }
-                    response.inserted.push({
-                        ...group,
-                        members: attachedMembers,
-                    });
                 } else if (action === 'update') {
-                    if (!existingSet.has(group.name)) {
+                    if (!existingSet.has(nameKey)) {
                         response.errors.push({
                             row: group,
                             errors: { name: ErrorKeys.group_does_not_exist },
                         });
                         continue;
                     }
+
+                    const gId = groupNameToId.get(nameKey)!;
+
                     await DB.execute(
-                        `UPDATE StudentGroup SET name = :name WHERE name = :name AND school_id = :school_id`,
+                        `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id
+                         WHERE id = :id AND school_id = :school_id`,
                         {
+                            id: gId,
                             name: group.name,
+                            sub_group_id: subGroupId,
                             school_id: req.user.school_id,
                         }
                     );
+
                     if (group.student_numbers.length) {
-                        const gId = (
-                            await DB.query(
-                                `SELECT id FROM StudentGroup WHERE name = :name AND school_id = :school_id`,
-                                {
-                                    name: group.name,
-                                    school_id: req.user.school_id,
-                                }
-                            )
-                        )[0].id;
                         const existingStudents = await DB.query(
                             `SELECT st.id, st.student_number
                              FROM GroupMember gm
@@ -302,8 +400,11 @@ class GroupController implements IController {
                             { gid: gId }
                         );
                         const futureStudents = await DB.query(
-                            `SELECT id, student_number FROM Student WHERE student_number IN (:sns)`,
-                            { sns: group.student_numbers }
+                            `SELECT id, student_number FROM Student WHERE student_number IN (:sns) AND school_id = :school_id`,
+                            {
+                                sns: group.student_numbers,
+                                school_id: req.user.school_id,
+                            }
                         );
                         const deleted = existingStudents.filter(
                             (ex: any) =>
@@ -331,29 +432,20 @@ class GroupController implements IController {
                                 { gid: gId, sid: a.id }
                             );
                         }
-                        if (
-                            !deleted.length &&
-                            !added.length &&
-                            !futureStudents.length
-                        ) {
-                            response.errors.push({
-                                row: group,
-                                errors: {
-                                    student_numbers:
-                                        ErrorKeys.invalid_student_numbers,
-                                },
-                            });
-                            continue;
-                        }
                         response.updated.push({
                             ...group,
+                            sub_group_id: subGroupId,
                             members: futureStudents,
                         });
                     } else {
-                        response.updated.push({ ...group, members: [] });
+                        response.updated.push({
+                            ...group,
+                            sub_group_id: subGroupId,
+                            members: [],
+                        });
                     }
                 } else if (action === 'delete') {
-                    if (!existingSet.has(group.name)) {
+                    if (!existingSet.has(nameKey)) {
                         response.errors.push({
                             row: group,
                             errors: { name: ErrorKeys.group_does_not_exist },
@@ -391,7 +483,7 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
@@ -409,7 +501,7 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'student_not_found',
+                    message: 'group_not_found',
                 };
             }
 
@@ -419,16 +511,14 @@ class GroupController implements IController {
 
             if (!name || !isValidString(name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_name',
                 };
             }
 
-            // Use provided sub_group_id if explicitly passed, otherwise keep current value
             const finalSubGroupId =
                 sub_group_id !== undefined ? sub_group_id : group.sub_group_id;
 
-            // Validate sub group if it's being changed
             if (finalSubGroupId !== null && finalSubGroupId !== undefined) {
                 if (!isValidId(finalSubGroupId)) {
                     throw {
@@ -437,7 +527,6 @@ class GroupController implements IController {
                     };
                 }
 
-                // Check if sub group exists and belongs to same school
                 const subGroupExists = await DB.query(
                     `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
                     {
@@ -453,7 +542,6 @@ class GroupController implements IController {
                     };
                 }
 
-                // Prevent circular references
                 if (parseInt(finalSubGroupId) === parseInt(group.id)) {
                     throw {
                         status: 400,
@@ -516,7 +604,6 @@ class GroupController implements IController {
                 }
 
                 if (insertStudentIds.length > 0) {
-                    // Validate that all student IDs are valid integers
                     if (!isValidArrayId(insertStudentIds)) {
                         throw {
                             status: 400,
@@ -524,12 +611,8 @@ class GroupController implements IController {
                         };
                     }
 
-                    // Use safe bulk insert with parameterized queries
                     const insertData = insertStudentIds.map(
-                        (studentId: any) => [
-                            Number(studentId), // Ensure it's a number
-                            group.id,
-                        ]
+                        (studentId: any) => [Number(studentId), group.id]
                     );
                     for (const row of insertData) {
                         const [student_id, group_id] = row;
@@ -544,7 +627,7 @@ class GroupController implements IController {
             return res
                 .status(200)
                 .json({
-                    message: 'Group changed successfully',
+                    message: 'group_changed_successfully',
                 })
                 .end();
         } catch (e: any) {
@@ -572,7 +655,7 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
@@ -590,18 +673,30 @@ class GroupController implements IController {
             if (groupInfo.length <= 0) {
                 throw {
                     status: 404,
-                    message: 'student_not_found',
+                    message: 'group_not_found',
                 };
             }
 
-            await DB.execute('DELETE FROM StudentGroup WHERE id = :id;', {
+            await DB.execute('DELETE FROM GroupMember WHERE group_id = :id;', {
                 id: groupId,
             });
+
+            await DB.execute('DELETE FROM PostStudent WHERE group_id = :id;', {
+                id: groupId,
+            });
+
+            await DB.execute(
+                'DELETE FROM StudentGroup WHERE id = :id AND school_id = :school_id;',
+                {
+                    id: groupId,
+                    school_id: req.user.school_id,
+                }
+            );
 
             return res
                 .status(200)
                 .json({
-                    message: 'groupDeleted',
+                    message: 'group_deleted',
                 })
                 .end();
         } catch (e: any) {
@@ -649,7 +744,7 @@ class GroupController implements IController {
                     .end();
             } else {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_id_list',
                 };
             }
@@ -679,15 +774,15 @@ class GroupController implements IController {
 
             if (!groupId || !isValidId(groupId)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_id',
                 };
             }
             const groupInfo = await DB.query(
-                `SELECT 
-                    sg.id, 
-                    sg.name, 
-                    sg.created_at, 
+                `SELECT
+                    sg.id,
+                    sg.name,
+                    sg.created_at,
                     sg.sub_group_id,
                     parent_sg.name as sub_group_name
                 FROM StudentGroup sg
@@ -840,8 +935,8 @@ class GroupController implements IController {
             const limitClause = all ? '' : 'LIMIT :limit OFFSET :offset';
 
             const groupList = await DB.query(
-                `SELECT 
-                    sg.id, 
+                `SELECT
+                    sg.id,
                     sg.name,
                     sg.sub_group_id,
                     parent_sg.name as sub_group_name,
@@ -910,12 +1005,11 @@ class GroupController implements IController {
 
             if (!name || !isValidString(name)) {
                 throw {
-                    status: 401,
+                    status: 400,
                     message: 'invalid_or_missing_group_name',
                 };
             }
 
-            // Validate sub group if provided
             if (sub_group_id) {
                 if (!isValidId(sub_group_id)) {
                     throw {
@@ -940,7 +1034,6 @@ class GroupController implements IController {
                 }
             }
 
-            // Check if the group name already exists
             const existingGroup = await DB.query(
                 `SELECT id FROM StudentGroup WHERE name = :name AND school_id = :school_id`,
                 {
@@ -984,7 +1077,6 @@ class GroupController implements IController {
                 );
 
                 if (studentRows.length > 0) {
-                    // Use safe bulk insert instead of string interpolation
                     const insertData = studentRows.map((student: any) => [
                         student.id,
                         groupId,
@@ -1045,10 +1137,11 @@ class GroupController implements IController {
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {
-            const headers = ['name', 'student_numbers'];
+            const headers = ['name', 'parent_group_name', 'student_numbers'];
 
             const csvContent = stringify([headers], {
                 header: false,
+                delimiter: ',',
             });
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -1076,7 +1169,6 @@ class GroupController implements IController {
                 };
             }
 
-            // Check if group exists
             const groupExists = await DB.query(
                 `SELECT id FROM StudentGroup WHERE id = :id AND school_id = :school_id`,
                 {
@@ -1092,11 +1184,10 @@ class GroupController implements IController {
                 };
             }
 
-            // Get all sub-groups for this group
             const subGroups = await DB.query(
-                `SELECT 
-                    sg.id, 
-                    sg.name, 
+                `SELECT
+                    sg.id,
+                    sg.name,
                     sg.created_at,
                     (SELECT COUNT(*) FROM GroupMember WHERE group_id = sg.id) as member_count
                 FROM StudentGroup sg
@@ -1130,93 +1221,6 @@ class GroupController implements IController {
                     })
                     .end();
             }
-        }
-    };
-
-    updateGroup = async (req: ExtendedRequest, res: Response) => {
-        try {
-            const groupId = parseInt(req.params.groupId);
-            const { name, students, sub_group_id } = req.body;
-
-            if (!groupId || isNaN(groupId)) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'invalid_group_id',
-                        details: {
-                            field: 'groupId',
-                            value: groupId,
-                        },
-                    })
-                    .end();
-            }
-
-            // Fetch current group data to preserve sub_group_id if not provided
-            const currentGroup = await DB.query(
-                `SELECT sub_group_id FROM StudentGroup WHERE id = :groupId AND school_id = :school_id`,
-                { groupId, school_id: req.user.school_id }
-            );
-
-            if (currentGroup.length === 0) {
-                return res
-                    .status(404)
-                    .json({
-                        error: 'group_not_found',
-                        details: {
-                            groupId,
-                        },
-                    })
-                    .end();
-            }
-
-            // Use provided sub_group_id, or fall back to current value if not provided
-            const finalSubGroupId =
-                sub_group_id !== undefined
-                    ? sub_group_id
-                    : currentGroup[0].sub_group_id;
-
-            await DB.execute(
-                `UPDATE StudentGroup SET name = :name, sub_group_id = :sub_group_id WHERE id = :groupId`,
-                { name, sub_group_id: finalSubGroupId, groupId }
-            );
-
-            if (students && Array.isArray(students)) {
-                await DB.execute(
-                    `DELETE FROM GroupMember WHERE group_id = :groupId`,
-                    { groupId }
-                );
-
-                if (students.length > 0) {
-                    const insertData = students.map((studentId: number) => [
-                        groupId,
-                        studentId,
-                    ]);
-                    const placeholders = insertData
-                        .map(() => '(?, ?)')
-                        .join(', ');
-                    const flatValues = insertData.flat();
-
-                    await DB.query(
-                        `INSERT INTO GroupMember (group_id, student_id) VALUES ${placeholders}`,
-                        flatValues
-                    );
-                }
-            }
-
-            return res
-                .status(200)
-                .json({
-                    message: 'Group updated successfully',
-                })
-                .end();
-        } catch (e: any) {
-            console.log('Error occurred while updating group:', e);
-            return res
-                .status(500)
-                .json({
-                    error: 'internal_server_error',
-                })
-                .end();
         }
     };
 }

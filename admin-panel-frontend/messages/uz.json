@@ -1048,6 +1048,8 @@
     "invalid_student_numbers": "Noto‘g‘ri talaba raqamlari",
     "group_name_already_exists": "Bu guruh nomi allaqachon mavjud",
     "group_does_not_exist": "Guruh mavjud emas",
+    "parent_group_not_found": "Ota guruh topilmadi",
+    "parent_does_not_exist": "Ota-ona mavjud emas",
     "student_number_already_exists": "Bu talaba raqami allaqachon mavjud.",
     "invalid_or_missing_group_id": "Noto‘g‘ri yoki yetishmayotgan guruh identifikatori",
     "invalid_or_missing_group_name": "Noto‘g‘ri yoki yetishmayotgan guruh nomi",
