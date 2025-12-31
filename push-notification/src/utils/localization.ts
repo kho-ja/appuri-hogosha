@@ -29,6 +29,22 @@ export const getLocalizedText = (
     return texts[language as keyof typeof texts]?.[type] || texts.uz[type];
 };
 
+/**
+ * @deprecated Use SmsTemplateService.generateNotificationSms() instead.
+ * This function uses outdated message formats and lacks optimization features.
+ *
+ * Migration example:
+ * ```typescript
+ * import { SmsTemplateService } from '../services/sms/template-service';
+ * const smsService = new SmsTemplateService();
+ * const message = smsService.generateNotificationSms({
+ *     title: post.title,
+ *     description: post.description,
+ *     studentName: `${post.given_name} ${post.family_name}`,
+ *     link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`
+ * }, { language: post.language === 'jp' ? 'ja' : 'uz' });
+ * ```
+ */
 export const generateSmsText = (post: NotificationPost): string => {
     const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
     if (post.language === 'jp') {

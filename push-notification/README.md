@@ -152,18 +152,33 @@ npm run deploy       # Build and prepare for deployment
 
 ### SMS Routing
 
-- **Uzbekistan operators**:
-  - Beeline (90, 99) → PlayMobile
-  - UMS (95) → PlayMobile
-  - Mobiuz (97, 98) → PlayMobile
-  - Ucell (91, 93, 94) → AWS SMS (bypass)
-- **International** → AWS SMS
+**Simplified Routing Logic:**
+- **Uzbekistan numbers** (all operators: Beeline, UMS, Mobiuz, Ucell, etc.) → **PlayMobile**
+- **International numbers** → **AWS SMS**
 
-### Multi-language Support
+### SMS Template Service
 
-- Japanese (jp)
-- Russian (ru)
-- Uzbek (uz)
+The new `SmsTemplateService` provides:
+- **Language support**: 
+  - **Uzbek (uz)** - For Uzbekistan numbers
+  - **Japanese (ja)** - For international numbers
+- **Template types**: 
+  - `generateAccountCreationSms()` - Account setup with login credentials
+  - `generateLoginCodeSms()` - OTP login with expiration time
+  - `generatePasswordResetSms()` - Password reset codes with expiration
+  - `generateNotificationSms()` - Post/message notifications with student info
+  - `generateAuthSms()` - Generic authentication (deprecated, use specific types)
+- **Automatic message shortening**: Optimizes message length to avoid multi-part SMS charges
+- **Cost analysis**: Provides encoding detection and SMS part count
+
+See [Template Usage Guide](./src/services/sms/TEMPLATE_USAGE.md) for detailed examples.
+
+### Language Support
+
+- **Uzbek (uz)** - Used for all Uzbekistan numbers (PlayMobile routing)
+- **Japanese (ja)** - Used for all international numbers (AWS SMS routing)
+
+## 🛡️ Error Handling & Diagnostics
 
 ## 🛡️ Error Handling & Diagnostics
 
@@ -172,18 +187,20 @@ npm run deploy       # Build and prepare for deployment
 - Configurable daily/hourly limits
 - Cost protection for SMS
 - Character limit validation
+- Automatic message optimization
 
 ### Monitoring
 
 - Message status tracking
 - Delivery diagnostics
 - Performance metrics
+- SMS cost analysis (encoding, parts, length)
 
-### Fallback Strategies
+### SMS Template Features
 
-- PlayMobile → AWS SMS fallback
-- Retry mechanisms with exponential backoff
-- Graceful degradation
+- Smart message truncation (preserves links)
+- Description removal for length optimization
+- Single-SMS targeting (160 chars GSM, 70 chars Unicode)
 
 ## 🔧 Configuration
 

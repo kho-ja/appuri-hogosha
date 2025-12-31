@@ -163,7 +163,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
           try {
             // First, check and request push notification permissions
             const token = await registerForPushNotificationsAsync();
-
+            console.log('Login response status:', apiUrl);
             // If we get here, notifications are enabled and we have a token
             // Now proceed with login request
             const response = await fetch(`${apiUrl}/login`, {

@@ -113,18 +113,22 @@ export class ApiHandler {
             let success = false;
             let provider = 'aws';
 
-            if (routing.isUzbekistan && routing.usePlayMobile) {
-                // Use PlayMobile for supported Uzbekistan operators
+            if (routing.isUzbekistan) {
+                // Use PlayMobile for all Uzbekistan operators
                 success = await this.playMobileService.sendSms(
                     phone,
                     message,
                     messageId
                 );
                 provider = 'playmobile';
+                console.log(
+                    `📤 Uzbekistan number - using PlayMobile (${routing.operator})`
+                );
             } else {
-                // Use AWS SMS for Ucell, international numbers, or fallback
+                // Use AWS SMS for international numbers
                 success = await this.awsSmsService.sendSms(phone, message);
                 provider = 'aws';
+                console.log(`🌍 International number - using AWS`);
             }
 
             return {
@@ -135,9 +139,7 @@ export class ApiHandler {
                     provider: provider,
                     operator: routing.operator,
                     routing: routing.isUzbekistan
-                        ? routing.usePlayMobile
-                            ? 'PlayMobile'
-                            : 'AWS (Ucell bypass)'
+                        ? 'PlayMobile'
                         : 'AWS (International)',
                 }),
             };
@@ -171,8 +173,8 @@ export class ApiHandler {
                         let provider = 'aws';
                         const messageId = `Bulk${Date.now()}_${i + index}`;
 
-                        if (routing.isUzbekistan && routing.usePlayMobile) {
-                            // Use PlayMobile for supported operators
+                        if (routing.isUzbekistan) {
+                            // Use PlayMobile for all Uzbekistan operators
                             success = await this.playMobileService.sendSms(
                                 phone,
                                 message,
@@ -180,7 +182,7 @@ export class ApiHandler {
                             );
                             provider = 'playmobile';
                         } else {
-                            // Use AWS for Ucell, international, or fallback
+                            // Use AWS for international numbers
                             success = await this.awsSmsService.sendSms(
                                 phone,
                                 message
@@ -194,9 +196,7 @@ export class ApiHandler {
                             provider,
                             operator: routing.operator,
                             routing: routing.isUzbekistan
-                                ? routing.usePlayMobile
-                                    ? 'PlayMobile'
-                                    : 'AWS (Ucell bypass)'
+                                ? 'PlayMobile'
                                 : 'AWS (International)',
                         };
                     } catch (error) {
@@ -228,9 +228,6 @@ export class ApiHandler {
                         ).length,
                         aws_provider: results.filter(r => r.provider === 'aws')
                             .length,
-                        ucell_bypass: results.filter(
-                            r => r.routing === 'AWS (Ucell bypass)'
-                        ).length,
                     },
                 }),
             };

@@ -28,19 +28,19 @@ export const getUzbekistanOperatorRouting = (
         };
     }
 
-    // Operator detection
+    // Operator detection - All Uzbekistan numbers use PlayMobile
     const operatorCode = cleanNumber.substring(3, 5);
     const operators: Record<string, { name: string; usePlayMobile: boolean }> =
         {
             '20': { name: 'OQ', usePlayMobile: true }, // Beeline's digital brand
             '33': { name: 'Humans', usePlayMobile: true }, // New MVNO
-            '55': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '55': { name: 'Ucell', usePlayMobile: true }, // Use PlayMobile for Ucell
             '77': { name: 'UzMobile', usePlayMobile: true }, // Use PlayMobile for UzMobile
             '88': { name: 'Mobiuz', usePlayMobile: true }, // Use PlayMobile for Mobiuz
             '90': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
             '91': { name: 'Beeline', usePlayMobile: true }, // Use PlayMobile for Beeline
-            '93': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
-            '94': { name: 'Ucell', usePlayMobile: false }, // Use AWS for Ucell (problems with PlayMobile)
+            '93': { name: 'Ucell', usePlayMobile: true }, // Use PlayMobile for Ucell
+            '94': { name: 'Ucell', usePlayMobile: true }, // Use PlayMobile for Ucell
             '95': { name: 'UMS', usePlayMobile: true }, // Use PlayMobile for UMS
             '97': { name: 'Mobiuz', usePlayMobile: true }, // Use PlayMobile for Mobiuz
             '98': { name: 'Mobiuz', usePlayMobile: true }, // Use PlayMobile for Mobiuz
