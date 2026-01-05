@@ -182,7 +182,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
               await AsyncStorage.setItem('phoneNumber', phoneNumber);
               if (password)
                 await AsyncStorage.setItem('temp_password', password);
-              return router.push('/new-psswd');
+              router.push('/new-psswd');
+              return { requiresPasswordChange: true };
             }
 
             if (!response.ok) {
