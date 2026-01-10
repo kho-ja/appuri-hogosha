@@ -207,7 +207,11 @@ export default function SignIn() {
         },
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      // If user needs to change temporary password, don't show success or navigate
+      if (data?.requiresPasswordChange) {
+        return;
+      }
       Toast.show(i18n[language].loginSuccess, {
         duration: Toast.durations.SHORT,
         position: TOAST_POSITION,
