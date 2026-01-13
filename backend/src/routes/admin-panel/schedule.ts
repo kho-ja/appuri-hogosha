@@ -44,10 +44,15 @@ class SchedulePostController implements IController {
             this.deleteMultipleScheduledPosts
         );
 
-        cron.schedule('* * * * *', async () => {
-            console.log('Checking for scheduled messages...', `${new Date()}`);
-            this.createPlannedMessage();
-        });
+        if (process.env.NODE_ENV !== 'test') {
+            cron.schedule('* * * * *', async () => {
+                console.log(
+                    'Checking for scheduled messages...',
+                    `${new Date()}`
+                );
+                this.createPlannedMessage();
+            });
+        }
     }
 
     schedulePost = async (req: ExtendedRequest, res: Response) => {
