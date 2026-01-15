@@ -2,11 +2,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import createApp from './createApp';
+import { config, getConfigSummary } from './config';
 
 const app = createApp();
 
-const port = process.env.PORT ? Number(process.env.PORT) : 3001;
+// Log config summary on startup (with sensitive values masked)
+console.log('Server configuration:', getConfigSummary());
 
-app.listen(port, () => {
-    console.log(`http://127.0.0.1:${port}/`);
+app.listen(config.PORT, () => {
+    console.log(`Server running on http://127.0.0.1:${config.PORT}/`);
+    console.log(`Environment: ${config.NODE_ENV}`);
 });

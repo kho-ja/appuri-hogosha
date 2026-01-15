@@ -13,9 +13,16 @@ jest.mock('../src/utils/db-client', () => ({
     },
 }));
 
+// Set required env variables BEFORE importing app modules (config loads at import time)
 process.env.NODE_ENV = 'test';
 process.env.FRONTEND_URL =
     process.env.FRONTEND_URL ?? 'https://allowed.example';
+
+// Database config
+process.env.DB_HOST = process.env.DB_HOST ?? 'localhost';
+process.env.DB_USER = process.env.DB_USER ?? 'test';
+process.env.DB_PASSWORD = process.env.DB_PASSWORD ?? 'test';
+process.env.DB_NAME = process.env.DB_NAME ?? 'test';
 
 // Some modules create AWS SDK clients at import-time; provide safe dummy config for tests.
 process.env.SERVICE_REGION = process.env.SERVICE_REGION ?? 'us-east-1';

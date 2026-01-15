@@ -1,11 +1,11 @@
 import express from 'express';
 import { Application } from 'express';
 import cors from 'cors';
-import process from 'node:process';
 import morgan from 'morgan';
+import { config } from '../config';
 
 const allowedOrigins = [
-    process.env.FRONTEND_URL?.replace(/\/$/, ''),
+    config.FRONTEND_URL?.replace(/\/$/, ''),
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
 ];
 class App {
@@ -61,9 +61,9 @@ class App {
     }
 
     public listen() {
-        if (process.env.NODE_ENV !== 'production') {
-            this.app.listen(process.env.PORT, () => {
-                console.log(`http://127.0.0.1:${process.env.PORT}/`);
+        if (config.NODE_ENV !== 'production') {
+            this.app.listen(config.PORT, () => {
+                console.log(`http://127.0.0.1:${config.PORT}/`);
             });
         }
 

@@ -1,11 +1,12 @@
 import { IController } from '../../utils/icontroller';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
-import express, { Response, Router } from 'express';
+import express, { Response, Router, NextFunction } from 'express';
 
 import DB from '../../utils/db-client';
 import { isValidStatus, isValidId, isValidReason } from '../../utils/validate';
-import process from 'node:process';
+import { config } from '../../config';
 import { generatePaginationLinks } from '../../utils/helper';
+import { ApiError } from '../../errors/ApiError';
 
 class FormController implements IController {
     public router: Router = express.Router();
@@ -21,7 +22,11 @@ class FormController implements IController {
         this.router.put('/:id', verifyToken, this.formEdit);
     }
 
-    formCount = async (req: ExtendedRequest, res: Response) => {
+    formCount = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const formCount = (
                 await DB.query(
@@ -40,28 +45,18 @@ class FormController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            next(e);
         }
     };
 
-    formList = async (req: ExtendedRequest, res: Response) => {
+    formList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(process.env.PER_PAGE + '');
+            const limit = parseInt(config.PER_PAGE?.toString() || '10');
             const offset = (page - 1) * limit;
 
             const reason = (req.query.reason as string) || '';
@@ -148,33 +143,20 @@ class FormController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            next(e);
         }
     };
 
-    formView = async (req: ExtendedRequest, res: Response) => {
+    formView = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const formId = req.params.id;
 
             if (!formId || !isValidId(formId)) {
-                throw {
-                    status: 401,
-                    message: 'Invalid or missing form id',
-                };
+                throw ApiError.badRequest('Invalid or missing form id');
             }
             const formInfo = await DB.query(
                 `SELECT
@@ -232,42 +214,26 @@ class FormController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            next(e);
         }
     };
 
-    formEdit = async (req: ExtendedRequest, res: Response) => {
+    formEdit = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { status } = req.body;
 
             if (!status || !isValidStatus(status)) {
-                throw {
-                    status: 401,
-                    message: 'Invalid or missing status',
-                };
+                throw ApiError.badRequest('Invalid or missing status');
             }
 
             const formId = req.params.id;
 
             if (!formId || !isValidId(formId)) {
-                throw {
-                    status: 401,
-                    message: 'Invalid or missing form id',
-                };
+                throw ApiError.badRequest('Invalid or missing form id');
             }
             const formInfo = await DB.query(
                 `SELECT
@@ -290,10 +256,7 @@ class FormController implements IController {
             );
 
             if (formInfo.length <= 0) {
-                throw {
-                    status: 404,
-                    message: 'Form not found',
-                };
+                throw ApiError.notFound('Form not found');
             }
 
             const form = formInfo[0];
@@ -335,21 +298,7 @@ class FormController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            next(e);
         }
     };
 }
