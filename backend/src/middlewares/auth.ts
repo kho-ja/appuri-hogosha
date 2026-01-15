@@ -14,6 +14,14 @@ export const verifyToken = async (
     res: Response,
     next: NextFunction
 ) => {
+    // Test-only bypass for smoke tests.
+    // Requires NODE_ENV=test and an explicit header so it cannot be triggered accidentally.
+    if (process.env.NODE_ENV === 'test' && req.headers['x-test-auth'] === '1') {
+        req.user = { id: 'test-user', email: 'test@example.com', school_id: 1 };
+        req.token = 'test-token';
+        return next();
+    }
+
     const authHeader = req.headers['authorization'];
 
     if (!authHeader || !bearerRegex.test(authHeader)) {
