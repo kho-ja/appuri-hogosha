@@ -118,11 +118,7 @@ class PostController implements IController {
 
     initRoutes(): void {
         this.router.post('/create', verifyToken, this.createPost);
-        this.router.post(
-            '/image',
-            verifyToken,
-            this.uploadPostImage
-        );
+        this.router.post('/image', verifyToken, this.uploadPostImage);
         this.router.get('/list', verifyToken, this.postList);
         this.router.post(
             '/upload',

@@ -234,11 +234,11 @@ export default function SendMessagePage({
                 </Card>
               </>
             ) : (
-          <FormField
-            control={form.control}
-            name="image"
-            render={() => (
-              <FormItem>
+              <FormField
+                control={form.control}
+                name="image"
+                render={() => (
+                  <FormItem>
                     <FormLabel>{t("picture")}</FormLabel>
                     <FormControl className="cursor-pointer">
                       <Input
