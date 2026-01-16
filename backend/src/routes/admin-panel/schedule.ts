@@ -11,9 +11,15 @@ import {
     isValidStringArrayId,
 } from '../../utils/validate';
 import process from 'node:process';
-import { generatePaginationLinks, randomImageName } from '../../utils/helper';
+import { generatePaginationLinks } from '../../utils/helper';
 import cron from 'node-cron';
 import { DateTime } from 'luxon';
+
+function isValidImageKey(value: string): boolean {
+    if (!isValidString(value)) return false;
+    if (value.includes('/') || value.includes('\\')) return false;
+    return true;
+}
 
 class SchedulePostController implements IController {
     public router: Router = express.Router();
@@ -61,6 +67,10 @@ class SchedulePostController implements IController {
                 image,
                 scheduled_at: scheduled_at_string,
             } = req.body;
+            const imageValue =
+                typeof image === 'string' && image.trim().length > 0
+                    ? image.trim()
+                    : '';
 
             const utc = DateTime.fromISO(scheduled_at_string).toUTC();
             const formattedUTC = utc.toFormat('yyyy-MM-dd HH:mm:ss');
@@ -83,31 +93,23 @@ class SchedulePostController implements IController {
                     message: 'invalid_or_missing_priority',
                 };
             }
-
-            let postInsert;
-            if (image) {
-                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-                if (!matches || matches.length !== 3) {
+            if (image !== undefined && image !== null) {
+                if (typeof image !== 'string') {
                     throw {
                         status: 401,
                         message: 'invalid_image_format',
                     };
                 }
-                const mimeType = matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, 'base64');
-                if (buffer.length > 1024 * 1024 * 10) {
+            }
+
+            let postInsert;
+            if (imageValue) {
+                if (!isValidImageKey(imageValue)) {
                     throw {
                         status: 401,
-                        message: 'image_size_too_large',
+                        message: 'invalid_image_format',
                     };
                 }
-
-                const imageName =
-                    randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = 'images/' + imageName;
-                await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
                 postInsert = await DB.execute(
                     `
                 INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at)
@@ -116,7 +118,7 @@ class SchedulePostController implements IController {
                         title: title,
                         description: description,
                         priority: priority,
-                        image: imageName,
+                        image: imageValue,
                         admin_id: req.user.id,
                         school_id: req.user.school_id,
                         scheduled_at: formattedUTC,
@@ -487,6 +489,14 @@ class SchedulePostController implements IController {
                 scheduled_at: scheduled_at_string,
                 image,
             } = req.body;
+            const hasImageField = Object.prototype.hasOwnProperty.call(
+                req.body,
+                'image'
+            );
+            const imageValue =
+                typeof image === 'string' && image.trim().length > 0
+                    ? image.trim()
+                    : '';
 
             const userTimezone =
                 Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -512,6 +522,14 @@ class SchedulePostController implements IController {
                     status: 401,
                     message: 'invalid_or_missing_priority',
                 };
+            }
+            if (hasImageField && image !== null && image !== undefined) {
+                if (typeof image !== 'string') {
+                    throw {
+                        status: 401,
+                        message: 'invalid_image_format',
+                    };
+                }
             }
 
             const postInfo = await DB.query(
@@ -539,36 +557,20 @@ class SchedulePostController implements IController {
 
             const post = postInfo[0];
 
-            if (image && image !== post.image) {
-                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-
-                if (!matches || matches.length !== 3) {
-                    throw {
-                        status: 401,
-                        message:
-                            'Invalid image format. Make sure it is Base64 encoded.',
-                    };
+            if (hasImageField) {
+                if (!imageValue) {
+                    post.image = null;
+                } else {
+                    if (!isValidImageKey(imageValue)) {
+                        throw {
+                            status: 401,
+                            message: 'invalid_image_format',
+                        };
+                    }
+                    if (imageValue !== post.image) {
+                        post.image = imageValue;
+                    }
                 }
-
-                const mimeType = matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, 'base64');
-
-                if (buffer.length > 10 * 1024 * 1024) {
-                    throw {
-                        status: 401,
-                        message: 'Image size is too large (max 10MB)',
-                    };
-                }
-
-                const imageName =
-                    randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = `images/${imageName}`;
-                await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
-                post.image = imageName;
-            } else if (!image) {
-                post.image = null;
             }
 
             await DB.execute(
