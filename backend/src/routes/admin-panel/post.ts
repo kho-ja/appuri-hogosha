@@ -24,6 +24,7 @@ import {
     handleCSVUpload,
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
+import { handleImageUpload } from '../../utils/image-upload';
 
 async function getAllDescendantGroupIds(
     initialGroupIds: number[],
@@ -69,6 +70,13 @@ async function getAllDescendantGroupIds(
     return Array.from(allGroupIds);
 }
 
+function isValidImageKey(value: string): boolean {
+    if (!isValidString(value)) return false;
+    if (value.startsWith('data:')) return false;
+    if (value.includes('/') || value.includes('\\')) return false;
+    return true;
+}
+
 // CSV upload now uses shared middleware (handleCSVUpload)
 
 class PostController implements IController {
@@ -80,6 +88,12 @@ class PostController implements IController {
 
     initRoutes(): void {
         this.router.post('/create', verifyToken, this.createPost);
+        this.router.post(
+            '/image',
+            verifyToken,
+            handleImageUpload,
+            this.uploadPostImage
+        );
         this.router.get('/list', verifyToken, this.postList);
         this.router.post(
             '/upload',
@@ -338,6 +352,41 @@ class PostController implements IController {
                 .status(errors.length ? 400 : 200)
                 .json(response)
                 .end();
+        } catch (e: any) {
+            return res
+                .status(500)
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
+                .end();
+        }
+    };
+
+    uploadPostImage = async (req: ExtendedRequest, res: Response) => {
+        if (!req.file || !req.file.buffer) {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
+
+        try {
+            const mimeType = req.file.mimetype;
+            const imageName =
+                randomImageName() + mimeType.replace('image/', '.');
+            const imagePath = `images/${imageName}`;
+            const uploaded = await Images3Client.uploadFile(
+                req.file.buffer,
+                mimeType,
+                imagePath
+            );
+
+            if (!uploaded) {
+                return res
+                    .status(500)
+                    .json(createErrorResponse(ErrorKeys.server_error))
+                    .end();
+            }
+
+            return res.status(200).json({ image: imageName }).end();
         } catch (e: any) {
             return res
                 .status(500)
@@ -1000,12 +1049,34 @@ class PostController implements IController {
             }
 
             const { title, description, priority, image } = req.body;
+            const hasImageField = Object.prototype.hasOwnProperty.call(
+                req.body,
+                'image'
+            );
+            const imageName =
+                typeof image === 'string' && image.trim().length > 0
+                    ? image.trim()
+                    : null;
 
             if (!title || !isValidString(title)) {
                 throw {
                     status: 401,
                     message: 'invalid_or_missing_title',
                 };
+            }
+            if (hasImageField && image !== null && image !== undefined) {
+                if (typeof image !== 'string') {
+                    throw {
+                        status: 401,
+                        message: 'invalid_image_format',
+                    };
+                }
+                if (image.trim().length > 0 && !isValidImageKey(image)) {
+                    throw {
+                        status: 401,
+                        message: 'invalid_image_format',
+                    };
+                }
             }
             if (!description || !isValidString(description)) {
                 throw {
@@ -1044,36 +1115,12 @@ class PostController implements IController {
 
             const post = postInfo[0];
 
-            if (image && image !== post.image) {
-                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-
-                if (!matches || matches.length !== 3) {
-                    throw {
-                        status: 401,
-                        message:
-                            'Invalid image format. Make sure it is Base64 encoded.',
-                    };
+            if (hasImageField) {
+                if (imageName && imageName !== post.image) {
+                    post.image = imageName;
+                } else if (!imageName) {
+                    post.image = null;
                 }
-
-                const mimeType = matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, 'base64');
-
-                if (buffer.length > 10 * 1024 * 1024) {
-                    throw {
-                        status: 401,
-                        message: 'Image size is too large (max 10MB)',
-                    };
-                }
-
-                const imageName =
-                    randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = `images/${imageName}`;
-                await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
-                post.image = imageName; // Assign new image to post object
-            } else if (!image) {
-                post.image = null; // Set image to null if none is provided
             }
 
             // Update post in DB
@@ -2043,6 +2090,10 @@ class PostController implements IController {
         try {
             const { title, description, priority, students, groups, image } =
                 req.body;
+            const imageName =
+                typeof image === 'string' && image.trim().length > 0
+                    ? image.trim()
+                    : null;
 
             if (!title || !isValidString(title)) {
                 throw {
@@ -2062,31 +2113,23 @@ class PostController implements IController {
                     message: 'invalid_or_missing_priority',
                 };
             }
-
-            let postInsert;
-            if (image) {
-                const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-                if (!matches || matches.length !== 3) {
+            if (image !== undefined && image !== null) {
+                if (typeof image !== 'string') {
                     throw {
                         status: 401,
                         message: 'invalid_image_format',
                     };
                 }
-                const mimeType = matches[1];
-                const base64Data = matches[2];
-                const buffer = Buffer.from(base64Data, 'base64');
-                if (buffer.length > 1024 * 1024 * 10) {
+                if (image.trim().length > 0 && !isValidImageKey(image)) {
                     throw {
                         status: 401,
-                        message: 'image_size_too_large',
+                        message: 'invalid_image_format',
                     };
                 }
+            }
 
-                const imageName =
-                    randomImageName() + mimeType.replace('image/', '.');
-                const imagePath = 'images/' + imageName;
-                await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
+            let postInsert;
+            if (imageName) {
                 postInsert = await DB.execute(
                     `
                 INSERT INTO Post (title, description, priority, admin_id, image, school_id)
