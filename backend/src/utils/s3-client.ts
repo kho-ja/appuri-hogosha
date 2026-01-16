@@ -7,17 +7,12 @@ import {
     PutObjectCommandInput,
     S3Client,
 } from '@aws-sdk/client-s3';
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import process from 'node:process';
 
 class MyS3Client {
     private client: S3Client;
     private bucketName: string;
-    private readonly localImageRoot: string;
 
     constructor(bucket: string) {
-        this.localImageRoot = path.resolve(process.cwd(), 'images');
         const config: ConstructorParameters<typeof S3Client>[0] = {
             region: process.env.SERVICE_REGION ?? '',
         };
@@ -34,50 +29,7 @@ class MyS3Client {
         this.bucketName = bucket;
     }
 
-    private useLocalStorage(): boolean {
-        return process.env.LOCAL_IMAGE_STORAGE === 'true';
-    }
-
-    private resolveLocalPath(key: string): string {
-        const safeKey = key.replace(/^\/+/, '');
-        const resolvedPath = path.resolve(this.localImageRoot, safeKey);
-        if (
-            resolvedPath !== this.localImageRoot &&
-            !resolvedPath.startsWith(this.localImageRoot + path.sep)
-        ) {
-            throw new Error('Invalid local storage path');
-        }
-        return resolvedPath;
-    }
-
-    private async saveLocal(buffer: any, key: string): Promise<boolean> {
-        try {
-            const filePath = this.resolveLocalPath(key);
-            await fs.mkdir(path.dirname(filePath), { recursive: true });
-            await fs.writeFile(filePath, buffer);
-            return true;
-        } catch (e) {
-            console.error(e);
-            return false;
-        }
-    }
-
-    private async deleteLocal(key: string): Promise<boolean> {
-        try {
-            const filePath = this.resolveLocalPath(key);
-            await fs.unlink(filePath);
-            return true;
-        } catch (e: any) {
-            if (e?.code === 'ENOENT') return true;
-            console.error(e);
-            return false;
-        }
-    }
-
     async uploadFile(buffer: any, mime: any, key: string): Promise<boolean> {
-        if (this.useLocalStorage()) {
-            return this.saveLocal(buffer, key);
-        }
         const params: PutObjectCommandInput = {
             Bucket: this.bucketName,
             Key: key,
@@ -96,9 +48,6 @@ class MyS3Client {
     }
 
     async setPublicRead(key: string): Promise<boolean> {
-        if (this.useLocalStorage()) {
-            return true;
-        }
         const params: PutObjectAclCommandInput = {
             Bucket: this.bucketName,
             Key: key,
@@ -117,9 +66,6 @@ class MyS3Client {
     }
 
     async deleteFile(key: string): Promise<boolean> {
-        if (this.useLocalStorage()) {
-            return this.deleteLocal(key);
-        }
         const params: DeleteObjectCommandInput = {
             Bucket: this.bucketName,
             Key: key,
