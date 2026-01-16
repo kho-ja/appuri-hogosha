@@ -53,6 +53,8 @@ export default function SendMessagePage({
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
   const [image, setImage] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [isImageUploading, setIsImageUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,6 +83,25 @@ export default function SendMessagePage({
       router.push(`/messages/${messageId}`);
     },
   });
+  const uploadImageMutation = useApiMutation<
+    { image: string },
+    { image: string }
+  >(`post/image`, "POST", ["postImage"], {
+    onSuccess: (data) => {
+      form.setValue("image", data.image, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setImage(data.image);
+      setImagePreview("");
+    },
+    onSettled: () => {
+      setIsImageUploading(false);
+      toast({
+        title: "Image upload finished",
+      });
+    },
+  });
   const priority = form.watch("priority");
 
   useEffect(() => {
@@ -90,6 +111,7 @@ export default function SendMessagePage({
   useEffect(() => {
     if (data) {
       setImage(data.post.image || "");
+      setImagePreview("");
       form.reset({
         title: data.post.title,
         description: data.post.description,
@@ -103,6 +125,7 @@ export default function SendMessagePage({
     e.preventDefault();
     if (data) {
       setImage("");
+      setImagePreview("");
       form.reset({
         title: data.post.title,
         description: data.post.description,
@@ -170,14 +193,14 @@ export default function SendMessagePage({
                 </Label>
                 <Card className="p-0">
                   <div id="image">
-                    {data?.post?.image && (
+                    {image && (
                       <div className="">
                         <Dialog>
                           <div className="relative p-4">
                             <DialogTrigger>
                               <Image
-                                src={`/${data?.post?.image}`}
-                                alt={data.post.title}
+                                src={`/${image}`}
+                                alt={data?.post?.title ?? ""}
                                 width={200}
                                 height={100}
                                 className="rounded object-cover"
@@ -192,12 +215,12 @@ export default function SendMessagePage({
                           </div>
                           <DialogContent>
                             <DialogTitle className="whitespace-pre-wrap text-center">
-                              {data?.post?.title}
+                              {data?.post?.title ?? ""}
                             </DialogTitle>
                             <DialogDescription className="flex flex-col justify-center items-center">
                               <Image
-                                src={`/${data?.post?.image}`}
-                                alt={data?.post?.title}
+                                src={`/${image}`}
+                                alt={data?.post?.title ?? ""}
                                 width={window.innerWidth > 800 ? 800 : 300}
                                 height={window.innerWidth > 800 ? 400 : 300}
                                 className="rounded object-cover"
@@ -211,11 +234,11 @@ export default function SendMessagePage({
                 </Card>
               </>
             ) : (
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
+          <FormField
+            control={form.control}
+            name="image"
+            render={() => (
+              <FormItem>
                     <FormLabel>{t("picture")}</FormLabel>
                     <FormControl className="cursor-pointer">
                       <Input
@@ -224,10 +247,30 @@ export default function SendMessagePage({
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            field.onChange(file.name); // Save file name
                             const reader = new FileReader();
+                            setIsImageUploading(true);
                             reader.onloadend = () => {
-                              form.setValue("image", reader.result as string);
+                              const result = reader.result;
+                              if (typeof result !== "string") {
+                                setIsImageUploading(false);
+                                return;
+                              }
+                              setImagePreview(result);
+                              form.setValue("image", "", {
+                                shouldDirty: true,
+                                shouldValidate: true,
+                              });
+                              uploadImageMutation.mutate(
+                                { image: result },
+                                {
+                                  onError: () => {
+                                    setImagePreview("");
+                                  },
+                                }
+                              );
+                            };
+                            reader.onerror = () => {
+                              setIsImageUploading(false);
                             };
                             reader.readAsDataURL(file);
                           }
@@ -235,10 +278,10 @@ export default function SendMessagePage({
                       />
                     </FormControl>
                     <FormMessage />
-                    {form.getValues("image") && (
+                    {imagePreview && (
                       <div className="mt-2">
                         <Image
-                          src={field.value ?? ""}
+                          src={imagePreview}
                           alt="Selected image"
                           width={200}
                           height={200}
@@ -286,7 +329,11 @@ export default function SendMessagePage({
             )}
           />
 
-          <Button type="submit" isLoading={isPending || isLoading}>
+          <Button
+            type="submit"
+            isLoading={isPending || isLoading || isImageUploading}
+            disabled={isPending || isLoading || isImageUploading}
+          >
             {t("editMessage")}
           </Button>
         </form>

@@ -24,7 +24,6 @@ import {
     handleCSVUpload,
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
-import { handleImageUpload } from '../../utils/image-upload';
 
 async function getAllDescendantGroupIds(
     initialGroupIds: number[],
@@ -70,9 +69,40 @@ async function getAllDescendantGroupIds(
     return Array.from(allGroupIds);
 }
 
+function getImageExtensionFromMime(mimeType: string): string | null {
+    switch (mimeType) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            return '.jpg';
+        case 'image/png':
+            return '.png';
+        case 'image/gif':
+            return '.gif';
+        case 'image/webp':
+            return '.webp';
+        case 'image/svg+xml':
+            return '.svg';
+        default:
+            return null;
+    }
+}
+
+function parseImageDataUrl(image: string): {
+    buffer: Buffer;
+    mimeType: string;
+    extension: string;
+} | null {
+    const matches = image.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return null;
+    const mimeType = matches[1].toLowerCase();
+    const extension = getImageExtensionFromMime(mimeType);
+    if (!extension) return null;
+    const buffer = Buffer.from(matches[2], 'base64');
+    return { buffer, mimeType, extension };
+}
+
 function isValidImageKey(value: string): boolean {
     if (!isValidString(value)) return false;
-    if (value.startsWith('data:')) return false;
     if (value.includes('/') || value.includes('\\')) return false;
     return true;
 }
@@ -91,7 +121,6 @@ class PostController implements IController {
         this.router.post(
             '/image',
             verifyToken,
-            handleImageUpload,
             this.uploadPostImage
         );
         this.router.get('/list', verifyToken, this.postList);
@@ -361,7 +390,8 @@ class PostController implements IController {
     };
 
     uploadPostImage = async (req: ExtendedRequest, res: Response) => {
-        if (!req.file || !req.file.buffer) {
+        const image = req.body?.image;
+        if (!image || typeof image !== 'string') {
             return res
                 .status(400)
                 .json(createErrorResponse(ErrorKeys.file_missing))
@@ -369,13 +399,24 @@ class PostController implements IController {
         }
 
         try {
-            const mimeType = req.file.mimetype;
-            const imageName =
-                randomImageName() + mimeType.replace('image/', '.');
+            const parsed = parseImageDataUrl(image);
+            if (!parsed) {
+                return res
+                    .status(400)
+                    .json(createErrorResponse('invalid_image_format'))
+                    .end();
+            }
+            if (parsed.buffer.length > 10 * 1024 * 1024) {
+                return res
+                    .status(400)
+                    .json(createErrorResponse('image_size_too_large'))
+                    .end();
+            }
+            const imageName = randomImageName() + parsed.extension;
             const imagePath = `images/${imageName}`;
             const uploaded = await Images3Client.uploadFile(
-                req.file.buffer,
-                mimeType,
+                parsed.buffer,
+                parsed.mimeType,
                 imagePath
             );
 
@@ -1053,10 +1094,10 @@ class PostController implements IController {
                 req.body,
                 'image'
             );
-            const imageName =
+            const imageValue =
                 typeof image === 'string' && image.trim().length > 0
                     ? image.trim()
-                    : null;
+                    : '';
 
             if (!title || !isValidString(title)) {
                 throw {
@@ -1066,12 +1107,6 @@ class PostController implements IController {
             }
             if (hasImageField && image !== null && image !== undefined) {
                 if (typeof image !== 'string') {
-                    throw {
-                        status: 401,
-                        message: 'invalid_image_format',
-                    };
-                }
-                if (image.trim().length > 0 && !isValidImageKey(image)) {
                     throw {
                         status: 401,
                         message: 'invalid_image_format',
@@ -1116,10 +1151,18 @@ class PostController implements IController {
             const post = postInfo[0];
 
             if (hasImageField) {
-                if (imageName && imageName !== post.image) {
-                    post.image = imageName;
-                } else if (!imageName) {
+                if (!imageValue) {
                     post.image = null;
+                } else {
+                    if (!isValidImageKey(imageValue)) {
+                        throw {
+                            status: 401,
+                            message: 'invalid_image_format',
+                        };
+                    }
+                    if (imageValue !== post.image) {
+                        post.image = imageValue;
+                    }
                 }
             }
 
@@ -2090,10 +2133,10 @@ class PostController implements IController {
         try {
             const { title, description, priority, students, groups, image } =
                 req.body;
-            const imageName =
+            const imageValue =
                 typeof image === 'string' && image.trim().length > 0
                     ? image.trim()
-                    : null;
+                    : '';
 
             if (!title || !isValidString(title)) {
                 throw {
@@ -2120,15 +2163,19 @@ class PostController implements IController {
                         message: 'invalid_image_format',
                     };
                 }
-                if (image.trim().length > 0 && !isValidImageKey(image)) {
+            }
+
+            let postInsert;
+            let imageName: string | null = null;
+            if (imageValue) {
+                if (!isValidImageKey(imageValue)) {
                     throw {
                         status: 401,
                         message: 'invalid_image_format',
                     };
                 }
+                imageName = imageValue;
             }
-
-            let postInsert;
             if (imageName) {
                 postInsert = await DB.execute(
                     `
