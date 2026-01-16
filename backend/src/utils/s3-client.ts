@@ -14,8 +14,10 @@ import process from 'node:process';
 class MyS3Client {
     private client: S3Client;
     private bucketName: string;
+    private readonly localImageRoot: string;
 
     constructor(bucket: string) {
+        this.localImageRoot = path.resolve(process.cwd(), 'images');
         const config: ConstructorParameters<typeof S3Client>[0] = {
             region: process.env.SERVICE_REGION ?? '',
         };
@@ -38,7 +40,14 @@ class MyS3Client {
 
     private resolveLocalPath(key: string): string {
         const safeKey = key.replace(/^\/+/, '');
-        return path.resolve(process.cwd(), safeKey);
+        const resolvedPath = path.resolve(this.localImageRoot, safeKey);
+        if (
+            resolvedPath !== this.localImageRoot &&
+            !resolvedPath.startsWith(this.localImageRoot + path.sep)
+        ) {
+            throw new Error('Invalid local storage path');
+        }
+        return resolvedPath;
     }
 
     private async saveLocal(buffer: any, key: string): Promise<boolean> {
