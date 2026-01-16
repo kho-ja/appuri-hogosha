@@ -3,6 +3,7 @@ import { Application } from 'express';
 import cors from 'cors';
 import process from 'node:process';
 import morgan from 'morgan';
+import path from 'node:path';
 
 const allowedOrigins = [
     process.env.FRONTEND_URL?.replace(/\/$/, ''),
@@ -21,6 +22,10 @@ class App {
         );
 
         this.app.use(morgan('dev'));
+        if (process.env.LOCAL_IMAGE_STORAGE === 'true') {
+            const imagesDir = path.resolve(process.cwd(), 'images');
+            this.app.use('/images', express.static(imagesDir));
+        }
 
         this.app.use(
             cors({

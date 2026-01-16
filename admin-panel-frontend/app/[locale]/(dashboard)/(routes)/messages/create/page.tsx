@@ -46,6 +46,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
 import { Switch } from "@/components/ui/switch";
+import useFormMutation from "@/lib/useFormMutation";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -63,6 +64,7 @@ export default function SendMessagePage() {
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const [draftsData, setDraftsData] = useState<any[]>([]);
   const [fileKey, setFileKey] = useState(0);
+  const [shouldPersistForm, setShouldPersistForm] = useState(true);
   const formRef = React.useRef<HTMLFormElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,6 +78,10 @@ export default function SendMessagePage() {
   });
   const formValues = useWatch({ control: form.control });
   const router = useRouter();
+  const clearFormPersistence = () => {
+    setShouldPersistForm(false);
+    localStorage.removeItem("formDataMessages");
+  };
   const { mutate, isPending } = useApiMutation<{ post: Post }>(
     `post/create`,
     "POST",
@@ -84,12 +90,12 @@ export default function SendMessagePage() {
       onSuccess: (data) => {
         toast({
           title: t("messageSent"),
-          description: data.post.title,
+          description: data?.post?.title ?? "",
         });
         setSelectedStudents([]);
         setSelectedGroups([]);
+        clearFormPersistence();
         form.reset();
-        localStorage.removeItem("formDataMessages");
         router.push("/messages");
       },
     }
@@ -98,6 +104,18 @@ export default function SendMessagePage() {
 
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+  const {
+    mutate: uploadImage,
+    isPending: isImageUploading,
+  } = useFormMutation<{ image: string }>(`post/image`, "POST", ["postImage"], {
+    onSuccess: (data) => {
+      form.setValue("image", data.image, { shouldValidate: true });
+    },
+    onError: () => {
+      form.setValue("image", "");
+      setFileKey((prev) => prev + 1);
+    },
+  });
 
   const scheduleMutation = useApiMutation<{ post: Post }>(
     `schedule`,
@@ -118,6 +136,7 @@ export default function SendMessagePage() {
         }
         setSelectedStudents([]);
         setSelectedGroups([]);
+        clearFormPersistence();
         form.reset();
         router.push("/messages?tab=scheduled");
       },
@@ -129,6 +148,7 @@ export default function SendMessagePage() {
   }, [priority, form]);
 
   useEffect(() => {
+    if (!shouldPersistForm) return;
     const savedFormData = localStorage.getItem("formDataMessages");
     const parsedFormData = savedFormData && JSON.parse(savedFormData);
     if (parsedFormData) {
@@ -140,7 +160,7 @@ export default function SendMessagePage() {
       localStorage.setItem("formDataMessages", JSON.stringify(safeValues));
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, shouldPersistForm]);
 
   useEffect(() => {
     const draftsLocal = localStorage.getItem("DraftsData");
@@ -149,6 +169,7 @@ export default function SendMessagePage() {
   }, []);
 
   const handleFormSubmit = (data: z.infer<typeof formSchema>) => {
+    if (isImageUploading) return;
     if (selectedStudents.length === 0 && selectedGroups.length === 0) {
       toast({
         title: t("error"),
@@ -339,14 +360,12 @@ export default function SendMessagePage() {
                     key={fileKey}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
-                        field.onChange(file.name); // Save file name
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          form.setValue("image", reader.result as string);
-                        };
-                        reader.readAsDataURL(file);
-                      }
+                      if (!file) return;
+                      field.onChange("");
+                      form.setValue("image", "");
+                      const formData = new FormData();
+                      formData.append("image", file);
+                      uploadImage(formData);
                     }}
                   />
                 </FormControl>
@@ -361,7 +380,7 @@ export default function SendMessagePage() {
                         <X className="h-7 w-7 bg-red-500 rounded-full cursor-pointer hover:bg-red-600 aspect-square p-1 font-bold" />
                       </div>
                       <Image
-                        src={form.getValues("image") ?? ""}
+                        src={`/${form.getValues("image")}`}
                         alt="Selected image"
                         width={200}
                         height={200}
@@ -425,7 +444,7 @@ export default function SendMessagePage() {
                 <Button
                   type="button"
                   isLoading={isPending}
-                  disabled={!isFormValid || !hasRecipients}
+                  disabled={!isFormValid || !hasRecipients || isImageUploading}
                   icon={<Send className="h-4 w-4" />}
                 >
                   {t("sendMessage")}
@@ -449,7 +468,7 @@ export default function SendMessagePage() {
                     {form.getValues("image") && (
                       <div className="mt-4">
                         <Image
-                          src={form.getValues("image") ?? ""}
+                          src={`/${form.getValues("image")}`}
                           alt="Selected image"
                           width={300}
                           height={200}
@@ -510,8 +529,10 @@ export default function SendMessagePage() {
                   <DialogClose asChild>
                     <Button
                       type="submit"
-                      disabled={!isFormValid || !hasRecipients}
-                      isLoading={isPending}
+                      disabled={
+                        !isFormValid || !hasRecipients || isImageUploading
+                      }
+                      isLoading={isPending || isImageUploading}
                       onClick={() => {
                         if (formRef.current) {
                           formRef.current.dispatchEvent(
@@ -529,7 +550,9 @@ export default function SendMessagePage() {
             </Dialog>
             <Button
               variant={"secondary"}
-              disabled={isPending || !isFormValid || !hasRecipients}
+              disabled={
+                isPending || isImageUploading || !isFormValid || !hasRecipients
+              }
               onClick={(e) => handleSaveDraft(e)}
             >
               {t("saveToDraft")}
