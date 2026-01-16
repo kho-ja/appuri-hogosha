@@ -5,17 +5,20 @@ export class ApiError extends Error {
     public readonly statusCode: number;
     public readonly code?: string;
     public readonly isOperational: boolean;
+    public readonly details?: any;
 
     constructor(
         statusCode: number,
         message: string,
         code?: string,
-        isOperational: boolean = true
+        isOperational: boolean = true,
+        details?: any
     ) {
         super(message);
         this.statusCode = statusCode;
         this.code = code;
         this.isOperational = isOperational;
+        this.details = details;
 
         // Maintains proper stack trace for where our error was thrown (only available on V8)
         if (Error.captureStackTrace) {

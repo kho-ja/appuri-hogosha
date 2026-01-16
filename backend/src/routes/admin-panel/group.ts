@@ -21,6 +21,7 @@ import {
     CSVRowBase,
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
+import GroupModuleController from '../../modules/group/group.controller';
 
 function topologicalSortGroups<
     T extends { name: string; parent_group_name: string | null },
@@ -52,15 +53,16 @@ function topologicalSortGroups<
 
 class GroupController implements IController {
     public router: Router = express.Router();
+    private groupModule: GroupModuleController;
 
     constructor() {
+        this.groupModule = new GroupModuleController();
         this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.post('/create', verifyToken, this.createGroup);
-        this.router.get('/list', verifyToken, this.groupFilter);
-        this.router.post('/ids', verifyToken, this.groupByIds);
+        // Legacy routes - CSV operations (complex file handling, kept in wrapper)
+        // MUST be defined BEFORE module router to prevent /:id from catching /template
         this.router.post(
             '/upload',
             verifyToken,
@@ -70,10 +72,12 @@ class GroupController implements IController {
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportGroupsToCSV);
 
-        this.router.get('/:id', verifyToken, this.groupView);
-        this.router.delete('/:id', verifyToken, this.groupDelete);
-        this.router.put('/:id', verifyToken, this.groupEdit);
-        this.router.get('/:id/sub-groups', verifyToken, this.getSubGroups);
+        // Wire group module routes (handles core endpoints)
+        // All other routes MIGRATED to module:
+        // - List/View: /list, /ids, /:id
+        // - CRUD: /create, PUT /:id, DELETE /:id
+        // - Hierarchy: /:id/sub-groups
+        this.router.use('/', this.groupModule.router);
     }
 
     exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
@@ -477,6 +481,11 @@ class GroupController implements IController {
         }
     };
 
+    // ==================== Legacy Methods (migrated to module) ====================
+    // The following methods have been migrated to group module
+    // Kept here only for reference during transition period
+
+    /*
     groupEdit = async (req: ExtendedRequest, res: Response) => {
         try {
             const groupId = req.params.id;
@@ -1134,6 +1143,11 @@ class GroupController implements IController {
             }
         }
     };
+
+    // CSV Methods are below - NOT commented out
+    */
+
+    // ==================== CSV Methods (kept in wrapper) ====================
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {

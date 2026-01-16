@@ -30,6 +30,9 @@ import {
     CSVRowBase,
 } from '../../utils/csv-upload';
 
+// Import parent module (vertical slice)
+import ParentModuleController from '../../modules/parent/parent.controller';
+
 // Type definitions for better error handling
 interface ParentCSVRow extends CSVRowBase {
     // email can be null when empty in CSV; store as null to avoid unique '' collisions
@@ -47,24 +50,25 @@ type ParentRowError = GenericRowError<ParentCSVRow>;
 class ParentController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
+    private parentModule: ParentModuleController;
 
     constructor() {
         this.cognitoClient =
             process.env.USE_MOCK_COGNITO === 'true'
                 ? MockCognitoClient
                 : Parent;
+
+        // Initialize parent module (vertical slice) with cognitoClient
+        this.parentModule = new ParentModuleController(this.cognitoClient);
+
         this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.post('/create', verifyToken, this.createParent);
-        this.router.post('/list', verifyToken, this.parentList);
-        this.router.post(
-            '/list/detailed',
-            verifyToken,
-            this.detailedParentList
-        );
-        this.router.post('/ids', verifyToken, this.parentIds);
+        // Wire parent module routes (vertical slice pattern)
+        this.router.use('/', this.parentModule.router);
+
+        // Legacy routes - CSV/Kintone operations (complex file handling, kept in wrapper)
         this.router.post(
             '/upload',
             verifyToken,
@@ -79,32 +83,11 @@ class ParentController implements IController {
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportParentsToCSV);
 
-        this.router.get('/:id', verifyToken, this.parentView);
-        this.router.post('/get-details', verifyToken, this.parentViewSecure); // Secure POST endpoint for sensitive data
-        this.router.put('/:id', verifyToken, this.parentEdit);
-        this.router.delete('/:id', verifyToken, this.parentDelete);
-        this.router.post(
-            '/:id/resend-password',
-            verifyToken,
-            this.resendTemporaryPassword
-        );
-        this.router.post(
-            '/bulk-resend-password',
-            verifyToken,
-            this.bulkResendTemporaryPassword
-        );
-
-        this.router.get('/:id/students', verifyToken, this.parentStudents);
-        this.router.post(
-            '/get-students',
-            verifyToken,
-            this.parentStudentsSecure
-        ); // Secure POST endpoint for sensitive data
-        this.router.post(
-            '/:id/students',
-            verifyToken,
-            this.changeParentStudents
-        );
+        // All other routes MIGRATED to module:
+        // - List/View: /ids, /list, /list/detailed, /:id, /get-details
+        // - CRUD: /create, PUT /:id, DELETE /:id
+        // - Cognito: /:id/resend-password, /bulk-resend-password
+        // - Relationships: /:id/students, /get-students, POST /:id/students
     }
 
     resendTemporaryPassword = async (req: ExtendedRequest, res: Response) => {
@@ -1476,6 +1459,9 @@ class ParentController implements IController {
         }
     };
 
+    // MIGRATED TO MODULE: src/modules/parent/parent.controller.ts
+    // This method is deprecated and will be removed after full migration
+    /*
     parentIds = async (req: ExtendedRequest, res: Response) => {
         try {
             const { parentIds } = req.body;
@@ -1529,6 +1515,7 @@ class ParentController implements IController {
             }
         }
     };
+    */
 
     parentDelete = async (req: ExtendedRequest, res: Response) => {
         try {

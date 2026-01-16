@@ -3,20 +3,26 @@ import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import express, { Response, Router } from 'express';
 
 import DB from '../../utils/db-client';
+import SchoolModuleController from '../../modules/school/school.controller';
 
 class SchoolController implements IController {
     public router: Router = express.Router();
+    private schoolModule: SchoolModuleController;
 
     constructor() {
+        this.schoolModule = new SchoolModuleController();
         this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.get('/sms', verifyToken, this.smsPrioryGet);
-        this.router.post('/sms', verifyToken, this.smsPrioryEdit);
-        this.router.post('/name', verifyToken, this.schoolNameEdit);
+        // Wire school module routes (all endpoints migrated)
+        this.router.use('/', this.schoolModule.router);
     }
 
+    // ==================== Legacy Methods (migrated to module) ====================
+    // All methods have been migrated to school module
+
+    /*
     schoolNameEdit = async (req: ExtendedRequest, res: Response) => {
         try {
             const { name } = req.body;
@@ -184,6 +190,7 @@ class SchoolController implements IController {
             }
         }
     };
+    */
 }
 
 export default SchoolController;

@@ -23,20 +23,29 @@ import {
 import process from 'node:process';
 import { stringify } from 'csv-stringify/sync';
 import { syncronizePosts } from '../../utils/messageHelper';
+import StudentModuleController from '../../modules/student/student.controller';
 
 // CSV upload handled by shared middleware
 
 class StudentController implements IController {
     public router: Router = Router();
+    private studentModule: StudentModuleController;
 
     constructor() {
+        this.studentModule = new StudentModuleController();
         this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.post('/create', verifyToken, this.createStudent);
-        this.router.post('/list', verifyToken, this.studentFilter);
-        this.router.post('/ids', verifyToken, this.studentByIds);
+        // Wire student module routes (handles core endpoints)
+        this.router.use('/', this.studentModule.router);
+
+        // Legacy routes - CSV/Kintone operations (complex file handling, kept in wrapper)
+        // All other routes MIGRATED to module:
+        // - List/View: /ids, /list, /:id
+        // - CRUD: /create, PUT /:id, DELETE /:id
+        // - Relationships: /:id/parents (GET, POST)
+
         this.router.post(
             '/upload',
             verifyToken,
@@ -50,13 +59,6 @@ class StudentController implements IController {
         );
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
         this.router.get('/export', verifyToken, this.exportStudentsToCSV);
-
-        this.router.get('/:id', verifyToken, this.studentView);
-        this.router.put('/:id', verifyToken, this.studentEdit);
-        this.router.delete('/:id', verifyToken, this.studentDelete);
-
-        this.router.get('/:id/parents', verifyToken, this.studentParent);
-        this.router.post('/:id/parents', verifyToken, this.changeStudentParent);
     }
 
     kintoneUploadStudentsFromCSV = async (
@@ -652,6 +654,11 @@ class StudentController implements IController {
         }
     };
 
+    // ==================== Legacy Methods (migrated to module) ====================
+    // The following methods have been migrated to student module
+    // Kept here only for reference during transition period
+
+    /*
     changeStudentParent = async (req: ExtendedRequest, res: Response) => {
         try {
             const studentId = req.params.id;
@@ -1532,6 +1539,9 @@ class StudentController implements IController {
             }
         }
     };
+    */
+
+    // ==================== CSV/Kintone Methods (kept in wrapper) ====================
 
     downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
         try {

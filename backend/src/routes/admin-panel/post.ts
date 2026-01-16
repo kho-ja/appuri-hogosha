@@ -24,6 +24,7 @@ import {
     handleCSVUpload,
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
+import PostModuleController from '../../modules/post/post.controller';
 
 async function getAllDescendantGroupIds(
     initialGroupIds: number[],
@@ -73,14 +74,15 @@ async function getAllDescendantGroupIds(
 
 class PostController implements IController {
     public router: Router = express.Router();
+    private postModule: PostModuleController;
 
     constructor() {
+        this.postModule = new PostModuleController();
         this.initRoutes();
     }
 
     initRoutes(): void {
-        this.router.post('/create', verifyToken, this.createPost);
-        this.router.get('/list', verifyToken, this.postList);
+        // CSV operations (must be before /:id routes)
         this.router.post(
             '/upload',
             verifyToken,
@@ -88,50 +90,27 @@ class PostController implements IController {
             this.uploadPostsFromCSV
         );
         this.router.get('/template', verifyToken, this.downloadCSVTemplate);
-        this.router.get('/:id', verifyToken, this.postView);
-        this.router.put('/:id', verifyToken, this.postUpdate);
-        this.router.put('/:id/sender', verifyToken, this.postUpdateSender);
-        this.router.delete('/:id', verifyToken, this.postDelete);
-        this.router.post(
-            '/delete-multiple',
-            verifyToken,
-            this.deleteMultiplePosts
-        );
 
-        this.router.get('/:id/students', verifyToken, this.postViewStudents);
-        this.router.get(
-            '/:id/student/:student_id',
-            verifyToken,
-            this.postStudentParent
-        );
+        // ==================== VIEW OPERATIONS MIGRATED TO MODULE ====================
+        // View operations (moved to post module)
+        // - GET /:id/students
+        // - GET /:id/student/:student_id
+        // - GET /:id/groups
+        // - GET /:id/group/:group_id
+        // - GET /:id/group/:group_id/student/:student_id
 
-        this.router.get('/:id/groups', verifyToken, this.postViewGroups);
-        this.router.get(
-            '/:id/group/:group_id',
-            verifyToken,
-            this.postGroupStudents
-        );
-        this.router.get(
-            '/:id/group/:group_id/student/:student_id',
-            verifyToken,
-            this.postGroupStudentParent
-        );
+        // ==================== RETRY PUSH OPERATIONS MIGRATED TO MODULE ====================
+        // Retry operations (moved to post module)
+        // - POST /:id/groups/:group_id
+        // - POST /:id/students/:student_id
+        // - POST /:id/parents/:parent_id
 
-        this.router.post(
-            '/:id/groups/:group_id',
-            verifyToken,
-            this.groupRetryPush
-        );
-        this.router.post(
-            '/:id/students/:student_id',
-            verifyToken,
-            this.studentRetryPush
-        );
-        this.router.post(
-            '/:id/parents/:parent_id',
-            verifyToken,
-            this.parentRetryPush
-        );
+        // ==================== UPDATE SENDER MIGRATED TO MODULE ====================
+        // Update sender (moved to post module)
+        // - PUT /:id/sender
+
+        // Wire post module routes (CRUD + view operations + retry operations + update sender)
+        this.router.use('/', this.postModule.router);
     }
 
     uploadPostsFromCSV = async (req: ExtendedRequest, res: Response) => {
