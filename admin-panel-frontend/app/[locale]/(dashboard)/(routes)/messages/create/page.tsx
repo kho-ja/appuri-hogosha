@@ -104,10 +104,9 @@ export default function SendMessagePage() {
 
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
-  const {
-    mutate: uploadImage,
-    isPending: isImageUploading,
-  } = useFormMutation<{ image: string }>(`post/image`, "POST", ["postImage"], {
+  const { mutate: uploadImage, isPending: isImageUploading } = useFormMutation<{
+    image: string;
+  }>(`post/image`, "POST", ["postImage"], {
     onSuccess: (data) => {
       form.setValue("image", data.image, { shouldValidate: true });
     },
