@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 521-image-upload-fix
     paths:
       - "backend/**"
 
