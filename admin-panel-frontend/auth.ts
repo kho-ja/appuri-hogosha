@@ -140,6 +140,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
+  trustHost: true,
   callbacks: {
     jwt({ token, user, session, trigger }) {
       if (user && user?.accessToken) {
