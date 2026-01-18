@@ -1,25 +1,8 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { locales, localePrefix } from "@/navigation";
-
-const publicPages = ["/login", "/forgot-password", "/parentnotification"];
-
-const onlyAdminPathNames = ["/permissions"];
-
-export const onlyAdminPathNameRegex = RegExp(
-  `^(/(${locales.join("|")}))?(${onlyAdminPathNames
-    .flatMap((p) => (p === "/" ? ["", "/"] : p))
-    .join("|")})/?$`,
-  "i"
-);
-
-export const publicPathnameRegex = RegExp(
-  `^(/(${locales.join("|")}))?(${publicPages
-    .flatMap((p) => (p === "/" ? ["", "/"] : p))
-    .join("|")})/?$`,
-  "i"
-);
+import { publicPathnameRegex, onlyAdminPathNameRegex } from "@/lib/routes";
 
 const intlMiddleware = createMiddleware({
   locales,
@@ -27,75 +10,38 @@ const intlMiddleware = createMiddleware({
   defaultLocale: "uz",
 });
 
-const authMiddleware = auth((req) => {
-  const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
-  let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+  const pathname = nextUrl.pathname;
 
-  // Treat OAuth callback with tokens in query as public so the home page can process and sign in
-  const hasOAuthParams =
-    req.nextUrl.searchParams.has("access_token") &&
-    req.nextUrl.searchParams.has("user");
-  if (hasOAuthParams) {
-    // Redirect all OAuth callbacks to a server route that completes sign-in
-    const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
-    const paramsArray = Array.from(req.nextUrl.searchParams.entries());
-    paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
-    return Response.redirect(redirectUrl);
-  }
+  const isPublicPage = publicPathnameRegex.test(pathname);
+  const isAdminPath = onlyAdminPathNameRegex.test(pathname);
 
-  if (!isPublicPage) {
-    const path = req.nextUrl.pathname;
+  if (isPublicPage) {
     if (
-      path.startsWith("/parentnotification") ||
-      locales.some((locale) => path.startsWith(`/${locale}/parentnotification`))
+      isLoggedIn &&
+      (pathname.includes("/login") || pathname.includes("/forgot-password"))
     ) {
-      isPublicPage = true;
+      return NextResponse.redirect(new URL("/", nextUrl.origin));
     }
+    return intlMiddleware(req);
   }
 
-  // If user is not logged in and trying to access a non-public page, redirect to login
-  if (!req.auth && !isPublicPage) {
-    // Get the locale from the pathname or use default
-    const pathnameLocale =
-      locales.find((locale) => req.nextUrl.pathname.startsWith(`/${locale}`)) ||
-      "uz";
-    const newUrl = new URL(`/${pathnameLocale}/login`, req.nextUrl.origin);
-    return Response.redirect(newUrl);
+  if (!isLoggedIn) {
+    const locale = locales.find((l) => pathname.startsWith(`/${l}`)) || "uz";
+    return NextResponse.redirect(new URL(`/${locale}/login`, nextUrl.origin));
   }
 
-  // If user is logged in and trying to access auth pages, redirect to home page
-  if (
-    req.auth &&
-    (req.nextUrl.pathname.endsWith("/login") ||
-      req.nextUrl.pathname.endsWith("/forgot-password"))
-  ) {
-    const newUrl = new URL("/", req.nextUrl.origin);
-    return Response.redirect(newUrl);
-  }
-
-  // If non-admin user is trying to access an admin page, redirect to home page
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
-    const newUrl = new URL("/", req.nextUrl.origin);
-    return Response.redirect(newUrl);
+    return NextResponse.redirect(new URL("/", nextUrl.origin));
   }
 
   return intlMiddleware(req);
 });
 
-export default function middleware(req: NextRequest) {
-  return (authMiddleware as any)(req);
-}
-
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - files with extensions (e.g. .png, .jpg, .svg)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
+    "/((?!api|_next|_vercel|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
   ],
 };
