@@ -55,7 +55,11 @@ const authMiddleware = auth((req) => {
 
   // If user is not logged in and trying to access a non-public page, redirect to login
   if (!req.auth && !isPublicPage) {
-    const newUrl = new URL("/login", req.nextUrl.origin);
+    // Get the locale from the pathname or use default
+    const pathnameLocale =
+      locales.find((locale) => req.nextUrl.pathname.startsWith(`/${locale}`)) ||
+      "uz";
+    const newUrl = new URL(`/${pathnameLocale}/login`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
@@ -83,5 +87,15 @@ export default function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|.*\\..*).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - files with extensions (e.g. .png, .jpg, .svg)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
+  ],
 };
