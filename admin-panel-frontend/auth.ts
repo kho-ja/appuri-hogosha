@@ -141,7 +141,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
   callbacks: {
     jwt({ token, user, session, trigger }) {
       if (user && user?.accessToken) {
