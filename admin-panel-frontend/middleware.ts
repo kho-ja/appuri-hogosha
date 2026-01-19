@@ -7,6 +7,11 @@ const publicPages = ["/login", "/forgot-password", "/parentnotification"];
 
 const onlyAdminPathNames = ["/permissions"];
 
+function getLocale(pathname: string) {
+  const seg = pathname.split("/")[1];
+  return locales.includes(seg) ? seg : "uz";
+}
+
 export const onlyAdminPathNameRegex = RegExp(
   `^(/(${locales.join("|")}))?(${onlyAdminPathNames
     .flatMap((p) => (p === "/" ? ["", "/"] : p))
@@ -25,6 +30,7 @@ const intlMiddleware = createMiddleware({
   locales,
   localePrefix,
   defaultLocale: "uz",
+  localeDetection: false,
 });
 
 const authMiddleware = auth((req) => {
@@ -40,7 +46,7 @@ const authMiddleware = auth((req) => {
     const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
     const paramsArray = Array.from(req.nextUrl.searchParams.entries());
     paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
-    return Response.redirect(redirectUrl);
+    return Response.redirect(redirectUrl, 307);
   }
 
   if (!isPublicPage) {
@@ -55,8 +61,9 @@ const authMiddleware = auth((req) => {
 
   // If user is not logged in and trying to access a non-public page, redirect to login
   if (!req.auth && !isPublicPage) {
-    const newUrl = new URL("/login", req.nextUrl.origin);
-    return Response.redirect(newUrl);
+    const locale = getLocale(req.nextUrl.pathname);
+    const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
+    return Response.redirect(newUrl, 307);
   }
 
   // If user is logged in and trying to access auth pages, redirect to home page
@@ -65,14 +72,16 @@ const authMiddleware = auth((req) => {
     (req.nextUrl.pathname.endsWith("/login") ||
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
-    const newUrl = new URL("/", req.nextUrl.origin);
-    return Response.redirect(newUrl);
+    const locale = getLocale(req.nextUrl.pathname);
+    const newUrl = new URL(`/${locale}/`, req.nextUrl.origin);
+    return Response.redirect(newUrl, 307);
   }
 
   // If non-admin user is trying to access an admin page, redirect to home page
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
-    const newUrl = new URL("/", req.nextUrl.origin);
-    return Response.redirect(newUrl);
+    const locale = getLocale(req.nextUrl.pathname);
+    const newUrl = new URL(`/${locale}/`, req.nextUrl.origin);
+    return Response.redirect(newUrl, 307);
   }
 
   return intlMiddleware(req);
