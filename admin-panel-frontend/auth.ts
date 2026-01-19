@@ -142,22 +142,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   trustHost: true,
   secret: process.env.AUTH_SECRET,
-  basePath: "/api/auth",
-  useSecureCookies: process.env.NODE_ENV === "production",
-  cookies: {
-    sessionToken: {
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
   callbacks: {
     jwt({ token, user, session, trigger }) {
       if (user && user?.accessToken) {

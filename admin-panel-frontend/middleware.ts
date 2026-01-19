@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
+import { NextRequest } from "next/server";
 import { locales, localePrefix } from "@/navigation";
 
 const publicPages = ["/login", "/forgot-password", "/parentnotification"];
@@ -32,11 +33,9 @@ const intlMiddleware = createMiddleware({
   localeDetection: false,
 });
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const pathname = nextUrl.pathname;
-  const isAdminPath = onlyAdminPathNameRegex.test(pathname);
-  let isPublicPage = publicPathnameRegex.test(pathname);
+const authMiddleware = auth((req) => {
+  const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
+  let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
 
   // Treat OAuth callback with tokens in query as public so the home page can process and sign in
   const hasOAuthParams =
@@ -51,11 +50,10 @@ export default auth((req) => {
   }
 
   if (!isPublicPage) {
+    const path = req.nextUrl.pathname;
     if (
-      pathname.startsWith("/parentnotification") ||
-      locales.some((locale) =>
-        pathname.startsWith(`/${locale}/parentnotification`)
-      )
+      path.startsWith("/parentnotification") ||
+      locales.some((locale) => path.startsWith(`/${locale}/parentnotification`))
     ) {
       isPublicPage = true;
     }
@@ -79,6 +77,7 @@ export default auth((req) => {
     return Response.redirect(newUrl, 307);
   }
 
+  // If non-admin user is trying to access an admin page, redirect to home page
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
     const locale = getLocale(req.nextUrl.pathname);
     const newUrl = new URL(`/${locale}/`, req.nextUrl.origin);
@@ -88,8 +87,10 @@ export default auth((req) => {
   return intlMiddleware(req);
 });
 
+export default function middleware(req: NextRequest) {
+  return (authMiddleware as any)(req);
+}
+
 export const config = {
-  matcher: [
-    "/((?!api|_next|_vercel|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)",
-  ],
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
 };
