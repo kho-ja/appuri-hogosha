@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
 import { locales, localePrefix } from "@/navigation";
 
 const publicPages = ["/login", "/forgot-password", "/parentnotification"];
@@ -35,8 +34,9 @@ const intlMiddleware = createMiddleware({
 
 export default auth((req) => {
   const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
   const pathname = nextUrl.pathname;
+  const isAdminPath = onlyAdminPathNameRegex.test(pathname);
+  let isPublicPage = publicPathnameRegex.test(pathname);
 
   // Treat OAuth callback with tokens in query as public so the home page can process and sign in
   const hasOAuthParams =
@@ -50,14 +50,15 @@ export default auth((req) => {
     return Response.redirect(redirectUrl, 307);
   }
 
-  if (isPublicPage) {
+  if (!isPublicPage) {
     if (
-      isLoggedIn &&
-      (pathname.includes("/login") || pathname.includes("/forgot-password"))
+      pathname.startsWith("/parentnotification") ||
+      locales.some((locale) =>
+        pathname.startsWith(`/${locale}/parentnotification`)
+      )
     ) {
-      return NextResponse.redirect(new URL("/", nextUrl.origin));
+      isPublicPage = true;
     }
-    return intlMiddleware(req);
   }
 
   // If user is not logged in and trying to access a non-public page, redirect to login
