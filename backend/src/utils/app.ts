@@ -7,6 +7,7 @@ import morgan from 'morgan';
 const allowedOrigins = [
     process.env.FRONTEND_URL?.replace(/\/$/, ''),
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
+    /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
 ];
 class App {
     public app: Application;
