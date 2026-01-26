@@ -41,13 +41,18 @@ class CognitoClient {
     private client_id: string;
 
     constructor(pool_id: string, client_id: string) {
-        this.client = new CognitoIdentityProviderClient({
+        const config: ConstructorParameters<
+            typeof CognitoIdentityProviderClient
+        >[0] = {
             region: process.env.SERVICE_REGION,
-            credentials: {
-                accessKeyId: process.env.ACCESS_KEY ?? '',
-                secretAccessKey: process.env.SECRET_ACCESS_KEY ?? '',
-            },
-        });
+        };
+        if (process.env.ACCESS_KEY && process.env.SECRET_ACCESS_KEY) {
+            config.credentials = {
+                accessKeyId: process.env.ACCESS_KEY,
+                secretAccessKey: process.env.SECRET_ACCESS_KEY,
+            };
+        }
+        this.client = new CognitoIdentityProviderClient(config);
 
         this.pool_id = pool_id;
         this.client_id = client_id;

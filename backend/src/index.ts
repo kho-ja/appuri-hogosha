@@ -4,4 +4,8 @@ dotenv.config();
 
 import createApp from './createApp';
 
-export const handler: serverless.Handler = serverless(createApp());
+const app = new App([new AdminPanelController(), new MobileController()]);
+
+export const handler: serverless.Handler = serverless(app.listen(), {
+    binary: ['multipart/form-data', 'image/*'],
+});

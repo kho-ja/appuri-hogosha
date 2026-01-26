@@ -13,13 +13,19 @@ class MyS3Client {
     private bucketName: string;
 
     constructor(bucket: string) {
-        this.client = new S3Client({
+        const config: ConstructorParameters<typeof S3Client>[0] = {
             region: process.env.SERVICE_REGION ?? '',
-            credentials: {
-                accessKeyId: process.env.BUCKET_ACCESS_KEY ?? '',
-                secretAccessKey: process.env.BUCKET_SECRET_ACCESS_KEY ?? '',
-            },
-        });
+        };
+        if (
+            process.env.BUCKET_ACCESS_KEY &&
+            process.env.BUCKET_SECRET_ACCESS_KEY
+        ) {
+            config.credentials = {
+                accessKeyId: process.env.BUCKET_ACCESS_KEY,
+                secretAccessKey: process.env.BUCKET_SECRET_ACCESS_KEY,
+            };
+        }
+        this.client = new S3Client(config);
         this.bucketName = bucket;
     }
 
