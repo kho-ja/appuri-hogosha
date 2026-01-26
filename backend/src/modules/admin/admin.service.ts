@@ -22,6 +22,27 @@ import type {
 export class AdminService {
     constructor(private cognitoClient: any) {}
 
+    async resendTemporaryPassword(
+        adminId: number,
+        schoolId: number
+    ): Promise<{ message: string; admin_name: string; email: string }> {
+        const admin = await adminRepository.findById(adminId, schoolId);
+
+        if (!admin) {
+            throw new ApiError(404, 'admin_not_found');
+        }
+
+        const result = await this.cognitoClient.resendTemporaryPassword(
+            admin.email
+        );
+
+        return {
+            message: result.message,
+            admin_name: `${admin.given_name} ${admin.family_name}`,
+            email: admin.email,
+        };
+    }
+
     /**
      * Create new admin
      */

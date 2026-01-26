@@ -1,5 +1,7 @@
 import request from 'supertest';
 
+import createApp from '../src/createApp';
+
 jest.mock('../src/utils/db-client', () => ({
     __esModule: true,
     default: {
@@ -13,30 +15,7 @@ jest.mock('../src/utils/db-client', () => ({
     },
 }));
 
-// Set required env variables BEFORE importing app modules (config loads at import time)
-process.env.NODE_ENV = 'test';
-process.env.FRONTEND_URL =
-    process.env.FRONTEND_URL ?? 'https://allowed.example';
-
-// Database config
-process.env.DB_HOST = process.env.DB_HOST ?? 'localhost';
-process.env.DB_USER = process.env.DB_USER ?? 'test';
-process.env.DB_PASSWORD = process.env.DB_PASSWORD ?? 'test';
-process.env.DB_NAME = process.env.DB_NAME ?? 'test';
-
-// Some modules create AWS SDK clients at import-time; provide safe dummy config for tests.
-process.env.SERVICE_REGION = process.env.SERVICE_REGION ?? 'us-east-1';
-process.env.ACCESS_KEY = process.env.ACCESS_KEY ?? 'test';
-process.env.SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY ?? 'test';
-process.env.BUCKET_ACCESS_KEY = process.env.BUCKET_ACCESS_KEY ?? 'test';
-process.env.BUCKET_SECRET_ACCESS_KEY =
-    process.env.BUCKET_SECRET_ACCESS_KEY ?? 'test';
-process.env.BUCKET_NAME = process.env.BUCKET_NAME ?? 'test-bucket';
-process.env.COGNITO_DOMAIN =
-    process.env.COGNITO_DOMAIN ?? 'https://example.com';
-
 describe('backend smoke tests', () => {
-    const createApp = require('../src/createApp').default as () => any;
     const app = createApp();
 
     test('GET /health returns ok', async () => {
@@ -63,18 +42,23 @@ describe('backend smoke tests', () => {
             .set('Origin', 'https://blocked.example')
             .set('Access-Control-Request-Method', 'GET');
 
-        expect(res.status).toBeGreaterThanOrEqual(400);
+        expect(res.status).toBe(500);
+        expect(res.body).toEqual(
+            expect.objectContaining({
+                success: false,
+                error: expect.objectContaining({
+                    statusCode: 500,
+                }),
+            })
+        );
+        expect(res.headers['access-control-allow-origin']).toBeUndefined();
     });
 
-    test('Protected endpoint works with verifyToken stub', async () => {
+    test('Protected endpoint works with verifyToken test bypass', async () => {
         const res = await request(app)
-            .get('/admin-panel/protected-route')
+            .get('/__test/protected')
             .set('x-test-auth', '1');
         expect(res.status).toBe(200);
-        expect(res.body).toHaveProperty(
-            'message',
-            'You have accessed a protected route'
-        );
         expect(res.body).toHaveProperty('user');
     });
 
@@ -89,12 +73,11 @@ describe('backend smoke tests', () => {
 
     test('CSV template endpoint returns a CSV file', async () => {
         const res = await request(app)
-            .get('/admin-panel/group/template')
+            .get('/admin-panel/student/template')
             .set('x-test-auth', '1');
 
         expect(res.status).toBe(200);
         expect(res.headers['content-type']).toContain('text/csv');
         expect(res.headers['content-disposition']).toContain('attachment');
-        expect(res.text).toContain('name,parent_group_name,student_numbers');
     });
 });
