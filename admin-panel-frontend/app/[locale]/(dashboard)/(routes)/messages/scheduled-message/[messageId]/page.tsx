@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import ReactLinkify from "react-linkify";
 import Image from "next/image";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
@@ -59,11 +59,11 @@ export default function ScheduledMessagePage({
       phone_number: string;
     }[];
   }
-  const { data, isError } = useApiQuery<ScheduledPostResponse>(
+  const { data, isError } = useListQuery<ScheduledPostResponse>(
     `schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
-  const { data: recieverData } = useApiQuery<ReceiversResponse>(
+  const { data: recieverData } = useListQuery<ReceiversResponse>(
     `schedule/${messageId}/recievers`,
     ["scheduled-recievers", messageId]
   );

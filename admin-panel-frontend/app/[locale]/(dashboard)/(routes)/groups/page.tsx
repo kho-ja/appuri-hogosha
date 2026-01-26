@@ -47,7 +47,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import useTableQuery from "@/lib/useTableQuery";
@@ -61,6 +60,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useListQuery } from "@/lib/useListQuery";
 
 interface GroupTreeNode extends Group {
   children?: GroupTreeNode[];
@@ -162,10 +162,10 @@ export default function Groups() {
   const t = useTranslations("groups");
   const { data: session } = useSession();
   const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiQuery<GroupApi>(`group/list?name=${search}&all=true`, [
-    "groups",
-    search,
-  ]);
+  const { data } = useListQuery<GroupApi>(
+    `group/list?name=${search}&all=true`,
+    ["groups", search]
+  );
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);

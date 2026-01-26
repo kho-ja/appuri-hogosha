@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
@@ -53,7 +53,7 @@ export default function Recievers({
     });
   }, [selectedStudents, selectedGroups, mutate]);
 
-  const { data } = useApiQuery<{ students: Student[]; groups: Group[] }>(
+  const { data } = useListQuery<{ students: Student[]; groups: Group[] }>(
     `schedule/${messageId}/recievers`,
     ["scheduled-receivers", messageId]
   );

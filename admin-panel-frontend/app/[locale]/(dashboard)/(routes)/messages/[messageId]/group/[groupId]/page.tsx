@@ -19,7 +19,7 @@ import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Group from "@/types/group";
 import pagination from "@/types/pagination";
 import {
@@ -44,16 +44,14 @@ export default function ThisGroup({
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
   const [studentPage, setStudentPage] = useState(1);
-  const { data: groupData, isError } = useApiQuery<{
+  const { data: groupData, isError } = useListQuery<{
     group: Group;
     pagination: pagination;
     students: Student[];
-  }>(`post/${messageId}/group/${groupId}?page=${studentPage}`, [
-    "group",
-    messageId,
-    groupId,
-    studentPage,
-  ]);
+  }>(
+    `post/${messageId}/group/${groupId}?page=${studentPage}`,
+    ["group", messageId, groupId, studentPage]
+  );
   const pathname = usePathname();
   const { mutate } = useApiMutation<{ message: string }>(
     `post/${messageId}/groups/${groupId}`,

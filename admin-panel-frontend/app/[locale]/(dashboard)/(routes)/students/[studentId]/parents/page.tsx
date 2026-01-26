@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/navigation";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
@@ -21,9 +21,12 @@ export default function EditParents({
   const t = useTranslations("CreateStudent");
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     parents: Parent[];
-  }>(`student/${studentId}/parents`, ["student", studentId]);
+  }>(
+    `student/${studentId}/parents`,
+    ["student", studentId]
+  );
   const { mutate, isPending } = useApiMutation<{ message: string }>(
     `student/${studentId}/parents`,
     "POST",

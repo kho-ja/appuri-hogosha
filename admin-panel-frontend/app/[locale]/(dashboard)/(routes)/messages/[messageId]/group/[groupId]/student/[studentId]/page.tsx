@@ -12,7 +12,7 @@ import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import {
   Dialog,
   DialogTrigger,
@@ -42,16 +42,14 @@ export default function ThisStudent({
 }) {
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
-  const { data: studentData, isError } = useApiQuery<{
+  const { data: studentData, isError } = useListQuery<{
     student: Student;
     group: Group;
     parents: Parent[];
-  }>(`post/${messageId}/group/${groupId}/student/${studentId}`, [
-    "student",
-    messageId,
-    groupId,
-    studentId,
-  ]);
+  }>(
+    `post/${messageId}/group/${groupId}/student/${studentId}`,
+    ["student", messageId, groupId, studentId]
+  );
 
   const { mutate } = useApiMutation<{ message: string }>(
     `post/${messageId}/students/${studentId}`,

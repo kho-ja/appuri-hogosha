@@ -17,7 +17,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { useEffect } from "react";
 import { MessageSquareShare } from "lucide-react";
 
@@ -57,7 +57,7 @@ export function NotificationsForm() {
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
+  const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
   const { mutate, isPending } = useApiMutation("school/sms", "POST", ["SMS"], {
     onSuccess: (data: any) => {
       toast({
