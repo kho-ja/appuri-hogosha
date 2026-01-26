@@ -479,16 +479,19 @@ export default function Groups() {
           </div>
         </PageHeader>
 
-        <div className="flex flex-col sm:flex-row justify-between">
-          <Input
-            placeholder={t("filter")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="sm:max-w-sm mb-4"
-          />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
+          <div className="w-full sm:max-w-sm">
+            <Input
+              placeholder={t("filter")}
+              value={search}
+              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full"
+            />
+          </div>
+          <div>{/* Pagination removed */}</div>
         </div>
 
         <div className="space-y-2 align-left">
@@ -520,13 +523,36 @@ export default function Groups() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <SkeletonLoader columnCount={4} rowCount={8} />
+                  <SkeletonLoader columnCount={4} rowCount={5} />
                 </TableBody>
               </Table>
             </div>
           ) : showEmpty ? (
-            <div className="rounded-lg border border-border bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
-              {tTable("noData")}
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("groupName")}</TableHead>
+                    <TableHead className="w-40">{t("parent")}</TableHead>
+                    <TableHead className="w-24 text-right">
+                      {t("studentCount")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("action")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="h-24 text-center text-sm text-muted-foreground"
+                    >
+                      {tTable("noData")}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border">
