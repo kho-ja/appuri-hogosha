@@ -8,7 +8,7 @@ import { useRouter } from "@/navigation";
 import Student from "@/types/student";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
@@ -21,9 +21,12 @@ export default function EditStudents({
   const t = useTranslations("CreateStudent");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     students: Student[];
-  }>(`parent/${parentId}/students`, ["editParentStudents", parentId]);
+  }>(
+    `parent/${parentId}/students`,
+    ["editParentStudents", parentId]
+  );
   interface UpdateParentStudentsPayload {
     students: number[];
   }

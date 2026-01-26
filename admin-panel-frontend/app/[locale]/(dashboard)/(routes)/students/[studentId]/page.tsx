@@ -12,7 +12,7 @@ import Group from "@/types/group";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
@@ -23,11 +23,14 @@ export default function ThisStudent({
 }) {
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
-  const { data: studentData, isError } = useApiQuery<{
+  const { data: studentData, isError } = useListQuery<{
     student: Student;
     parents: Parent[];
     groups: Group[];
-  }>(`student/${studentId}`, ["student", studentId]);
+  }>(
+    `student/${studentId}`,
+    ["student", studentId]
+  );
 
   if (isError) return <NotFound />;
 

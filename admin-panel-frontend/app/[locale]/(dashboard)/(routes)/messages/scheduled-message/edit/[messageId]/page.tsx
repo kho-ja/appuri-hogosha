@@ -19,7 +19,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
 import {
@@ -68,9 +68,12 @@ export default function SendMessagePage({
     },
   });
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     post: ScheduledPost;
-  }>(`schedule/each/${messageId}`, ["message", messageId]);
+  }>(
+    `schedule/each/${messageId}`,
+    ["message", messageId]
+  );
 
   const { mutate, isPending } = useApiMutation<{ message: string }>(
     `schedule/${messageId}`,

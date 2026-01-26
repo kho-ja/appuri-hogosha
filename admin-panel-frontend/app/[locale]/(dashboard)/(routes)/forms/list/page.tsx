@@ -26,7 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { FormatDateOnly, FormatDateTime } from "@/lib/utils";
 
 export default function Forms() {
@@ -36,7 +36,7 @@ export default function Forms() {
   const [status, setStatus] = useState("");
   const [reason, setReason] = useState("");
   const router = useRouter();
-  const { data: formData } = useApiQuery<FormApi>(
+  const { data: formData } = useListQuery<FormApi>(
     `form/list?page=${page}&status=${status}&reason=${reason}`,
     ["forms", page, status, reason]
   );

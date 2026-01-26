@@ -22,7 +22,6 @@ import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
@@ -40,6 +39,7 @@ import {
 import ScheduledPost from "@/types/scheduledPost";
 import pagination from "@/types/pagination";
 import { FormatDateTime } from "@/lib/utils";
+import { useListQuery } from "@/lib/useListQuery";
 
 export default function Info() {
   const t = useTranslations("posts");
@@ -59,19 +59,19 @@ export default function Info() {
   } = useTableQuery();
 
   const queryClient = useQueryClient();
-  const { data } = useApiQuery<PostApi>(
-    `post/list?page=${page}&text=${search}&perPage=${perPage}`,
-    ["posts", page, search, perPage]
+  const { data } = useListQuery<PostApi>(
+    "post/list",
+    ["posts", page, search, perPage],
+    { page, text: search, perPage }
   );
   interface ScheduledPostsResponse {
     scheduledPosts: ScheduledPost[];
     pagination: pagination;
   }
-  const { data: scheduledPosts } = useApiQuery<ScheduledPostsResponse>(
+  const { data: scheduledPosts } = useListQuery<ScheduledPostsResponse>(
     `schedule/list?page=${page}&text=${search}&perPage=${perPage}`,
     ["scheduledPosts", page, search, perPage]
   );
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const deleteMultiple = useApiMutation<
@@ -302,7 +302,7 @@ export default function Info() {
 
   const searchParams = useSearchParams();
   const initialTab =
-    (searchParams.get("tab") as "messages" | "scheduled") || "messages";
+    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
   const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   return (

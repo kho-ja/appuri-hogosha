@@ -31,22 +31,23 @@ import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import useApiPostQuery from "@/lib/useApiPostQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { Plus } from "lucide-react";
 import useTableQuery from "@/lib/useTableQuery";
 import PageHeader from "@/components/PageHeader";
+import { useListQuery } from "@/lib/useListQuery";
 
 export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
   const { page, setPage, search, setSearch } = useTableQuery();
   const [filterBy, setFilterBy] = useState<string>("all");
-  const { data: studentData } = useApiPostQuery<StudentApi>(
+  const { data: studentData } = useListQuery<StudentApi>(
     "student/list",
     ["students", page, search, filterBy],
-    { page, filterBy, filterValue: search }
+    { page, filterBy, filterValue: search },
+    "POST"
   );
   const queryClient = useQueryClient();
   const [studentId, setStudentId] = useState<number | null>(null);

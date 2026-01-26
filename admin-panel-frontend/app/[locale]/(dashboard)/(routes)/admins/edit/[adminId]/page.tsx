@@ -19,7 +19,7 @@ import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useToast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Admin from "@/types/admin";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
@@ -63,9 +63,7 @@ export default function EditAdmin({
     data: adminData,
     isLoading,
     isError,
-  } = useApiQuery<{
-    admin: Admin;
-  }>(`admin/${adminId}`, ["admin", adminId]);
+  } = useListQuery<{ admin: Admin }>(`admin/${adminId}`, ["admin", adminId]);
 
   const { isPending, mutate } = useApiMutation<{ admin: Admin }>(
     `admin/${adminId}`,

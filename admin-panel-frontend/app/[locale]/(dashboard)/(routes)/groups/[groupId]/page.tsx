@@ -15,7 +15,7 @@ import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import { useState } from "react";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
@@ -27,15 +27,14 @@ export default function ThisGroup({
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
   const [studentPage, setStudentPage] = useState(1);
-  const { data: groupData, isError } = useApiQuery<{
+  const { data: groupData, isError } = useListQuery<{
     group: Group;
     pagination: pagination;
     members: Student[];
-  }>(`group/${groupId}?page=${studentPage}&context=view`, [
-    "group",
-    groupId,
-    studentPage,
-  ]);
+  }>(
+    `group/${groupId}?page=${studentPage}&context=view`,
+    ["group", groupId, studentPage]
+  );
 
   const studentColumns: ColumnDef<Student>[] = [
     {

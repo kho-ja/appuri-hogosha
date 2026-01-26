@@ -36,7 +36,7 @@ import { Badge } from "./ui/badge";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
-import useApiPostQuery from "@/lib/useApiPostQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useTableQuery from "@/lib/useTableQuery";
 import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
 
@@ -62,10 +62,11 @@ export function StudentTable({
 
   const [filterBy, setFilterBy] = useState<string>("all");
 
-  const { data } = useApiPostQuery<StudentApi>(
+  const { data, isLoading } = useListQuery<StudentApi>(
     "student/list",
-    ["students", page, search, filterBy],
-    { page, filterBy, filterValue: search }
+    ["students", page, search],
+    { page, search },
+    "POST"
   );
 
   const selectedStudentIds = useMemo(

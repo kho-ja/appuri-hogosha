@@ -8,17 +8,17 @@ import { Link, usePathname } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import SkeletonFormCard from "@/components/SkeletonFormCard";
 import { useState } from "react";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import FormApi from "@/types/formApi";
 
 export default function DashboardPage() {
   const t = useTranslations("forms");
   const pathName = usePathname();
   const [page, setPage] = useState(1);
-  const { data } = useApiQuery<FormApi>(`form/list?page=${page}&status=wait`, [
-    "forms",
-    page,
-  ]);
+  const { data } = useListQuery<FormApi>(
+    `form/list?page=${page}&status=wait`,
+    ["forms", page]
+  );
 
   return (
     <div className="space-y-4">

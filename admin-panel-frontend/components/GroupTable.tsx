@@ -25,7 +25,7 @@ import GroupApi from "@/types/groupApi";
 import { Badge } from "./ui/badge";
 import { Trash2 } from "lucide-react";
 import { SkeletonLoader } from "./TableApi";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
 
 // Define the tree node structure
@@ -116,9 +116,13 @@ export function GroupTable({
   } = independentTableQuery;
 
   // Fetch all groups, disable pagination
-  const { data, isLoading } = useApiQuery<GroupApi>(
-    `group/list?all=true&name=${searchName}`,
-    ["groups", searchName]
+  const { data, isLoading } = useListQuery<GroupApi>(
+    "group/list",
+    ["groups", searchName],
+    {
+      all: true,
+      name: searchName,
+    }
   );
 
   const allGroups = useMemo(() => data?.groups ?? [], [data]);

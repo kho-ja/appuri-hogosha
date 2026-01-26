@@ -32,7 +32,7 @@ import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import ReactLinkify from "react-linkify";
 import Image from "next/image";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dialog";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { useSearchParams } from "next/navigation";
 
 export default function ThisMessage({
   params: { messageId },
@@ -52,20 +53,22 @@ export default function ThisMessage({
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
   const pathname = usePathname();
-  const { data } = useApiQuery<postView>(`post/${messageId}`, [
-    "message",
-    messageId,
-  ]);
+  const searchParams = useSearchParams();
+  const initialTab =
+    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+  const { data } = useListQuery<postView>(
+    `post/${messageId}`,
+    ["message", messageId]
+  );
   const [studentPage, setStudentPage] = useState(1);
   const [studentSearch, setStudentSearch] = useState("");
-  const { data: studentData, isError: isStudentError } =
-    useApiQuery<StudentApi>(
-      `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
-      ["student", messageId, studentPage, studentSearch]
-    );
+  const { data: studentData, isError: isStudentError } = useListQuery<StudentApi>(
+    `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
+    ["student", messageId, studentPage, studentSearch]
+  );
   const [groupPage, setGroupPage] = useState(1);
   const [groupSearch, setGroupSearch] = useState("");
-  const { data: groupData, isError } = useApiQuery<GroupApi>(
+  const { data: groupData, isError } = useListQuery<GroupApi>(
     `post/${messageId}/groups?page=${groupPage}&name=${groupSearch}`,
     ["group", messageId, groupPage, groupSearch]
   );

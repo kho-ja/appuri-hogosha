@@ -1,10 +1,9 @@
 import SMSApi from "@/types/smsApi";
-import useApiQuery from "./useApiQuery";
+import { useListQuery } from "./useListQuery";
 
 export default function useSMSQuery(page: number, search: string) {
-  return useApiQuery<SMSApi>(`sms/list?page=${page}&text=${search}`, [
-    "sms",
-    page,
-    search,
-  ]);
+  return useListQuery<SMSApi>(
+    `sms/list?page=${page}&text=${search}`,
+    ["sms", page, search]
+  );
 }
