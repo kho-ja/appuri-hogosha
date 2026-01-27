@@ -11,6 +11,7 @@ import { IController } from '../../utils/icontroller';
 import { postService } from './post.service';
 import { ApiError } from '../../errors/ApiError';
 import DB from '../../utils/db-client';
+import { Images3Client } from '../../utils/s3-client';
 import {
     isValidString,
     isValidArrayId,
@@ -19,6 +20,7 @@ import {
     isValidStringArrayId,
     isValidStudentNumber,
 } from '../../utils/validate';
+import { randomImageName } from '../../utils/helper';
 import { stringify } from 'csv-stringify/sync';
 import {
     createBaseResponse,
@@ -30,6 +32,38 @@ import {
     handleCSVUpload,
 } from '../../utils/csv-upload';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
+
+function getImageExtensionFromMime(mimeType: string): string | null {
+    switch (mimeType) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            return '.jpg';
+        case 'image/png':
+            return '.png';
+        case 'image/gif':
+            return '.gif';
+        case 'image/webp':
+            return '.webp';
+        case 'image/svg+xml':
+            return '.svg';
+        default:
+            return null;
+    }
+}
+
+function parseImageDataUrl(image: string): {
+    buffer: Buffer;
+    mimeType: string;
+    extension: string;
+} | null {
+    const matches = image.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return null;
+    const mimeType = matches[1].toLowerCase();
+    const extension = getImageExtensionFromMime(mimeType);
+    if (!extension) return null;
+    const buffer = Buffer.from(matches[2], 'base64');
+    return { buffer, mimeType, extension };
+}
 
 export class PostModuleController implements IController {
     public router: Router = Router();
@@ -51,6 +85,7 @@ export class PostModuleController implements IController {
 
         // ==================== CRUD Operations (non-dynamic routes first) ====================
         this.router.post('/create', verifyToken, this.createPost);
+        this.router.post('/image', verifyToken, this.uploadPostImage);
         this.router.get('/list', verifyToken, this.getPostList);
         this.router.post(
             '/delete-multiple',
@@ -102,6 +137,56 @@ export class PostModuleController implements IController {
         this.router.put('/:id', verifyToken, this.updatePost);
         this.router.delete('/:id', verifyToken, this.deletePost);
     }
+
+    uploadPostImage = async (req: ExtendedRequest, res: Response) => {
+        const image = req.body?.image;
+
+        if (!image || typeof image !== 'string') {
+            return res
+                .status(400)
+                .json(createErrorResponse(ErrorKeys.file_missing))
+                .end();
+        }
+
+        try {
+            const parsed = parseImageDataUrl(image);
+            if (!parsed) {
+                return res
+                    .status(400)
+                    .json(createErrorResponse('invalid_image_format'))
+                    .end();
+            }
+
+            if (parsed.buffer.length > 10 * 1024 * 1024) {
+                return res
+                    .status(400)
+                    .json(createErrorResponse('image_size_too_large'))
+                    .end();
+            }
+
+            const imageName = randomImageName() + parsed.extension;
+            const imagePath = `images/${imageName}`;
+            const uploaded = await Images3Client.uploadFile(
+                parsed.buffer,
+                parsed.mimeType,
+                imagePath
+            );
+
+            if (!uploaded) {
+                return res
+                    .status(500)
+                    .json(createErrorResponse(ErrorKeys.server_error))
+                    .end();
+            }
+
+            return res.status(200).json({ image: imageName }).end();
+        } catch (e: any) {
+            return res
+                .status(500)
+                .json(createErrorResponse(ErrorKeys.server_error, e.message))
+                .end();
+        }
+    };
 
     uploadPostsFromCSV = async (req: ExtendedRequest, res: Response) => {
         const { throwInError, withCSV } = req.body;

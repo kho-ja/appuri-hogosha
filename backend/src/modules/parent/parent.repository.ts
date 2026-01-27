@@ -295,6 +295,51 @@ class ParentRepository {
     }
 
     /**
+     * List parents for CSV export
+     */
+    async findAllForExport(schoolId: string): Promise<
+        Array<{
+            id: number;
+            email: string | null;
+            phone_number: string;
+            given_name: string;
+            family_name: string;
+        }>
+    > {
+        return await DB.query(
+            `SELECT
+                id,
+                email,
+                phone_number,
+                given_name,
+                family_name
+            FROM Parent
+            WHERE school_id = :school_id`,
+            {
+                school_id: schoolId,
+            }
+        );
+    }
+
+    /**
+     * List a parent's student numbers for CSV export
+     */
+    async findStudentNumbersByParentId(parentId: number): Promise<string[]> {
+        const rows = await DB.query(
+            `SELECT
+                st.student_number
+            FROM StudentParent AS sp
+            INNER JOIN Student AS st ON sp.student_id = st.id
+            WHERE sp.parent_id = :parent_id`,
+            {
+                parent_id: parentId,
+            }
+        );
+
+        return rows.map((row: any) => row.student_number);
+    }
+
+    /**
      * Check if parent exists by email or phone
      */
     async findDuplicateByEmailOrPhone(

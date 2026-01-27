@@ -6,7 +6,8 @@ jest.mock('../src/utils/db-client', () => ({
     __esModule: true,
     default: {
         query: jest.fn(async (sql: string) => {
-            if (sql.includes('COUNT(*) as total')) {
+            const normalizedSql = sql.toLowerCase();
+            if (normalizedSql.includes('count(*) as total')) {
                 return [{ total: 0 }];
             }
             return [];
@@ -79,5 +80,29 @@ describe('backend smoke tests', () => {
         expect(res.status).toBe(200);
         expect(res.headers['content-type']).toContain('text/csv');
         expect(res.headers['content-disposition']).toContain('attachment');
+    });
+
+    test('Parent CSV template endpoint returns a CSV file', async () => {
+        const res = await request(app)
+            .get('/admin-panel/parent/template')
+            .set('x-test-auth', '1');
+
+        expect(res.status).toBe(200);
+        expect(res.headers['content-type']).toContain('text/csv');
+        expect(res.headers['content-disposition']).toContain('attachment');
+    });
+
+    test('Schedule list endpoint returns stable shape', async () => {
+        const res = await request(app)
+            .get('/admin-panel/schedule/list')
+            .set('x-test-auth', '1');
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(
+            expect.objectContaining({
+                scheduledPosts: expect.any(Array),
+                pagination: expect.any(Object),
+            })
+        );
     });
 });
