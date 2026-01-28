@@ -26,18 +26,7 @@ import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(500)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-  });
-};
+import { getAdminEditSchema } from "@/lib/validationSchemas";
 
 export default function EditAdmin({
   params: { adminId },
@@ -48,7 +37,7 @@ export default function EditAdmin({
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditAdmin");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getAdminEditSchema(t);
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({

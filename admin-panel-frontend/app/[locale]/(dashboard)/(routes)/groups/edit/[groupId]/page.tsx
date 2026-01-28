@@ -25,10 +25,9 @@ import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { groupEditSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-});
+const formSchema = groupEditSchema;
 
 export default function EditGroup({
   params: { groupId },

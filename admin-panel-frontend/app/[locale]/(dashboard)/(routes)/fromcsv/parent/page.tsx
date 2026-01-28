@@ -53,18 +53,9 @@ import Parent from "@/types/parent";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { getCsvUploadSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  csvFile: z
-    .instanceof(File)
-    .refine((file) => file.name.endsWith(".csv"), {
-      message: "Only CSV files are allowed",
-    })
-    .refine((file) => file.size <= 10 * 1024 * 1024, {
-      message: "File size must be less than 10MB",
-    }),
-  mode: z.enum(["create", "update", "delete"]),
-});
+const formSchema = getCsvUploadSchema();
 
 export default function CreateFromCsv() {
   const t = useTranslations("fromcsv");

@@ -36,14 +36,9 @@ import PageHeader from "@/components/PageHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ScheduledPost from "@/types/scheduledPost";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
+import { scheduledPostEditSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
-  image: z.string().optional(),
-  scheduled_at: z.string().min(1),
-});
+const formSchema = scheduledPostEditSchema;
 
 export default function SendMessagePage({
   params: { messageId },
