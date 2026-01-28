@@ -19,7 +19,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
@@ -46,9 +46,12 @@ export default function EditParent({
       email: "",
     },
   });
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     parent: Parent;
-  }>(`parent/${parentId}`, ["parent", parentId]);
+  }>(
+    `parent/${parentId}`,
+    ["parent", parentId]
+  );
   const { isPending, mutate } = useApiMutation<{ parent: Parent }, FormType>(
     `parent/${parentId}`,
     "PUT",

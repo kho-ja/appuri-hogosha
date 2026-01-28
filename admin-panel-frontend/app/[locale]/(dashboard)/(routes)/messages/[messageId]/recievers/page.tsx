@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import StudentApi from "@/types/studentApi";
 import GroupApi from "@/types/groupApi";
 import { toast } from "@/components/ui/use-toast";
@@ -27,11 +27,11 @@ export default function Recievers({
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const router = useRouter();
-  const { data: studentData } = useApiQuery<StudentApi>(
+  const { data: studentData } = useListQuery<StudentApi>(
     `post/${messageId}/students`,
     ["student", messageId]
   );
-  const { data: groupData } = useApiQuery<GroupApi>(
+  const { data: groupData } = useListQuery<GroupApi>(
     `post/${messageId}/groups`,
     ["group", messageId]
   );

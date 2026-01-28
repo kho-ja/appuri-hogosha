@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { useTranslations } from "next-intl";
 import Group from "@/types/group";
 
@@ -26,7 +26,7 @@ export function GroupSelect({
 }: GroupSelectProps) {
   const t = useTranslations("groups");
 
-  const { data: groupsResp } = useApiQuery<{ groups: Group[] }>(
+  const { data: groupsResp } = useListQuery<{ groups: Group[] }>(
     `group/list?page=1&name=`,
     ["groups", 1, ""]
   );

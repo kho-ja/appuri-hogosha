@@ -20,7 +20,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import Student from "@/types/student";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
@@ -50,9 +50,12 @@ export default function CreateStudent({
     },
   });
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     student: Student;
-  }>(`student/${studentId}`, ["student", studentId]);
+  }>(
+    `student/${studentId}`,
+    ["student", studentId]
+  );
   interface EditStudentPayload {
     email: string;
     phone_number: string;

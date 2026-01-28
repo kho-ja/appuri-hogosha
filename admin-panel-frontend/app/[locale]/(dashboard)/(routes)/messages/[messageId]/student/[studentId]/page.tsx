@@ -10,7 +10,7 @@ import { FormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Student from "@/types/student";
 import useApiMutation from "@/lib/useApiMutation";
 import { toast } from "@/components/ui/use-toast";
@@ -35,7 +35,7 @@ export default function ThisStudent({
 }) {
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
-  const { data: studentData, isError } = useApiQuery<{
+  const { data: studentData, isError } = useListQuery<{
     student: Student;
     parents: Parent[];
   }>(`post/${messageId}/student/${studentId}`, [

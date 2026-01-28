@@ -17,7 +17,7 @@ import {
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
@@ -52,7 +52,7 @@ export function SchoolNameUpdate() {
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
+  const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
   const { mutate, isPending } = useApiMutation(
     "school/name",
     "POST",

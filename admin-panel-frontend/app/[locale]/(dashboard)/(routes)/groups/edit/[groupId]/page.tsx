@@ -21,7 +21,7 @@ import { useRouter } from "@/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
@@ -45,10 +45,13 @@ export default function EditGroup({
       name: "",
     },
   });
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     group: { name: string };
     members: Student[];
-  }>(`group/${groupId}?context=edit`, ["group", groupId]);
+  }>(
+    `group/${groupId}?context=edit`,
+    ["group", groupId]
+  );
 
   const { isPending, mutate } = useApiMutation<
     { message: string },

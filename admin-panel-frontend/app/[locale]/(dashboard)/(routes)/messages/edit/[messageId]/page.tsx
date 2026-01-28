@@ -20,7 +20,7 @@ import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Post from "@/types/post";
 import useApiMutation from "@/lib/useApiMutation";
 import Image from "next/image";
@@ -62,7 +62,7 @@ export default function SendMessagePage({
     },
   });
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     post: Post;
   }>(`post/${messageId}`, ["message", messageId]);
 
