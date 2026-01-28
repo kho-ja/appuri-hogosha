@@ -26,25 +26,7 @@ import { PhoneInput } from "@/components/PhoneInput";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    email: z.string().email().min(1).max(100),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(20)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    student_number: z
-      .string()
-      .min(1)
-      .max(10)
-      .refine((v) => !/\s/.test(v), { message: t("NoSpacesAllowed") }),
-    cohort: z.coerce.number().int().positive().optional(),
-  });
-};
+import { getStudentEditSchema } from "@/lib/validationSchemas";
 
 export default function CreateStudent({
   params: { studentId },
@@ -55,7 +37,7 @@ export default function CreateStudent({
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getStudentEditSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

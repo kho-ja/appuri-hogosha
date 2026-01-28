@@ -33,11 +33,9 @@ import NewPasswordInput, {
 } from "@/components/NewPasswordInput";
 import Image from "next/image";
 import localImageLoader from "@/lib/localImageLoader";
+import { loginSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+const formSchema = loginSchema;
 
 export default function LoginForm() {
   const zodErrors = useMakeZodI18nMap();

@@ -46,12 +46,11 @@ import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { Download } from "lucide-react";
+import { getCsvUploadSchema } from "@/lib/validationSchemas";
 
 export default function MessageFromCSV() {
   const t = useTranslations("fromcsv");
-  const formSchema = z.object({
-    csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
-  });
+  const formSchema = getCsvUploadSchema();
 
   const queryClient = useQueryClient();
   const router = useRouter();

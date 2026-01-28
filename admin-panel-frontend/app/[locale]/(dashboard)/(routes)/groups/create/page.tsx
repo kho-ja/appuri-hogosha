@@ -26,11 +26,9 @@ import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { GroupSelect } from "@/components/GroupSelect";
+import { groupCreateSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-  sub_group_id: z.number().nullable().optional(),
-});
+const formSchema = groupCreateSchema;
 
 export default function CreateGroup() {
   const zodErrors = useMakeZodI18nMap();

@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { groupCreateSchema } from "@/lib/validationSchemas";
 import {
   Form,
   FormControl,
@@ -22,9 +23,7 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { University } from "lucide-react";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-});
+const formSchema = groupCreateSchema;
 
 type SchoolNameValues = z.infer<typeof formSchema>;
 

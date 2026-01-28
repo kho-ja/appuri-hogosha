@@ -46,13 +46,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
 import { Switch } from "@/components/ui/switch";
+import { postCreateSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
-  image: z.string().optional(),
-});
+const formSchema = postCreateSchema;
 
 export default function SendMessagePage() {
   const zodErrors = useMakeZodI18nMap();

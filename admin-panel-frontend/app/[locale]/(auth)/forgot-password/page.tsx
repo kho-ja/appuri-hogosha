@@ -25,17 +25,10 @@ import {
 import { useForm as useHookForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { forgotPasswordSchema } from "@/lib/validationSchemas";
 import NewPasswordInput, {
   validateNewPassword,
 } from "@/components/NewPasswordInput";
-
-const forgotSchema = z.object({
-  email: z.string().email(),
-  code: z.string(),
-  confirmPassword: z.string(),
-});
-
-type ForgotForm = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("ForgotPasswordPage");
@@ -50,8 +43,8 @@ export default function ForgotPasswordPage() {
   }
 
   // RHF
-  const form = useHookForm<ForgotForm>({
-    resolver: zodResolver(forgotSchema),
+  const form = useHookForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
       code: "",
@@ -61,8 +54,10 @@ export default function ForgotPasswordPage() {
   });
 
   // Custom validation for step logic (in addition to zod)
-  function stepValidate(values: ForgotForm) {
-    const errors: Partial<Record<keyof ForgotForm, string>> = {};
+  function stepValidate(values: z.infer<typeof forgotPasswordSchema>) {
+    const errors: Partial<
+      Record<keyof z.infer<typeof forgotPasswordSchema>, string>
+    > = {};
     if (step === 1) {
       if (!values.email || !isValidEmail(values.email)) {
         errors.email = t("InvalidEmailFormat");
@@ -130,7 +125,7 @@ export default function ForgotPasswordPage() {
     const errors = stepValidate(values);
     if (Object.keys(errors).length > 0) {
       Object.entries(errors).forEach(([key, message]) => {
-        form.setError(key as keyof ForgotForm, {
+        form.setError(key as keyof z.infer<typeof forgotPasswordSchema>, {
           type: "manual",
           message,
         });

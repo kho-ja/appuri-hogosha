@@ -23,40 +23,17 @@ import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Student from "@/types/student";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    email: z
-      .string()
-      .email()
-      // RFC 5321 specifies a maximum email address length of 254 characters.
-      .max(254, { message: t("Email is too long") }),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(20)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    student_number: z
-      .string()
-      .min(1)
-      .max(10)
-      .refine((v) => !/\s/.test(v), { message: t("NoSpacesAllowed") }),
-    cohort: z.coerce.number().int().positive().optional(),
-  });
-};
+import { getStudentCreateSchema } from "@/lib/validationSchemas";
 
 export default function CreateStudent() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateStudent");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getStudentCreateSchema(t);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {

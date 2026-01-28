@@ -24,15 +24,7 @@ import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (_t: (key: string) => string) => {
-  return z.object({
-    given_name: z.string().max(50),
-    family_name: z.string().max(50),
-    email: z.string().max(0).or(z.string().email()).optional(),
-    phone_number: z.string().max(0).optional(),
-  });
-};
+import { getParentEditSchema } from "@/lib/validationSchemas";
 
 export default function EditParent({
   params: { parentId },
@@ -43,7 +35,7 @@ export default function EditParent({
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditParent");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getParentEditSchema(t);
   const router = useRouter();
   type FormType = z.infer<typeof formSchema>;
   const form = useForm<FormType>({

@@ -20,13 +20,7 @@ import useApiMutation from "@/lib/useApiMutation";
 import useApiQuery from "@/lib/useApiQuery";
 import { useEffect } from "react";
 import { MessageSquareShare } from "lucide-react";
-
-const notificationsFormSchema = z.object({
-  high: z.boolean(),
-  medium: z.boolean(),
-  low: z.boolean(),
-  title: z.string().min(1).optional(),
-});
+import { notificationsFormSchema } from "@/lib/validationSchemas";
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
