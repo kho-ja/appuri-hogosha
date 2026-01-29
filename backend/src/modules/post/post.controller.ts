@@ -432,13 +432,13 @@ export class PostModuleController implements IController {
                 req.body;
 
             if (!title || !isValidString(title)) {
-                throw new ApiError(401, 'invalid_or_missing_title');
+                throw new ApiError(400, 'invalid_or_missing_title');
             }
             if (!description || !isValidString(description)) {
-                throw new ApiError(401, 'invalid_or_missing_description');
+                throw new ApiError(400, 'invalid_or_missing_description');
             }
             if (!priority || !isValidPriority(priority)) {
-                throw new ApiError(401, 'invalid_or_missing_priority');
+                throw new ApiError(400, 'invalid_or_missing_priority');
             }
 
             const result = await postService.createPost(
@@ -541,19 +541,19 @@ export class PostModuleController implements IController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw new ApiError(401, 'invalid_or_missing_post_id');
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const { title, description, priority, image } = req.body;
 
             if (!title || !isValidString(title)) {
-                throw new ApiError(401, 'invalid_or_missing_title');
+                throw new ApiError(400, 'invalid_or_missing_title');
             }
             if (!description || !isValidString(description)) {
-                throw new ApiError(401, 'invalid_or_missing_description');
+                throw new ApiError(400, 'invalid_or_missing_description');
             }
             if (!priority || !isValidPriority(priority)) {
-                throw new ApiError(401, 'invalid_or_missing_priority');
+                throw new ApiError(400, 'invalid_or_missing_priority');
             }
 
             const result = await postService.updatePost(

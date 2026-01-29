@@ -61,6 +61,14 @@ async function getAllDescendantGroupIds(
 }
 
 export class PostService {
+    private isSafeUploadedImageName(imageName: string): boolean {
+        if (!imageName || typeof imageName !== 'string') return false;
+        if (imageName.length > 100) return false;
+        if (imageName.includes('/') || imageName.includes('\\')) return false;
+
+        return /^[a-f0-9]{64}\.(?:jpg|png|gif|webp|svg)$/i.test(imageName);
+    }
+
     /**
      * Create new post
      */
@@ -72,23 +80,52 @@ export class PostService {
         const { title, description, priority, students, groups, image } =
             request;
 
-        // Handle image upload
         let imageName: string | null = null;
-        if (image) {
-            const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-            if (!matches || matches.length !== 3) {
-                throw new ApiError(401, 'invalid_image_format');
-            }
-            const mimeType = matches[1];
-            const base64Data = matches[2];
-            const buffer = Buffer.from(base64Data, 'base64');
-            if (buffer.length > 1024 * 1024 * 10) {
-                throw new ApiError(401, 'image_size_too_large');
-            }
+        if (image && typeof image === 'string') {
+            const trimmed = image.trim();
 
-            imageName = randomImageName() + mimeType.replace('image/', '.');
-            const imagePath = 'images/' + imageName;
-            await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            if (trimmed.startsWith('data:')) {
+                // data URL format: data:image/<mime>;base64,<payload>
+                const matches = trimmed.match(
+                    /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=\s]+)$/
+                );
+                if (!matches || matches.length !== 3) {
+                    throw new ApiError(400, 'invalid_image_format');
+                }
+
+                const mimeType = matches[1].toLowerCase();
+                const base64Data = matches[2].replace(/\s+/g, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                if (buffer.length > 1024 * 1024 * 10) {
+                    throw new ApiError(400, 'image_size_too_large');
+                }
+
+                // Only allow the same types as the upload endpoint.
+                const extensionMap: Record<string, string> = {
+                    'image/jpeg': '.jpg',
+                    'image/jpg': '.jpg',
+                    'image/png': '.png',
+                    'image/gif': '.gif',
+                    'image/webp': '.webp',
+                    'image/svg+xml': '.svg',
+                };
+
+                const extension = extensionMap[mimeType];
+                if (!extension) {
+                    throw new ApiError(400, 'invalid_image_format');
+                }
+
+                imageName = randomImageName() + extension;
+                const imagePath = 'images/' + imageName;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            } else if (trimmed.length > 0) {
+                // Treat as uploaded filename
+                if (!this.isSafeUploadedImageName(trimmed)) {
+                    throw new ApiError(400, 'invalid_image_format');
+                }
+                imageName = trimmed;
+            }
         }
 
         // Create post
@@ -355,47 +392,61 @@ export class PostService {
         }
 
         let imageName = post.image;
-
         if (image !== undefined) {
             if (image === null) {
                 imageName = null;
-            } else {
+            } else if (typeof image === 'string') {
                 const trimmed = image.trim();
 
-                // Frontend may send empty string when user doesn't select an image.
-                // Treat it as "no change".
                 if (trimmed === '') {
-                    // no-op
+                    // User removed image in UI. If there was an image, clear it.
+                    if (post.image) imageName = null;
                 } else if (trimmed === post.image) {
                     // no-op
                 } else if (post.image && trimmed.includes(post.image)) {
                     // e.g. full URL that contains existing filename
                     // no-op
-                } else {
+                } else if (this.isSafeUploadedImageName(trimmed)) {
+                    // Accept filename returned by POST /post/image
+                    imageName = trimmed;
+                } else if (trimmed.startsWith('data:')) {
                     const matches = trimmed.match(
-                        /^data:(image\/\w+);base64,(.+)$/
+                        /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=\s]+)$/
                     );
                     if (!matches || matches.length !== 3) {
-                        throw new ApiError(
-                            401,
-                            'Invalid image format. Make sure it is Base64 encoded.'
-                        );
-                    }
-                    const mimeType = matches[1];
-                    const base64Data = matches[2];
-                    const buffer = Buffer.from(base64Data, 'base64');
-                    if (buffer.length > 10 * 1024 * 1024) {
-                        throw new ApiError(
-                            401,
-                            'Image size is too large (max 10MB)'
-                        );
+                        throw new ApiError(400, 'invalid_image_format');
                     }
 
-                    imageName =
-                        randomImageName() + mimeType.replace('image/', '.');
+                    const mimeType = matches[1].toLowerCase();
+                    const base64Data = matches[2].replace(/\s+/g, '');
+                    const buffer = Buffer.from(base64Data, 'base64');
+
+                    if (buffer.length > 10 * 1024 * 1024) {
+                        throw new ApiError(400, 'image_size_too_large');
+                    }
+
+                    const extensionMap: Record<string, string> = {
+                        'image/jpeg': '.jpg',
+                        'image/jpg': '.jpg',
+                        'image/png': '.png',
+                        'image/gif': '.gif',
+                        'image/webp': '.webp',
+                        'image/svg+xml': '.svg',
+                    };
+
+                    const extension = extensionMap[mimeType];
+                    if (!extension) {
+                        throw new ApiError(400, 'invalid_image_format');
+                    }
+
+                    imageName = randomImageName() + extension;
                     const imagePath = `images/${imageName}`;
                     await Images3Client.uploadFile(buffer, mimeType, imagePath);
+                } else {
+                    throw new ApiError(400, 'invalid_image_format');
                 }
+            } else {
+                throw new ApiError(400, 'invalid_image_format');
             }
         }
 
