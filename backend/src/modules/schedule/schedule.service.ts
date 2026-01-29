@@ -28,6 +28,28 @@ import DB from '../../utils/db-client';
 export class ScheduleService {
     constructor(private repository: ScheduleRepository) {}
 
+    private isSafeUploadedImageName(imageName: string): boolean {
+        if (!imageName || typeof imageName !== 'string') return false;
+        if (imageName.length > 100) return false;
+        if (imageName.includes('/') || imageName.includes('\\')) return false;
+
+        return /^[a-f0-9]{64}\.(?:jpg|png|gif|webp|svg)$/i.test(imageName);
+    }
+
+    private extractSafeFilenameFromUrl(value: string): string | null {
+        if (!value || typeof value !== 'string') return null;
+        if (!/^https?:\/\//i.test(value)) return null;
+
+        try {
+            const parsed = new URL(value);
+            const last = parsed.pathname.split('/').filter(Boolean).pop();
+            if (!last) return null;
+            return this.isSafeUploadedImageName(last) ? last : null;
+        } catch {
+            return null;
+        }
+    }
+
     async createScheduledPost(
         request: CreateScheduledPostRequest,
         adminId: number,
@@ -47,31 +69,63 @@ export class ScheduleService {
         const formattedUTC = utc.toFormat('yyyy-MM-dd HH:mm:ss');
 
         if (!title || !isValidString(title)) {
-            throw { status: 401, message: 'invalid_or_missing_title' };
+            throw { status: 400, message: 'invalid_or_missing_title' };
         }
         if (!description || !isValidString(description)) {
-            throw { status: 401, message: 'invalid_or_missing_description' };
+            throw { status: 400, message: 'invalid_or_missing_description' };
         }
         if (!priority || !isValidPriority(priority)) {
-            throw { status: 401, message: 'invalid_or_missing_priority' };
+            throw { status: 400, message: 'invalid_or_missing_priority' };
         }
 
         let imageName: string | undefined;
-        if (image) {
-            const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
-            if (!matches || matches.length !== 3) {
-                throw { status: 401, message: 'invalid_image_format' };
-            }
-            const mimeType = matches[1];
-            const base64Data = matches[2];
-            const buffer = Buffer.from(base64Data, 'base64');
-            if (buffer.length > 1024 * 1024 * 10) {
-                throw { status: 401, message: 'image_size_too_large' };
-            }
+        if (image && typeof image === 'string') {
+            const trimmed = image.trim();
 
-            imageName = randomImageName() + mimeType.replace('image/', '.');
-            const imagePath = 'images/' + imageName;
-            await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            if (trimmed.startsWith('data:')) {
+                const matches = trimmed.match(
+                    /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=\s]+)$/
+                );
+                if (!matches || matches.length !== 3) {
+                    throw { status: 400, message: 'invalid_image_format' };
+                }
+
+                const mimeType = matches[1].toLowerCase();
+                const base64Data = matches[2].replace(/\s+/g, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+                if (buffer.length > 1024 * 1024 * 10) {
+                    throw { status: 400, message: 'image_size_too_large' };
+                }
+
+                const extensionMap: Record<string, string> = {
+                    'image/jpeg': '.jpg',
+                    'image/jpg': '.jpg',
+                    'image/png': '.png',
+                    'image/gif': '.gif',
+                    'image/webp': '.webp',
+                    'image/svg+xml': '.svg',
+                };
+
+                const extension = extensionMap[mimeType];
+                if (!extension) {
+                    throw { status: 400, message: 'invalid_image_format' };
+                }
+
+                imageName = randomImageName() + extension;
+                const imagePath = 'images/' + imageName;
+                await Images3Client.uploadFile(buffer, mimeType, imagePath);
+            } else if (trimmed.length > 0) {
+                // Accept filename or full URL containing a safe filename (e.g. from /post/image upload)
+                const extracted = this.extractSafeFilenameFromUrl(trimmed);
+                if (extracted) {
+                    imageName = extracted;
+                } else {
+                    if (!this.isSafeUploadedImageName(trimmed)) {
+                        throw { status: 400, message: 'invalid_image_format' };
+                    }
+                    imageName = trimmed;
+                }
+            }
         }
 
         const scheduledPostId = await this.repository.create({
@@ -223,13 +277,13 @@ export class ScheduleService {
         const formattedUTC = localTime.toFormat('yyyy-MM-dd HH:mm:ss');
 
         if (!title || !isValidString(title)) {
-            throw { status: 401, message: 'invalid_or_missing_title' };
+            throw { status: 400, message: 'invalid_or_missing_title' };
         }
         if (!description || !isValidString(description)) {
-            throw { status: 401, message: 'invalid_or_missing_description' };
+            throw { status: 400, message: 'invalid_or_missing_description' };
         }
         if (!priority || !isValidPriority(priority)) {
-            throw { status: 401, message: 'invalid_or_missing_priority' };
+            throw { status: 400, message: 'invalid_or_missing_priority' };
         }
 
         const post = await this.repository.findById(id, schoolId);
@@ -240,36 +294,81 @@ export class ScheduleService {
 
         let newImage = post.image;
 
-        if (image && image !== post.image) {
-            const matches = image.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (image !== undefined) {
+            if (image === null) {
+                newImage = null;
+            } else if (typeof image === 'string') {
+                const trimmed = image.trim();
 
-            if (!matches || matches.length !== 3) {
-                throw {
-                    status: 401,
-                    message:
-                        'Invalid image format. Make sure it is Base64 encoded.',
-                };
+                if (trimmed === '') {
+                    newImage = null;
+                } else if (trimmed === post.image) {
+                    // no-op
+                } else if (post.image && trimmed.includes(post.image)) {
+                    // e.g. full URL that contains existing filename
+                    // no-op
+                } else if (this.isSafeUploadedImageName(trimmed)) {
+                    newImage = trimmed;
+                } else {
+                    const extracted = this.extractSafeFilenameFromUrl(trimmed);
+                    if (extracted) {
+                        newImage = extracted;
+                    } else if (trimmed.startsWith('data:')) {
+                        const matches = trimmed.match(
+                            /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=\s]+)$/
+                        );
+
+                        if (!matches || matches.length !== 3) {
+                            throw {
+                                status: 400,
+                                message: 'invalid_image_format',
+                            };
+                        }
+
+                        const mimeType = matches[1].toLowerCase();
+                        const base64Data = matches[2].replace(/\s+/g, '');
+                        const buffer = Buffer.from(base64Data, 'base64');
+
+                        if (buffer.length > 10 * 1024 * 1024) {
+                            throw {
+                                status: 400,
+                                message: 'image_size_too_large',
+                            };
+                        }
+
+                        const extensionMap: Record<string, string> = {
+                            'image/jpeg': '.jpg',
+                            'image/jpg': '.jpg',
+                            'image/png': '.png',
+                            'image/gif': '.gif',
+                            'image/webp': '.webp',
+                            'image/svg+xml': '.svg',
+                        };
+
+                        const extension = extensionMap[mimeType];
+                        if (!extension) {
+                            throw {
+                                status: 400,
+                                message: 'invalid_image_format',
+                            };
+                        }
+
+                        const imageName = randomImageName() + extension;
+                        const imagePath = `images/${imageName}`;
+                        await Images3Client.uploadFile(
+                            buffer,
+                            mimeType,
+                            imagePath
+                        );
+
+                        newImage = imageName;
+                    } else {
+                        throw { status: 400, message: 'invalid_image_format' };
+                    }
+                }
+            } else {
+                throw { status: 400, message: 'invalid_image_format' };
             }
-
-            const mimeType = matches[1];
-            const base64Data = matches[2];
-            const buffer = Buffer.from(base64Data, 'base64');
-
-            if (buffer.length > 10 * 1024 * 1024) {
-                throw {
-                    status: 401,
-                    message: 'Image size is too large (max 10MB)',
-                };
-            }
-
-            const imageName =
-                randomImageName() + mimeType.replace('image/', '.');
-            const imagePath = `images/${imageName}`;
-            await Images3Client.uploadFile(buffer, mimeType, imagePath);
-
-            newImage = imageName;
-        } else if (image === null) {
-            newImage = null;
         }
 
         await this.repository.update(id, schoolId, {

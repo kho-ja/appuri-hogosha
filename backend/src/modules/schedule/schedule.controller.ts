@@ -107,7 +107,7 @@ export class ScheduleController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 401, message: 'invalid_or_missing_post_id' };
+                throw { status: 400, message: 'invalid_or_missing_post_id' };
             }
 
             const result = await this.service.getScheduledPost(
@@ -133,7 +133,7 @@ export class ScheduleController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 401, message: 'invalid_or_missing_post_id' };
+                throw { status: 400, message: 'invalid_or_missing_post_id' };
             }
 
             const result = await this.service.deleteScheduledPost(
@@ -159,7 +159,7 @@ export class ScheduleController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 401, message: 'invalid_or_missing_post_id' };
+                throw { status: 400, message: 'invalid_or_missing_post_id' };
             }
 
             const result = await this.service.updateScheduledPost(
@@ -189,7 +189,7 @@ export class ScheduleController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 401, message: 'invalid_or_missing_post_id' };
+                throw { status: 400, message: 'invalid_or_missing_post_id' };
             }
 
             const result = await this.service.updateScheduledPostReceivers(
@@ -216,7 +216,7 @@ export class ScheduleController {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 401, message: 'invalid_or_missing_post_id' };
+                throw { status: 400, message: 'invalid_or_missing_post_id' };
             }
 
             const result = await this.service.getScheduledPostReceivers(
