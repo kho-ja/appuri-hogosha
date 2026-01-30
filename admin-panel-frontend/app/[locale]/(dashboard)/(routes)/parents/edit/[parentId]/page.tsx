@@ -48,10 +48,7 @@ export default function EditParent({
   });
   const { data, isLoading, isError } = useListQuery<{
     parent: Parent;
-  }>(
-    `parent/${parentId}`,
-    ["parent", parentId]
-  );
+  }>(`parent/${parentId}`, ["parent", parentId]);
   const { isPending, mutate } = useApiMutation<{ parent: Parent }, FormType>(
     `parent/${parentId}`,
     "PUT",

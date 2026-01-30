@@ -15,9 +15,7 @@ export async function apiClient<T>({
   params,
   body,
 }: ApiClientOptions): Promise<T> {
-  const url = new URL(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/${endpoint}`
-  );
+  const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${endpoint}`);
 
   if (params && method === "GET") {
     Object.entries(params).forEach(([key, value]) => {
@@ -36,10 +34,21 @@ export async function apiClient<T>({
     body: method !== "GET" && body ? JSON.stringify(body) : undefined,
   });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new HttpError(errorData.error, res.status, errorData);
-  }
+if (!res.ok) {
+  let errorData = null;
+  try {
+    errorData = await res.json();
+  } catch {}
+  throw new HttpError(
+    errorData?.error || "Request failed",
+    res.status,
+    errorData
+  );
+}
 
-  return res.json() as Promise<T>;
+if (res.status === 204) {
+  return null as T;
+}
+
+return res.json() as Promise<T>;
 }

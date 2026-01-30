@@ -23,10 +23,7 @@ export default function EditStudents({
   const router = useRouter();
   const { data, isLoading, isError } = useListQuery<{
     students: Student[];
-  }>(
-    `parent/${parentId}/students`,
-    ["editParentStudents", parentId]
-  );
+  }>(`parent/${parentId}/students`, ["editParentStudents", parentId]);
   interface UpdateParentStudentsPayload {
     students: number[];
   }

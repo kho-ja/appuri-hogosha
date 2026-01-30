@@ -13,7 +13,7 @@ import {
 import { Link } from "@/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
@@ -36,6 +36,7 @@ export default function ScheduledMessagePage({
 }) {
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
+  const { formatDateTime } = useDateFormatter();
 
   interface ScheduledPostResponse {
     post: {
@@ -102,8 +103,8 @@ export default function ScheduledMessagePage({
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const scheduled_atDate = FormatDateTime(data?.post?.scheduled_at ?? "");
+  const edited_atDate = formatDateTime(data?.post?.edited_at ?? "");
+  const scheduled_atDate = formatDateTime(data?.post?.scheduled_at ?? "");
 
   if (isError) return <NotFound />;
 

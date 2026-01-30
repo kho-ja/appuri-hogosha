@@ -1,18 +1,18 @@
 "use client";
 
 import * as React from "react";
-import {
-  ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Student from "@/types/student";
 import StudentApi from "@/types/studentApi";
-import { GenericSelectTable, GenericSelectTableConfig } from "./GenericSelectTable";
-import useTableQuery from "@/lib/useTableQuery";
-import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
+import {
+  GenericSelectTable,
+  GenericSelectTableConfig,
+} from "./GenericSelectTable";
+import usePagination from "@/lib/usePagination";
+import { useListQuery } from "@/lib/useListQuery";
 
 export function StudentTable({
   selectedStudents,
@@ -26,17 +26,16 @@ export function StudentTable({
   const t = useTranslations("StudentTable");
   const tName = useTranslations("names");
 
-  const urlTableQuery = useTableQuery();
-  const independentTableQuery = useIndependentTableQuery("student");
+  const { page, setPage, search, setSearch, filter, setFilter } = usePagination(
+    {
+      persistToUrl: !useIndependentState,
+      defaultFilter: "all",
+    }
+  );
 
-  const { page, setPage, search, setSearch } = useIndependentState
-    ? independentTableQuery
-    : urlTableQuery;
+  const filterBy = filter || "all";
 
-  const [filterBy, setFilterBy] = React.useState<string>("all");
-
-
-  const { data: rawData, isLoading } = useApiPostQuery<StudentApi>(
+  const { data: rawData, isLoading } = useListQuery<StudentApi>(
     "student/list",
     ["students", page, search],
     { page, search },
@@ -139,11 +138,10 @@ export function StudentTable({
         { value: "family_name", label: t("familyName") },
       ],
       filterBy,
-      onFilterChange: setFilterBy,
-      
-      getBadgeLabel: (student) =>
-        tName("name", { ...student, parents: "" }),
-      
+      onFilterChange: (value: string) => setFilter(value),
+
+      getBadgeLabel: (student) => tName("name", { ...student, parents: "" }),
+
       enableSelectAll: true,
       selectAllQueryKey: (searchStr, filterByStr) => [
         "students",
@@ -151,10 +149,10 @@ export function StudentTable({
         searchStr || "all",
         filterByStr || "all",
       ],
-      
+
       selectedItemsEndpoint: "student/ids",
       selectedItemsResponseKey: "studentList",
-      
+
       noResultsMessage: t("noResults"),
     }),
     [t, tName, filterBy]

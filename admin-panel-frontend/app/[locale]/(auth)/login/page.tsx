@@ -72,6 +72,7 @@ export default function LoginForm() {
   };
 
   useEffect(() => {
+    if (!searchParams) return;
     const error = searchParams.get("error");
     if (error) {
       const ns = (allMessages?.LoginForm ?? {}) as Record<string, string>;

@@ -7,26 +7,22 @@ export function useListQuery<T>(
   endpoint: string,
   queryKey: unknown[],
   params?: Record<string, unknown>,
-  method: "GET" | "POST" = "GET"
+  method: "GET" | "POST" = "GET",
+  options?: { enabled?: boolean }
 ) {
   const { data: session } = useSession();
 
   return useQuery<T, HttpError>({
     queryKey,
     queryFn: async () => {
-      try {
-        return await apiClient<T>({
-          endpoint,
-          method,
-          token: session?.sessionToken,
-          ...(method === "GET" ? { params } : { body: params }),
-        });
-      } catch (error) {
-        console.error("useListQuery error:", { endpoint, params, error });
-        throw error;
-      }
+      return apiClient<T>({
+        endpoint,
+        method,
+        token: session?.sessionToken,
+        ...(method === "GET" ? { params } : { body: params }),
+      });
     },
-    enabled: !!session?.sessionToken,
-    retry: 1,
+    enabled: !!session?.sessionToken && (options?.enabled ?? true),
   });
 }
+

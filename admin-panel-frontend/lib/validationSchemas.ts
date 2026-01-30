@@ -76,9 +76,12 @@ export const smsCreateSchema = z.object({
   Bcc: z.string().optional(),
 });
 
-
-
-
+export const notificationsFormSchema = z.object({
+  high: z.boolean(),
+  medium: z.boolean(),
+  low: z.boolean(),
+  title: z.string().min(1).optional(),
+});
 
 export const getAdminCreateSchema = (t: (key: string) => string) =>
   z.object({

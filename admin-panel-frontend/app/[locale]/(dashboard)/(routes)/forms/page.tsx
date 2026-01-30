@@ -15,10 +15,10 @@ export default function DashboardPage() {
   const t = useTranslations("forms");
   const pathName = usePathname();
   const [page, setPage] = useState(1);
-  const { data } = useListQuery<FormApi>(
-    `form/list?page=${page}&status=wait`,
-    ["forms", page]
-  );
+  const { data } = useListQuery<FormApi>(`form/list?page=${page}&status=wait`, [
+    "forms",
+    page,
+  ]);
 
   return (
     <div className="space-y-4">

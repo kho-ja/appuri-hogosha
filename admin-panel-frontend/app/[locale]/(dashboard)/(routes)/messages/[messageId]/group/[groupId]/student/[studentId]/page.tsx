@@ -8,7 +8,7 @@ import Parent from "@/types/parent";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import Group from "@/types/group";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
@@ -42,14 +42,17 @@ export default function ThisStudent({
 }) {
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
+  const { formatDateTime } = useDateFormatter();
   const { data: studentData, isError } = useListQuery<{
     student: Student;
     group: Group;
     parents: Parent[];
-  }>(
-    `post/${messageId}/group/${groupId}/student/${studentId}`,
-    ["student", messageId, groupId, studentId]
-  );
+  }>(`post/${messageId}/group/${groupId}/student/${studentId}`, [
+    "student",
+    messageId,
+    groupId,
+    studentId,
+  ]);
 
   const { mutate } = useApiMutation<{ message: string }>(
     `post/${messageId}/students/${studentId}`,
@@ -107,7 +110,7 @@ export default function ThisStudent({
       cell: ({ row }) => (
         <div>
           {row.getValue("viewed_at")
-            ? FormatDateTime(row.getValue("viewed_at"))
+            ? formatDateTime(row.getValue("viewed_at"))
             : t("noView")}
         </div>
       ),

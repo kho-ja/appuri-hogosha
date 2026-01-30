@@ -28,10 +28,7 @@ export default function ThisParent({
   const { data: parentData, isError } = useListQuery<{
     parent: Parent;
     students: Student[];
-  }>(
-    `parent/${parentId}`,
-    ["parent", parentId]
-  );
+  }>(`parent/${parentId}`, ["parent", parentId]);
 
   const studentColumns: ColumnDef<Student>[] = [
     {

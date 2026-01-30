@@ -26,7 +26,7 @@ import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { useListQuery } from "@/lib/useListQuery";
-import useTableQuery from "@/lib/useTableQuery";
+import usePagination from "@/lib/usePagination";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,9 @@ import NoBadge from "@/components/nobadge";
 export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
-  const { page, setPage, search, setSearch } = useTableQuery();
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
   const { data } = useListQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],

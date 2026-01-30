@@ -1,17 +1,17 @@
 "use client";
 
 import * as React from "react";
-import {
-  ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Parent from "@/types/parent";
 import ParentApi from "@/types/parentApi";
-import { GenericSelectTable, GenericSelectTableConfig } from "./GenericSelectTable";
-import useTableQuery from "@/lib/useTableQuery";
-import useApiPostQuery from "@/lib/useApiPostQuery";
+import {
+  GenericSelectTable,
+  GenericSelectTableConfig,
+} from "./GenericSelectTable";
+import usePagination from "@/lib/usePagination";
 import { Badge } from "./ui/badge";
 import { Link } from "@/navigation";
 import YesBadge from "./yesbadge";
@@ -31,9 +31,11 @@ export function ParentTable({
   const tParents = useTranslations("parents");
   const tName = useTranslations("names");
 
-  const { page, setPage, search, setSearch } = useTableQuery();
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
 
-  const { data: rawData, isLoading } = useApiPostQuery<ParentApi>(
+  const { data: rawData, isLoading } = useListQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
     { page, search, showOnlyNonLoggedIn },

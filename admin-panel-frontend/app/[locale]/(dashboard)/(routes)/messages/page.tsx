@@ -23,7 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
-import useTableQuery from "@/lib/useTableQuery";
+import usePagination from "@/lib/usePagination";
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams } from "next/navigation";
@@ -38,25 +38,28 @@ import {
 } from "@/components/ui/select";
 import ScheduledPost from "@/types/scheduledPost";
 import pagination from "@/types/pagination";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import { useListQuery } from "@/lib/useListQuery";
 
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
-  const {
-    page,
-    setPage,
-    search,
-    setSearch,
-    perPage,
-    selectedPosts,
-    setSelectedPosts,
-    allSelectedIds,
-    handlePerPageChange,
-    setSelectedScheduledPosts,
-    selectedScheduledPosts,
-  } = useTableQuery();
+  const { formatDateTime } = useDateFormatter();
+  const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
+    usePagination({ persistToUrl: true });
+
+  const searchParams = useSearchParams();
+const initialTab =
+  (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+
+const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
+
+  // Selected items are separate from pagination state
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+  const [selectedScheduledPosts, setSelectedScheduledPosts] = useState<
+    number[]
+  >([]);
+  const allSelectedIds = selectedPosts;
 
   const queryClient = useQueryClient();
   const { data } = useListQuery<PostApi>(
@@ -69,8 +72,11 @@ export default function Info() {
     pagination: pagination;
   }
   const { data: scheduledPosts } = useListQuery<ScheduledPostsResponse>(
-    `schedule/list?page=${page}&text=${search}&perPage=${perPage}`,
-    ["scheduledPosts", page, search, perPage]
+  "schedule/list",
+  ["schedule", page, search, perPage],
+  { page, text: search, perPage },
+  "POST",
+  {enabled: tab === "scheduled"}
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -286,7 +292,7 @@ export default function Info() {
       cell: ({ row }) => {
         const value = row.getValue("scheduled_at");
         if (!value) return "-";
-        return FormatDateTime(value as string);
+        return formatDateTime(value as string);
       },
     },
     {
@@ -300,10 +306,10 @@ export default function Info() {
     },
   ];
 
-  const searchParams = useSearchParams();
-  const initialTab =
-    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
-  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
+  // const searchParams = useSearchParams();
+  // const initialTab =
+  //   (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+  // const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   return (
     <div className="w-full space-y-4">

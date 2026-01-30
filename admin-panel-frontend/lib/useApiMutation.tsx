@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import HttpError from "./HttpError";
 import { apiClient } from "./apiClient";
 import { useListQuery } from "./useListQuery";
+import useApiErrorHandler from "./useApiErrorHandler";
 
 export default function useApiMutation<TResponse, TInput = void>(
   endpoint: string,
@@ -14,6 +15,14 @@ export default function useApiMutation<TResponse, TInput = void>(
 ) {
   const { data: session } = useSession();
   const t = useTranslations("errors");
+  const handleError = useApiErrorHandler();
+
+  // Extract custom onError if provided
+  const {
+    onError: customOnError,
+    onMutate: customOnMutate,
+    ...restOptions
+  } = options;
 
   return useMutation<TResponse, HttpError, TInput>({
     mutationKey,
@@ -24,19 +33,27 @@ export default function useApiMutation<TResponse, TInput = void>(
         token: session?.sessionToken,
         body: data,
       }),
-    onMutate: () => {
-      toast({
-        title: t("loading"),
-        description: t("loadingDescription"),
-      });
+    onMutate: (variables) => {
+      // Show loading toast unless custom onMutate is provided
+      if (!customOnMutate) {
+        toast({
+          title: t("loading"),
+          description: t("loadingDescription"),
+        });
+      } else {
+        // Call custom onMutate if provided
+        customOnMutate(variables);
+      }
     },
-    onError: (error) => {
-      toast({
-        title: t("wentWrong"),
-        description: t(error.message),
-        variant: "destructive",
-      });
+    onError: (error, variables, context) => {
+      // Use centralized error handler unless custom onError is provided
+      if (!customOnError) {
+        handleError(error);
+      } else {
+        // Call custom onError if provided
+        customOnError(error, variables, context);
+      }
     },
-    ...options,
+    ...restOptions,
   });
 }

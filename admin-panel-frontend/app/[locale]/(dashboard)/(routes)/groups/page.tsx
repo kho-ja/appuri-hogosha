@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/dialog";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import useTableQuery from "@/lib/useTableQuery";
+import usePagination from "@/lib/usePagination";
 import PageHeader from "@/components/PageHeader";
 import {
   Table,
@@ -161,7 +161,9 @@ function GroupRow({
 export default function Groups() {
   const t = useTranslations("groups");
   const { data: session } = useSession();
-  const { page, setPage, search, setSearch } = useTableQuery();
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
   const { data } = useListQuery<GroupApi>(
     `group/list?name=${search}&all=true`,
     ["groups", search]

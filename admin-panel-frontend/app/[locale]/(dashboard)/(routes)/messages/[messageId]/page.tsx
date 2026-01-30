@@ -28,7 +28,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import GroupApi from "@/types/groupApi";
 import Group from "@/types/group";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
 import { useState } from "react";
 import NotFound from "@/components/NotFound";
@@ -52,20 +52,22 @@ export default function ThisMessage({
 }) {
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
+  const { formatDateTime } = useDateFormatter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const initialTab =
     (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
-  const { data } = useListQuery<postView>(
-    `post/${messageId}`,
-    ["message", messageId]
-  );
+  const { data } = useListQuery<postView>(`post/${messageId}`, [
+    "message",
+    messageId,
+  ]);
   const [studentPage, setStudentPage] = useState(1);
   const [studentSearch, setStudentSearch] = useState("");
-  const { data: studentData, isError: isStudentError } = useListQuery<StudentApi>(
-    `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
-    ["student", messageId, studentPage, studentSearch]
-  );
+  const { data: studentData, isError: isStudentError } =
+    useListQuery<StudentApi>(
+      `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
+      ["student", messageId, studentPage, studentSearch]
+    );
   const [groupPage, setGroupPage] = useState(1);
   const [groupSearch, setGroupSearch] = useState("");
   const { data: groupData, isError } = useListQuery<GroupApi>(
@@ -159,8 +161,8 @@ export default function ThisMessage({
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const sent_atDate = FormatDateTime(data?.post?.sent_at ?? "");
+  const edited_atDate = formatDateTime(data?.post?.edited_at ?? "");
+  const sent_atDate = formatDateTime(data?.post?.sent_at ?? "");
 
   if (isError && isStudentError) return <NotFound />;
 

@@ -48,10 +48,7 @@ export default function EditGroup({
   const { data, isLoading, isError } = useListQuery<{
     group: { name: string };
     members: Student[];
-  }>(
-    `group/${groupId}?context=edit`,
-    ["group", groupId]
-  );
+  }>(`group/${groupId}?context=edit`, ["group", groupId]);
 
   const { isPending, mutate } = useApiMutation<
     { message: string },

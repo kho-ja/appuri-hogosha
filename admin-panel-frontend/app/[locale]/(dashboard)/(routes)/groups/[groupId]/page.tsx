@@ -31,10 +31,11 @@ export default function ThisGroup({
     group: Group;
     pagination: pagination;
     members: Student[];
-  }>(
-    `group/${groupId}?page=${studentPage}&context=view`,
-    ["group", groupId, studentPage]
-  );
+  }>(`group/${groupId}?page=${studentPage}&context=view`, [
+    "group",
+    groupId,
+    studentPage,
+  ]);
 
   const studentColumns: ColumnDef<Student>[] = [
     {

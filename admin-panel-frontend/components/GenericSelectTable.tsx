@@ -49,19 +49,19 @@ export interface GenericSelectTableConfig<T extends BaseEntity> {
   filters?: Array<{ value: string; label: string }>;
   filterBy?: string;
   onFilterChange?: (filterBy: string) => void;
-  
+
   getBadgeLabel?: (item: T) => string;
   getBadgeTitle?: (item: T) => string;
-  
+
   enableSelectAll?: boolean;
   selectAllEndpoint?: string;
   selectAllQueryKey?: (search: string, filterBy?: string) => string[];
-  
+
   isTreeStructure?: boolean;
   treeNodeBuilder?: (items: T[]) => T[];
   treeFlattener?: (nodes: T[]) => T[];
   treeDescendantsFinder?: (node: T, allNodes: T[]) => T[];
-  
+
   translationNamespace?: string;
   selectedItemsEndpoint?: string;
   selectedItemsResponseKey?: string;
@@ -99,7 +99,7 @@ export function GenericSelectTable<T extends BaseEntity>({
 }: GenericSelectTableProps<T>) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  
+
   const [filterBy, setFilterBy] = useState(config.filterBy || "all");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
@@ -119,13 +119,15 @@ export function GenericSelectTable<T extends BaseEntity>({
 
   const tableData = useMemo(() => {
     if (!data) return [];
-    
+
     const dataArray = data[entityKey];
     if (!Array.isArray(dataArray)) return [];
 
     if (config.isTreeStructure) {
       if (config.treeFlattener) {
-        const built = config.treeNodeBuilder ? config.treeNodeBuilder(dataArray) : dataArray;
+        const built = config.treeNodeBuilder
+          ? config.treeNodeBuilder(dataArray)
+          : dataArray;
         return config.treeFlattener(built);
       }
       return dataArray;
@@ -153,7 +155,7 @@ export function GenericSelectTable<T extends BaseEntity>({
       if (selectedItemIds.size === 0) {
         return { [config.selectedItemsResponseKey || entityKey]: [] };
       }
-      
+
       const payload = {
         [entityKey.replace(/s$/, "") + "Ids"]: Array.from(selectedItemIds),
       };
@@ -185,17 +187,24 @@ export function GenericSelectTable<T extends BaseEntity>({
     if (selectedItemsData) {
       const responseKey = config.selectedItemsResponseKey || entityKey;
       const updatedItems = selectedItemsData[responseKey];
-      
+
       if (Array.isArray(updatedItems)) {
         setSelectedItems((prevSelected) => {
           const newSelectedMap = new Map(
             updatedItems.map((item: T) => [item.id, item])
           );
-          return prevSelected.map((item) => newSelectedMap.get(item.id) || item);
+          return prevSelected.map(
+            (item) => newSelectedMap.get(item.id) || item
+          );
         });
       }
     }
-  }, [selectedItemsData, entityKey, setSelectedItems, config.selectedItemsResponseKey]);
+  }, [
+    selectedItemsData,
+    entityKey,
+    setSelectedItems,
+    config.selectedItemsResponseKey,
+  ]);
 
   const selectAllMutation = useMutation({
     mutationFn: async () => {
@@ -206,7 +215,7 @@ export function GenericSelectTable<T extends BaseEntity>({
       if (config.selectAllQueryKey) {
         const allItems: T[] = [];
         const paginationData = data?.pagination as pagination;
-        
+
         if (!paginationData) {
           throw new Error("Pagination data not available");
         }
@@ -215,7 +224,7 @@ export function GenericSelectTable<T extends BaseEntity>({
         for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
           const key = config.selectAllQueryKey(search, filterBy);
           let pageData = queryClient.getQueryData<ApiResponse<T>>(key);
-          
+
           if (!pageData) {
             pageData = await queryClient.fetchQuery({
               queryKey: key,
@@ -243,7 +252,7 @@ export function GenericSelectTable<T extends BaseEntity>({
               },
             });
           }
-          
+
           const itemsArray = pageData?.[entityKey];
           if (Array.isArray(itemsArray)) {
             allItems.push(...itemsArray);
@@ -269,7 +278,12 @@ export function GenericSelectTable<T extends BaseEntity>({
     } else if (config.enableSelectAll !== false) {
       selectAllMutation.mutate();
     }
-  }, [selectedItems.length, setSelectedItems, config.enableSelectAll, selectAllMutation]);
+  }, [
+    selectedItems.length,
+    setSelectedItems,
+    config.enableSelectAll,
+    selectAllMutation,
+  ]);
 
   const onRowSelectionChange = (updater: any) => {
     if (typeof updater === "function") {
@@ -310,7 +324,12 @@ export function GenericSelectTable<T extends BaseEntity>({
         });
       }
     },
-    [config.isTreeStructure, config.treeDescendantsFinder, tableData, setSelectedItems]
+    [
+      config.isTreeStructure,
+      config.treeDescendantsFinder,
+      tableData,
+      setSelectedItems,
+    ]
   );
 
   const tableColumns: ColumnDef<T>[] = useMemo(() => {
@@ -321,7 +340,9 @@ export function GenericSelectTable<T extends BaseEntity>({
     data: tableData,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: config.isTreeStructure ? undefined : onRowSelectionChange,
+    onRowSelectionChange: config.isTreeStructure
+      ? undefined
+      : onRowSelectionChange,
     getRowId: (row) => row.id.toString(),
     state: {
       rowSelection,
@@ -341,7 +362,13 @@ export function GenericSelectTable<T extends BaseEntity>({
         setSelectedItems((prev) => prev.filter((i) => i.id !== item.id));
       }
     },
-    [config.isTreeStructure, tableData, setSelectedItems, config.treeDescendantsFinder, handleRowSelection]
+    [
+      config.isTreeStructure,
+      tableData,
+      setSelectedItems,
+      config.treeDescendantsFinder,
+      handleRowSelection,
+    ]
   );
 
   const getBadgeLabel = useCallback(
@@ -499,7 +526,8 @@ export function GenericSelectTable<T extends BaseEntity>({
       {/* Footer with count and pagination */}
       <div className="flex flex-wrap gap-2 sm:flex-row sm:justify-between sm:items-center">
         <div className="text-sm text-muted-foreground sm:w-auto w-full">
-          {selectedItems.length} of {table.getFilteredRowModel().rows.length} selected
+          {selectedItems.length} of {table.getFilteredRowModel().rows.length}{" "}
+          selected
         </div>
         {data?.pagination && (
           <div className="w-full sm:w-auto">

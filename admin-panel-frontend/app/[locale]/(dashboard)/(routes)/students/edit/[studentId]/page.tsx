@@ -52,10 +52,7 @@ export default function CreateStudent({
   const router = useRouter();
   const { data, isLoading, isError } = useListQuery<{
     student: Student;
-  }>(
-    `student/${studentId}`,
-    ["student", studentId]
-  );
+  }>(`student/${studentId}`, ["student", studentId]);
   interface EditStudentPayload {
     email: string;
     phone_number: string;

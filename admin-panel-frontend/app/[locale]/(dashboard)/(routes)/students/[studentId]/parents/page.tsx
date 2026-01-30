@@ -23,10 +23,7 @@ export default function EditParents({
   const router = useRouter();
   const { data, isLoading, isError } = useListQuery<{
     parents: Parent[];
-  }>(
-    `student/${studentId}/parents`,
-    ["student", studentId]
-  );
+  }>(`student/${studentId}/parents`, ["student", studentId]);
   const { mutate, isPending } = useApiMutation<{ message: string }>(
     `student/${studentId}/parents`,
     "POST",

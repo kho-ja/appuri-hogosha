@@ -27,10 +27,7 @@ export default function ThisStudent({
     student: Student;
     parents: Parent[];
     groups: Group[];
-  }>(
-    `student/${studentId}`,
-    ["student", studentId]
-  );
+  }>(`student/${studentId}`, ["student", studentId]);
 
   if (isError) return <NotFound />;
 

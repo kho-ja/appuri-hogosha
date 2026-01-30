@@ -48,10 +48,12 @@ export default function ThisGroup({
     group: Group;
     pagination: pagination;
     students: Student[];
-  }>(
-    `post/${messageId}/group/${groupId}?page=${studentPage}`,
-    ["group", messageId, groupId, studentPage]
-  );
+  }>(`post/${messageId}/group/${groupId}?page=${studentPage}`, [
+    "group",
+    messageId,
+    groupId,
+    studentPage,
+  ]);
   const pathname = usePathname();
   const { mutate } = useApiMutation<{ message: string }>(
     `post/${messageId}/groups/${groupId}`,

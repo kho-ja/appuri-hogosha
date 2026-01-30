@@ -21,6 +21,7 @@ import { useListQuery } from "@/lib/useListQuery";
 import { useEffect } from "react";
 import { MessageSquareShare } from "lucide-react";
 import { notificationsFormSchema } from "@/lib/validationSchemas";
+import useApiErrorHandler from "@/lib/useApiErrorHandler";
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
@@ -47,6 +48,9 @@ type School = {
 export function NotificationsForm() {
   const { toast } = useToast();
   const t = useTranslations("NotificationsForm");
+  const handleError = useApiErrorHandler({
+    title: t("NotificationSettingUpdateFailed"),
+  });
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
@@ -59,12 +63,7 @@ export function NotificationsForm() {
         description: data?.message ?? "",
       });
     },
-    onError: (error) => {
-      toast({
-        title: t("NotificationSettingUpdateFailed"),
-        description: error?.message ?? "",
-      });
-    },
+    onError: handleError,
   });
 
   useEffect(() => {

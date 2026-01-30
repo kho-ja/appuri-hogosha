@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import {
-  ColumnDef,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
 import { useMemo, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
-import { GenericSelectTable, GenericSelectTableConfig } from "./GenericSelectTable";
-import useIndependentTableQuery from "@/lib/useIndependentTableQuery";
-import useApiQuery from "@/lib/useApiQuery";
+import {
+  GenericSelectTable,
+  GenericSelectTableConfig,
+} from "./GenericSelectTable";
+import usePagination from "@/lib/usePagination";
+import { useListQuery } from "@/lib/useListQuery";
 
 // Tree node structure
 interface GroupTreeNode extends Group {
@@ -92,22 +93,21 @@ export function GroupTable({
   useIndependentState?: boolean;
 }) {
   const t = useTranslations("GroupTable");
-  const independentTableQuery = useIndependentTableQuery("group");
-
   const {
     search: searchName,
     setSearch: setSearchName,
     setPage,
-  } = independentTableQuery;
+  } = usePagination({ persistToUrl: !useIndependentState });
 
   // Fetch all groups, disable pagination
-  const { data: rawData, isLoading } = useApiQuery<GroupApi>(
-    `group/list?all=true&name=${searchName}`,
-    ["groups", searchName]
+  const { data, isLoading } = useListQuery<GroupApi>(
+    "group/list",
+    ["groups", searchName],
+    {
+      all: true,
+      name: searchName,
+    }
   );
-
-  // Convert undefined to null for type safety
-  const data = rawData || null;
 
   // Define columns
   const columns: ColumnDef<GroupTreeNode>[] = useMemo(
@@ -209,7 +209,9 @@ export function GroupTable({
       selectedItems={selectedGroups as GroupTreeNode[]}
       setSelectedItems={(setter) => {
         if (typeof setter === "function") {
-          setSelectedGroups((prev) => setter(prev as GroupTreeNode[]) as Group[]);
+          setSelectedGroups(
+            (prev) => setter(prev as GroupTreeNode[]) as Group[]
+          );
         } else {
           setSelectedGroups(setter as Group[]);
         }

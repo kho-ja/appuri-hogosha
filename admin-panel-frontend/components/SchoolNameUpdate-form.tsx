@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { University } from "lucide-react";
+import useApiErrorHandler from "@/lib/useApiErrorHandler";
 
 const formSchema = groupCreateSchema;
 
@@ -48,6 +49,9 @@ export function SchoolNameUpdate() {
   const { update } = useSession();
   const { toast } = useToast();
   const t = useTranslations("SchoolNameUpdate");
+  const handleError = useApiErrorHandler({
+    title: t("SchoolNameUpdateFailed"),
+  });
   const form = useForm<SchoolNameValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -67,12 +71,7 @@ export function SchoolNameUpdate() {
           schoolName: data.school.name,
         });
       },
-      onError: (error) => {
-        toast({
-          title: t("SchoolNameUpdateFailed"),
-          description: error?.message ?? "",
-        });
-      },
+      onError: handleError,
     }
   );
 
