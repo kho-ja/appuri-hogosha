@@ -50,7 +50,7 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
       });
       setIsOpen(false);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       let errorMessage = t("resendPasswordError");
 
       console.error("Error resending password:", error);

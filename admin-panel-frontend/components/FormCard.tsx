@@ -50,7 +50,10 @@ export default function FormCard({ form }: { form: Form }) {
             <div className="space-y-1.5">
               <DisplayProperty
                 property={t("parent")}
-                value={tName("name", { ...form?.parent } as any)}
+                value={tName("name", {
+                  given_name: form.parent?.given_name,
+                  family_name: form.parent?.family_name,
+                })}
               />
               <DisplayProperty property={t("event")} value={t(form?.reason)} />
               <DisplayProperty

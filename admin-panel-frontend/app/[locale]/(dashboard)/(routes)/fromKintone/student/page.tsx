@@ -64,23 +64,21 @@ export default function CreateFromKintone() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const { mutate, error, isPending } = useApiMutation<{ message: string }>(
-    `student/kintoneUpload`,
-    "POST",
-    ["uploadKintoneStudents"],
-    {
-      onSuccess(data) {
-        queryClient.invalidateQueries({
-          queryKey: ["students"],
-        });
-        toast({
-          title: t("studentsUploaded"),
-          description: t(data?.message),
-        });
-        router.push("/students");
-      },
-    }
-  );
+  const { mutate, error, isPending } = useApiMutation<
+    { message: string },
+    z.infer<typeof formSchema>
+  >(`student/kintoneUpload`, "POST", ["uploadKintoneStudents"], {
+    onSuccess(data) {
+      queryClient.invalidateQueries({
+        queryKey: ["students"],
+      });
+      toast({
+        title: t("studentsUploaded"),
+        description: t(data?.message),
+      });
+      router.push("/students");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataKintoneStudent");
@@ -106,7 +104,7 @@ export default function CreateFromKintone() {
   }, [form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    mutate(values as any);
+    mutate(values);
   };
 
   // Safely derive structured upload feedback from possible error body

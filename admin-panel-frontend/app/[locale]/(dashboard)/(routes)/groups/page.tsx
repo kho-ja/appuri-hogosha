@@ -327,8 +327,8 @@ export default function Groups() {
 
     const accessToken =
       session?.sessionToken ||
-      (session?.user as any)?.accessToken ||
-      (session?.user as any)?.token ||
+      (session?.user as { accessToken?: string })?.accessToken ||
+      (session?.user as { token?: string })?.token ||
       "";
 
     try {

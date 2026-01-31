@@ -49,10 +49,10 @@ export default function Info() {
     usePagination({ persistToUrl: true });
 
   const searchParams = useSearchParams();
-const initialTab =
-  (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+  const initialTab =
+    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
 
-const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
+  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   // Selected items are separate from pagination state
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
@@ -72,11 +72,11 @@ const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
     pagination: pagination;
   }
   const { data: scheduledPosts } = useListQuery<ScheduledPostsResponse>(
-  "schedule/list",
-  ["schedule", page, search, perPage],
-  { page, text: search, perPage },
-  "POST",
-  {enabled: tab === "scheduled"}
+    "schedule/list",
+    ["schedule", page, search, perPage],
+    { page, text: search, perPage },
+    "POST",
+    { enabled: tab === "scheduled" }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

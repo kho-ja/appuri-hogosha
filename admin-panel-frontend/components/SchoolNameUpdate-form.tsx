@@ -57,23 +57,21 @@ export function SchoolNameUpdate() {
     defaultValues,
   });
   const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation(
-    "school/name",
-    "POST",
-    ["schoolName"],
-    {
-      onSuccess: async (data: any) => {
-        toast({
-          title: t("SchoolNameUpdated"),
-          description: data?.message ?? "",
-        });
-        await update({
-          schoolName: data.school.name,
-        });
-      },
-      onError: handleError,
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { message: string; school: { name: string } },
+    SchoolNameValues
+  >("school/name", "POST", ["schoolName"], {
+    onSuccess: async (data) => {
+      toast({
+        title: t("SchoolNameUpdated"),
+        description: data?.message ?? "",
+      });
+      await update({
+        schoolName: data.school.name,
+      });
+    },
+    onError: handleError,
+  });
 
   useEffect(() => {
     if (!isLoading && data) {
@@ -86,7 +84,7 @@ export function SchoolNameUpdate() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values as any))}
+        onSubmit={form.handleSubmit((values) => mutate(values))}
         className="space-y-4"
       >
         <div>

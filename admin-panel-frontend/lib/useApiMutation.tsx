@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import HttpError from "./HttpError";
 import { apiClient } from "./apiClient";
-import { useListQuery } from "./useListQuery";
 import useApiErrorHandler from "./useApiErrorHandler";
 
 export default function useApiMutation<TResponse, TInput = void>(

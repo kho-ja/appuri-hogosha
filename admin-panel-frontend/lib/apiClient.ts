@@ -34,21 +34,21 @@ export async function apiClient<T>({
     body: method !== "GET" && body ? JSON.stringify(body) : undefined,
   });
 
-if (!res.ok) {
-  let errorData = null;
-  try {
-    errorData = await res.json();
-  } catch {}
-  throw new HttpError(
-    errorData?.error || "Request failed",
-    res.status,
-    errorData
-  );
-}
+  if (!res.ok) {
+    let errorData = null;
+    try {
+      errorData = await res.json();
+    } catch {}
+    throw new HttpError(
+      errorData?.error || "Request failed",
+      res.status,
+      errorData
+    );
+  }
 
-if (res.status === 204) {
-  return null as T;
-}
+  if (res.status === 204) {
+    return null as T;
+  }
 
-return res.json() as Promise<T>;
+  return res.json() as Promise<T>;
 }

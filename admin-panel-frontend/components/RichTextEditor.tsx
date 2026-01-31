@@ -8,7 +8,7 @@ const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 interface RichTextEditorProps {
   value: string; // Controlled value
   onChange: (value: string) => void; // Change handler
-  modules?: any; // Optional modules for customization
+  modules?: Record<string, unknown>; // Optional modules for customization
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({

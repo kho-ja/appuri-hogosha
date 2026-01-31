@@ -29,26 +29,24 @@ export default function EditGroupsDialog({
   const t = useTranslations("EditGroupsDialog");
   const [selectedGroups, setSelectedGroups] = useState<Group[]>(currentGroups);
 
-  const { mutate, isPending } = useApiMutation<{ success: boolean }>(
-    `post/${messageId}/sender`,
-    "PUT",
-    ["message", messageId],
-    {
-      onSuccess: () => {
-        toast({
-          title: t("groupsUpdated"),
-          description: t("groupsUpdatedDescription"),
-        });
-        onClose();
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { success: boolean },
+    { groups: number[]; students: number[] }
+  >(`post/${messageId}/sender`, "PUT", ["message", messageId], {
+    onSuccess: () => {
+      toast({
+        title: t("groupsUpdated"),
+        description: t("groupsUpdatedDescription"),
+      });
+      onClose();
+    },
+  });
 
   const handleSave = () => {
     mutate({
       groups: selectedGroups.map((group) => group.id),
       students: [],
-    } as any);
+    });
   };
 
   return (

@@ -135,7 +135,10 @@ export default function ThisStudent({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {tName("name", { ...row.original } as any)}
+                {tName("name", {
+                  given_name: row.original.given_name,
+                  family_name: row.original.family_name,
+                })}
               </DialogTitle>
               <DialogDescription>{row.original.email}</DialogDescription>
             </DialogHeader>

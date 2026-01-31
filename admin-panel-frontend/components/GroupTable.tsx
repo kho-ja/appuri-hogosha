@@ -3,12 +3,13 @@
 import * as React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useMemo, useCallback } from "react";
+import { useMemo } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import Group from "@/types/group";
 import GroupApi from "@/types/groupApi";
 import {
   GenericSelectTable,
+  ApiResponse,
   GenericSelectTableConfig,
 } from "./GenericSelectTable";
 import usePagination from "@/lib/usePagination";
@@ -165,16 +166,6 @@ export function GroupTable({
     [t]
   );
 
-  // Helper to find descendants in the flat array
-  const findDescendantsInFlat = useCallback(
-    (group: Group, allFlatGroups: GroupTreeNode[]): GroupTreeNode[] => {
-      const groupInTree = allFlatGroups.find((g) => g.id === group.id);
-      if (!groupInTree) return [];
-      return getDescendants(groupInTree);
-    },
-    []
-  );
-
   // Generic table configuration
   const config: GenericSelectTableConfig<GroupTreeNode> = useMemo(
     () => ({
@@ -184,7 +175,7 @@ export function GroupTable({
       isTreeStructure: true,
       treeNodeBuilder: (groups) => buildTree(groups as Group[]),
       treeFlattener: flattenTree,
-      treeDescendantsFinder: (node, allNodes) => {
+      treeDescendantsFinder: (node, _allNodes) => {
         return getDescendants(node);
       },
       selectedItemsEndpoint: "group/ids",
@@ -204,10 +195,10 @@ export function GroupTable({
 
   return (
     <GenericSelectTable<GroupTreeNode>
-      data={transformedData as any}
+      data={transformedData as ApiResponse<GroupTreeNode> | null}
       columns={columns}
       selectedItems={selectedGroups as GroupTreeNode[]}
-      setSelectedItems={(setter) => {
+      setSelectedItems={(setter: React.SetStateAction<GroupTreeNode[]>) => {
         if (typeof setter === "function") {
           setSelectedGroups(
             (prev) => setter(prev as GroupTreeNode[]) as Group[]

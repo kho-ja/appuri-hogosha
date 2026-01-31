@@ -147,36 +147,36 @@ export function ParentTable({
     [t, tParents, tName]
   );
 
-  // Helper to get parent badge label
-  const getParentBadgeLabel = (parent: Parent): string => {
-    const given = (parent.given_name || "").trim();
-    const family = (parent.family_name || "").trim();
-    const hasName = given || family;
-    if (!hasName) {
-      return parent.phone_number || parent.email || String(parent.id);
-    }
-    return tName("name", {
-      given_name: parent.given_name,
-      family_name: parent.family_name,
-    });
-  };
-
-  // Helper to get parent badge title (full label)
-  const getParentBadgeTitle = (parent: Parent): string => {
-    const given = (parent.given_name || "").trim();
-    const family = (parent.family_name || "").trim();
-    const hasName = given || family;
-    return hasName
-      ? tName("name", {
-          given_name: parent.given_name,
-          family_name: parent.family_name,
-        })
-      : parent.phone_number || parent.email || String(parent.id);
-  };
-
   // Generic table configuration
-  const config: GenericSelectTableConfig<Parent> = useMemo(
-    () => ({
+  const config: GenericSelectTableConfig<Parent> = useMemo(() => {
+    // Helper to get parent badge label
+    const getParentBadgeLabel = (parent: Parent): string => {
+      const given = (parent.given_name || "").trim();
+      const family = (parent.family_name || "").trim();
+      const hasName = given || family;
+      if (!hasName) {
+        return parent.phone_number || parent.email || String(parent.id);
+      }
+      return tName("name", {
+        given_name: parent.given_name,
+        family_name: parent.family_name,
+      });
+    };
+
+    // Helper to get parent badge title (full label)
+    const getParentBadgeTitle = (parent: Parent): string => {
+      const given = (parent.given_name || "").trim();
+      const family = (parent.family_name || "").trim();
+      const hasName = given || family;
+      return hasName
+        ? tName("name", {
+            given_name: parent.given_name,
+            family_name: parent.family_name,
+          })
+        : parent.phone_number || parent.email || String(parent.id);
+    };
+
+    return {
       enableFilters: false,
       getBadgeLabel: getParentBadgeLabel,
       getBadgeTitle: getParentBadgeTitle,
@@ -184,9 +184,8 @@ export function ParentTable({
       selectedItemsEndpoint: "parent/ids",
       selectedItemsResponseKey: "parents",
       noResultsMessage: t("noResults"),
-    }),
-    [t, tName]
-  );
+    };
+  }, [t, tName]);
 
   return (
     <GenericSelectTable<Parent>

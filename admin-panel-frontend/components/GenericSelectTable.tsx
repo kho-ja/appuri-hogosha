@@ -7,6 +7,8 @@ import {
   getCoreRowModel,
   useReactTable,
   Row,
+  Updater,
+  RowSelectionState,
 } from "@tanstack/react-table";
 import { useEffect, useCallback, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -40,7 +42,7 @@ export interface BaseEntity {
 }
 
 export interface ApiResponse<T extends BaseEntity> {
-  [key: string]: T[] | pagination | any;
+  [key: string]: T[] | pagination | unknown;
   pagination?: pagination;
 }
 
@@ -91,7 +93,7 @@ export function GenericSelectTable<T extends BaseEntity>({
   isLoading = false,
   entityKey,
   entityEndpoint,
-  page = 1,
+  page: _page = 1,
   setPage = () => {},
   search = "",
   setSearch = () => {},
@@ -285,7 +287,7 @@ export function GenericSelectTable<T extends BaseEntity>({
     selectAllMutation,
   ]);
 
-  const onRowSelectionChange = (updater: any) => {
+  const onRowSelectionChange = (updater: Updater<RowSelectionState>) => {
     if (typeof updater === "function") {
       const newSelection = updater(rowSelection);
       const newSelectedItems =
@@ -324,12 +326,7 @@ export function GenericSelectTable<T extends BaseEntity>({
         });
       }
     },
-    [
-      config.isTreeStructure,
-      config.treeDescendantsFinder,
-      tableData,
-      setSelectedItems,
-    ]
+    [tableData, setSelectedItems, config]
   );
 
   const tableColumns: ColumnDef<T>[] = useMemo(() => {
@@ -378,7 +375,7 @@ export function GenericSelectTable<T extends BaseEntity>({
       }
       return String(item.id);
     },
-    [config.getBadgeLabel]
+    [config]
   );
 
   const getBadgeTitle = useCallback(
@@ -388,7 +385,7 @@ export function GenericSelectTable<T extends BaseEntity>({
       }
       return getBadgeLabel(item);
     },
-    [config.getBadgeTitle, getBadgeLabel]
+    [config, getBadgeLabel]
   );
 
   const showSelectAllButton = config.enableSelectAll !== false;

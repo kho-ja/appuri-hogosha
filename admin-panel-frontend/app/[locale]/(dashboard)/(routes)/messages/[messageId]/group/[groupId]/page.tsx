@@ -140,7 +140,10 @@ export default function ThisGroup({
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName("name", {
+                            given_name: parent.given_name,
+                            family_name: parent.family_name,
+                          })}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>

@@ -17,13 +17,11 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useRouter } from "@/navigation";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";

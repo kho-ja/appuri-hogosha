@@ -51,7 +51,7 @@ export default function CreateSMS() {
 
   const handleDialogToggle = () => setDialogOpen((prev) => !prev);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
     console.log("Form Data:", data);
     setDialogOpen(false); // Close dialog after submission
   };

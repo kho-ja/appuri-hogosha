@@ -63,23 +63,21 @@ export default function CreateFromKintone() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const { mutate, error, isPending } = useApiMutation<{ message: string }>(
-    `parent/kintoneUpload`,
-    "POST",
-    ["uploadKitnoneParents"],
-    {
-      onSuccess(data) {
-        queryClient.invalidateQueries({
-          queryKey: ["parents"],
-        });
-        toast({
-          title: t("parentsUploaded"),
-          description: t(data?.message),
-        });
-        router.push("/parents");
-      },
-    }
-  );
+  const { mutate, error, isPending } = useApiMutation<
+    { message: string },
+    z.infer<typeof formSchema>
+  >(`parent/kintoneUpload`, "POST", ["uploadKitnoneParents"], {
+    onSuccess(data) {
+      queryClient.invalidateQueries({
+        queryKey: ["parents"],
+      });
+      toast({
+        title: t("parentsUploaded"),
+        description: t(data?.message),
+      });
+      router.push("/parents");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataKintoneParent");
@@ -105,7 +103,7 @@ export default function CreateFromKintone() {
   }, [form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await mutate(values as any);
+    await mutate(values);
   };
 
   // Safely derive structured CSV upload result (if backend returned structured upload feedback)

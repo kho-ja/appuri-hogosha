@@ -56,8 +56,11 @@ export function NotificationsForm() {
     defaultValues,
   });
   const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation("school/sms", "POST", ["SMS"], {
-    onSuccess: (data: any) => {
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    NotificationsFormValues
+  >("school/sms", "POST", ["SMS"], {
+    onSuccess: (data) => {
       toast({
         title: t("NotificationSettingUpdated"),
         description: data?.message ?? "",
@@ -80,7 +83,7 @@ export function NotificationsForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values as any))}
+        onSubmit={form.handleSubmit((values) => mutate(values))}
         className="space-y-4"
       >
         <div>

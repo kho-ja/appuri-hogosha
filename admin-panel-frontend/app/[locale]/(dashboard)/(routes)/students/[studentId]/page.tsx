@@ -36,7 +36,12 @@ export default function ThisStudent({
       accessorKey: "name",
       header: t("parentName"),
       cell: ({ row }) => (
-        <div>{tName("name", { ...row?.original } as any)}</div>
+        <div>
+          {tName("name", {
+            given_name: row.original.given_name,
+            family_name: row.original.family_name,
+          })}
+        </div>
       ),
     },
     {

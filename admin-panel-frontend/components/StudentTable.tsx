@@ -155,7 +155,7 @@ export function StudentTable({
 
       noResultsMessage: t("noResults"),
     }),
-    [t, tName, filterBy]
+    [t, tName, filterBy, setFilter]
   );
 
   return (

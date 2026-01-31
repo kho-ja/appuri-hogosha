@@ -25,4 +25,3 @@ export function useListQuery<T>(
     enabled: !!session?.sessionToken && (options?.enabled ?? true),
   });
 }
-

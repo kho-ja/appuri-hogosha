@@ -23,7 +23,7 @@ import { useListQuery } from "@/lib/useListQuery";
 import Admin from "@/types/admin";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
+
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { getAdminEditSchema } from "@/lib/validationSchemas";
@@ -54,22 +54,20 @@ export default function EditAdmin({
     isError,
   } = useListQuery<{ admin: Admin }>(`admin/${adminId}`, ["admin", adminId]);
 
-  const { isPending, mutate } = useApiMutation<{ admin: Admin }>(
-    `admin/${adminId}`,
-    "PUT",
-    ["editAdmin", adminId],
-    {
-      onSuccess: (data) => {
-        form.reset();
-        router.replace(`/admins/${adminId}`);
-        router.refresh();
-        toast({
-          title: t("AdminUpdated"),
-          description: tName("name", { ...data?.admin }),
-        });
-      },
-    }
-  );
+  const { isPending, mutate } = useApiMutation<
+    { admin: Admin },
+    z.infer<typeof formSchema>
+  >(`admin/${adminId}`, "PUT", ["editAdmin", adminId], {
+    onSuccess: (data) => {
+      form.reset();
+      router.replace(`/admins/${adminId}`);
+      router.refresh();
+      toast({
+        title: t("AdminUpdated"),
+        description: tName("name", { ...data?.admin }),
+      });
+    },
+  });
 
   useEffect(() => {
     if (adminData) {
@@ -92,7 +90,7 @@ export default function EditAdmin({
             mutate({
               ...values,
               phone_number: values.phone_number.slice(1),
-            } as any);
+            });
           })}
           className="space-y-4"
         >

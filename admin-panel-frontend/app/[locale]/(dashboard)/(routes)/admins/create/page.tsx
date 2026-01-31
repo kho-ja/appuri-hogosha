@@ -44,21 +44,19 @@ export default function CreateAdmin() {
     },
   });
 
-  const { mutate, isPending } = useApiMutation<{ admin: Admin }>(
-    `admin/create`,
-    "POST",
-    ["createAdmin"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("AdminCreated"),
-          description: tName("name", { ...data.admin }),
-        });
-        form.reset();
-        router.push("/admins");
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { admin: Admin },
+    z.infer<typeof formSchema>
+  >(`admin/create`, "POST", ["createAdmin"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("AdminCreated"),
+        description: tName("name", { ...data.admin }),
+      });
+      form.reset();
+      router.push("/admins");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataCreateAdmin");
@@ -101,7 +99,7 @@ export default function CreateAdmin() {
             mutate({
               ...values,
               phone_number: values.phone_number.slice(1),
-            } as any)
+            })
           )}
           className="space-y-4"
         >
