@@ -1,8 +1,9 @@
-import { Response, Router } from 'express';
+import { NextFunction, Response, Router } from 'express';
 
 import { IController } from '../../../utils/icontroller';
 import { ExtendedRequest, verifyToken } from '../../../middlewares/mobileAuth';
 import { mobilePostService } from './post.service';
+import { ApiError } from '../../../errors/ApiError';
 
 export class MobilePostModuleController implements IController {
     public router: Router = Router();
@@ -19,7 +20,11 @@ export class MobilePostModuleController implements IController {
         this.router.get('/post/:post_id', verifyToken, this.getPostData);
     }
 
-    getPostData = async (req: ExtendedRequest, res: Response) => {
+    getPostData = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { post_id } = req.params;
 
@@ -34,15 +39,11 @@ export class MobilePostModuleController implements IController {
 
             return res.status(200).json({ post: post[0] }).end();
         } catch (e: any) {
-            console.error('Error fetching post data:', e);
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            return next(e);
         }
     };
 
-    post = async (req: ExtendedRequest, res: Response) => {
+    post = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
         try {
             const { id: post_id } = req.params;
             const { student_id } = req.body;
@@ -69,17 +70,12 @@ export class MobilePostModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    posts = async (req: ExtendedRequest, res: Response) => {
+    posts = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
         try {
             const { student_id, last_post_id, last_sent_at, read_post_ids } =
                 req.body;
@@ -103,17 +99,16 @@ export class MobilePostModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    viewPost = async (req: ExtendedRequest, res: Response) => {
+    viewPost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { post_id, student_id } = req.body;
 
@@ -128,17 +123,16 @@ export class MobilePostModuleController implements IController {
                 .json({ message: 'Successfully viewed' })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    viewExtended = async (req: ExtendedRequest, res: Response) => {
+    viewExtended = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { post_ids, student_id } = req.body;
 
@@ -153,13 +147,8 @@ export class MobilePostModuleController implements IController {
                 .json({ message: 'Successfully viewed' })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 }

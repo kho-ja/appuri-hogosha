@@ -5,7 +5,7 @@
  * Thin controller - delegates to service layer
  */
 
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { IController } from '../../utils/icontroller';
 import { schoolService } from './school.service';
@@ -27,7 +27,11 @@ export class SchoolModuleController implements IController {
     /**
      * GET /sms - Get SMS priority settings
      */
-    getSmsPriority = async (req: ExtendedRequest, res: Response) => {
+    getSmsPriority = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const result = await schoolService.getSmsPriority(
                 req.user.school_id
@@ -35,23 +39,18 @@ export class SchoolModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * POST /sms - Update SMS priority settings
      */
-    updateSmsPriority = async (req: ExtendedRequest, res: Response) => {
+    updateSmsPriority = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { high, medium, low, title } = req.body;
 
@@ -71,23 +70,18 @@ export class SchoolModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * POST /name - Update school name
      */
-    updateSchoolName = async (req: ExtendedRequest, res: Response) => {
+    updateSchoolName = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { name } = req.body;
 
@@ -103,16 +97,7 @@ export class SchoolModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 }

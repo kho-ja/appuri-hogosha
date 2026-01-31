@@ -1,9 +1,10 @@
-import express, { Response, Router } from 'express';
+import express, { NextFunction, Response, Router } from 'express';
 import { ScheduleService } from './schedule.service';
 import { ExtendedRequest } from '../../middlewares/auth';
 import { isValidId, isValidPriority } from '../../utils/validate';
 import cron from 'node-cron';
 import process from 'node:process';
+import { ApiError } from '../../errors/ApiError';
 
 export class ScheduleController {
     public router: Router = express.Router();
@@ -51,7 +52,11 @@ export class ScheduleController {
         }
     }
 
-    schedulePost = async (req: ExtendedRequest, res: Response) => {
+    schedulePost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const result = await this.service.createScheduledPost(
                 req.body,
@@ -60,18 +65,16 @@ export class ScheduleController {
             );
             return res.status(200).json(result);
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    scheduledPostList = async (req: ExtendedRequest, res: Response) => {
+    scheduledPostList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const priority = req.query.priority as string;
@@ -91,23 +94,21 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    scheduledPostView = async (req: ExtendedRequest, res: Response) => {
+    scheduledPostView = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 400, message: 'invalid_or_missing_post_id' };
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const result = await this.service.getScheduledPost(
@@ -117,23 +118,21 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    deleteScheduledPost = async (req: ExtendedRequest, res: Response) => {
+    deleteScheduledPost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 400, message: 'invalid_or_missing_post_id' };
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const result = await this.service.deleteScheduledPost(
@@ -143,23 +142,21 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    updateScheduledPost = async (req: ExtendedRequest, res: Response) => {
+    updateScheduledPost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 400, message: 'invalid_or_missing_post_id' };
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const result = await this.service.updateScheduledPost(
@@ -170,26 +167,21 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
     updateScheduledPostRecievers = async (
         req: ExtendedRequest,
-        res: Response
+        res: Response,
+        next: NextFunction
     ) => {
         try {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 400, message: 'invalid_or_missing_post_id' };
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const result = await this.service.updateScheduledPostReceivers(
@@ -200,23 +192,21 @@ export class ScheduleController {
 
             return res.status(200).json(result);
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    scheduledPostRecievers = async (req: ExtendedRequest, res: Response) => {
+    scheduledPostRecievers = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
             if (!postId || !isValidId(postId)) {
-                throw { status: 400, message: 'invalid_or_missing_post_id' };
+                throw new ApiError(400, 'invalid_or_missing_post_id');
             }
 
             const result = await this.service.getScheduledPostReceivers(
@@ -226,17 +216,14 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (err: any) {
-            console.error('Error fetching scheduled post receivers:', err);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(err);
         }
     };
 
     deleteMultipleScheduledPosts = async (
         req: ExtendedRequest,
-        res: Response
+        res: Response,
+        next: NextFunction
     ) => {
         try {
             const result = await this.service.deleteMultipleScheduledPosts(
@@ -246,14 +233,8 @@ export class ScheduleController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 }

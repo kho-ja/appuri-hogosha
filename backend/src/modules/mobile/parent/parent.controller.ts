@@ -1,19 +1,20 @@
-import { Response, Router } from 'express';
+import { NextFunction, Response, Router } from 'express';
 
 import { IController } from '../../../utils/icontroller';
 import { Parent } from '../../../utils/cognito-client';
 import { verifyToken, ExtendedRequest } from '../../../middlewares/mobileAuth';
 import { MockCognitoClient } from '../../../utils/mock-cognito-client';
+import { config } from '../../../config';
+import { ApiError } from '../../../errors/ApiError';
 
 export class MobileParentModuleController implements IController {
     public router: Router = Router();
     public cognitoClient: any;
 
     constructor() {
-        this.cognitoClient =
-            process.env.USE_MOCK_COGNITO === 'true'
-                ? MockCognitoClient
-                : Parent;
+        this.cognitoClient = config.USE_MOCK_COGNITO
+            ? MockCognitoClient
+            : Parent;
         this.initRoutes();
     }
 
@@ -22,7 +23,11 @@ export class MobileParentModuleController implements IController {
         this.router.post('/change-password', verifyToken, this.changePassword);
     }
 
-    changePassword = async (req: ExtendedRequest, res: Response) => {
+    changePassword = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { old_password, new_password } = req.body;
             await this.cognitoClient.changePassword(
@@ -38,13 +43,8 @@ export class MobileParentModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'Internal server error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 

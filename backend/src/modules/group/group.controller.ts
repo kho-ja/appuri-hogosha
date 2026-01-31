@@ -5,7 +5,7 @@
  * Thin controller - delegates to service layer
  */
 
-import { Router, Response } from 'express';
+import { NextFunction, Router, Response } from 'express';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { IController } from '../../utils/icontroller';
 import { groupService } from './group.service';
@@ -89,7 +89,11 @@ export class GroupModuleController implements IController {
         this.router.get('/:id/sub-groups', verifyToken, this.getSubGroups);
     }
 
-    exportGroupsToCSV = async (req: ExtendedRequest, res: Response) => {
+    exportGroupsToCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const groups = (await DB.query(
                 `SELECT
@@ -146,15 +150,15 @@ export class GroupModuleController implements IController {
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8'));
         } catch (e: any) {
-            console.error('Export error:', e);
-            return res
-                .status(500)
-                .json({ error: 'Internal server error', details: e.message })
-                .end();
+            return next(e);
         }
     };
 
-    uploadGroupsFromCSV = async (req: ExtendedRequest, res: Response) => {
+    uploadGroupsFromCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const { throwInError, action, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
@@ -482,14 +486,15 @@ export class GroupModuleController implements IController {
                 .json(response)
                 .end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json(createErrorResponse(ErrorKeys.server_error, e.message))
-                .end();
+            return next(e);
         }
     };
 
-    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+    downloadCSVTemplate = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const headers = ['name', 'parent_group_name', 'student_numbers'];
 
@@ -507,11 +512,7 @@ export class GroupModuleController implements IController {
             const bom = '\uFEFF';
             res.send(bom + csvContent);
         } catch (e: any) {
-            console.error('Error generating CSV template:', e);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -520,7 +521,11 @@ export class GroupModuleController implements IController {
     /**
      * POST /ids - Get groups by ID array
      */
-    getGroupsByIds = async (req: ExtendedRequest, res: Response) => {
+    getGroupsByIds = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { groupIds } = req.body;
 
@@ -539,23 +544,18 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * GET /list - Get group list with pagination
      */
-    getGroupList = async (req: ExtendedRequest, res: Response) => {
+    getGroupList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const all = req.query.all === 'true';
@@ -568,23 +568,18 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * GET /:id - Get group detail with members
      */
-    getGroupDetail = async (req: ExtendedRequest, res: Response) => {
+    getGroupDetail = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const groupId = req.params.id;
 
@@ -610,16 +605,7 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -628,7 +614,11 @@ export class GroupModuleController implements IController {
     /**
      * POST /create - Create group
      */
-    createGroup = async (req: ExtendedRequest, res: Response) => {
+    createGroup = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { name, students, sub_group_id } = req.body;
 
@@ -658,23 +648,18 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * PUT /:id - Update group
      */
-    updateGroup = async (req: ExtendedRequest, res: Response) => {
+    updateGroup = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const groupId = req.params.id;
             const { name, students, sub_group_id } = req.body;
@@ -714,23 +699,18 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * DELETE /:id - Delete group
      */
-    deleteGroup = async (req: ExtendedRequest, res: Response) => {
+    deleteGroup = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const groupId = req.params.id;
 
@@ -745,16 +725,7 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -763,7 +734,11 @@ export class GroupModuleController implements IController {
     /**
      * GET /:id/sub-groups - Get sub-groups
      */
-    getSubGroups = async (req: ExtendedRequest, res: Response) => {
+    getSubGroups = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const groupId = req.params.id;
 
@@ -778,16 +753,7 @@ export class GroupModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 }

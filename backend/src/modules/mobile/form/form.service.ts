@@ -1,11 +1,10 @@
-import process from 'node:process';
-
 import {
     isValidDate,
     isValidReason,
     isValidString,
 } from '../../../utils/validate';
 import { mobileFormRepository } from './form.repository';
+import { config } from '../../../config';
 
 export class MobileFormService {
     async listForms(params: {
@@ -13,7 +12,7 @@ export class MobileFormService {
         studentId: number;
         lastFormId: number;
     }): Promise<any[]> {
-        const perPage = parseInt(process.env.PER_PAGE + '') || 10;
+        const perPage = config.PER_PAGE;
         const forms = await mobileFormRepository.listForms({
             parentId: params.parentId,
             studentId: params.studentId,

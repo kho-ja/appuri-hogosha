@@ -5,7 +5,7 @@
  * Thin controller - delegates to service layer
  */
 
-import { Router, Response } from 'express';
+import { NextFunction, Router, Response } from 'express';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { IController } from '../../utils/icontroller';
 import { studentService } from './student.service';
@@ -69,7 +69,11 @@ export class StudentModuleController implements IController {
         );
     }
 
-    kintoneUpload = async (req: ExtendedRequest, res: Response) => {
+    kintoneUpload = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const {
             kintoneSubdomain,
             kintoneDomain,
@@ -332,18 +336,16 @@ export class StudentModuleController implements IController {
                 clearTimeout(timeoutId);
             }
         } catch (e: any) {
-            console.error(e);
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    exportStudentsToCSV = async (req: ExtendedRequest, res: Response) => {
+    exportStudentsToCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const students = await DB.query(
                 `SELECT
@@ -390,14 +392,15 @@ export class StudentModuleController implements IController {
             );
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8')).end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error', details: e.message })
-                .end();
+            return next(e);
         }
     };
 
-    uploadStudentsFromCSV = async (req: ExtendedRequest, res: Response) => {
+    uploadStudentsFromCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const { throwInError, action, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
@@ -591,14 +594,15 @@ export class StudentModuleController implements IController {
                 .json(response)
                 .end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json(createErrorResponse(ErrorKeys.server_error, e.message))
-                .end();
+            return next(e);
         }
     };
 
-    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+    downloadCSVTemplate = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const headers = [
                 'email',
@@ -622,11 +626,7 @@ export class StudentModuleController implements IController {
             const bom = '\uFEFF';
             res.send(bom + csvContent);
         } catch (e: any) {
-            console.error('Error generating CSV template:', e);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -635,7 +635,11 @@ export class StudentModuleController implements IController {
     /**
      * POST /ids - Get students by ID array
      */
-    getStudentsByIds = async (req: ExtendedRequest, res: Response) => {
+    getStudentsByIds = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { studentIds } = req.body;
 
@@ -654,23 +658,18 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * POST /list - Get student list with filters
      */
-    getStudentList = async (req: ExtendedRequest, res: Response) => {
+    getStudentList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.body.page as string) || 1;
             const filterBy = (req.body.filterBy as string) || 'all';
@@ -702,23 +701,18 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * GET /:id - Get student detail
      */
-    getStudentDetail = async (req: ExtendedRequest, res: Response) => {
+    getStudentDetail = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const studentId = req.params.id;
 
@@ -733,16 +727,7 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -751,7 +736,11 @@ export class StudentModuleController implements IController {
     /**
      * POST /create - Create student
      */
-    createStudent = async (req: ExtendedRequest, res: Response) => {
+    createStudent = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const {
                 email,
@@ -809,23 +798,18 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * PUT /:id - Update student
      */
-    updateStudent = async (req: ExtendedRequest, res: Response) => {
+    updateStudent = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const studentId = req.params.id;
             const {
@@ -875,23 +859,18 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * DELETE /:id - Delete student
      */
-    deleteStudent = async (req: ExtendedRequest, res: Response) => {
+    deleteStudent = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const studentId = req.params.id;
 
@@ -906,16 +885,7 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -924,7 +894,11 @@ export class StudentModuleController implements IController {
     /**
      * GET /:id/parents - Get student parents
      */
-    getStudentParents = async (req: ExtendedRequest, res: Response) => {
+    getStudentParents = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const studentId = req.params.id;
 
@@ -939,23 +913,18 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * POST /:id/parents - Change student parents
      */
-    changeStudentParents = async (req: ExtendedRequest, res: Response) => {
+    changeStudentParents = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const studentId = req.params.id;
             const { parents } = req.body;
@@ -990,17 +959,7 @@ export class StudentModuleController implements IController {
 
             return res.status(200).json(response).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                const errorResponse: any = { error: e.message };
-                if (e.details) {
-                    errorResponse.details = e.details;
-                }
-                return res.status(e.statusCode).json(errorResponse).end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 }

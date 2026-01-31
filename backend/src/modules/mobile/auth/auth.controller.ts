@@ -1,4 +1,4 @@
-import express, { Request, Response, Router } from 'express';
+import express, { NextFunction, Request, Response, Router } from 'express';
 import rateLimit from 'express-rate-limit';
 
 import { verifyToken, ExtendedRequest } from '../../../middlewares/mobileAuth';
@@ -6,6 +6,8 @@ import { Parent } from '../../../utils/cognito-client';
 import DB from '../../../utils/db-client';
 import { IController } from '../../../utils/icontroller';
 import { MockCognitoClient } from '../../../utils/mock-cognito-client';
+import { config } from '../../../config';
+import { ApiError } from '../../../errors/ApiError';
 
 class MobileAuthModuleController implements IController {
     public router: Router = express.Router();
@@ -45,10 +47,9 @@ class MobileAuthModuleController implements IController {
     });
 
     constructor() {
-        this.cognitoClient =
-            process.env.USE_MOCK_COGNITO === 'true'
-                ? MockCognitoClient
-                : Parent;
+        this.cognitoClient = config.USE_MOCK_COGNITO
+            ? MockCognitoClient
+            : Parent;
         this.initRoutes();
     }
 
@@ -88,18 +89,17 @@ class MobileAuthModuleController implements IController {
         this.router.post('/verify-otp', this.authLimiter, this.verifyOtp);
     }
 
-    forgotPasswordInitiate = async (req: Request, res: Response) => {
+    forgotPasswordInitiate = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { phone_number } = req.body;
 
             // Validate phone number
             if (!phone_number) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Phone number is required',
-                    })
-                    .end();
+                throw new ApiError(400, 'Phone number is required');
             }
 
             // Clean phone number for database lookup (remove + and any spaces)
@@ -147,13 +147,10 @@ class MobileAuthModuleController implements IController {
                     console.log('Phone already verified');
                 }
             } catch (verifyError) {
-                console.error('Phone verification failed:', verifyError);
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Phone number verification failed. Please contact support.',
-                    })
-                    .end();
+                throw new ApiError(
+                    400,
+                    'Phone number verification failed. Please contact support.'
+                );
             }
 
             // Call Cognito forgot password (this will send SMS)
@@ -167,57 +164,41 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            console.error('Forgot password initiate error:', e);
-
             // Handle specific Cognito errors
-            if (e.name === 'InvalidParameterException') {
-                if (e.message && e.message.includes('no registered/verified')) {
-                    return res
-                        .status(400)
-                        .json({
-                            error: 'Phone number verification failed. Please contact support.',
-                        })
-                        .end();
-                } else {
-                    return res
-                        .status(400)
-                        .json({
-                            error: 'Invalid phone number format',
-                        })
-                        .end();
+            if (e?.name === 'InvalidParameterException') {
+                if (
+                    e?.message &&
+                    e.message.includes('no registered/verified')
+                ) {
+                    return next(
+                        new ApiError(
+                            400,
+                            'Phone number verification failed. Please contact support.'
+                        )
+                    );
                 }
+                return next(new ApiError(400, 'Invalid phone number format'));
             }
 
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    forgotPasswordConfirm = async (req: Request, res: Response) => {
+    forgotPasswordConfirm = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { phone_number, verification_code, new_password } = req.body;
 
             // Validate required fields
             if (!phone_number || !verification_code || !new_password) {
-                return res
-                    .status(400)
-                    .json({
-                        error: 'Phone number, verification code, and new password are required',
-                    })
-                    .end();
+                throw new ApiError(
+                    400,
+                    'Phone number, verification code, and new password are required'
+                );
             }
 
             // Format phone number for Cognito
@@ -239,22 +220,8 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            console.error('Forgot password confirm error:', e);
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
@@ -266,7 +233,11 @@ class MobileAuthModuleController implements IController {
         return null;
     }
 
-    deviceToken = async (req: ExtendedRequest, res: Response) => {
+    deviceToken = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { token } = req.body;
             const normalizedToken = this.normalizeToken(token);
@@ -275,10 +246,7 @@ class MobileAuthModuleController implements IController {
                 normalizedToken == null ||
                 normalizedToken == '[object Object]'
             ) {
-                throw {
-                    status: 401,
-                    message: 'Invalid Device Token',
-                };
+                throw new ApiError(401, 'Invalid Device Token');
             }
 
             await DB.execute(`UPDATE Parent SET arn = :arn WHERE id = :id;`, {
@@ -293,25 +261,16 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    changePassword = async (req: ExtendedRequest, res: Response) => {
+    changePassword = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { previous_password, new_password } = req.body;
             await this.cognitoClient.changePassword(
@@ -327,25 +286,12 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    login = async (req: Request, res: Response) => {
+    login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { phone_number, password, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
@@ -385,10 +331,7 @@ class MobileAuthModuleController implements IController {
                 normalizedToken == null ||
                 normalizedToken == '[object Object]'
             ) {
-                throw {
-                    status: 401,
-                    message: 'Invalid phone_number or password',
-                };
+                throw new ApiError(401, 'Invalid phone_number or password');
             }
 
             const parent = parents[0];
@@ -422,25 +365,12 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    refreshToken = async (req: Request, res: Response) => {
+    refreshToken = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { refresh_token } = req.body;
             const authData =
@@ -454,25 +384,16 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    changeTemporaryPassword = async (req: Request, res: Response) => {
+    changeTemporaryPassword = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { phone_number, temp_password, new_password, token } =
                 req.body;
@@ -501,10 +422,7 @@ class MobileAuthModuleController implements IController {
                 normalizedToken == null ||
                 normalizedToken == '[object Object]'
             ) {
-                throw {
-                    status: 401,
-                    message: 'Invalid phone number or password',
-                };
+                throw new ApiError(401, 'Invalid phone number or password');
             }
 
             const parent = parents[0];
@@ -538,26 +456,12 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            console.error('Error during sign in in auth:', e);
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    verifyOtp = async (req: Request, res: Response) => {
+    verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { phone_number, code, session, token } = req.body;
             const normalizedToken = this.normalizeToken(token);
@@ -592,10 +496,7 @@ class MobileAuthModuleController implements IController {
             ) {
                 // Note: Auth success but user not found in DB or invalid token
                 // In production might want to handle differently
-                throw {
-                    status: 401,
-                    message: 'User not found in database',
-                };
+                throw new ApiError(401, 'User not found in database');
             }
 
             const parent = parents[0];
@@ -628,21 +529,8 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
-            if (e.status) {
-                return res
-                    .status(e.status)
-                    .json({
-                        error: e.message,
-                    })
-                    .end();
-            } else {
-                return res
-                    .status(500)
-                    .json({
-                        error: 'Internal server error',
-                    })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 }

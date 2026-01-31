@@ -5,7 +5,7 @@
  * Thin controller - delegates to service layer
  */
 
-import { Router, Response } from 'express';
+import { NextFunction, Router, Response } from 'express';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { IController } from '../../utils/icontroller';
 import { AdminService } from './admin.service';
@@ -69,7 +69,11 @@ export class AdminModuleController implements IController {
         this.router.delete('/:id', verifyToken, this.deleteAdmin);
     }
 
-    uploadAdminsFromCSV = async (req: ExtendedRequest, res: Response) => {
+    uploadAdminsFromCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const { throwInError, action, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
@@ -224,14 +228,15 @@ export class AdminModuleController implements IController {
                 .json(response)
                 .end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json(createErrorResponse(ErrorKeys.server_error, e.message))
-                .end();
+            return next(e);
         }
     };
 
-    exportAdminsToCSV = async (req: ExtendedRequest, res: Response) => {
+    exportAdminsToCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const admins = (await DB.query(
                 `SELECT email, phone_number, given_name, family_name
@@ -262,15 +267,15 @@ export class AdminModuleController implements IController {
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.send(Buffer.from('\uFEFF' + csvContent, 'utf-8'));
         } catch (e: any) {
-            console.error('Export error:', e);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
-    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+    downloadCSVTemplate = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const headers = [
                 'email',
@@ -292,11 +297,7 @@ export class AdminModuleController implements IController {
             const bom = '\uFEFF';
             res.send(bom + csvContent);
         } catch (e: any) {
-            console.error('Error generating CSV template:', e);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
@@ -305,7 +306,11 @@ export class AdminModuleController implements IController {
     /**
      * POST /create - Create admin
      */
-    createAdmin = async (req: ExtendedRequest, res: Response) => {
+    createAdmin = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { email, phone_number, given_name, family_name } = req.body;
 
@@ -329,23 +334,18 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * POST /list - Get admin list with pagination
      */
-    getAdminList = async (req: ExtendedRequest, res: Response) => {
+    getAdminList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.body.page as string) || 1;
             const email = (req.body.email as string) || '';
@@ -359,23 +359,18 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * GET /:id - Get admin detail
      */
-    getAdminDetail = async (req: ExtendedRequest, res: Response) => {
+    getAdminDetail = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const adminId = req.params.id;
 
@@ -390,23 +385,18 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * POST /get-details - Get admin detail (secure POST version)
      */
-    getAdminDetailSecure = async (req: ExtendedRequest, res: Response) => {
+    getAdminDetailSecure = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { adminId } = req.body;
 
@@ -421,20 +411,15 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
-    resendTemporaryPassword = async (req: ExtendedRequest, res: Response) => {
+    resendTemporaryPassword = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const adminId = req.params.id;
 
@@ -449,23 +434,18 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * PUT /:id - Update admin
      */
-    updateAdmin = async (req: ExtendedRequest, res: Response) => {
+    updateAdmin = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const adminId = req.params.id;
             const { phone_number, given_name, family_name } = req.body;
@@ -491,23 +471,18 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 
     /**
      * DELETE /:id - Delete admin
      */
-    deleteAdmin = async (req: ExtendedRequest, res: Response) => {
+    deleteAdmin = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const adminId = req.params.id;
 
@@ -522,16 +497,7 @@ export class AdminModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            return next(e);
         }
     };
 }

@@ -1,6 +1,5 @@
-import process from 'node:process';
-
 import { mobilePostRepository } from './post.repository';
+import { config } from '../../../config';
 
 export class MobilePostService {
     async getPostData(params: { postParentId: string; parentId: number }) {
@@ -37,7 +36,7 @@ export class MobilePostService {
             }
         }
 
-        const perPage = parseInt(process.env.PER_PAGE + '') || 10;
+        const perPage = config.PER_PAGE;
 
         return await mobilePostRepository.listPosts({
             parentId: params.parentId,

@@ -47,9 +47,8 @@ describe('backend smoke tests', () => {
         expect(res.body).toEqual(
             expect.objectContaining({
                 success: false,
-                error: expect.objectContaining({
-                    statusCode: 500,
-                }),
+                error: 'internal_server_error',
+                statusCode: 500,
             })
         );
         expect(res.headers['access-control-allow-origin']).toBeUndefined();

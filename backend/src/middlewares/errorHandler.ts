@@ -7,12 +7,11 @@ import { config } from '../config';
 
 interface ErrorResponse {
     success: false;
-    error: {
-        message: string;
-        code?: string;
-        statusCode: number;
-        stack?: string;
-    };
+    error: string;
+    code?: string;
+    statusCode: number;
+    details?: any;
+    stack?: string;
 }
 
 export function errorHandler(
@@ -24,15 +23,18 @@ export function errorHandler(
 ): void {
     // Default to 500 if not an ApiError
     let statusCode = 500;
-    let message = 'Internal server error';
+    // Prefer translation-friendly error keys where possible
+    let message = 'internal_server_error';
     let code: string | undefined;
     let isOperational = false;
+    let details: any;
 
     if (err instanceof ApiError) {
         statusCode = err.statusCode;
         message = err.message;
         code = err.code;
         isOperational = err.isOperational;
+        details = err.details;
     }
 
     // Log errors (operational errors at warn level, programming errors at error level)
@@ -45,16 +47,15 @@ export function errorHandler(
 
     const response: ErrorResponse = {
         success: false,
-        error: {
-            message,
-            code,
-            statusCode,
-        },
+        error: message,
+        code,
+        statusCode,
+        details,
     };
 
     // Include stack trace in development/test for debugging
     if (config.NODE_ENV !== 'production') {
-        response.error.stack = err.stack;
+        response.stack = err.stack;
     }
 
     res.status(statusCode).json(response);

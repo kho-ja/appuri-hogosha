@@ -665,7 +665,11 @@ class ParentModuleController implements IController {
         return res.status(result.status).json(result.body).end();
     };
 
-    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+    downloadCSVTemplate = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const template = this.parentService.getCSVTemplate();
 
@@ -677,8 +681,7 @@ class ParentModuleController implements IController {
 
             res.send(template.csvContent);
         } catch (e: any) {
-            console.error('Error generating CSV template:', e);
-            return res.status(500).json({ error: 'internal_server_error' });
+            return next(e);
         }
     };
 }

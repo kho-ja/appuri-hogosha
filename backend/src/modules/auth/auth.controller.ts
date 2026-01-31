@@ -1,7 +1,8 @@
-import { Request, Response, Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { AuthService } from './auth.service';
 import { ExtendedRequest } from '../../middlewares/auth';
+import { ApiError } from '../../errors/ApiError';
 
 // Allowed frontend base URLs for redirects
 const DEFAULT_FRONTEND_URL =
@@ -111,79 +112,69 @@ export class AuthController {
         );
     }
 
-    login = async (req: Request, res: Response) => {
+    login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = await this.service.login(req.body);
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    refreshToken = async (req: Request, res: Response) => {
+    refreshToken = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = await this.service.refreshToken(req.body);
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    changeTemporaryPassword = async (req: Request, res: Response) => {
+    changeTemporaryPassword = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const result = await this.service.changeTemporaryPassword(req.body);
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e.status) {
-                return res.status(e.status).json({ error: e.message }).end();
-            } else {
-                return res
-                    .status(500)
-                    .json({ error: 'internal_server_error' })
-                    .end();
-            }
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    forgotPasswordInitiate = async (req: Request, res: Response) => {
+    forgotPasswordInitiate = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const result = await this.service.forgotPasswordInitiate(req.body);
             return res.status(200).json(result);
         } catch (e: any) {
-            console.error('Forgot password initiate error:', e);
-            return res
-                .status(e.status || 500)
-                .json({ error: e.message || 'InternalServerError' });
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    forgotPasswordConfirm = async (req: Request, res: Response) => {
+    forgotPasswordConfirm = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const result = await this.service.forgotPasswordConfirm(req.body);
             return res.status(200).json(result);
         } catch (e: any) {
-            console.error('Forgot password confirm error (admin):', e);
-            return res
-                .status(e.status || 500)
-                .json({ error: e.message || 'InternalServerError' });
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
-    googleLogin = async (req: Request, res: Response) => {
+    googleLogin = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const cognitoDomain = process.env.COGNITO_DOMAIN;
             const clientId = process.env.ADMIN_CLIENT_ID;
@@ -192,7 +183,7 @@ export class AuthController {
                 process.env.FRONTEND_URL || 'http://localhost:3000';
 
             if (!cognitoDomain || !clientId || !process.env.BACKEND_URL) {
-                throw { status: 500, message: 'Cognito configuration missing' };
+                throw new ApiError(500, 'Cognito configuration missing');
             }
 
             const cognitoUrl =
@@ -206,10 +197,8 @@ export class AuthController {
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
-            console.error('Google login initiation error:', e);
-            return res.status(e.status || 500).json({
-                error: e.message || 'Failed to initiate Google login',
-            });
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 
@@ -259,12 +248,12 @@ export class AuthController {
         }
     };
 
-    userInfo = async (req: Request, res: Response) => {
+    userInfo = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const authHeader = req.headers.authorization;
 
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                throw { status: 401, message: 'Access token required' };
+                throw new ApiError(401, 'Access token required');
             }
 
             const accessToken = authHeader.split(' ')[1];
@@ -273,10 +262,8 @@ export class AuthController {
 
             return res.json(result);
         } catch (e: any) {
-            console.error('User info error:', e);
-            return res.status(e.status || 500).json({
-                error: e.message || 'Failed to get user info',
-            });
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
     };
 

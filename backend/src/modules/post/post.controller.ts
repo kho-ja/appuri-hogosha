@@ -5,7 +5,7 @@
  * Thin controller - delegates to service layer
  */
 
-import { Router, Response, Request } from 'express';
+import { Router, Response, Request, NextFunction } from 'express';
 import { ExtendedRequest, verifyToken } from '../../middlewares/auth';
 import { IController } from '../../utils/icontroller';
 import { postService } from './post.service';
@@ -17,7 +17,6 @@ import {
     isValidArrayId,
     isValidPriority,
     isValidId,
-    isValidStringArrayId,
     isValidStudentNumber,
 } from '../../utils/validate';
 import { randomImageName } from '../../utils/helper';
@@ -138,7 +137,11 @@ export class PostModuleController implements IController {
         this.router.delete('/:id', verifyToken, this.deletePost);
     }
 
-    uploadPostImage = async (req: ExtendedRequest, res: Response) => {
+    uploadPostImage = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const image = req.body?.image;
 
         if (!image || typeof image !== 'string') {
@@ -181,14 +184,15 @@ export class PostModuleController implements IController {
 
             return res.status(200).json({ image: imageName }).end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json(createErrorResponse(ErrorKeys.server_error, e.message))
-                .end();
+            next(e);
         }
     };
 
-    uploadPostsFromCSV = async (req: ExtendedRequest, res: Response) => {
+    uploadPostsFromCSV = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         const { throwInError, withCSV } = req.body;
         const throwInErrorBool = throwInError === 'true';
         const withCSVBool = withCSV === 'true';
@@ -388,14 +392,15 @@ export class PostModuleController implements IController {
                 .json(response)
                 .end();
         } catch (e: any) {
-            return res
-                .status(500)
-                .json(createErrorResponse(ErrorKeys.server_error, e.message))
-                .end();
+            next(e);
         }
     };
 
-    downloadCSVTemplate = async (req: ExtendedRequest, res: Response) => {
+    downloadCSVTemplate = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const headers = [
                 'title',
@@ -416,8 +421,7 @@ export class PostModuleController implements IController {
             const bom = '\uFEFF';
             res.send(bom + csvContent);
         } catch (e: any) {
-            console.error('Error generating CSV template:', e);
-            return res.status(500).json({ error: 'internal_server_error' });
+            next(e);
         }
     };
 
@@ -426,7 +430,11 @@ export class PostModuleController implements IController {
     /**
      * POST /create - Create post
      */
-    createPost = async (req: ExtendedRequest, res: Response) => {
+    createPost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { title, description, priority, students, groups, image } =
                 req.body;
@@ -449,24 +457,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            console.log('Error occurred while creating post:', e);
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /list - Get post list with pagination
      */
-    getPostList = async (req: ExtendedRequest, res: Response) => {
+    getPostList = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const title = (req.query.title as string) || '';
@@ -489,23 +491,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /:id - Get post detail
      */
-    getPostDetail = async (req: ExtendedRequest, res: Response) => {
+    getPostDetail = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
@@ -520,23 +517,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * PUT /:id - Update post
      */
-    updatePost = async (req: ExtendedRequest, res: Response) => {
+    updatePost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
@@ -564,23 +556,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * DELETE /:id - Delete post
      */
-    deletePost = async (req: ExtendedRequest, res: Response) => {
+    deletePost = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const postId = req.params.id;
 
@@ -595,23 +582,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * POST /delete-multiple - Delete multiple posts
      */
-    deleteMultiplePosts = async (req: ExtendedRequest, res: Response) => {
+    deleteMultiplePosts = async (
+        req: ExtendedRequest,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { postIds } = req.body;
 
@@ -630,16 +612,7 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
@@ -648,7 +621,11 @@ export class PostModuleController implements IController {
     /**
      * GET /:id/students - View post students
      */
-    viewPostStudents = async (req: Request, res: Response) => {
+    viewPostStudents = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id } = req.params;
             const postId = parseInt(id);
@@ -673,23 +650,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /:id/student/:student_id - View post student parents
      */
-    viewPostStudentParents = async (req: Request, res: Response) => {
+    viewPostStudentParents = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, student_id } = req.params;
             const postId = parseInt(id);
@@ -709,23 +681,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /:id/groups - View post groups
      */
-    viewPostGroups = async (req: Request, res: Response) => {
+    viewPostGroups = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id } = req.params;
             const postId = parseInt(id);
@@ -742,23 +709,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /:id/group/:group_id - View post group students
      */
-    viewPostGroupStudents = async (req: Request, res: Response) => {
+    viewPostGroupStudents = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, group_id } = req.params;
             const postId = parseInt(id);
@@ -788,23 +750,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * GET /:id/group/:group_id/student/:student_id - View group student parent
      */
-    viewGroupStudentParent = async (req: Request, res: Response) => {
+    viewGroupStudentParent = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, group_id, student_id } = req.params;
             const postId = parseInt(id);
@@ -826,16 +783,7 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
@@ -844,7 +792,11 @@ export class PostModuleController implements IController {
     /**
      * POST /:id/groups/:group_id - Group retry push
      */
-    retryGroupPush = async (req: Request, res: Response) => {
+    retryGroupPush = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, group_id } = req.params;
             const postId = parseInt(id);
@@ -864,23 +816,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * POST /:id/students/:student_id - Student retry push
      */
-    retryStudentPush = async (req: Request, res: Response) => {
+    retryStudentPush = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, student_id } = req.params;
             const postId = parseInt(id);
@@ -900,23 +847,18 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
     /**
      * POST /:id/parents/:parent_id - Parent retry push
      */
-    retryParentPush = async (req: Request, res: Response) => {
+    retryParentPush = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id, parent_id } = req.params;
             const postId = parseInt(id);
@@ -936,16 +878,7 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 
@@ -954,7 +887,11 @@ export class PostModuleController implements IController {
     /**
      * PUT /:id/sender - Update post senders
      */
-    updatePostSenders = async (req: Request, res: Response) => {
+    updatePostSenders = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             const { id } = req.params;
             const postId = parseInt(id);
@@ -989,16 +926,7 @@ export class PostModuleController implements IController {
 
             return res.status(200).json(result).end();
         } catch (e: any) {
-            if (e instanceof ApiError) {
-                return res
-                    .status(e.statusCode)
-                    .json({ error: e.message })
-                    .end();
-            }
-            return res
-                .status(500)
-                .json({ error: 'internal_server_error' })
-                .end();
+            next(e);
         }
     };
 }
