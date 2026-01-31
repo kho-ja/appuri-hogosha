@@ -2,12 +2,10 @@ import serverless from 'serverless-http';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import App from './utils/app';
-import AdminPanelController from './routes/admin-panel';
-import MobileController from './routes/mobile';
+import createApp from './createApp';
 
-const app = new App([new AdminPanelController(), new MobileController()]);
+const app = createApp();
 
-export const handler: serverless.Handler = serverless(app.listen(), {
+export const handler: serverless.Handler = serverless(app, {
     binary: ['multipart/form-data', 'image/*'],
 });
