@@ -10,7 +10,7 @@ import { useSession } from '@/contexts/auth-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState, useRef } from 'react';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
@@ -91,7 +91,6 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   const isPasswordValid = () => {
     const passwordRegex =
@@ -124,17 +123,7 @@ export default function Index() {
   const { mutate, isPending } = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
-      Toast.show(i18n[language].passwordChangedSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        containerStyle: {
-          backgroundColor: '#059669',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast(i18n[language].passwordChangedSuccess);
 
       router.back();
     },
@@ -169,17 +158,7 @@ export default function Index() {
     for (const validation of validations) {
       if (validation.condition) {
         setErrorMessage(validation.message);
-        Toast.show(validation.message, {
-          duration: Toast.durations.SHORT,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          containerStyle: {
-            backgroundColor: '#DC2626',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(validation.message);
         return;
       }
     }

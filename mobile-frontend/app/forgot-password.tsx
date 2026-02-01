@@ -8,7 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import ThemedPhoneInput from '@/components/atomic/ThemedPhoneInput';
@@ -115,7 +115,6 @@ export default function ForgotPasswordScreen() {
   const [expiryAt, setExpiryAt] = useState<number | null>(null);
 
   const EXPIRY_KEY = 'forgot_password_code_expiry';
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   // No ref needed for react-native-otp-entry
 
@@ -179,18 +178,7 @@ export default function ForgotPasswordScreen() {
   // Page 1: Phone number input
   const handleSendCode = async () => {
     if (!phoneNumber.trim()) {
-      Toast.show('Please enter your phone number', {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast('Please enter your phone number');
       return;
     }
 
@@ -220,22 +208,11 @@ export default function ForgotPasswordScreen() {
       // Clear OTP
       setVerificationCode('');
 
-      Toast.show(
+      showSuccessToast(
         resendCount === 0
           ? 'Verification code sent successfully'
           : `Verification code resent successfully (Attempt ${resendCount + 1})`,
-        {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'green',
-            borderRadius: 5,
-          },
-        }
+        { duration: 'long' }
       );
     } catch (error) {
       setIsLoading(false);
@@ -243,18 +220,7 @@ export default function ForgotPasswordScreen() {
         error instanceof Error
           ? error.message
           : 'Failed to send verification code';
-      Toast.show(errorMessage, {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast(errorMessage);
     }
   };
 
@@ -306,18 +272,7 @@ export default function ForgotPasswordScreen() {
     const finalCode = code || verificationCode;
 
     if (finalCode.length !== 6) {
-      Toast.show('Please enter all 6 digits', {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast('Please enter all 6 digits');
       return;
     }
 
@@ -332,34 +287,12 @@ export default function ForgotPasswordScreen() {
       setExpiryAt(null);
       AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
 
-      Toast.show('Code verified successfully', {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast('Code verified successfully');
     } catch (error) {
       setIsLoading(false);
       const errorMessage =
         error instanceof Error ? error.message : 'Invalid verification code';
-      Toast.show(errorMessage, {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast(errorMessage);
 
       // Clear OTP on error
       setVerificationCode('');
@@ -371,18 +304,7 @@ export default function ForgotPasswordScreen() {
 
   const handleSavePassword = async () => {
     if (!passwordValidation.isValid) {
-      Toast.show(i18n[language].passwordRequirementsNotMet, {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast(i18n[language].passwordRequirementsNotMet);
       return;
     }
 
@@ -401,17 +323,8 @@ export default function ForgotPasswordScreen() {
       );
 
       setIsLoading(false);
-      Toast.show(i18n[language].passwordCreatedSuccessfully, {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
+      showSuccessToast(i18n[language].passwordCreatedSuccessfully, {
+        duration: 'long',
       });
 
       // Navigate back to sign-in after successful password reset
@@ -422,18 +335,7 @@ export default function ForgotPasswordScreen() {
       setIsLoading(false);
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to reset password';
-      Toast.show(errorMessage, {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast(errorMessage);
     }
   };
 
