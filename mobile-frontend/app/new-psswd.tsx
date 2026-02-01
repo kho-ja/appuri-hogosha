@@ -18,7 +18,7 @@ import { ICountry } from 'react-native-international-phone-number';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast } from '@/utils/toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 
 const styles = StyleSheet.create({
@@ -141,17 +141,7 @@ export default function NewPassword() {
         ]
       );
 
-      Toast.show('Password changed successfully!', {
-        duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        containerStyle: {
-          backgroundColor: '#059669',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast('Password changed successfully!');
 
       router.replace('/');
     } catch (error) {

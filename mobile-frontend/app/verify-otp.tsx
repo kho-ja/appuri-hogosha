@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useMutation } from '@tanstack/react-query';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ICountry } from 'react-native-international-phone-number';
@@ -34,7 +34,6 @@ export default function VerifyOtp() {
     phone?: string;
     session?: string;
   }>();
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   const selectedCountry: ICountry | null = params.country
     ? JSON.parse(params.country)
@@ -75,20 +74,10 @@ export default function VerifyOtp() {
         phoneNumber.replaceAll(' ', '')
       );
       if (data?.session) {
-        Toast.show('Verification code resent', {
-          duration: Toast.durations.SHORT,
-          position: TOAST_POSITION,
-          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
-          textColor: 'white',
-        });
+        showSuccessToast('Verification code resent');
       }
     } catch {
-      Toast.show('Failed to resend code', {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        containerStyle: { backgroundColor: 'red', borderRadius: 5 },
-        textColor: 'white',
-      });
+      showErrorToast('Failed to resend code');
     }
   };
 
@@ -107,18 +96,7 @@ export default function VerifyOtp() {
         (error.name === 'NotificationPermissionError' ||
           error.message === 'NOTIFICATION_PERMISSION_DENIED')
       ) {
-        Toast.show(i18n[language].loginFailedNotifications, {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(i18n[language].loginFailedNotifications);
       } else {
         const parsedError = AuthErrorHandler.parseError(error);
         const errorMessageKey =
@@ -128,33 +106,11 @@ export default function VerifyOtp() {
           i18n[language].loginFailed ||
           parsedError.userMessage;
 
-        Toast.show(String(errorMessage), {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(String(errorMessage));
       }
     },
     onSuccess: async () => {
-      await Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast(i18n[language].loginSuccess);
     },
   });
 
