@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
 import { showSuccessToast } from '@/utils/toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import apiClient from '@/services/api-client';
 
 const styles = StyleSheet.create({
   container: {
@@ -68,7 +69,6 @@ export default function NewPassword() {
   const db = useSQLiteContext();
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
   const isPasswordValid = () => {
     const passwordRegex =
@@ -101,26 +101,18 @@ export default function NewPassword() {
         (await AsyncStorage.getItem('country')) as string
       ) as ICountry;
 
-      const response = await fetch(`${apiUrl}/change-temp-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'Application/json',
-        },
-        body: JSON.stringify({
+      const response = await apiClient.post<Session>(
+        '/change-temp-password',
+        {
           phone_number: country.callingCode + phoneNumber?.replaceAll(' ', ''),
           temp_password: await AsyncStorage.getItem('temp_password'),
           new_password: password,
           token: token,
-        }),
-      });
+        },
+        { requiresAuth: false }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to change password');
-      }
-
-      const data: Session = await response.json();
+      const data = response.data;
       setSession(data.access_token);
 
       if (data.refresh_token) {

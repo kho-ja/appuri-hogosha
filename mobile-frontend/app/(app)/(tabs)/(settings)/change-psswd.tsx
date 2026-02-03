@@ -6,7 +6,6 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useSession } from '@/contexts/auth-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState, useRef } from 'react';
@@ -16,6 +15,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
 import { useMutation } from '@tanstack/react-query';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import apiClient from '@/services/api-client';
 
 const styles = StyleSheet.create({
   container: {
@@ -80,11 +80,9 @@ const styles = StyleSheet.create({
 });
 
 export default function Index() {
-  const { session } = useSession();
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [oldPassword, setOldPassword] = useState('');
@@ -99,25 +97,12 @@ export default function Index() {
   };
 
   const changePassword = async () => {
-    const response = await fetch(`${apiUrl}/change-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session}`,
-      },
-      body: JSON.stringify({
-        previous_password: oldPassword,
-        new_password: newPassword,
-      }),
+    const response = await apiClient.post('/change-password', {
+      previous_password: oldPassword,
+      new_password: newPassword,
     });
 
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.error);
-    }
-
-    return responseData;
+    return response.data;
   };
 
   const { mutate, isPending } = useMutation({

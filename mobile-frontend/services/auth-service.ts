@@ -1,6 +1,4 @@
-// Create this file: mobile-frontend/services/auth-service.ts
-
-const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+import apiClient from './api-client';
 
 export interface ForgotPasswordInitiateResponse {
   message: string;
@@ -23,23 +21,13 @@ export const sendVerificationCode = async (
 ): Promise<ForgotPasswordInitiateResponse> => {
   const fullPhoneNumber = `${countryCode}${phoneNumber.replaceAll(' ', '')}`;
 
-  const response = await fetch(`${apiUrl}/forgot-password-initiate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      phone_number: fullPhoneNumber,
-    }),
-  });
+  const response = await apiClient.post<ForgotPasswordInitiateResponse>(
+    '/forgot-password-initiate',
+    { phone_number: fullPhoneNumber },
+    { requiresAuth: false }
+  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to send verification code');
-  }
-
-  return data;
+  return response.data;
 };
 
 /**
@@ -49,16 +37,10 @@ export const verifyResetCode = async (
   phoneNumber: string,
   code: string
 ): Promise<boolean> => {
-  // Note: This is just verification, we don't actually call an API yet
-  // The actual password reset happens in resetPassword function
-  // But we can simulate verification if needed
-
   if (code.length !== 6) {
     throw new Error('Verification code must be 6 digits');
   }
 
-  // For now, we'll just validate the format
-  // The actual verification happens in the confirm step
   return true;
 };
 
@@ -70,29 +52,19 @@ export const resetPassword = async (
   verificationCode: string,
   newPassword: string
 ): Promise<ForgotPasswordConfirmResponse> => {
-  // Parse phone number to get country code and clean number
-  // Assuming phoneNumber is in format like "+1234567890" or "1234567890"
   const fullPhoneNumber = phoneNumber.startsWith('+')
     ? phoneNumber
     : `+${phoneNumber}`;
 
-  const response = await fetch(`${apiUrl}/forgot-password-confirm`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
+  const response = await apiClient.post<ForgotPasswordConfirmResponse>(
+    '/forgot-password-confirm',
+    {
       phone_number: fullPhoneNumber,
       verification_code: verificationCode,
       new_password: newPassword,
-    }),
-  });
+    },
+    { requiresAuth: false }
+  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Failed to reset password');
-  }
-
-  return data;
+  return response.data;
 };

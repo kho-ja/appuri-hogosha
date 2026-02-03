@@ -9,6 +9,7 @@ import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
 import DemoModeService from '@/services/demo-mode-service';
 import { normalizePhone } from '@/utils/phone';
+import apiClient, { ApiError } from '@/services/api-client';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -55,7 +56,6 @@ export function SessionProvider(props: React.PropsWithChildren) {
   const [isDemoMode, setIsDemoMode] = React.useState(false);
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const previousSessionRef = React.useRef<string | null>(session);
 
   // Initialize demo mode state on mount
@@ -163,35 +163,19 @@ export function SessionProvider(props: React.PropsWithChildren) {
           try {
             // First, check and request push notification permissions
             const token = await registerForPushNotificationsAsync();
-            console.log('Login response status:', apiUrl);
-            // If we get here, notifications are enabled and we have a token
+
             // Now proceed with login request
-            const response = await fetch(`${apiUrl}/login`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
+            const response = await apiClient.post<any>(
+              '/login',
+              {
                 phone_number: fullPhoneNumber,
                 password,
                 token,
-              }),
-            });
+              },
+              { requiresAuth: false }
+            );
 
-            if (response.status === 403) {
-              await AsyncStorage.setItem('phoneNumber', phoneNumber);
-              if (password)
-                await AsyncStorage.setItem('temp_password', password);
-              router.push('/new-psswd');
-              return { requiresPasswordChange: true };
-            }
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw Error(errorData.error || 'Internal server error');
-            }
-
-            const data = await response.json();
+            const data = response.data;
 
             // OTP Flow: If session is returned, return it to the caller
             if (data.session) {
@@ -220,6 +204,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
             router.replace('/');
           } catch (error) {
             console.error('Error during sign in:', error);
+            if (error instanceof ApiError && error.status === 403) {
+              await AsyncStorage.setItem('phoneNumber', phoneNumber);
+              if (password)
+                await AsyncStorage.setItem('temp_password', password);
+              router.push('/new-psswd');
+              return { requiresPasswordChange: true };
+            }
             if (error instanceof Error) {
               // Check if error is related to push notifications
               if (
@@ -282,25 +273,18 @@ export function SessionProvider(props: React.PropsWithChildren) {
             // Regular OTP verification flow
             const token = await registerForPushNotificationsAsync();
 
-            const response = await fetch(`${apiUrl}/verify-otp`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
+            const response = await apiClient.post<Session>(
+              '/verify-otp',
+              {
                 phone_number: fullPhoneNumber,
                 code,
                 session,
                 token,
-              }),
-            });
+              },
+              { requiresAuth: false }
+            );
 
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw Error(errorData.error || 'Invalid OTP');
-            }
-
-            const data: Session = await response.json();
+            const data = response.data;
             setSession(data.access_token);
             await AsyncStorage.setItem('refresh_token', data.refresh_token);
 
@@ -328,44 +312,44 @@ export function SessionProvider(props: React.PropsWithChildren) {
           }
 
           try {
-            const refreshToken = await AsyncStorage.getItem('refresh_token');
-            if (!refreshToken) {
+            const refreshTokenValue =
+              await AsyncStorage.getItem('refresh_token');
+            if (!refreshTokenValue) {
               console.error('No refresh token found');
+              return;
             }
 
-            const response = await fetch(`${apiUrl}/refresh-token`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                refresh_token: refreshToken,
-              }),
-            });
-            if (!response.ok) {
-              try {
-                // Clear all cached data
-                queryClient.clear();
+            const response = await apiClient.post<Session>(
+              '/refresh-token',
+              { refresh_token: refreshTokenValue },
+              { requiresAuth: false }
+            );
 
-                await db.execAsync('DELETE FROM user');
-                await db.execAsync('DELETE FROM student');
-                await db.execAsync('DELETE FROM message');
-
-                // Clear AsyncStorage student cache
-                await AsyncStorage.removeItem('students');
-                await AsyncStorage.removeItem('studentId');
-                await AsyncStorage.removeItem('selectedStudent');
-              } catch (error) {
-                console.error('Error during token refresh cleanup:', error);
-              } finally {
-                setSession(null);
-              }
-            }
-            const data: Session = await response.json();
+            const data = response.data;
             setSession(data.access_token);
             await AsyncStorage.setItem('refresh_token', data.refresh_token);
           } catch (error) {
             console.error('Error refreshing token:', error);
+            try {
+              // Clear all cached data
+              queryClient.clear();
+
+              await db.execAsync('DELETE FROM user');
+              await db.execAsync('DELETE FROM student');
+              await db.execAsync('DELETE FROM message');
+
+              // Clear AsyncStorage student cache
+              await AsyncStorage.removeItem('students');
+              await AsyncStorage.removeItem('studentId');
+              await AsyncStorage.removeItem('selectedStudent');
+            } catch (cleanupError) {
+              console.error(
+                'Error during token refresh cleanup:',
+                cleanupError
+              );
+            } finally {
+              setSession(null);
+            }
           }
         },
         signOut: async () => {
@@ -385,13 +369,20 @@ export function SessionProvider(props: React.PropsWithChildren) {
             await db.execAsync('DELETE FROM message');
 
             if (!isDemoMode) {
-              const refreshToken = await AsyncStorage.getItem('refresh_token');
-              if (refreshToken) {
-                await fetch(`${apiUrl}/revoke`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ refresh_token: refreshToken }),
-                });
+              const refreshTokenValue =
+                await AsyncStorage.getItem('refresh_token');
+              if (refreshTokenValue) {
+                // Silently try to revoke - don't block logout if it fails
+                try {
+                  await apiClient.post(
+                    '/revoke',
+                    { refresh_token: refreshTokenValue },
+                    { requiresAuth: false }
+                  );
+                } catch {
+                  // Ignore revoke errors - token might be expired or invalid
+                  // Logout should proceed regardless
+                }
               }
             }
 

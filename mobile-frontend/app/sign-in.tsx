@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -161,7 +160,7 @@ export default function SignIn() {
 
       showErrorToast(String(errorMessage));
     },
-    onSuccess: async (data) => {
+    onSuccess: async data => {
       // If user needs to change temporary password, don't show success or navigate
       if (data?.requiresPasswordChange) {
         return;
