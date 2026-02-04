@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Edit3Icon,
@@ -61,6 +61,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useListQuery } from "@/lib/useListQuery";
+import { SkeletonLoader } from "@/components/TableApi";
 
 interface GroupTreeNode extends Group {
   children?: GroupTreeNode[];
@@ -160,14 +161,25 @@ function GroupRow({
 
 export default function Groups() {
   const t = useTranslations("groups");
+  const tTable = useTranslations("table");
+
   const { data: session } = useSession();
-  const { page, setPage, search, setSearch } = usePagination({
-    persistToUrl: true,
-  });
-  const { data } = useListQuery<GroupApi>(
-    `group/list?name=${search}&all=true`,
-    ["groups", search]
-  );
+const { page, setPage, search, setSearch } = usePagination({
+  persistToUrl: true,
+});
+const { data } = useListQuery<GroupApi>(
+  `group/list?name=${search}&all=true`,
+  ["groups", search]
+);
+
+const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+const isLoading = !hasLoadedOnce && typeof data === "undefined";
+
+useEffect(() => {
+  if (!hasLoadedOnce && typeof data !== "undefined") {
+    setHasLoadedOnce(true);
+  }
+}, [data, hasLoadedOnce]);
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -189,6 +201,12 @@ export default function Groups() {
     () => flatData.map((g: GroupTreeNode) => g.id),
     [flatData]
   );
+
+  const hasRows = flatData.length > 0;
+
+  const showLoading =
+    isLoading || (!hasLoadedOnce && typeof data === "undefined");
+  const showEmpty = hasLoadedOnce && !isLoading && !hasRows;
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id);
@@ -463,19 +481,19 @@ export default function Groups() {
           </div>
         </PageHeader>
 
-        <div className="flex flex-col sm:flex-row justify-between">
-          <Input
-            placeholder={t("filter")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="sm:max-w-sm mb-4"
-          />
-          <div>
-            {/* <PaginationApi data={data?.pagination || null} setPage={setPage} /> */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
+          <div className="w-full sm:max-w-sm">
+            <Input
+              placeholder={t("filter")}
+              value={search}
+              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full"
+            />
           </div>
+          <div>{/* Pagination removed */}</div>
         </div>
 
         <div className="space-y-2 align-left">
@@ -491,16 +509,8 @@ export default function Groups() {
             </Button>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-              modifiers={[restrictToVerticalAxis]}
-            >
+          {showLoading ? (
+            <div className="overflow-x-auto rounded-lg border border-border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -515,24 +525,79 @@ export default function Groups() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {/* We still use SortableContext to get useSortable hooks, but without a sorting strategy */}
-                  <SortableContext items={allIds}>
-                    {flatData.map((group) => (
-                      <GroupRow
-                        key={group.id}
-                        group={group}
-                        renderActionCell={renderActionCell}
-                        isOver={overId === group.id}
-                        isDragging={activeId === group.id}
-                        showHandle={isEditMode}
-                      />
-                    ))}
-                  </SortableContext>
+                  <SkeletonLoader columnCount={4} rowCount={5} />
                 </TableBody>
               </Table>
-              {/* DragOverlay is completely removed */}
-            </DndContext>
-          </div>
+            </div>
+          ) : showEmpty ? (
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("groupName")}</TableHead>
+                    <TableHead className="w-40">{t("parent")}</TableHead>
+                    <TableHead className="w-24 text-right">
+                      {t("studentCount")}
+                    </TableHead>
+                    <TableHead className="w-32 text-right">
+                      {t("action")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="h-24 text-center text-sm text-muted-foreground"
+                    >
+                      {tTable("noData")}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+                modifiers={[restrictToVerticalAxis]}
+              >
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("groupName")}</TableHead>
+                      <TableHead className="w-40">{t("parent")}</TableHead>
+                      <TableHead className="w-24 text-right">
+                        {t("studentCount")}
+                      </TableHead>
+                      <TableHead className="w-32 text-right">
+                        {t("action")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <SortableContext items={allIds}>
+                      {flatData.map((group) => (
+                        <GroupRow
+                          key={group.id}
+                          group={group}
+                          renderActionCell={renderActionCell}
+                          isOver={overId === group.id}
+                          isDragging={activeId === group.id}
+                          showHandle={isEditMode}
+                        />
+                      ))}
+                    </SortableContext>
+                  </TableBody>
+                </Table>
+              </DndContext>
+            </div>
+          )}
         </div>
       </div>
     </div>
