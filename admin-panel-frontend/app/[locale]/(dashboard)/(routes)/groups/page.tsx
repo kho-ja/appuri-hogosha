@@ -180,6 +180,7 @@ export default function Groups() {
       setHasLoadedOnce(true);
     }
   }, [data, hasLoadedOnce]);
+
   const queryClient = useQueryClient();
   const [groupId, setGroupId] = useState<number | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -348,7 +349,6 @@ export default function Groups() {
       (session?.user as { accessToken?: string })?.accessToken ||
       (session?.user as { token?: string })?.token ||
       "";
-
     try {
       setUnlinkingId(group.id);
 
@@ -370,7 +370,6 @@ export default function Groups() {
       if (!response.ok) {
         throw new Error("Failed to unlink group");
       }
-
       toast({
         title: t("groupUnlinked"),
         description: t("groupUnlinkedDescription"),
