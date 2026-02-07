@@ -62,26 +62,32 @@ export default function SendMessagePage({
       scheduled_at: "",
     },
   });
+
+  interface EditScheduledPostPayload {
+    title: string;
+    description: string;
+    priority: string;
+    image?: string | null;
+    scheduled_at: string;
+  }
   const router = useRouter();
   const { data, isLoading, isError } = useListQuery<{
     post: ScheduledPost;
   }>(`schedule/each/${messageId}`, ["message", messageId]);
 
-  const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `schedule/${messageId}`,
-    "PUT",
-    ["editMessage", messageId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("messageEdited"),
-          description: data?.message,
-        });
-        form.reset();
-        router.push(`/messages/scheduled-message/${messageId}`);
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    EditScheduledPostPayload
+  >(`schedule/${messageId}`, "PUT", ["editMessage", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("messageEdited"),
+        description: data?.message,
+      });
+      form.reset();
+      router.push(`/messages/scheduled-message/${messageId}`);
+    },
+  });
   const uploadImageMutation = useApiMutation<
     { image: string },
     { image: string }
@@ -118,7 +124,7 @@ export default function SendMessagePage({
     }
   }, [data, form]);
 
-  const handleRemoveImg = (e: any) => {
+  const handleRemoveImg = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (data) {
       setImage("");
@@ -148,7 +154,7 @@ export default function SendMessagePage({
               priority: values.priority,
               image: values.image,
               scheduled_at: values.scheduled_at,
-            } as any);
+            });
           })}
           className="space-y-4"
         >

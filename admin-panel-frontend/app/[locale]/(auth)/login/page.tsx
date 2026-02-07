@@ -72,8 +72,13 @@ export default function LoginForm() {
   };
 
   useEffect(() => {
-    if (!searchParams) return;
-    const error = searchParams.get("error");
+    const params =
+      searchParams ||
+      (typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : null);
+    if (!params) return;
+    const error = params.get("error");
     if (error) {
       const ns = (allMessages?.LoginForm ?? {}) as Record<string, string>;
       const keyToUse = Object.prototype.hasOwnProperty.call(ns, error)

@@ -75,7 +75,7 @@ export default function Info() {
     "schedule/list",
     ["schedule", page, search, perPage],
     { page, text: search, perPage },
-    "POST",
+    "GET",
     { enabled: tab === "scheduled" }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -305,11 +305,6 @@ export default function Info() {
       ),
     },
   ];
-
-  // const searchParams = useSearchParams();
-  // const initialTab =
-  //   (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
-  // const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   return (
     <div className="w-full space-y-4">

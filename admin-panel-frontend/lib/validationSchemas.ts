@@ -4,7 +4,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 export const commonValidation = {
   email: z.string().email().max(254),
 
-  emailOptional: z.string().max(0).or(z.string().email()).optional(),
+  emailOptional: z.string().email().optional().or(z.literal("")),
 
   givenName: z.string().min(1).max(50),
   familyName: z.string().min(1).max(50),

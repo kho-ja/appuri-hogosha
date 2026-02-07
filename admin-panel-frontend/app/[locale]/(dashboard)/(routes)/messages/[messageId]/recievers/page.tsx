@@ -26,6 +26,11 @@ export default function Recievers({
   const t = useTranslations("recievers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
+
+  interface UpdateReceiversPayload {
+    students: number[];
+    groups: number[];
+  }
   const router = useRouter();
   const { data: studentData } = useListQuery<StudentApi>(
     `post/${messageId}/students`,
@@ -35,26 +40,24 @@ export default function Recievers({
     `post/${messageId}/groups`,
     ["group", messageId]
   );
-  const { mutate } = useApiMutation(
-    `post/${messageId}/sender`,
-    "PUT",
-    ["editMessageSender", messageId],
-    {
-      onSuccess: (data: any) => {
-        toast({
-          title: t("recieversChanged"),
-          description: t(data?.message),
-        });
-        router.push(`/messages/${messageId}`);
-      },
-    }
-  );
+  const { mutate } = useApiMutation<
+    { message: string },
+    UpdateReceiversPayload
+  >(`post/${messageId}/sender`, "PUT", ["editMessageSender", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("recieversChanged"),
+        description: t(data?.message),
+      });
+      router.push(`/messages/${messageId}`);
+    },
+  });
 
   const handleClick = useCallback(() => {
     mutate({
       students: selectedStudents.map((student) => student.id),
       groups: selectedGroups.map((group) => group.id),
-    } as any);
+    });
   }, [selectedStudents, selectedGroups, mutate]);
 
   useEffect(() => {

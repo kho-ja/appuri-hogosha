@@ -389,6 +389,8 @@ export function GenericSelectTable<T extends BaseEntity>({
   );
 
   const showSelectAllButton = config.enableSelectAll !== false;
+  const hasAllFilter =
+    config.filters?.some((filter) => filter.value === "all") ?? false;
 
   return (
     <div className="w-full space-y-4 mt-4">
@@ -418,7 +420,7 @@ export function GenericSelectTable<T extends BaseEntity>({
                 <SelectValue placeholder="Filter by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                {!hasAllFilter && <SelectItem value="all">All</SelectItem>}
                 {config.filters.map((filter) => (
                   <SelectItem key={filter.value} value={filter.value}>
                     {filter.label}

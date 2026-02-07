@@ -20,24 +20,26 @@ export default function EditParents({
 }) {
   const t = useTranslations("CreateStudent");
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
+
+  interface UpdateStudentParentsPayload {
+    parents: number[];
+  }
   const router = useRouter();
   const { data, isLoading, isError } = useListQuery<{
     parents: Parent[];
   }>(`student/${studentId}/parents`, ["student", studentId]);
-  const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `student/${studentId}/parents`,
-    "POST",
-    ["editStudentParents", studentId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("ParentsUpdated"),
-          description: data.message,
-        });
-        router.push(`/students/${studentId}`);
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    UpdateStudentParentsPayload
+  >(`student/${studentId}/parents`, "POST", ["editStudentParents", studentId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("ParentsUpdated"),
+        description: data.message,
+      });
+      router.push(`/students/${studentId}`);
+    },
+  });
 
   useEffect(() => {
     if (!data) return;
@@ -56,7 +58,7 @@ export default function EditParents({
           event.preventDefault();
           mutate({
             parents: selectedParents.map((parent) => parent.id),
-          } as any);
+          });
         }}
         className="space-y-4"
       >

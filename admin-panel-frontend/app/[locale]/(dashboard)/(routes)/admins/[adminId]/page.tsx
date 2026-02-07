@@ -49,7 +49,10 @@ export default async function ThisAdmin({
         {adminData && (
           <ResendPasswordDialog
             id={adminData.admin.id}
-            name={tName("name", { ...adminData.admin } as any)}
+            name={tName("name", {
+              given_name: adminData.admin.given_name,
+              family_name: adminData.admin.family_name,
+            })}
             identifier={adminData.admin.email}
             type="admin"
             variant="button"

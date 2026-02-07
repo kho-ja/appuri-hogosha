@@ -37,8 +37,8 @@ export function StudentTable({
 
   const { data: rawData, isLoading } = useListQuery<StudentApi>(
     "student/list",
-    ["students", page, search],
-    { page, search },
+    ["students", page, search, filterBy],
+    { page, filterBy, filterValue: search },
     "POST"
   );
 

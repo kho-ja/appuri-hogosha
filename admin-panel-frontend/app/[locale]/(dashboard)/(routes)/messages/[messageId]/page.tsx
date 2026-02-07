@@ -43,7 +43,6 @@ import {
 } from "@/components/ui/dialog";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-import { useSearchParams } from "next/navigation";
 
 export default function ThisMessage({
   params: { messageId },
@@ -54,9 +53,7 @@ export default function ThisMessage({
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const initialTab =
-    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+
   const { data } = useListQuery<postView>(`post/${messageId}`, [
     "message",
     messageId,
@@ -118,7 +115,10 @@ export default function ThisMessage({
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName("name", {
+                            given_name: parent.given_name,
+                            family_name: parent.family_name,
+                          })}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>

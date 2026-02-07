@@ -45,7 +45,11 @@ export default function Forms() {
     {
       accessorKey: "parent_name",
       header: t("parent_name"),
-      cell: ({ row }) => tName("name", { ...row?.original?.parent } as any),
+      cell: ({ row }) =>
+        tName("name", {
+          given_name: row?.original?.parent?.given_name,
+          family_name: row?.original?.parent?.family_name,
+        }),
     },
     {
       accessorKey: "student_name",
