@@ -21,6 +21,7 @@ import { Button, useTheme } from '@rneui/themed';
 import { showSuccessToast } from '@/utils/toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import apiClient from '@/services/api-client';
+import { usePasswordValidation } from '@/hooks/usePasswordValidation';
 
 const styles = StyleSheet.create({
   container: {
@@ -69,17 +70,12 @@ export default function NewPassword() {
   const db = useSQLiteContext();
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
-
-  const isPasswordValid = () => {
-    const passwordRegex =
-      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
-    return passwordRegex.test(password);
-  };
+  const { isValid: isPasswordValid } = usePasswordValidation(password);
 
   const handlePress = async () => {
     setErrorMessage('');
 
-    if (!isPasswordValid()) {
+    if (!isPasswordValid) {
       setErrorMessage('Please ensure all password requirements are met');
       return;
     }
@@ -198,9 +194,9 @@ export default function NewPassword() {
             title={i18n[language].savePassword}
             buttonStyle={[
               styles.submitButton,
-              { opacity: isPasswordValid() ? 1 : 0.6 },
+              { opacity: isPasswordValid ? 1 : 0.6 },
             ]}
-            disabled={!isPasswordValid() || isLoading}
+            disabled={!isPasswordValid || isLoading}
             loading={isLoading}
           />
 

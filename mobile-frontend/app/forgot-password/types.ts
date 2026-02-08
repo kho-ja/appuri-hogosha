@@ -1,5 +1,8 @@
 import { ICountry } from 'react-native-international-phone-number';
 
+// Re-export password validation from shared hook
+export { validatePassword } from '@/hooks/usePasswordValidation';
+
 export type ForgotPasswordStep = 'phone' | 'verify' | 'newPassword';
 
 export interface ForgotPasswordState {
@@ -29,25 +32,6 @@ export const maskPhoneNumber = (
   const middleMask = '*'.repeat(Math.max(0, cleanNumber.length - 4));
 
   return `${countryCode} ${visibleStart} ${middleMask} ${visibleEnd}`;
-};
-
-// Password validation functions
-export const validatePassword = (password: string) => {
-  const minLength = password.length >= 8;
-  const hasNumber = /\d/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasSpecialChar = /[!@#%&/\\,><':;|_~`+=^$.()[\]{}?"*-]/.test(password);
-
-  return {
-    minLength,
-    hasNumber,
-    hasUppercase,
-    hasLowercase,
-    hasSpecialChar,
-    isValid:
-      minLength && hasNumber && hasUppercase && hasLowercase && hasSpecialChar,
-  };
 };
 
 export const normalizePhoneNumber = (

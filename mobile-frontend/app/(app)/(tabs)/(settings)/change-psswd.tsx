@@ -16,6 +16,7 @@ import { Button, useTheme } from '@rneui/themed';
 import { useMutation } from '@tanstack/react-query';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import apiClient from '@/services/api-client';
+import { usePasswordValidation } from '@/hooks/usePasswordValidation';
 
 const styles = StyleSheet.create({
   container: {
@@ -89,12 +90,7 @@ export default function Index() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-
-  const isPasswordValid = () => {
-    const passwordRegex =
-      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
-    return passwordRegex.test(newPassword);
-  };
+  const { isValid: isPasswordValid } = usePasswordValidation(newPassword);
 
   const changePassword = async () => {
     const response = await apiClient.post('/change-password', {
@@ -127,7 +123,7 @@ export default function Index() {
         message: i18n[language].enterOldPassword,
       },
       {
-        condition: !isPasswordValid(),
+        condition: !isPasswordValid,
         message: i18n[language].pleaseEnsurePasswordRequirements,
       },
       {
