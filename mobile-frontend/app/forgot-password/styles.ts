@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { colors } from '@/constants/Colors';
 
 export const forgotPasswordStyles = StyleSheet.create({
   container: {
@@ -10,7 +11,7 @@ export const forgotPasswordStyles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 40,
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   header: {
     marginBottom: 60,
@@ -36,7 +37,7 @@ export const forgotPasswordStyles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 8,
-    color: '#4285F4',
+    color: colors.primary,
   },
   label: {
     fontSize: 16,
@@ -55,7 +56,7 @@ export const forgotPasswordStyles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 18,
     fontWeight: '600',
-    borderColor: '#D1D5DB',
+    borderColor: colors.gray300,
   },
   // OTP input styles
   otpContainer: {
@@ -82,7 +83,7 @@ export const forgotPasswordStyles = StyleSheet.create({
     textAlign: 'center',
   },
   disabledButton: {
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
     opacity: 0.6,
   },
   // Resend functionality styles
@@ -106,7 +107,7 @@ export const forgotPasswordStyles = StyleSheet.create({
   },
   backToSignInText: {
     fontSize: 14,
-    color: '#4285F4',
+    color: colors.primary,
     textDecorationLine: 'underline',
   },
 });

@@ -7,6 +7,7 @@ import { I18nContext } from '@/contexts/i18n-context';
 import BatteryOptimizationHelper from '@/components/BatteryOptimizationHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@rneui/themed';
+import { headerBg } from '@/constants/Colors';
 
 const Layout = () => {
   const [showBatteryHelper, setShowBatteryHelper] = useState(false);
@@ -56,7 +57,7 @@ const Layout = () => {
           options={{
             title: i18n[language].SelectStudent,
             headerStyle: {
-              backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+              backgroundColor: headerBg(theme.mode!),
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
@@ -82,7 +83,7 @@ const Layout = () => {
               headerTitle: studentName,
               headerTitleAlign: 'center',
               headerStyle: {
-                backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                backgroundColor: headerBg(theme.mode!),
               },
               headerTitleStyle: {
                 color: 'white',
@@ -133,7 +134,7 @@ const Layout = () => {
               headerTitle: i18n[language].detailedView,
               headerTitleAlign: 'center',
               headerStyle: {
-                backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                backgroundColor: headerBg(theme.mode!),
               },
               headerTitleStyle: {
                 color: 'white',

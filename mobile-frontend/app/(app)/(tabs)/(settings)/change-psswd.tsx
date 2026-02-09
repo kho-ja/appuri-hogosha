@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { colors } from '@/constants/Colors';
 import {
   StyleSheet,
   View,
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
     marginTop: 20,
   },
   header: {
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   errorText: {
-    color: '#DC2626',
+    color: colors.error,
     marginTop: 10,
     marginBottom: 15,
     fontSize: 14,

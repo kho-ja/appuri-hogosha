@@ -18,6 +18,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 import { Message, Student } from '@/constants/types';
+import { colors } from '@/constants/Colors';
 import { useNetwork } from '@/contexts/network-context';
 import { useSession } from '@/contexts/auth-context';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -171,17 +172,21 @@ const NoMessagesState: React.FC<{
         buttonStyle={[
           styles.refreshButton,
           {
-            backgroundColor: theme.mode === 'dark' ? '#3B81F6' : '#3B81F61A',
+            backgroundColor:
+              theme.mode === 'dark'
+                ? colors.tintLight
+                : `${colors.tintLight}1A`,
           },
         ]}
         disabledStyle={[
           styles.refreshButton,
           {
-            backgroundColor: theme.mode === 'dark' ? '#2563EB' : '#3B81F60D',
+            backgroundColor:
+              theme.mode === 'dark' ? '#2563EB' : `${colors.tintLight}0D`,
           },
         ]}
         titleStyle={{
-          color: theme.mode === 'dark' ? 'white' : '#3B81F6',
+          color: theme.mode === 'dark' ? 'white' : colors.tintLight,
         }}
         loading={isRefreshing}
         disabled={isRefreshing}

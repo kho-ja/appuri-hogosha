@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useState } from 'react';
+import { colors } from '@/constants/Colors';
 import {
   BackHandler,
   Keyboard,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 40,
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   header: {
     marginBottom: 60,
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#4285F4',
+    color: colors.primary,
     textDecorationLine: 'underline',
     fontWeight: '500',
   },
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   linkText: {
-    color: '#4285F4',
+    color: colors.primary,
     fontSize: 16,
     fontWeight: '500',
   },

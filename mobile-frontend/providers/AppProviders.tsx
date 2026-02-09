@@ -13,6 +13,7 @@ import {
 } from '@/contexts/theme-context';
 import { StatusBarBackground } from '@/components/StatusBarBackground';
 import { theme } from '@/constants/theme';
+import { headerBg } from '@/constants/Colors';
 import { migrateDbIfNeeded } from '@/lib/database-migrations';
 import AppWithNotifications from '@/app/AppWithNotifications';
 
@@ -45,7 +46,7 @@ function InnerProviders({
             <View
               style={{
                 flex: 1,
-                backgroundColor: themeMode === 'dark' ? '#1A4AAC' : '#3B81F6',
+                backgroundColor: headerBg(themeMode),
                 justifyContent: 'center',
                 alignItems: 'center',
               }}

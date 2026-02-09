@@ -1,12 +1,13 @@
 import Toast from 'react-native-root-toast';
+import { colors } from '@/constants/Colors';
 
 // Default toast position (bottom with offset)
 const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
 // Semantic colors for toast
 const ToastColors = {
-  success: '#059669',
-  error: '#DC2626',
+  success: colors.success,
+  error: colors.error,
   neutral: 'gray',
 } as const;
 

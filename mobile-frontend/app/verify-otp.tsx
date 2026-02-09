@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useState } from 'react';
+import { colors } from '@/constants/Colors';
 import {
   BackHandler,
   Keyboard,
@@ -206,7 +207,8 @@ export default function VerifyOtp() {
                 titleStyle={[
                   styles.resendText,
                   {
-                    color: canResend && !isPending ? '#4285F4' : '#9CA3AF',
+                    color:
+                      canResend && !isPending ? colors.primary : colors.gray400,
                   },
                 ]}
               />
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 40,
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   header: {
     flex: 1,
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 24,
-    color: '#4285F4',
+    color: colors.primary,
   },
   otpContainer: {
     flexDirection: 'row',
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderWidth: 2,
     borderRadius: 8,
-    borderColor: '#D1D5DB',
+    borderColor: colors.gray300,
   },
   otpText: {
     fontSize: 18,

@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme, Button } from '@rneui/themed';
 import { forgotPasswordStyles } from './styles';
+import { colors } from '@/constants/Colors';
 
 interface OtpVerificationScreenTranslations {
   resetPasswordTitle: string;
@@ -114,7 +115,8 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({
                 titleStyle={[
                   forgotPasswordStyles.resendText,
                   {
-                    color: canResend && !isLoading ? '#4285F4' : '#9CA3AF',
+                    color:
+                      canResend && !isLoading ? colors.primary : colors.gray400,
                   },
                 ]}
               />
@@ -130,7 +132,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({
               color: '#999999',
             }}
             disabledStyle={{
-              backgroundColor: '#4285F4',
+              backgroundColor: colors.primary,
               opacity: 0.5,
             }}
             disabled={isLoading || verificationCode.length !== 6}

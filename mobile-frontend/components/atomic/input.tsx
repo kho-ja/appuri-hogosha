@@ -1,6 +1,7 @@
 import React from 'react';
 import { TextInput, View, Text, TextInputProps } from 'react-native';
 import { useTheme } from '@rneui/themed';
+import { colors } from '@/constants/Colors';
 
 export interface AdvancedInputProps extends TextInputProps {
   label?: string;
@@ -31,10 +32,12 @@ const Input: React.FC<AdvancedInputProps> = ({ label, style, ...props }) => {
           justifyContent: 'center',
           paddingHorizontal: 10,
           borderWidth: 1,
-          borderColor: '#D1D5DB',
+          borderColor: colors.gray300,
           color: theme.mode === 'light' ? 'black' : 'white',
         }}
-        placeholderTextColor={theme.mode === 'light' ? '#6B7280' : '#9CA3AF'}
+        placeholderTextColor={
+          theme.mode === 'light' ? colors.gray500 : colors.gray400
+        }
         {...props}
       />
     </View>

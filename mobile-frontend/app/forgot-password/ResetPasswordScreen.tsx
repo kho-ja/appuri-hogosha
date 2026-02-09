@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme, Button } from '@rneui/themed';
 import { forgotPasswordStyles } from './styles';
+import { colors } from '@/constants/Colors';
 import { validatePassword } from './types';
 
 interface PasswordRequirementsTranslations {
@@ -93,7 +94,7 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({
               color: '#999999',
             }}
             disabledStyle={{
-              backgroundColor: '#4285F4',
+              backgroundColor: colors.primary,
               opacity: 0.5,
             }}
             disabled={isLoading || !passwordValidation.isValid}

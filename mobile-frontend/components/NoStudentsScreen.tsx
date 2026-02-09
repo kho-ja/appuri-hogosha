@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nContext } from '@/contexts/i18n-context';
+import { colors } from '@/constants/Colors';
 
 interface NoStudentsScreenProps {
   onRefresh?: () => void;
@@ -68,7 +69,7 @@ const NoStudentsScreen: React.FC<NoStudentsScreenProps> = ({
           <Ionicons
             name='checkmark-circle-outline'
             size={20}
-            color={theme.colors.success || '#059669'}
+            color={colors.success}
             style={styles.helpIcon}
           />
           <ThemedText style={styles.helpText}>
@@ -80,7 +81,7 @@ const NoStudentsScreen: React.FC<NoStudentsScreenProps> = ({
           <Ionicons
             name='checkmark-circle-outline'
             size={20}
-            color={theme.colors.success || '#059669'}
+            color={colors.success}
             style={styles.helpIcon}
           />
           <ThemedText style={styles.helpText}>
@@ -92,7 +93,7 @@ const NoStudentsScreen: React.FC<NoStudentsScreenProps> = ({
           <Ionicons
             name='checkmark-circle-outline'
             size={20}
-            color={theme.colors.success || '#059669'}
+            color={colors.success}
             style={styles.helpIcon}
           />
           <ThemedText style={styles.helpText}>

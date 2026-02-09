@@ -10,6 +10,7 @@ import React from 'react';
 import { useThemeMode } from '@rneui/themed';
 import { MessageProvider } from '@/contexts/message-context';
 import { StatusBar } from 'react-native';
+import { headerBg } from '@/constants/Colors';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,10 +32,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={mode === 'dark' ? DarkTheme : DefaultTheme}>
-      <StatusBar
-        barStyle='light-content'
-        backgroundColor={mode === 'dark' ? '#1A4AAC' : '#3B81F6'}
-      />
+      <StatusBar barStyle='light-content' backgroundColor={headerBg(mode)} />
       <MessageProvider>
         <Stack initialRouteName='(tabs)'>
           <Stack.Screen name='(tabs)' options={{ headerShown: false }} />

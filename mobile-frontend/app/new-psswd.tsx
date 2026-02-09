@@ -22,6 +22,7 @@ import { showSuccessToast } from '@/utils/toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
 import apiClient from '@/services/api-client';
 import { usePasswordValidation } from '@/hooks/usePasswordValidation';
+import { colors } from '@/constants/Colors';
 
 const styles = StyleSheet.create({
   container: {
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
     marginTop: 20,
   },
   header: {
