@@ -13,16 +13,16 @@ import {
   resetPassword,
 } from '@/services/auth-service';
 
-import { PhoneInputScreen } from './PhoneInputScreen';
-import { OtpVerificationScreen } from './OtpVerificationScreen';
-import { ResetPasswordScreen } from './ResetPasswordScreen';
+import { PhoneInputScreen } from '../../features/forgot-password/PhoneInputScreen';
+import { OtpVerificationScreen } from '../../features/forgot-password/OtpVerificationScreen';
+import { ResetPasswordScreen } from '../../features/forgot-password/ResetPasswordScreen';
 import {
   ForgotPasswordStep,
   maskPhoneNumber,
   normalizePhoneNumber,
   validatePassword,
   EXPIRY_KEY,
-} from './types';
+} from '../../features/forgot-password/types';
 
 export default function ForgotPassword() {
   const { language, i18n } = useContext(I18nContext);
