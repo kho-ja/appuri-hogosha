@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ViewStyle, StyleSheet } from 'react-native';
 import PhoneInput, { ICountry } from 'react-native-international-phone-number';
 import { useTheme } from '@rneui/themed';
+import { colors } from '@/constants/Colors';
 import { ICountryCca2 } from 'react-native-international-phone-number/lib/interfaces/countryCca2';
 
 interface ThemedPhoneInputProps {
@@ -102,16 +103,19 @@ const ThemedPhoneInput: React.FC<ThemedPhoneInputProps> = ({
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
             },
             divider: {
-              backgroundColor: theme.mode === 'light' ? '#E5E7EB' : '#374151',
+              backgroundColor:
+                theme.mode === 'light' ? colors.gray200 : colors.gray700,
             },
             countryButton: {
               backgroundColor: theme.colors.background,
-              borderBottomColor: theme.mode === 'light' ? '#E5E7EB' : '#374151',
+              borderBottomColor:
+                theme.mode === 'light' ? colors.gray200 : colors.gray700,
             },
             searchInput: {
               backgroundColor: theme.colors.background,
               color: theme.mode === 'light' ? 'black' : 'white',
-              borderColor: theme.mode === 'light' ? '#D1D5DB' : '#374151',
+              borderColor:
+                theme.mode === 'light' ? colors.gray300 : colors.gray700,
             },
             countryName: {
               color: theme.mode === 'light' ? 'black' : 'white',

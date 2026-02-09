@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@rneui/themed';
+import { colors } from '@/constants/Colors';
 
 interface PasswordRequirement {
   met: boolean;
@@ -71,7 +72,7 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
       return {
         score: score * 20,
         label: requirements.weak,
-        color: '#DC2626',
+        color: colors.error,
       };
     } else if (score <= 4) {
       return {
@@ -83,7 +84,7 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
       return {
         score: score * 20,
         label: requirements.strong,
-        color: '#059669',
+        color: colors.success,
       };
     }
   };
@@ -123,7 +124,8 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
         style={[
           styles.container,
           {
-            backgroundColor: theme.mode === 'light' ? '#f8f9fa' : '#374151',
+            backgroundColor:
+              theme.mode === 'light' ? colors.gray50 : colors.gray700,
             borderColor: theme.mode === 'light' ? '#e9ecef' : '#4B5563',
           },
         ]}
@@ -133,13 +135,13 @@ export const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({
             <Ionicons
               name={requirement.met ? 'checkmark-circle' : 'close-circle'}
               size={20}
-              color={requirement.met ? '#059669' : '#DC2626'}
+              color={requirement.met ? colors.success : colors.error}
               style={styles.icon}
             />
             <ThemedText
               style={[
                 styles.requirementText,
-                { color: requirement.met ? '#059669' : '#DC2626' },
+                { color: requirement.met ? colors.success : colors.error },
               ]}
             >
               {requirement.text}
@@ -163,7 +165,7 @@ const styles = StyleSheet.create({
   },
   strengthBar: {
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.gray200,
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Platform, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { headerBg } from '@/constants/Colors';
 
 interface StatusBarBackgroundProps {
   children?: React.ReactNode;
@@ -13,7 +14,7 @@ export function StatusBarBackground({
 }: StatusBarBackgroundProps) {
   const insets = useSafeAreaInsets();
 
-  const bgColor = isDark ? '#1A4AAC' : '#3B81F6';
+  const bgColor = headerBg(isDark ? 'dark' : 'light');
   const statusBarHeight = insets.top || (Platform.OS === 'ios' ? 44 : 25);
 
   React.useEffect(() => {

@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useState } from 'react';
+import { colors } from '@/constants/Colors';
 import {
   BackHandler,
   Keyboard,
@@ -12,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useMutation } from '@tanstack/react-query';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ICountry } from 'react-native-international-phone-number';
@@ -34,7 +35,6 @@ export default function VerifyOtp() {
     phone?: string;
     session?: string;
   }>();
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   const selectedCountry: ICountry | null = params.country
     ? JSON.parse(params.country)
@@ -75,20 +75,10 @@ export default function VerifyOtp() {
         phoneNumber.replaceAll(' ', '')
       );
       if (data?.session) {
-        Toast.show('Verification code resent', {
-          duration: Toast.durations.SHORT,
-          position: TOAST_POSITION,
-          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
-          textColor: 'white',
-        });
+        showSuccessToast('Verification code resent');
       }
     } catch {
-      Toast.show('Failed to resend code', {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        containerStyle: { backgroundColor: 'red', borderRadius: 5 },
-        textColor: 'white',
-      });
+      showErrorToast('Failed to resend code');
     }
   };
 
@@ -107,18 +97,7 @@ export default function VerifyOtp() {
         (error.name === 'NotificationPermissionError' ||
           error.message === 'NOTIFICATION_PERMISSION_DENIED')
       ) {
-        Toast.show(i18n[language].loginFailedNotifications, {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(i18n[language].loginFailedNotifications);
       } else {
         const parsedError = AuthErrorHandler.parseError(error);
         const errorMessageKey =
@@ -128,33 +107,11 @@ export default function VerifyOtp() {
           i18n[language].loginFailed ||
           parsedError.userMessage;
 
-        Toast.show(String(errorMessage), {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(String(errorMessage));
       }
     },
     onSuccess: async () => {
-      await Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'green',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast(i18n[language].loginSuccess);
     },
   });
 
@@ -250,7 +207,8 @@ export default function VerifyOtp() {
                 titleStyle={[
                   styles.resendText,
                   {
-                    color: canResend && !isPending ? '#4285F4' : '#9CA3AF',
+                    color:
+                      canResend && !isPending ? colors.primary : colors.gray400,
                   },
                 ]}
               />
@@ -290,7 +248,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 40,
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   header: {
     flex: 1,
@@ -314,7 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 24,
-    color: '#4285F4',
+    color: colors.primary,
   },
   otpContainer: {
     flexDirection: 'row',
@@ -326,7 +284,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderWidth: 2,
     borderRadius: 8,
-    borderColor: '#D1D5DB',
+    borderColor: colors.gray300,
   },
   otpText: {
     fontSize: 18,

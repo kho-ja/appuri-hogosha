@@ -14,6 +14,10 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchStudentsFromDB } from '@/utils/queries';
 import DemoModeService from '@/services/demo-mode-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import apiClient, {
+  UnauthorizedError,
+  ForbiddenError,
+} from '@/services/api-client';
 
 interface StudentContextValue {
   students: Student[] | null;
@@ -50,7 +54,6 @@ export function StudentProvider(props: PropsWithChildren) {
   const [activeStudent, setActiveStudent] = useState<Student | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const db = useSQLiteContext();
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
   const previousSessionRef = React.useRef<string | null | undefined>(undefined);
 
@@ -168,30 +171,18 @@ export function StudentProvider(props: PropsWithChildren) {
 
       if (isOnline) {
         try {
-          const res = await fetch(`${apiUrl}/students`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session}`,
-            },
-          });
-
-          if (res.status === 401) {
-            refreshToken();
-            throw new Error('401 Unauthorized');
-          } else if (res.status === 403) {
-            signOut();
-            throw new Error('403 Forbidden');
-          }
-          if (!res.ok) {
-            const data = await res.json();
-            throw new Error(data?.message || 'Failed to fetch');
-          }
-
-          const serverStudents = (await res.json()) as Student[];
+          const response = await apiClient.get<Student[]>('/students');
+          const serverStudents = response.data;
           await saveStudentsToDB(serverStudents);
           return serverStudents;
         } catch (err) {
+          if (err instanceof UnauthorizedError) {
+            refreshToken();
+            throw new Error('401 Unauthorized');
+          } else if (err instanceof ForbiddenError) {
+            signOut();
+            throw new Error('403 Forbidden');
+          }
           console.error('Online fetch failed, falling back to DB:', err);
           return await fetchStudentsFromDB(db);
         }
