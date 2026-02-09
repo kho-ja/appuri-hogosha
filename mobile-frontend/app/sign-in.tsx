@@ -1,11 +1,11 @@
 import React, { useCallback, useContext, useState } from 'react';
+import { colors } from '@/constants/Colors';
 import {
   BackHandler,
   Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  View,
 } from 'react-native';
 import { useSession } from '@/contexts/auth-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +13,11 @@ import { I18nContext } from '@/contexts/i18n-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import {
+  showSuccessToast,
+  showErrorToast,
+  showNeutralToast,
+} from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import ThemedPhoneInput from '@/components/atomic/ThemedPhoneInput';
@@ -35,7 +39,6 @@ export default function SignIn() {
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
   const params = useLocalSearchParams<{ phone?: string }>();
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
 
   React.useEffect(() => {
     const loadCredentials = async () => {
@@ -77,18 +80,7 @@ export default function SignIn() {
 
   const handleBackPress = useCallback(() => {
     if (backPressCount === 0) {
-      Toast.show(i18n[language].pressBackAgainToExit, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'gray',
-          borderRadius: 5,
-        },
-      });
+      showNeutralToast(i18n[language].pressBackAgainToExit);
       setBackPressCount(1);
       setTimeout(() => {
         setBackPressCount(0);
@@ -98,7 +90,7 @@ export default function SignIn() {
       BackHandler.exitApp();
       return true;
     }
-  }, [backPressCount, i18n, language, TOAST_POSITION]);
+  }, [backPressCount, i18n, language]);
 
   React.useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -120,18 +112,7 @@ export default function SignIn() {
         (error.name === 'NotificationPermissionError' ||
           error.message === 'NOTIFICATION_PERMISSION_DENIED')
       ) {
-        Toast.show(i18n[language].loginFailedNotifications, {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(i18n[language].loginFailedNotifications);
       } else {
         const parsedError = AuthErrorHandler.parseError(error);
         const errorMessageKey =
@@ -141,28 +122,12 @@ export default function SignIn() {
           i18n[language].loginFailed ||
           parsedError.userMessage;
 
-        Toast.show(String(errorMessage), {
-          duration: Toast.durations.LONG,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          textColor: 'white',
-          containerStyle: {
-            backgroundColor: 'red',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(String(errorMessage));
       }
     },
     onSuccess: async data => {
       if (data?.session) {
-        Toast.show('Verification code sent', {
-          duration: Toast.durations.SHORT,
-          position: TOAST_POSITION,
-          containerStyle: { backgroundColor: 'green', borderRadius: 5 },
-          textColor: 'white',
-        });
+        showSuccessToast('Verification code sent');
         // Navigate to verify-otp screen with params
         router.push({
           pathname: '/verify-otp',
@@ -194,30 +159,14 @@ export default function SignIn() {
         i18n[language].loginFailed ||
         parsedError.userMessage;
 
-      Toast.show(String(errorMessage), {
-        duration: Toast.durations.LONG,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        textColor: 'white',
-        containerStyle: {
-          backgroundColor: 'red',
-          borderRadius: 5,
-        },
-      });
+      showErrorToast(String(errorMessage));
     },
-    onSuccess: async (data) => {
+    onSuccess: async data => {
       // If user needs to change temporary password, don't show success or navigate
       if (data?.requiresPasswordChange) {
         return;
       }
-      Toast.show(i18n[language].loginSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        containerStyle: { backgroundColor: 'green', borderRadius: 5 },
-        textColor: 'white',
-      });
+      showSuccessToast(i18n[language].loginSuccess);
       // Navigate to main app tabs
       router.replace('/(tabs)');
     },
@@ -316,7 +265,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginTop: 40,
-    backgroundColor: '#4285F4',
+    backgroundColor: colors.primary,
   },
   header: {
     marginBottom: 60,
@@ -340,7 +289,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#4285F4',
+    color: colors.primary,
     textDecorationLine: 'underline',
     fontWeight: '500',
   },
@@ -355,7 +304,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   linkText: {
-    color: '#4285F4',
+    color: colors.primary,
     fontSize: 16,
     fontWeight: '500',
   },

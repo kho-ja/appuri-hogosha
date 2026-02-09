@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { colors } from '@/constants/Colors';
 import { TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { ThemedView } from '@/components/ThemedView';
@@ -44,7 +45,8 @@ const PopupMenu = ({
             styles.menu,
             {
               backgroundColor: theme.colors.background,
-              borderColor: theme.mode === 'light' ? '#D1D5DB' : '#374151',
+              borderColor:
+                theme.mode === 'light' ? colors.gray300 : colors.gray700,
             },
           ]}
         >

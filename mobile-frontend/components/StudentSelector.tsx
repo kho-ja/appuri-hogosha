@@ -1,4 +1,5 @@
 import React, { useContext, useCallback } from 'react';
+import { colors } from '@/constants/Colors';
 import { Student } from '@/constants/types';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 15,
-    backgroundColor: '#3B81F6',
+    backgroundColor: colors.tintLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
