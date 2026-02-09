@@ -3,6 +3,7 @@ import React, { useContext } from 'react';
 import { Platform } from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useTheme } from '@rneui/themed';
+import { headerBg } from '@/constants/Colors';
 
 const Layout = () => {
   const { language, i18n } = useContext(I18nContext);
@@ -15,7 +16,7 @@ const Layout = () => {
         options={{
           title: i18n[language].settings,
           headerStyle: {
-            backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+            backgroundColor: headerBg(theme.mode!),
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -32,7 +33,7 @@ const Layout = () => {
           headerTitle: i18n[language].changePassword,
           headerTitleAlign: 'center',
           headerStyle: {
-            backgroundColor: theme.mode === 'dark' ? '#1A4AAC' : '#3B81F6',
+            backgroundColor: headerBg(theme.mode!),
           },
           headerTintColor: '#fff',
           headerTitleStyle: {

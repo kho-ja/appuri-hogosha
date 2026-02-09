@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { colors } from '@/constants/Colors';
 import {
   StyleSheet,
   View,
@@ -6,16 +7,17 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useSession } from '@/contexts/auth-context';
 import SecureInput from '@/components/atomic/secure-input';
 import { I18nContext } from '@/contexts/i18n-context';
 import React, { useContext, useState, useRef } from 'react';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
 import { useMutation } from '@tanstack/react-query';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import apiClient from '@/services/api-client';
+import { usePasswordValidation } from '@/hooks/usePasswordValidation';
 
 const styles = StyleSheet.create({
   container: {
@@ -38,7 +40,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
     marginTop: 20,
   },
   header: {
@@ -56,7 +58,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   errorText: {
-    color: '#DC2626',
+    color: colors.error,
     marginTop: 10,
     marginBottom: 15,
     fontSize: 14,
@@ -80,61 +82,30 @@ const styles = StyleSheet.create({
 });
 
 export default function Index() {
-  const { session } = useSession();
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const TOAST_POSITION = Toast.positions.BOTTOM - 30;
-
-  const isPasswordValid = () => {
-    const passwordRegex =
-      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
-    return passwordRegex.test(newPassword);
-  };
+  const { isValid: isPasswordValid } = usePasswordValidation(newPassword);
 
   const changePassword = async () => {
-    const response = await fetch(`${apiUrl}/change-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session}`,
-      },
-      body: JSON.stringify({
-        previous_password: oldPassword,
-        new_password: newPassword,
-      }),
+    const response = await apiClient.post('/change-password', {
+      previous_password: oldPassword,
+      new_password: newPassword,
     });
 
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.error);
-    }
-
-    return responseData;
+    return response.data;
   };
 
   const { mutate, isPending } = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
-      Toast.show(i18n[language].passwordChangedSuccess, {
-        duration: Toast.durations.SHORT,
-        position: TOAST_POSITION,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        containerStyle: {
-          backgroundColor: '#059669',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast(i18n[language].passwordChangedSuccess);
 
       router.back();
     },
@@ -153,7 +124,7 @@ export default function Index() {
         message: i18n[language].enterOldPassword,
       },
       {
-        condition: !isPasswordValid(),
+        condition: !isPasswordValid,
         message: i18n[language].pleaseEnsurePasswordRequirements,
       },
       {
@@ -169,17 +140,7 @@ export default function Index() {
     for (const validation of validations) {
       if (validation.condition) {
         setErrorMessage(validation.message);
-        Toast.show(validation.message, {
-          duration: Toast.durations.SHORT,
-          position: TOAST_POSITION,
-          shadow: true,
-          animation: true,
-          hideOnPress: true,
-          containerStyle: {
-            backgroundColor: '#DC2626',
-            borderRadius: 5,
-          },
-        });
+        showErrorToast(validation.message);
         return;
       }
     }

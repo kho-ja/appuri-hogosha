@@ -18,6 +18,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 import { Message, Student } from '@/constants/types';
+import { colors } from '@/constants/Colors';
 import { useNetwork } from '@/contexts/network-context';
 import { useSession } from '@/contexts/auth-context';
 import { I18nContext } from '@/contexts/i18n-context';
@@ -34,6 +35,10 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useMessageContext } from '@/contexts/message-context';
 import { useStudents } from '@/contexts/student-context';
 import demoModeService from '@/services/demo-mode-service';
+import apiClient, {
+  UnauthorizedError,
+  ForbiddenError,
+} from '@/services/api-client';
 
 // Styles for the component
 const styles = StyleSheet.create({
@@ -167,17 +172,21 @@ const NoMessagesState: React.FC<{
         buttonStyle={[
           styles.refreshButton,
           {
-            backgroundColor: theme.mode === 'dark' ? '#3B81F6' : '#3B81F61A',
+            backgroundColor:
+              theme.mode === 'dark'
+                ? colors.tintLight
+                : `${colors.tintLight}1A`,
           },
         ]}
         disabledStyle={[
           styles.refreshButton,
           {
-            backgroundColor: theme.mode === 'dark' ? '#2563EB' : '#3B81F60D',
+            backgroundColor:
+              theme.mode === 'dark' ? '#2563EB' : `${colors.tintLight}0D`,
           },
         ]}
         titleStyle={{
-          color: theme.mode === 'dark' ? 'white' : '#3B81F6',
+          color: theme.mode === 'dark' ? 'white' : colors.tintLight,
         }}
         loading={isRefreshing}
         disabled={isRefreshing}
@@ -233,7 +242,6 @@ const MessageList = ({
   const { language, i18n } = useContext(I18nContext);
   const { theme } = useTheme();
   const textColor = useThemeColor({}, 'text');
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
   const { setUnreadCount } = useMessageContext();
   const { clearAndRefetch } = useStudents();
 
@@ -298,38 +306,25 @@ const MessageList = ({
       return demoMessages;
     }
 
-    const requestBody: any = {
-      student_id: student.id,
-      read_post_ids: readButNotSentMessageIDs.current,
-    };
-
-    // Add pagination parameters if we have them
-    if (pageParam) {
-      requestBody.last_post_id = pageParam.last_post_id;
-      requestBody.last_sent_at = pageParam.last_sent_at;
-    } else {
-      requestBody.last_post_id = 0;
-    }
-
     try {
-      const response = await fetch(`${apiUrl}/posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const requestBody: any = {
+        student_id: student.id,
+        read_post_ids: readButNotSentMessageIDs.current,
+      };
 
-      if (response.status === 401) {
-        refreshToken();
-        return [];
-      } else if (response.status === 403) {
-        signOut();
-        return [];
+      // Add pagination parameters if we have them
+      if (pageParam) {
+        requestBody.last_post_id = pageParam.last_post_id;
+        requestBody.last_sent_at = pageParam.last_sent_at;
+      } else {
+        requestBody.last_post_id = 0;
       }
 
-      const data = await response.json();
+      const response = await apiClient.post<{ posts: any[] }>(
+        '/posts',
+        requestBody
+      );
+      const data = response.data;
       const adaptedPosts: Message[] = data.posts.map((post: any) => ({
         ...post,
         images: post.image ? [post.image] : null,
@@ -350,6 +345,13 @@ const MessageList = ({
       }
       return adaptedPosts;
     } catch (error) {
+      if (error instanceof UnauthorizedError) {
+        refreshToken();
+        return [];
+      } else if (error instanceof ForbiddenError) {
+        signOut();
+        return [];
+      }
       console.error('Error fetching messages from API:', error);
       throw new Error('Failed to fetch messages');
     }
@@ -442,27 +444,23 @@ const MessageList = ({
       // Demo mode: get unread count from demo service
       return demoModeService.getDemoUnreadCount(student.id);
     } else if (isOnline && session) {
-      const res = await fetch(`${apiUrl}/unread`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session}`,
-        },
-      });
-
-      if (res.status === 401) {
-        refreshToken();
-        return 0;
-      } else if (res.status === 403) {
-        signOut();
-        return 0;
+      try {
+        const response = await apiClient.get<any[]>('/unread');
+        const list = response.data;
+        const entry = Array.isArray(list)
+          ? list.find((s: any) => s.id === student.id)
+          : null;
+        return entry?.unread_count ?? 0;
+      } catch (error) {
+        if (error instanceof UnauthorizedError) {
+          refreshToken();
+          return 0;
+        } else if (error instanceof ForbiddenError) {
+          signOut();
+          return 0;
+        }
+        throw error;
       }
-
-      const list = await res.json();
-      const entry = Array.isArray(list)
-        ? list.find((s: any) => s.id === student.id)
-        : null;
-      return entry?.unread_count ?? 0;
     } else {
       // Offline mode: get unread_count from student table (cached from server)
       // This contains the actual count from the server, not just loaded messages

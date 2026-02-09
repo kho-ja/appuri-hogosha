@@ -19,7 +19,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { DateTime } from 'luxon';
 import { useFontSize } from '@/contexts/FontSizeContext';
 import { useTheme } from '@rneui/themed';
-import { Colors } from '@/constants/Colors';
+import { Colors, colors } from '@/constants/Colors';
 
 const Card = ({
   messageGroup,
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   groupStyle: {
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
     color: 'white',
     padding: 5,
     borderRadius: 5,

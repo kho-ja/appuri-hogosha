@@ -18,8 +18,11 @@ import { ICountry } from 'react-native-international-phone-number';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Button, useTheme } from '@rneui/themed';
-import Toast from 'react-native-root-toast';
+import { showSuccessToast } from '@/utils/toast';
 import { PasswordRequirements } from '@/components/PasswordRequirements';
+import apiClient from '@/services/api-client';
+import { usePasswordValidation } from '@/hooks/usePasswordValidation';
+import { colors } from '@/constants/Colors';
 
 const styles = StyleSheet.create({
   container: {
@@ -34,7 +37,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     alignItems: 'center',
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
     marginTop: 20,
   },
   header: {
@@ -68,18 +71,12 @@ export default function NewPassword() {
   const db = useSQLiteContext();
   const { theme } = useTheme();
   const backgroundColor = theme.colors.background;
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-
-  const isPasswordValid = () => {
-    const passwordRegex =
-      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#%&/\\,><':;|_~`+=^$.()[\]{}?" ])(?=.{8,})/;
-    return passwordRegex.test(password);
-  };
+  const { isValid: isPasswordValid } = usePasswordValidation(password);
 
   const handlePress = async () => {
     setErrorMessage('');
 
-    if (!isPasswordValid()) {
+    if (!isPasswordValid) {
       setErrorMessage('Please ensure all password requirements are met');
       return;
     }
@@ -101,26 +98,18 @@ export default function NewPassword() {
         (await AsyncStorage.getItem('country')) as string
       ) as ICountry;
 
-      const response = await fetch(`${apiUrl}/change-temp-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'Application/json',
-        },
-        body: JSON.stringify({
+      const response = await apiClient.post<Session>(
+        '/change-temp-password',
+        {
           phone_number: country.callingCode + phoneNumber?.replaceAll(' ', ''),
           temp_password: await AsyncStorage.getItem('temp_password'),
           new_password: password,
           token: token,
-        }),
-      });
+        },
+        { requiresAuth: false }
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to change password');
-      }
-
-      const data: Session = await response.json();
+      const data = response.data;
       setSession(data.access_token);
 
       if (data.refresh_token) {
@@ -141,17 +130,7 @@ export default function NewPassword() {
         ]
       );
 
-      Toast.show('Password changed successfully!', {
-        duration: Toast.durations.SHORT,
-        position: Toast.positions.BOTTOM,
-        shadow: true,
-        animation: true,
-        hideOnPress: true,
-        containerStyle: {
-          backgroundColor: '#059669',
-          borderRadius: 5,
-        },
-      });
+      showSuccessToast('Password changed successfully!');
 
       router.replace('/');
     } catch (error) {
@@ -216,9 +195,9 @@ export default function NewPassword() {
             title={i18n[language].savePassword}
             buttonStyle={[
               styles.submitButton,
-              { opacity: isPasswordValid() ? 1 : 0.6 },
+              { opacity: isPasswordValid ? 1 : 0.6 },
             ]}
-            disabled={!isPasswordValid() || isLoading}
+            disabled={!isPasswordValid || isLoading}
             loading={isLoading}
           />
 

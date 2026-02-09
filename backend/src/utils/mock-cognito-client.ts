@@ -12,7 +12,7 @@ interface User {
 
 const sub_id = '1';
 
-// Use Map instead of plain object to prevent prototype pollution
+// Usee Map instead of plain object to prevent prototype pollution
 const mockDatabase: Map<string, User> = new Map([
     [
         'firdavsgaybullayev22@gmail.com',

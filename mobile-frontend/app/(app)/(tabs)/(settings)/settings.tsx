@@ -29,6 +29,7 @@ import { FontSizeSlider, SampleText } from '@/components/FontSizeSlider';
 import translation from '@/translations/translation';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import { colors } from '@/constants/Colors';
 
 const languageData = [
   {
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   },
   profileInitial: {
     fontSize: 12,
-    color: '#6B7280',
+    color: colors.gray500,
     marginBottom: 2,
   },
   infoCard: {

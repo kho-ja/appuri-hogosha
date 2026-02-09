@@ -28,6 +28,7 @@ import { useFontSize } from '@/contexts/FontSizeContext';
 import ZoomGallery from '@/components/ZoomGallery';
 import demoModeService from '@/services/demo-mode-service';
 import { useQueryClient } from '@tanstack/react-query';
+import apiClient from '@/services/api-client';
 
 const styles = StyleSheet.create({
   container: {
@@ -106,7 +107,6 @@ export default function DetailsScreen() {
   const backgroundColor = theme.colors.background;
   const { multiplier } = useFontSize();
 
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
   const imageUrl = process.env.EXPO_PUBLIC_S3_BASE_URL;
 
   const markMessageAsRead = useCallback(
@@ -175,25 +175,13 @@ export default function DetailsScreen() {
 
         // Sync with backend if online
         if (isOnline && session) {
-          const response = await fetch(`${apiUrl}/view`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session}`,
-            },
-            body: JSON.stringify({
+          try {
+            await apiClient.post('/view', {
               post_id: messageId,
               student_id: targetStudentId,
-            }),
-          });
-
-          const responseText = await response.text();
-
-          if (!response.ok) {
-            console.error(
-              'Failed to sync read status with backend:',
-              responseText
-            );
+            });
+          } catch (error) {
+            console.error('Failed to sync read status with backend:', error);
             await db.runAsync(
               'UPDATE message SET sent_status = 0 WHERE id = ?',
               [messageId]
@@ -245,7 +233,7 @@ export default function DetailsScreen() {
         }
       }
     },
-    [apiUrl, db, isDemoMode, isOnline, session, queryClient]
+    [db, isDemoMode, isOnline, session, queryClient]
   );
 
   useEffect(() => {
@@ -301,35 +289,10 @@ export default function DetailsScreen() {
             let activeStudent: Student | null = null;
 
             try {
-              // Add timeout to prevent infinite loading
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => {
-                controller.abort();
-              }, 10000);
-
-              const response = await fetch(`${apiUrl}/post/${id}`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${session}`,
-                },
-                signal: controller.signal,
-              });
-
-              clearTimeout(timeoutId);
-
-              if (response.ok) {
-                const responseData = await response.json();
-                messageData = responseData.post;
-              } else {
-                const errorText = await response.text();
-                console.error(
-                  `Failed to fetch message: ${response.status} - ${errorText}`
-                );
-                throw new Error(
-                  `Failed to fetch message from server: ${response.status}`
-                );
-              }
+              const response = await apiClient.get<{ post: any }>(
+                `/post/${id}`
+              );
+              messageData = response.data.post;
             } catch (fetchError) {
               if (
                 fetchError instanceof Error &&
@@ -339,6 +302,7 @@ export default function DetailsScreen() {
                   'Request timed out. Please check your connection.'
                 );
               }
+              console.error('Failed to fetch message:', fetchError);
               throw new Error('Failed to fetch message from server');
             }
 
@@ -423,17 +387,7 @@ export default function DetailsScreen() {
     fetchMessage();
     // markMessageAsRead is intentionally excluded to prevent infinite re-renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    id,
-    actualStudentId,
-    apiUrl,
-    db,
-    isDemoMode,
-    isOnline,
-    session,
-    i18n,
-    language,
-  ]);
+  }, [id, actualStudentId, db, isDemoMode, isOnline, session, i18n, language]);
 
   // Force refresh message list when this component unmounts or when message is marked as read
   useEffect(() => {

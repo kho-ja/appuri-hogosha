@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
+import { colors } from '@/constants/Colors';
 
 export default function Button(props: {
   onPress: any;
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 4,
     elevation: 1,
-    backgroundColor: '#059669',
+    backgroundColor: colors.success,
   },
   text: {
     fontSize: 16,
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   danger: {
-    backgroundColor: '#DC2626',
+    backgroundColor: colors.error,
   },
   disabled: {
     backgroundColor: '#A0A0A0',
