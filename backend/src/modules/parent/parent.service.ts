@@ -15,7 +15,6 @@ import {
 } from '../../utils/validate';
 import { stringify } from 'csv-stringify/sync';
 import {
-    handleCSVUpload,
     createBaseResponse,
     parseCSVBuffer,
     finalizeResponse,

@@ -10,25 +10,12 @@ import {
     isValidPhoneNumber,
     isValidEmail,
     isValidString,
-    isValidStudentNumber,
 } from '../../utils/validate';
 import { ApiError } from '../../errors/ApiError';
 import { createParentService } from './parent.service';
 import { syncronizePosts } from '../../utils/messageHelper';
-import DB from '../../utils/db-client';
-import { stringify } from 'csv-stringify/sync';
-import { parseKintoneRow } from '../../utils/helper';
-import { Connection } from 'mysql2/promise';
 import { ErrorKeys, createErrorResponse } from '../../utils/error-codes';
-import {
-    handleCSVUpload,
-    createBaseResponse,
-    parseCSVBuffer,
-    finalizeResponse,
-    bumpSummary,
-    RowError as GenericRowError,
-    CSVRowBase,
-} from '../../utils/csv-upload';
+import { handleCSVUpload } from '../../utils/csv-upload';
 
 interface CognitoClient {
     register(
@@ -39,16 +26,6 @@ interface CognitoClient {
     delete(phoneNumber: string): Promise<void>;
     resendTemporaryPassword(phoneNumber: string): Promise<{ message: string }>;
 }
-
-interface ParentCSVRow extends CSVRowBase {
-    email: string | null;
-    phone_number: string;
-    given_name: string;
-    family_name: string;
-    student_numbers: string[];
-}
-
-type ParentRowError = GenericRowError<ParentCSVRow>;
 
 class ParentModuleController implements IController {
     public router: Router = express.Router();

@@ -146,7 +146,7 @@ class MobileAuthModuleController implements IController {
                 } else {
                     console.log('Phone already verified');
                 }
-            } catch (verifyError) {
+            } catch {
                 throw new ApiError(
                     400,
                     'Phone number verification failed. Please contact support.'

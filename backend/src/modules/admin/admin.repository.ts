@@ -222,7 +222,7 @@ export class AdminRepository {
      */
     async findDuplicatePhoneExcludingId(
         phoneNumber: string,
-        excludeId: number
+        _excludeId: number
     ): Promise<{ id: number; phone_number: string } | null> {
         const result = await DB.query(
             'SELECT id, phone_number FROM Admin WHERE phone_number = :phone_number',
