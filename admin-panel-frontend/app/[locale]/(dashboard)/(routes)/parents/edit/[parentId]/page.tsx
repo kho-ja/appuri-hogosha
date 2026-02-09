@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
@@ -27,10 +27,11 @@ import PageHeader from "@/components/PageHeader";
 import { getParentEditSchema } from "@/lib/validationSchemas";
 
 export default function EditParent({
-  params: { parentId },
+  params,
 }: {
-  params: { parentId: string };
+  params: Promise<{ parentId: string }>;
 }) {
+  const { parentId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditParent");

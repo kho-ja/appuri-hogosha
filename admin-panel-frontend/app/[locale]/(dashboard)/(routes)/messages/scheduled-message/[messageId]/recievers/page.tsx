@@ -5,7 +5,7 @@ import { StudentTable } from "@/components/StudentTable";
 import Group from "@/types/group";
 import Student from "@/types/student";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
 import { useListQuery } from "@/lib/useListQuery";
@@ -17,10 +17,11 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function Recievers({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("recievers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);

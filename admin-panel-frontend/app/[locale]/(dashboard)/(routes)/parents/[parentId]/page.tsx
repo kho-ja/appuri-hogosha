@@ -16,12 +16,14 @@ import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import ResendPasswordDialog from "@/components/ResendPasswordDialog";
+import React from "react";
 
 export default function ThisParent({
-  params: { parentId },
+  params,
 }: {
-  params: { parentId: string };
+  params: Promise<{ parentId: string }>;
 }) {
+  const { parentId } = React.use(params);
   const t = useTranslations("ThisParent");
   const tName = useTranslations("names");
   const formatDateTime = useFormatDateTime();

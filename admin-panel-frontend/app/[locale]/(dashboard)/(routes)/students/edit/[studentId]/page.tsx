@@ -15,7 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import Student from "@/types/student";
 import { toast } from "@/components/ui/use-toast";
@@ -28,10 +28,11 @@ import PageHeader from "@/components/PageHeader";
 import { getStudentEditSchema } from "@/lib/validationSchemas";
 
 export default function CreateStudent({
-  params: { studentId },
+  params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
+  const { studentId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateStudent");

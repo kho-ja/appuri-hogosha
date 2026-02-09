@@ -16,7 +16,7 @@ import {
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { usePathname } from "@/navigation";
 import TableApi from "@/components/TableApi";
-import { useState } from "react";
+import React, { useState } from "react";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
@@ -37,10 +37,11 @@ import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisGroup({
-  params: { messageId, groupId },
+  params,
 }: {
-  params: { messageId: string; groupId: string };
+  params: Promise<{ messageId: string; groupId: string }>;
 }) {
+  const { messageId, groupId } = React.use(params);
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
   const [studentPage, setStudentPage] = useState(1);

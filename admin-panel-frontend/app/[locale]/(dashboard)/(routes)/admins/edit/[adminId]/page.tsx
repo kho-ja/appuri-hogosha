@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import {
@@ -29,10 +29,11 @@ import PageHeader from "@/components/PageHeader";
 import { getAdminEditSchema } from "@/lib/validationSchemas";
 
 export default function EditAdmin({
-  params: { adminId },
+  params,
 }: {
-  params: { adminId: string };
+  params: Promise<{ adminId: string }>;
 }) {
+  const { adminId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditAdmin");

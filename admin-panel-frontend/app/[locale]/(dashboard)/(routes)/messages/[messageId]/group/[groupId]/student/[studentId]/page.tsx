@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import useApiMutation from "@/lib/useApiMutation";
 import { toast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,10 +36,11 @@ import { EllipsisVertical } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisStudent({
-  params: { messageId, studentId, groupId },
+  params,
 }: {
-  params: { messageId: string; studentId: string; groupId: string };
+  params: Promise<{ messageId: string; studentId: string; groupId: string }>;
 }) {
+  const { messageId, studentId, groupId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();

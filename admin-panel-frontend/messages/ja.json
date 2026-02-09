@@ -345,6 +345,7 @@
   },
   "GroupTable": {
     "groupName": "グループ名",
+    "parent": "親",
     "studentCount": "学生数",
     "semester": "学期",
     "filter": "グループ名前をフィルター...",

@@ -13,17 +13,18 @@ import pagination from "@/types/pagination";
 import { FormatDate } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
-import { useState } from "react";
+import React, { useState } from "react";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function ThisGroup({
-  params: { groupId },
+  params,
 }: {
-  params: { groupId: string };
+  params: Promise<{ groupId: string }>;
 }) {
+  const { groupId } = React.use(params);
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
   const [studentPage, setStudentPage] = useState(1);

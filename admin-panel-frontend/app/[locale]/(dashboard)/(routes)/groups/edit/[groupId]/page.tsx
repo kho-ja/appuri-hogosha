@@ -18,7 +18,7 @@ import {
 import Student from "@/types/student";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useRouter } from "@/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
@@ -30,10 +30,11 @@ import { groupEditSchema } from "@/lib/validationSchemas";
 const formSchema = groupEditSchema;
 
 export default function EditGroup({
-  params: { groupId },
+  params,
 }: {
-  params: { groupId: string };
+  params: Promise<{ groupId: string }>;
 }) {
+  const { groupId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateGroup");

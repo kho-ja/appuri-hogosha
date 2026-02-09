@@ -25,14 +25,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisStudent({
-  params: { messageId, studentId },
+  params,
 }: {
-  params: { messageId: string; studentId: string };
+  params: Promise<{ messageId: string; studentId: string }>;
 }) {
+  const { messageId, studentId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();

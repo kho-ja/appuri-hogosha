@@ -30,7 +30,7 @@ import GroupApi from "@/types/groupApi";
 import Group from "@/types/group";
 import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
-import { useState } from "react";
+import React, { useState } from "react";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
 import ReactLinkify from "react-linkify";
@@ -45,10 +45,11 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function ThisMessage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();

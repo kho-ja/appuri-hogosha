@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
@@ -41,10 +41,11 @@ import { scheduledPostEditSchema } from "@/lib/validationSchemas";
 const formSchema = scheduledPostEditSchema;
 
 export default function SendMessagePage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");

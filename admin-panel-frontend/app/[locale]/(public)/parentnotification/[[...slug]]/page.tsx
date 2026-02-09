@@ -3,10 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import localImageLoader from "@/lib/localImageLoader";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 interface PageProps {
-  params: { locale: string; slug?: string[] };
+  params: Promise<{ locale: string; slug?: string[] }>;
   searchParams: { variant?: string };
 }
 
@@ -14,6 +14,7 @@ export default function ParentNotificationPage({
   params,
   searchParams,
 }: PageProps) {
+  const { slug } = React.use(params);
   const androidLink =
     process.env.NEXT_PUBLIC_ANDROID_STORE_URL ||
     "https://play.google.com/store/apps/details?id=com.jduapp.parentnotification";
@@ -21,7 +22,7 @@ export default function ParentNotificationPage({
     process.env.NEXT_PUBLIC_IOS_STORE_URL || "https://apps.apple.com";
 
   useEffect(() => {
-    const slugPath = params.slug?.join("/") ?? "";
+    const slugPath = slug?.join("/") ?? "";
     const variant = searchParams.variant || "production";
     const scheme =
       variant === "development"
@@ -48,7 +49,7 @@ export default function ParentNotificationPage({
     window.location.href = appUrl;
 
     return () => clearTimeout(timer);
-  }, [params.slug, searchParams.variant, androidLink, iosLink]);
+  }, [slug, searchParams.variant, androidLink, iosLink]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-950 dark:to-slate-900 dark:text-white">

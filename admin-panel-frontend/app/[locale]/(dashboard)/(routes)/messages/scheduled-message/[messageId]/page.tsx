@@ -28,12 +28,14 @@ import {
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 export default function ScheduledMessagePage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();

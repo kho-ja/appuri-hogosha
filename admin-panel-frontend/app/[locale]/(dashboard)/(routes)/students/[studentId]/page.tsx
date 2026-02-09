@@ -15,12 +15,14 @@ import NotFound from "@/components/NotFound";
 import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import React from "react";
 
 export default function ThisStudent({
-  params: { studentId },
+  params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
+  const { studentId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
   const { data: studentData, isError } = useListQuery<{

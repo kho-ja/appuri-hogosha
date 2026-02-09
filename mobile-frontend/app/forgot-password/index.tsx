@@ -47,7 +47,7 @@ export default function ForgotPassword() {
 
   // Countdown timer effect
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     if (expiryAt && expiryAt > Date.now()) {
       interval = setInterval(() => {

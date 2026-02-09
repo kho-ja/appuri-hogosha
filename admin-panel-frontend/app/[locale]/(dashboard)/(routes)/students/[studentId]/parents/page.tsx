@@ -1,7 +1,7 @@
 "use client";
 
 import Parent from "@/types/parent";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ParentTable } from "@/components/ParentTable";
 import { useTranslations } from "next-intl";
@@ -14,10 +14,11 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function EditParents({
-  params: { studentId },
+  params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
+  const { studentId } = React.use(params);
   const t = useTranslations("CreateStudent");
   const [selectedParents, setSelectedParents] = useState<Parent[]>([]);
 

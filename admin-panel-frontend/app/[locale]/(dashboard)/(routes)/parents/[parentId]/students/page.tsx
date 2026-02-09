@@ -14,10 +14,11 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function EditStudents({
-  params: { parentId },
+  params,
 }: {
-  params: { parentId: string };
+  params: Promise<{ parentId: string }>;
 }) {
+  const { parentId } = React.use(params);
   const t = useTranslations("CreateStudent");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const router = useRouter();

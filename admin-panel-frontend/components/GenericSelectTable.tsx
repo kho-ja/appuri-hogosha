@@ -398,9 +398,9 @@ export function GenericSelectTable<T extends BaseEntity>({
       <div className="space-y-2">
         {selectedItems.length > 0 && (
           <div className="flex flex-wrap gap-2 items-start content-start">
-            {selectedItems.map((item) => (
+            {selectedItems.map((item, index) => (
               <Badge
-                key={item.id}
+                key={`${item.id}-${index}`}
                 className="cursor-pointer"
                 onClick={() => handleDeleteItem(item)}
                 title={getBadgeTitle(item)}
