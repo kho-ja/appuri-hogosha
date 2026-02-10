@@ -16,10 +16,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
 import {
@@ -36,20 +36,16 @@ import PageHeader from "@/components/PageHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import ScheduledPost from "@/types/scheduledPost";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
+import { scheduledPostEditSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
-  image: z.string().optional(),
-  scheduled_at: z.string().min(1),
-});
+const formSchema = scheduledPostEditSchema;
 
 export default function SendMessagePage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
@@ -67,26 +63,32 @@ export default function SendMessagePage({
       scheduled_at: "",
     },
   });
+
+  interface EditScheduledPostPayload {
+    title: string;
+    description: string;
+    priority: string;
+    image?: string | null;
+    scheduled_at: string;
+  }
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     post: ScheduledPost;
   }>(`schedule/each/${messageId}`, ["message", messageId]);
 
-  const { mutate, isPending } = useApiMutation<{ message: string }>(
-    `schedule/${messageId}`,
-    "PUT",
-    ["editMessage", messageId],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("messageEdited"),
-          description: data?.message,
-        });
-        form.reset();
-        router.push(`/messages/scheduled-message/${messageId}`);
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    EditScheduledPostPayload
+  >(`schedule/${messageId}`, "PUT", ["editMessage", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("messageEdited"),
+        description: data?.message,
+      });
+      form.reset();
+      router.push(`/messages/scheduled-message/${messageId}`);
+    },
+  });
   const uploadImageMutation = useApiMutation<
     { image: string },
     { image: string }
@@ -123,7 +125,7 @@ export default function SendMessagePage({
     }
   }, [data, form]);
 
-  const handleRemoveImg = (e: any) => {
+  const handleRemoveImg = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (data) {
       setImage("");
@@ -153,7 +155,7 @@ export default function SendMessagePage({
               priority: values.priority,
               image: values.image,
               scheduled_at: values.scheduled_at,
-            } as any);
+            });
           })}
           className="space-y-4"
         >

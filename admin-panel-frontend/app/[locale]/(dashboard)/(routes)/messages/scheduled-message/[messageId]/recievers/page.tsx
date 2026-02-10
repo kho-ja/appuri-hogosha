@@ -5,10 +5,10 @@ import { StudentTable } from "@/components/StudentTable";
 import Group from "@/types/group";
 import Student from "@/types/student";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
@@ -17,10 +17,11 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function Recievers({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("recievers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
@@ -53,7 +54,7 @@ export default function Recievers({
     });
   }, [selectedStudents, selectedGroups, mutate]);
 
-  const { data } = useApiQuery<{ students: Student[]; groups: Group[] }>(
+  const { data } = useListQuery<{ students: Student[]; groups: Group[] }>(
     `schedule/${messageId}/recievers`,
     ["scheduled-receivers", messageId]
   );

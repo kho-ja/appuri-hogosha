@@ -28,11 +28,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import GroupApi from "@/types/groupApi";
 import Group from "@/types/group";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
-import { useState } from "react";
+import React, { useState } from "react";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import ReactLinkify from "react-linkify";
 import Image from "next/image";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
@@ -45,27 +45,30 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function ThisMessage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
+  const { formatDateTime } = useDateFormatter();
   const pathname = usePathname();
-  const { data } = useApiQuery<postView>(`post/${messageId}`, [
+
+  const { data } = useListQuery<postView>(`post/${messageId}`, [
     "message",
     messageId,
   ]);
   const [studentPage, setStudentPage] = useState(1);
   const [studentSearch, setStudentSearch] = useState("");
   const { data: studentData, isError: isStudentError } =
-    useApiQuery<StudentApi>(
+    useListQuery<StudentApi>(
       `post/${messageId}/students?page=${studentPage}&email=${studentSearch}`,
       ["student", messageId, studentPage, studentSearch]
     );
   const [groupPage, setGroupPage] = useState(1);
   const [groupSearch, setGroupSearch] = useState("");
-  const { data: groupData, isError } = useApiQuery<GroupApi>(
+  const { data: groupData, isError } = useListQuery<GroupApi>(
     `post/${messageId}/groups?page=${groupPage}&name=${groupSearch}`,
     ["group", messageId, groupPage, groupSearch]
   );
@@ -113,7 +116,10 @@ export default function ThisMessage({
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName("name", {
+                            given_name: parent.given_name,
+                            family_name: parent.family_name,
+                          })}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>
@@ -156,8 +162,8 @@ export default function ThisMessage({
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const sent_atDate = FormatDateTime(data?.post?.sent_at ?? "");
+  const edited_atDate = formatDateTime(data?.post?.edited_at ?? "");
+  const sent_atDate = formatDateTime(data?.post?.sent_at ?? "");
 
   if (isError && isStudentError) return <NotFound />;
 

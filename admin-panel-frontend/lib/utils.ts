@@ -7,6 +7,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ * This function incorrectly uses hooks in a non-hook context
+ */
 export function useFormatDate() {
   const format = useFormatter();
   const timeZone = useTimeZone();
@@ -28,6 +32,10 @@ export function useFormatDate() {
   };
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ * This function incorrectly uses hooks in a non-hook context
+ */
 export function useFormatDateTime() {
   const format = useFormatter();
   const timeZone = useTimeZone();
@@ -50,6 +58,10 @@ export function useFormatDateTime() {
   };
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ * This function incorrectly uses hooks in a non-hook context
+ */
 export function FormatDate(
   date: string | Date,
   style: DateTimeFormatOptions | undefined = {
@@ -69,6 +81,10 @@ export function FormatDate(
   });
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ * This function incorrectly uses hooks in a non-hook context
+ */
 export function FormatDateTime(
   date: string | Date,
   style: DateTimeFormatOptions | undefined = {
@@ -89,6 +105,9 @@ export function FormatDateTime(
   });
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ */
 export function FormatRelativeTime(date: string | Date) {
   const format = useFormatter();
 
@@ -99,6 +118,9 @@ export function FormatRelativeTime(date: string | Date) {
   return format.relativeTime(dateObject);
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ */
 export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   const format = useFormatter();
   const timeZone = useTimeZone();
@@ -114,6 +136,9 @@ export function FormatTimeOnly(date: string | Date, use24Hour: boolean = true) {
   });
 }
 
+/**
+ * @deprecated Use useDateFormatter hook instead
+ */
 export function FormatDateOnly(date: string | Date) {
   const format = useFormatter();
   const timeZone = useTimeZone();

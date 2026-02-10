@@ -13,10 +13,10 @@ import {
 import { Link } from "@/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import ReactLinkify from "react-linkify";
 import Image from "next/image";
 import { Dialog, DialogDescription } from "@radix-ui/react-dialog";
@@ -28,14 +28,17 @@ import {
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { ColumnDef } from "@tanstack/react-table";
+import React from "react";
 
 export default function ScheduledMessagePage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("ThisMessage");
   const tName = useTranslations("names");
+  const { formatDateTime } = useDateFormatter();
 
   interface ScheduledPostResponse {
     post: {
@@ -59,11 +62,11 @@ export default function ScheduledMessagePage({
       phone_number: string;
     }[];
   }
-  const { data, isError } = useApiQuery<ScheduledPostResponse>(
+  const { data, isError } = useListQuery<ScheduledPostResponse>(
     `schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
-  const { data: recieverData } = useApiQuery<ReceiversResponse>(
+  const { data: recieverData } = useListQuery<ReceiversResponse>(
     `schedule/${messageId}/recievers`,
     ["scheduled-recievers", messageId]
   );
@@ -102,8 +105,8 @@ export default function ScheduledMessagePage({
     },
   ];
 
-  const edited_atDate = FormatDateTime(data?.post?.edited_at ?? "");
-  const scheduled_atDate = FormatDateTime(data?.post?.scheduled_at ?? "");
+  const edited_atDate = formatDateTime(data?.post?.edited_at ?? "");
+  const scheduled_atDate = formatDateTime(data?.post?.scheduled_at ?? "");
 
   if (isError) return <NotFound />;
 

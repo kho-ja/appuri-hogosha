@@ -53,11 +53,9 @@ import Group from "@/types/group";
 import { convertToUtf8IfNeeded, download } from "@/lib/utils";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { getCsvUploadSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  csvFile: z.instanceof(File).refine((file) => file.name.endsWith(".csv")),
-  mode: z.enum(["create", "update", "delete"]),
-});
+const formSchema = getCsvUploadSchema();
 
 export default function CreateFromCsv() {
   const t = useTranslations("fromcsv");

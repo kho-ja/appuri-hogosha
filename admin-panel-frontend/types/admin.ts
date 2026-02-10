@@ -4,4 +4,5 @@ export default interface Admin {
   family_name: string;
   email: string;
   phone_number: string;
+  created_at?: string;
 }

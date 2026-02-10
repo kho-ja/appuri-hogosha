@@ -17,16 +17,11 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { useEffect } from "react";
 import { MessageSquareShare } from "lucide-react";
-
-const notificationsFormSchema = z.object({
-  high: z.boolean(),
-  medium: z.boolean(),
-  low: z.boolean(),
-  title: z.string().min(1).optional(),
-});
+import { notificationsFormSchema } from "@/lib/validationSchemas";
+import useApiErrorHandler from "@/lib/useApiErrorHandler";
 
 type NotificationsFormValues = z.infer<typeof notificationsFormSchema>;
 
@@ -53,24 +48,25 @@ type School = {
 export function NotificationsForm() {
   const { toast } = useToast();
   const t = useTranslations("NotificationsForm");
+  const handleError = useApiErrorHandler({
+    title: t("NotificationSettingUpdateFailed"),
+  });
   const form = useForm<NotificationsFormValues>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation("school/sms", "POST", ["SMS"], {
-    onSuccess: (data: any) => {
+  const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
+  const { mutate, isPending } = useApiMutation<
+    { message: string },
+    NotificationsFormValues
+  >("school/sms", "POST", ["SMS"], {
+    onSuccess: (data) => {
       toast({
         title: t("NotificationSettingUpdated"),
         description: data?.message ?? "",
       });
     },
-    onError: (error) => {
-      toast({
-        title: t("NotificationSettingUpdateFailed"),
-        description: error?.message ?? "",
-      });
-    },
+    onError: handleError,
   });
 
   useEffect(() => {
@@ -87,7 +83,7 @@ export function NotificationsForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values as any))}
+        onSubmit={form.handleSubmit((values) => mutate(values))}
         className="space-y-4"
       >
         <div>

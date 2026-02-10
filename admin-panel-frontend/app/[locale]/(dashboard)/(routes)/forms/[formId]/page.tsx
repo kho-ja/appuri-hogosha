@@ -10,10 +10,11 @@ import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
 
 export default async function ThisForm({
-  params: { formId },
+  params,
 }: {
-  params: { formId: string };
+  params: Promise<{ formId: string }>;
 }) {
+  const { formId } = await params;
   const session = await auth();
 
   if (!session) {

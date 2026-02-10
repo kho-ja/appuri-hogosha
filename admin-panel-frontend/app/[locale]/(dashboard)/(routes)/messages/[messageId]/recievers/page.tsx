@@ -5,10 +5,10 @@ import { StudentTable } from "@/components/StudentTable";
 import Group from "@/types/group";
 import Student from "@/types/student";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import StudentApi from "@/types/studentApi";
 import GroupApi from "@/types/groupApi";
 import { toast } from "@/components/ui/use-toast";
@@ -19,42 +19,46 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
 export default function Recievers({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const t = useTranslations("recievers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
+
+  interface UpdateReceiversPayload {
+    students: number[];
+    groups: number[];
+  }
   const router = useRouter();
-  const { data: studentData } = useApiQuery<StudentApi>(
+  const { data: studentData } = useListQuery<StudentApi>(
     `post/${messageId}/students`,
     ["student", messageId]
   );
-  const { data: groupData } = useApiQuery<GroupApi>(
+  const { data: groupData } = useListQuery<GroupApi>(
     `post/${messageId}/groups`,
     ["group", messageId]
   );
-  const { mutate } = useApiMutation(
-    `post/${messageId}/sender`,
-    "PUT",
-    ["editMessageSender", messageId],
-    {
-      onSuccess: (data: any) => {
-        toast({
-          title: t("recieversChanged"),
-          description: t(data?.message),
-        });
-        router.push(`/messages/${messageId}`);
-      },
-    }
-  );
+  const { mutate } = useApiMutation<
+    { message: string },
+    UpdateReceiversPayload
+  >(`post/${messageId}/sender`, "PUT", ["editMessageSender", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("recieversChanged"),
+        description: t(data?.message),
+      });
+      router.push(`/messages/${messageId}`);
+    },
+  });
 
   const handleClick = useCallback(() => {
     mutate({
       students: selectedStudents.map((student) => student.id),
       groups: selectedGroups.map((group) => group.id),
-    } as any);
+    });
   }, [selectedStudents, selectedGroups, mutate]);
 
   useEffect(() => {

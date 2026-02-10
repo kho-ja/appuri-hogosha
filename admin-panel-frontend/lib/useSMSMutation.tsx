@@ -4,7 +4,7 @@ import HttpError from "./HttpError";
 
 export default function useSMSMutation<T>(
   smsId: number | null,
-  method: string,
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
   options: MutationOptions<T, HttpError, void, unknown> = {}
 ) {
   return useApiMutation<T>(`sms/${smsId}`, method, ["sms"], options);

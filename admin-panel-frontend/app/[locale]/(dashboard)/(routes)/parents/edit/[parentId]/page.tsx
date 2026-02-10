@@ -16,34 +16,27 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Parent from "@/types/parent";
 import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (_t: (key: string) => string) => {
-  return z.object({
-    given_name: z.string().max(50),
-    family_name: z.string().max(50),
-    email: z.string().max(0).or(z.string().email()).optional(),
-    phone_number: z.string().max(0).optional(),
-  });
-};
+import { getParentEditSchema } from "@/lib/validationSchemas";
 
 export default function EditParent({
-  params: { parentId },
+  params,
 }: {
-  params: { parentId: string };
+  params: Promise<{ parentId: string }>;
 }) {
+  const { parentId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditParent");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getParentEditSchema(t);
   const router = useRouter();
   type FormType = z.infer<typeof formSchema>;
   const form = useForm<FormType>({
@@ -54,7 +47,7 @@ export default function EditParent({
       email: "",
     },
   });
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     parent: Parent;
   }>(`parent/${parentId}`, ["parent", parentId]);
   const { isPending, mutate } = useApiMutation<{ parent: Parent }, FormType>(

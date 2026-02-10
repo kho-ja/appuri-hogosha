@@ -12,14 +12,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { z } from "zod";
+import { postEditSchema } from "@/lib/validationSchemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Post from "@/types/post";
 import useApiMutation from "@/lib/useApiMutation";
 import Image from "next/image";
@@ -37,18 +38,14 @@ import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
-  image: z.string().optional(),
-});
+const formSchema = postEditSchema;
 
 export default function SendMessagePage({
-  params: { messageId },
+  params,
 }: {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 }) {
+  const { messageId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
@@ -66,7 +63,7 @@ export default function SendMessagePage({
     },
   });
   const router = useRouter();
-  const { data, isLoading, isError } = useApiQuery<{
+  const { data, isLoading, isError } = useListQuery<{
     post: Post;
   }>(`post/${messageId}`, ["message", messageId]);
 
