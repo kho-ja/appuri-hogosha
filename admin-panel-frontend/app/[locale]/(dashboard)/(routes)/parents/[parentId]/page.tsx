@@ -12,20 +12,22 @@ import { useFormatDateTime } from "@/lib/utils";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 import ResendPasswordDialog from "@/components/ResendPasswordDialog";
+import React from "react";
 
 export default function ThisParent({
-  params: { parentId },
+  params,
 }: {
-  params: { parentId: string };
+  params: Promise<{ parentId: string }>;
 }) {
+  const { parentId } = React.use(params);
   const t = useTranslations("ThisParent");
   const tName = useTranslations("names");
   const formatDateTime = useFormatDateTime();
-  const { data: parentData, isError } = useApiQuery<{
+  const { data: parentData, isError } = useListQuery<{
     parent: Parent;
     students: Student[];
   }>(`parent/${parentId}`, ["parent", parentId]);

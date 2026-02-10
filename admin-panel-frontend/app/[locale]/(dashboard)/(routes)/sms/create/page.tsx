@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
+import { smsCreateSchema } from "@/lib/validationSchemas";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import React from "react";
@@ -28,13 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import parse from "html-react-parser";
 
-const formSchema = z.object({
-  recipient: z.string().min(1, "Recipient is required."),
-  title: z.string().min(1, "Title is required."),
-  message: z.string().min(1, "Message is required."),
-  Cc: z.string().optional(),
-  Bcc: z.string().optional(),
-});
+const formSchema = smsCreateSchema;
 
 export default function CreateSMS() {
   const t = useTranslations("sms");
@@ -56,7 +51,7 @@ export default function CreateSMS() {
 
   const handleDialogToggle = () => setDialogOpen((prev) => !prev);
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
     console.log("Form Data:", data);
     setDialogOpen(false); // Close dialog after submission
   };

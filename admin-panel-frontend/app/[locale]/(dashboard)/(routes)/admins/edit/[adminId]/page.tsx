@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { z } from "zod";
 import {
@@ -19,36 +19,26 @@ import { useRouter } from "@/navigation";
 import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { useToast } from "@/components/ui/use-toast";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Admin from "@/types/admin";
 import useApiMutation from "@/lib/useApiMutation";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
+
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(500)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-  });
-};
+import { getAdminEditSchema } from "@/lib/validationSchemas";
 
 export default function EditAdmin({
-  params: { adminId },
+  params,
 }: {
-  params: { adminId: string };
+  params: Promise<{ adminId: string }>;
 }) {
+  const { adminId } = React.use(params);
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("EditAdmin");
   const tName = useTranslations("names");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getAdminEditSchema(t);
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -63,26 +53,22 @@ export default function EditAdmin({
     data: adminData,
     isLoading,
     isError,
-  } = useApiQuery<{
-    admin: Admin;
-  }>(`admin/${adminId}`, ["admin", adminId]);
+  } = useListQuery<{ admin: Admin }>(`admin/${adminId}`, ["admin", adminId]);
 
-  const { isPending, mutate } = useApiMutation<{ admin: Admin }>(
-    `admin/${adminId}`,
-    "PUT",
-    ["editAdmin", adminId],
-    {
-      onSuccess: (data) => {
-        form.reset();
-        router.replace(`/admins/${adminId}`);
-        router.refresh();
-        toast({
-          title: t("AdminUpdated"),
-          description: tName("name", { ...data?.admin }),
-        });
-      },
-    }
-  );
+  const { isPending, mutate } = useApiMutation<
+    { admin: Admin },
+    z.infer<typeof formSchema>
+  >(`admin/${adminId}`, "PUT", ["editAdmin", adminId], {
+    onSuccess: (data) => {
+      form.reset();
+      router.replace(`/admins/${adminId}`);
+      router.refresh();
+      toast({
+        title: t("AdminUpdated"),
+        description: tName("name", { ...data?.admin }),
+      });
+    },
+  });
 
   useEffect(() => {
     if (adminData) {
@@ -105,7 +91,7 @@ export default function EditAdmin({
             mutate({
               ...values,
               phone_number: values.phone_number.slice(1),
-            } as any);
+            });
           })}
           className="space-y-4"
         >

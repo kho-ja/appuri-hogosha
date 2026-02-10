@@ -47,10 +47,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useApiQuery from "@/lib/useApiQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import useTableQuery from "@/lib/useTableQuery";
+import usePagination from "@/lib/usePagination";
 import PageHeader from "@/components/PageHeader";
 import {
   Table,
@@ -61,6 +60,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useListQuery } from "@/lib/useListQuery";
 import { SkeletonLoader } from "@/components/TableApi";
 
 interface GroupTreeNode extends Group {
@@ -164,14 +164,17 @@ export default function Groups() {
   const tTable = useTranslations("table");
 
   const { data: session } = useSession();
-  const { page, setPage, search, setSearch } = useTableQuery();
-
-  const { data, isLoading } = useApiQuery<GroupApi>(
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
+  const { data } = useListQuery<GroupApi>(
     `group/list?name=${search}&all=true`,
     ["groups", search]
   );
 
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const isLoading = !hasLoadedOnce && typeof data === "undefined";
+
   useEffect(() => {
     if (!hasLoadedOnce && typeof data !== "undefined") {
       setHasLoadedOnce(true);
@@ -343,10 +346,9 @@ export default function Groups() {
 
     const accessToken =
       session?.sessionToken ||
-      (session?.user as any)?.accessToken ||
-      (session?.user as any)?.token ||
+      (session?.user as { accessToken?: string })?.accessToken ||
+      (session?.user as { token?: string })?.token ||
       "";
-
     try {
       setUnlinkingId(group.id);
 
@@ -368,7 +370,6 @@ export default function Groups() {
       if (!response.ok) {
         throw new Error("Failed to unlink group");
       }
-
       toast({
         title: t("groupUnlinked"),
         description: t("groupUnlinkedDescription"),

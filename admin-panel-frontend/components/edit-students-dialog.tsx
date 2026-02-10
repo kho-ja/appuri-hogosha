@@ -30,25 +30,23 @@ export default function EditStudentsDialog({
   const [selectedStudents, setSelectedStudents] =
     useState<Student[]>(currentStudents);
 
-  const { mutate, isPending } = useApiMutation<{ success: boolean }>(
-    `post/${messageId}/sender`,
-    "PUT",
-    ["message", messageId],
-    {
-      onSuccess: () => {
-        toast({
-          title: t("studentsUpdated"),
-          description: t("studentsUpdatedDescription"),
-        });
-        onClose();
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { success: boolean },
+    { students: number[] }
+  >(`post/${messageId}/sender`, "PUT", ["message", messageId], {
+    onSuccess: () => {
+      toast({
+        title: t("studentsUpdated"),
+        description: t("studentsUpdatedDescription"),
+      });
+      onClose();
+    },
+  });
 
   const handleSave = () => {
     mutate({
       students: selectedStudents.map((student) => student.id),
-    } as any);
+    });
   };
 
   return (

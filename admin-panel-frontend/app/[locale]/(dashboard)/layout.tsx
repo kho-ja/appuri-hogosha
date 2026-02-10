@@ -164,7 +164,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-2 hover:scale-105 transition-transform duration-200">
                   <span className="cursor-pointer transition-colors duration-200 hover:text-primary">
-                    {user && tName("name", { ...user })}
+                    {user
+                      ? tName("name", {
+                          given_name: user.given_name ?? "",
+                          family_name: user.family_name ?? "",
+                        })
+                      : null}
                   </span>
                   <Button
                     variant="secondary"

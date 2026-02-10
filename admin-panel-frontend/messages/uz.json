@@ -348,6 +348,7 @@
   },
   "GroupTable": {
     "groupName": "Guruh nomi",
+    "parent": "Ota-ona",
     "studentCount": "Talabalar soni",
     "semester": "Semestr",
     "filter": "Guruh Nomi orqali filtrlash...",

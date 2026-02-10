@@ -23,22 +23,25 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import useApiPostQuery from "@/lib/useApiPostQuery";
 import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import useTableQuery from "@/lib/useTableQuery";
+import usePagination from "@/lib/usePagination";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
+import { useListQuery } from "@/lib/useListQuery";
 
 export default function Admins() {
   const t = useTranslations("admins");
   const tName = useTranslations("names");
-  const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiPostQuery<AdminApi>(
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
+  const { data } = useListQuery<AdminApi>(
     "admin/list",
     ["admins", page, search],
-    { page, name: search }
+    { page, name: search },
+    "POST"
   );
   const queryClient = useQueryClient();
   const [adminId, setAdminId] = useState<number | null>(null);

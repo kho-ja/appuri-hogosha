@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Settings,
 } from "lucide-react";
-import { onlyAdminPathNameRegex } from "@/middleware";
+import { onlyAdminPathNameRegex } from "@/lib/routeAccess";
 import NavLink from "./NavLink";
 import { useTranslations } from "next-intl";
 import { User } from "next-auth";

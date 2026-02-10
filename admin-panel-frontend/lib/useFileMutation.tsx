@@ -3,6 +3,7 @@ import { MutationOptions, useMutation } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import HttpError from "./HttpError";
+import useApiErrorHandler from "./useApiErrorHandler";
 
 export default function useFileMutation<T>(
   mutationUrl: string,
@@ -11,6 +12,15 @@ export default function useFileMutation<T>(
 ) {
   const { data: session } = useSession();
   const t = useTranslations("errors");
+  const handleError = useApiErrorHandler();
+
+  // Extract custom handlers if provided
+  const {
+    onError: customOnError,
+    onMutate: customOnMutate,
+    onSuccess: customOnSuccess,
+    ...restOptions
+  } = options;
 
   return useMutation<T, HttpError>({
     mutationKey,
@@ -51,24 +61,40 @@ export default function useFileMutation<T>(
       return blob as T;
     },
     onMutate: () => {
-      toast({
-        title: t("loading"),
-        description: t("loadingDescription"),
-      });
+      // Show loading toast unless custom onMutate is provided
+      if (!customOnMutate) {
+        toast({
+          title: t("loading"),
+          description: t("loadingDescription"),
+        });
+      }
+      // Call custom onMutate if provided
+      if (customOnMutate) {
+        customOnMutate();
+      }
     },
-    onError: (error) => {
-      toast({
-        title: t("wentWrong"),
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error, variables, context) => {
+      // Use centralized error handler unless custom onError is provided
+      if (!customOnError) {
+        handleError(error);
+      } else {
+        // Call custom onError if provided
+        customOnError(error, variables, context);
+      }
     },
-    onSuccess: () => {
-      toast({
-        title: t("fileDownloaded"),
-        description: t("fileDownloadedDescription"),
-      });
+    onSuccess: (data, variables, context) => {
+      // Show success toast unless custom onSuccess is provided
+      if (!customOnSuccess) {
+        toast({
+          title: t("fileDownloaded"),
+          description: t("fileDownloadedDescription"),
+        });
+      }
+      // Call custom onSuccess if provided
+      if (customOnSuccess) {
+        customOnSuccess(data, variables, context);
+      }
     },
-    ...options,
+    ...restOptions,
   });
 }

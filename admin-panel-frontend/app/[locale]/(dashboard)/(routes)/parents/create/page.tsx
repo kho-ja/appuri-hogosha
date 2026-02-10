@@ -17,36 +17,19 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useRouter } from "@/navigation";
-import { useMakeZodI18nMap } from "@/lib/zodIntl";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Parent from "@/types/parent";
 import { useEffect, useState } from "react";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    // Names are optional now; allow empty strings up to 50 chars
-    given_name: z.string().max(50),
-    family_name: z.string().max(50),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(500)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    email: z.string().max(0).or(z.string().email()),
-  });
-};
+import { getParentCreateSchema } from "@/lib/validationSchemas";
 
 export default function CreateParent() {
-  const zodErrors = useMakeZodI18nMap();
-  z.setErrorMap(zodErrors);
   const t = useTranslations("CreateParent");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getParentCreateSchema(t);
   const tName = useTranslations("names");
   const router = useRouter();
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);

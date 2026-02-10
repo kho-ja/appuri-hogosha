@@ -38,7 +38,7 @@ import { toast } from "@/components/ui/use-toast";
 import Post from "@/types/post";
 import ReactLinkify from "react-linkify";
 import useApiMutation from "@/lib/useApiMutation";
-import DraftsDialog from "@/components/DraftsDialog";
+import DraftsDialog, { DraftData } from "@/components/DraftsDialog";
 import { X, Send } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
@@ -46,13 +46,19 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
 import { Switch } from "@/components/ui/switch";
+import { postCreateSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  priority: z.enum(["high", "medium", "low"]),
-  image: z.string().optional(),
-});
+const formSchema = postCreateSchema;
+
+interface CreatePostPayload {
+  title: string;
+  description: string;
+  priority: string;
+  students: number[];
+  groups: number[];
+  image: string;
+  scheduled_at?: string;
+}
 
 export default function SendMessagePage() {
   const zodErrors = useMakeZodI18nMap();
@@ -61,7 +67,7 @@ export default function SendMessagePage() {
   const tName = useTranslations("names");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
-  const [draftsData, setDraftsData] = useState<any[]>([]);
+  const [draftsData, setDraftsData] = useState<DraftData[]>([]);
   const [fileKey, setFileKey] = useState(0);
   const [shouldPersistForm, setShouldPersistForm] = useState(true);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -83,32 +89,30 @@ export default function SendMessagePage() {
     setShouldPersistForm(false);
     localStorage.removeItem("formDataMessages");
   };
-  const { mutate, isPending } = useApiMutation<{ post: Post }>(
-    `post/create`,
-    "POST",
-    ["sendMessage"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("messageSent"),
-          description: data?.post?.title ?? "",
-        });
-        setSelectedStudents([]);
-        setSelectedGroups([]);
-        clearFormPersistence();
-        form.reset();
-        setImagePreview("");
-        setFileKey((prev) => prev + 1);
-        router.push("/messages");
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { post: Post },
+    CreatePostPayload
+  >(`post/create`, "POST", ["sendMessage"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("messageSent"),
+        description: data?.post?.title ?? "",
+      });
+      setSelectedStudents([]);
+      setSelectedGroups([]);
+      clearFormPersistence();
+      form.reset();
+      setImagePreview("");
+      setFileKey((prev) => prev + 1);
+      router.push("/messages");
+    },
+  });
   const priority = form.watch("priority");
 
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
 
-  const scheduleMutation = useApiMutation<{ post: Post }>(
+  const scheduleMutation = useApiMutation<{ post: Post }, CreatePostPayload>(
     `schedule`,
     "POST",
     ["scheduledPosts"],
@@ -196,7 +200,7 @@ export default function SendMessagePage() {
       priority: data.priority,
       students: selectedStudents.map((student) => student.id),
       groups: selectedGroups.map((group) => group.id),
-      image: data.image,
+      image: data.image || "",
     };
 
     if (scheduleEnabled) {
@@ -210,9 +214,9 @@ export default function SendMessagePage() {
       scheduleMutation.mutate({
         ...payload,
         scheduled_at: scheduledAt.toISOString(),
-      } as any);
+      });
     } else {
-      mutate(payload as any);
+      mutate(payload);
     }
   };
 
@@ -222,16 +226,21 @@ export default function SendMessagePage() {
   const isSubmitting =
     isPending || scheduleMutation.isPending || isImageUploading;
 
-  const handleSaveDraft = (e: any) => {
+  const handleSaveDraft = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const data = form.getValues();
 
-    const draftsLocal = JSON.parse(localStorage.getItem("DraftsData") || "[]");
-    const parsedData = {
+    const draftsLocal: DraftData[] = JSON.parse(
+      localStorage.getItem("DraftsData") || "[]"
+    );
+    const parsedData: DraftData = {
       id: draftsLocal.length || 0,
-      ...data,
-      groups: selectedGroups,
-      students: selectedStudents,
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      image: data.image || "",
+      groups: selectedGroups as unknown as DraftData["groups"],
+      students: selectedStudents as unknown as DraftData["students"],
     };
 
     if (parsedData) {
@@ -258,7 +267,7 @@ export default function SendMessagePage() {
     localStorage.removeItem("formDataMessages");
   };
 
-  const handleSelectedDraft = (draft: any) => {
+  const handleSelectedDraft = (draft: DraftData) => {
     const draftImage =
       typeof draft.image === "string" && !draft.image.startsWith("data:")
         ? draft.image
@@ -266,14 +275,14 @@ export default function SendMessagePage() {
     form.reset({
       title: draft.title,
       description: draft.description,
-      priority: draft.priority,
+      priority: (draft.priority as "high" | "medium" | "low") || "low",
       image: draftImage,
     });
 
     setFileKey((prev) => prev + 1);
     setImagePreview("");
-    setSelectedGroups(draft.groups || []);
-    setSelectedStudents(draft.student || []);
+    setSelectedGroups((draft.groups as unknown as Group[]) || []);
+    setSelectedStudents((draft.students as unknown as Student[]) || []);
   };
 
   const handleRemoveImg = () => {

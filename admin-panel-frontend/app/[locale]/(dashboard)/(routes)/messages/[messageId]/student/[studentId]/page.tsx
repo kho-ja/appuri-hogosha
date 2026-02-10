@@ -6,11 +6,11 @@ import { Separator } from "@/components/ui/separator";
 import Parent from "@/types/parent";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { FormatDateTime } from "@/lib/utils";
+import useDateFormatter from "@/lib/useDateFormatter";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Student from "@/types/student";
 import useApiMutation from "@/lib/useApiMutation";
 import { toast } from "@/components/ui/use-toast";
@@ -25,17 +25,19 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisStudent({
-  params: { messageId, studentId },
+  params,
 }: {
-  params: { messageId: string; studentId: string };
+  params: Promise<{ messageId: string; studentId: string }>;
 }) {
+  const { messageId, studentId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
-  const { data: studentData, isError } = useApiQuery<{
+  const { formatDateTime } = useDateFormatter();
+  const { data: studentData, isError } = useListQuery<{
     student: Student;
     parents: Parent[];
   }>(`post/${messageId}/student/${studentId}`, [
@@ -102,7 +104,7 @@ export default function ThisStudent({
       cell: ({ row }) => (
         <div>
           {row.getValue("viewed_at")
-            ? FormatDateTime(row.getValue("viewed_at"))
+            ? formatDateTime(row.getValue("viewed_at"))
             : t("noView")}
         </div>
       ),
@@ -120,7 +122,10 @@ export default function ThisStudent({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {tName("name", { ...row.original } as any)}
+                {tName("name", {
+                  given_name: row.original.given_name,
+                  family_name: row.original.family_name,
+                })}
               </DialogTitle>
               <DialogDescription>{row.original.email}</DialogDescription>
             </DialogHeader>

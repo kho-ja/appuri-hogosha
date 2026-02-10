@@ -16,10 +16,10 @@ import {
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { usePathname } from "@/navigation";
 import TableApi from "@/components/TableApi";
-import { useState } from "react";
+import React, { useState } from "react";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import Group from "@/types/group";
 import pagination from "@/types/pagination";
 import {
@@ -37,14 +37,15 @@ import useApiMutation from "@/lib/useApiMutation";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default function ThisGroup({
-  params: { messageId, groupId },
+  params,
 }: {
-  params: { messageId: string; groupId: string };
+  params: Promise<{ messageId: string; groupId: string }>;
 }) {
+  const { messageId, groupId } = React.use(params);
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
   const [studentPage, setStudentPage] = useState(1);
-  const { data: groupData, isError } = useApiQuery<{
+  const { data: groupData, isError } = useListQuery<{
     group: Group;
     pagination: pagination;
     students: Student[];
@@ -140,7 +141,10 @@ export default function ThisGroup({
                     <div key={parent.id}>
                       <div className="flex justify-between py-2">
                         <div className="font-bold">
-                          {tName("name", { ...parent } as any)}
+                          {tName("name", {
+                            given_name: parent.given_name,
+                            family_name: parent.family_name,
+                          })}
                         </div>
                         {parent.viewed_at ? <CheckCheck /> : <Check />}
                       </div>

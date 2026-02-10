@@ -33,11 +33,9 @@ import NewPasswordInput, {
 } from "@/components/NewPasswordInput";
 import Image from "next/image";
 import localImageLoader from "@/lib/localImageLoader";
+import { loginSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+const formSchema = loginSchema;
 
 export default function LoginForm() {
   const zodErrors = useMakeZodI18nMap();
@@ -74,7 +72,13 @@ export default function LoginForm() {
   };
 
   useEffect(() => {
-    const error = searchParams.get("error");
+    const params =
+      searchParams ||
+      (typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : null);
+    if (!params) return;
+    const error = params.get("error");
     if (error) {
       const ns = (allMessages?.LoginForm ?? {}) as Record<string, string>;
       const keyToUse = Object.prototype.hasOwnProperty.call(ns, error)

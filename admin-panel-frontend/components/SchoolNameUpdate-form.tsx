@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { groupCreateSchema } from "@/lib/validationSchemas";
 import {
   Form,
   FormControl,
@@ -16,15 +17,14 @@ import {
 import { Button } from "./ui/button";
 import { useTranslations } from "next-intl";
 import useApiMutation from "@/lib/useApiMutation";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { University } from "lucide-react";
+import useApiErrorHandler from "@/lib/useApiErrorHandler";
 
-const formSchema = z.object({
-  name: z.string().min(1),
-});
+const formSchema = groupCreateSchema;
 
 type SchoolNameValues = z.infer<typeof formSchema>;
 
@@ -49,33 +49,29 @@ export function SchoolNameUpdate() {
   const { update } = useSession();
   const { toast } = useToast();
   const t = useTranslations("SchoolNameUpdate");
+  const handleError = useApiErrorHandler({
+    title: t("SchoolNameUpdateFailed"),
+  });
   const form = useForm<SchoolNameValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
-  const { data, isLoading } = useApiQuery<School>("school/sms", ["SMS"]);
-  const { mutate, isPending } = useApiMutation(
-    "school/name",
-    "POST",
-    ["schoolName"],
-    {
-      onSuccess: async (data: any) => {
-        toast({
-          title: t("SchoolNameUpdated"),
-          description: data?.message ?? "",
-        });
-        await update({
-          schoolName: data.school.name,
-        });
-      },
-      onError: (error) => {
-        toast({
-          title: t("SchoolNameUpdateFailed"),
-          description: error?.message ?? "",
-        });
-      },
-    }
-  );
+  const { data, isLoading } = useListQuery<School>("school/sms", ["SMS"]);
+  const { mutate, isPending } = useApiMutation<
+    { message: string; school: { name: string } },
+    SchoolNameValues
+  >("school/name", "POST", ["schoolName"], {
+    onSuccess: async (data) => {
+      toast({
+        title: t("SchoolNameUpdated"),
+        description: data?.message ?? "",
+      });
+      await update({
+        schoolName: data.school.name,
+      });
+    },
+    onError: handleError,
+  });
 
   useEffect(() => {
     if (!isLoading && data) {
@@ -88,7 +84,7 @@ export function SchoolNameUpdate() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((values) => mutate(values as any))}
+        onSubmit={form.handleSubmit((values) => mutate(values))}
         className="space-y-4"
       >
         <div>

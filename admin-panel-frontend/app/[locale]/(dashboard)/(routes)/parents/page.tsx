@@ -23,10 +23,10 @@ import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import useApiPostQuery from "@/lib/useApiPostQuery";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
-import useTableQuery from "@/lib/useTableQuery";
+import { useListQuery } from "@/lib/useListQuery";
+import usePagination from "@/lib/usePagination";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +36,14 @@ import NoBadge from "@/components/nobadge";
 export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
-  const { page, setPage, search, setSearch } = useTableQuery();
-  const { data } = useApiPostQuery<ParentApi>(
+  const { page, setPage, search, setSearch } = usePagination({
+    persistToUrl: true,
+  });
+  const { data } = useListQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
-    { page, name: search }
+    { page, name: search },
+    "POST"
   );
   const queryClient = useQueryClient();
   const [parentId, setParentId] = useState<number | null>(null);

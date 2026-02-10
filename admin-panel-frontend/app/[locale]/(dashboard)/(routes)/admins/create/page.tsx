@@ -21,29 +21,16 @@ import { useToast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import Admin from "@/types/admin";
 import { PhoneInput } from "@/components/PhoneInput";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { Save } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
-
-const GetFormSchema = (t: (key: string) => string) => {
-  return z.object({
-    given_name: z.string().min(1).max(50),
-    family_name: z.string().min(1).max(50),
-    phone_number: z
-      .string()
-      .min(10)
-      .max(500)
-      .refine(isValidPhoneNumber, { message: t("Invalid phone number") }),
-    email: z.string().email(),
-  });
-};
+import { getAdminCreateSchema } from "@/lib/validationSchemas";
 
 export default function CreateAdmin() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("CreateAdmin");
-  const formSchema = GetFormSchema(t);
+  const formSchema = getAdminCreateSchema(t);
   const tName = useTranslations("names");
   const router = useRouter();
   const { toast } = useToast();
@@ -57,21 +44,19 @@ export default function CreateAdmin() {
     },
   });
 
-  const { mutate, isPending } = useApiMutation<{ admin: Admin }>(
-    `admin/create`,
-    "POST",
-    ["createAdmin"],
-    {
-      onSuccess: (data) => {
-        toast({
-          title: t("AdminCreated"),
-          description: tName("name", { ...data.admin }),
-        });
-        form.reset();
-        router.push("/admins");
-      },
-    }
-  );
+  const { mutate, isPending } = useApiMutation<
+    { admin: Admin },
+    z.infer<typeof formSchema>
+  >(`admin/create`, "POST", ["createAdmin"], {
+    onSuccess: (data) => {
+      toast({
+        title: t("AdminCreated"),
+        description: tName("name", { ...data.admin }),
+      });
+      form.reset();
+      router.push("/admins");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataCreateAdmin");
@@ -114,7 +99,7 @@ export default function CreateAdmin() {
             mutate({
               ...values,
               phone_number: values.phone_number.slice(1),
-            } as any)
+            })
           )}
           className="space-y-4"
         >

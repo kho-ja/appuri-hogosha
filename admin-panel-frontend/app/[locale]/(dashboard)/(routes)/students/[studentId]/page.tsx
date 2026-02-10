@@ -12,18 +12,20 @@ import Group from "@/types/group";
 import TableApi from "@/components/TableApi";
 import DisplayProperty from "@/components/DisplayProperty";
 import NotFound from "@/components/NotFound";
-import useApiQuery from "@/lib/useApiQuery";
+import { useListQuery } from "@/lib/useListQuery";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import React from "react";
 
 export default function ThisStudent({
-  params: { studentId },
+  params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
+  const { studentId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
-  const { data: studentData, isError } = useApiQuery<{
+  const { data: studentData, isError } = useListQuery<{
     student: Student;
     parents: Parent[];
     groups: Group[];
@@ -36,7 +38,12 @@ export default function ThisStudent({
       accessorKey: "name",
       header: t("parentName"),
       cell: ({ row }) => (
-        <div>{tName("name", { ...row?.original } as any)}</div>
+        <div>
+          {tName("name", {
+            given_name: row.original.given_name,
+            family_name: row.original.family_name,
+          })}
+        </div>
       ),
     },
     {

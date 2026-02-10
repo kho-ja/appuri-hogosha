@@ -61,7 +61,7 @@ const BulkResendPasswordDialog: React.FC<BulkResendPasswordDialogProps> = ({
       setIsOpen(false);
       onSuccess?.();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       let errorMessage = t("bulkResendError");
 
       console.error("Error bulk resending passwords:", error);

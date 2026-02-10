@@ -53,26 +53,9 @@ import useApiMutation from "@/lib/useApiMutation";
 import { useEffect } from "react";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
+import { getKintoneStudentSchema } from "@/lib/validationSchemas";
 
-const formSchema = z.object({
-  subdomain: z
-    .string()
-    .min(1, "kintone_subdomain_required")
-    .max(50, "kintone_subdomain_too_long")
-    .regex(/^[a-zA-Z0-9-]+$/, "kintone_subdomain_invalid_format"),
-  domain: z.enum(["cybozu.com", "kintone.com", "cybozu-dev.com"], {
-    errorMap: () => ({ message: "kintone_domain_invalid" }),
-  }),
-  kintoneToken: z
-    .string()
-    .min(10, "kintone_token_too_short")
-    .max(100, "kintone_token_too_long"),
-  given_name_field: z.string().min(1, "field_required"),
-  family_name_field: z.string().min(1, "field_required"),
-  email_field: z.string().min(1, "field_required"),
-  student_number_field: z.string().min(1, "field_required"),
-  phone_number_field: z.string().min(1, "field_required"),
-});
+const formSchema = getKintoneStudentSchema();
 
 export default function CreateFromKintone() {
   const t = useTranslations("fromKintone");
@@ -81,23 +64,21 @@ export default function CreateFromKintone() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-  const { mutate, error, isPending } = useApiMutation<{ message: string }>(
-    `student/kintoneUpload`,
-    "POST",
-    ["uploadKintoneStudents"],
-    {
-      onSuccess(data) {
-        queryClient.invalidateQueries({
-          queryKey: ["students"],
-        });
-        toast({
-          title: t("studentsUploaded"),
-          description: t(data?.message),
-        });
-        router.push("/students");
-      },
-    }
-  );
+  const { mutate, error, isPending } = useApiMutation<
+    { message: string },
+    z.infer<typeof formSchema>
+  >(`student/kintoneUpload`, "POST", ["uploadKintoneStudents"], {
+    onSuccess(data) {
+      queryClient.invalidateQueries({
+        queryKey: ["students"],
+      });
+      toast({
+        title: t("studentsUploaded"),
+        description: t(data?.message),
+      });
+      router.push("/students");
+    },
+  });
 
   useEffect(() => {
     const savedFormData = localStorage.getItem("formDataKintoneStudent");
@@ -123,7 +104,7 @@ export default function CreateFromKintone() {
   }, [form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    mutate(values as any);
+    mutate(values);
   };
 
   // Safely derive structured upload feedback from possible error body
