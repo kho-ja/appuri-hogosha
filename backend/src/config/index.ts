@@ -8,6 +8,7 @@ interface Config {
 
     // CORS
     FRONTEND_URL: string;
+    ALLOWED_FRONTEND_URLS?: string;
 
     // Pagination
     PER_PAGE: number;
@@ -105,6 +106,7 @@ export function getConfigSummary(): Record<string, string | number | boolean> {
         PORT: config.PORT,
         NODE_ENV: config.NODE_ENV,
         FRONTEND_URL: config.FRONTEND_URL,
+        ALLOWED_FRONTEND_URLS: getEnv('ALLOWED_FRONTEND_URLS'),
         PER_PAGE: config.PER_PAGE,
         SERVICE_REGION: config.SERVICE_REGION,
         BUCKET_NAME: config.BUCKET_NAME,
