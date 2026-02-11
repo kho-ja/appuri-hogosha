@@ -4,8 +4,15 @@ import cors from 'cors';
 import process from 'node:process';
 import morgan from 'morgan';
 
+const configuredFrontendOrigins = [
+    process.env.FRONTEND_URL,
+    ...(process.env.ALLOWED_FRONTEND_URLS?.split(',') ?? []),
+]
+    .map(origin => origin?.trim().replace(/\/$/, ''))
+    .filter((origin): origin is string => Boolean(origin));
+
 const allowedOrigins = [
-    process.env.FRONTEND_URL?.replace(/\/$/, ''),
+    ...configuredFrontendOrigins,
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
     /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
 ];
