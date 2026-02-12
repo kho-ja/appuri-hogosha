@@ -459,6 +459,7 @@ export class CognitoHandler {
      * Build a simple universal link to the mobile app (no extra params)
      */
     private buildAuthDeepLink(): string {
-        return 'https://appuri-hogosha.vercel.app/parentnotification';
+        // Web entrypoint for parents (used in account creation / password reset SMS)
+        return `${ENVIRONMENT.PARENT_APP_BASE_URL.replace(/\/+$/, '')}/parentnotification`;
     }
 }

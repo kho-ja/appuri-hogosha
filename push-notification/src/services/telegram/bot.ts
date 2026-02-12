@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from 'telegraf';
 import { ENVIRONMENT } from '../../config/environment';
 import { NotificationPost } from '../../types/events';
+import { buildParentNotificationMessageUrl } from '../../utils/parent-app-links';
 
 export class TelegramService {
     private bot: Telegraf;
@@ -28,7 +29,10 @@ export class TelegramService {
                 buttonText = "Ko'rish";
             }
 
-            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
+            const link = buildParentNotificationMessageUrl(
+                post.student_id,
+                post.id
+            );
             const button = Markup.inlineKeyboard([
                 Markup.button.url(buttonText, link),
             ]);

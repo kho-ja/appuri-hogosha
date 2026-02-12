@@ -30,6 +30,11 @@ export const ENVIRONMENT = {
     // Telegram Bot
     BOT_TOKEN: process.env.BOT_TOKEN!,
 
+    // Parent Web App (links included in SMS/Telegram/Push)
+    // Example: https://parents.jdu.uz
+    PARENT_APP_BASE_URL:
+        process.env.PARENT_APP_BASE_URL || 'https://parents.jdu.uz',
+
     // Database
     DB_HOST: process.env.HOST,
     DB_PORT: parseInt(process.env.DB_PORT ?? '3306'),
@@ -43,6 +48,7 @@ export const getEnvironmentInfo = () => ({
     region: ENVIRONMENT.AWS_REGION,
     hasPlayMobileConfig: !!(ENVIRONMENT.BROKER_URL && ENVIRONMENT.BROKER_AUTH),
     hasTelegramConfig: !!ENVIRONMENT.BOT_TOKEN,
+    parentAppBaseUrl: ENVIRONMENT.PARENT_APP_BASE_URL,
     hasLocalAwsCredentials: !!(
         ENVIRONMENT.LOCAL_AWS_ACCESS_KEY_ID &&
         ENVIRONMENT.LOCAL_AWS_SECRET_ACCESS_KEY

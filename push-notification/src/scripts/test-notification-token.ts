@@ -5,6 +5,7 @@ import { TelegramService } from '../services/telegram/bot';
 import { AwsSmsService } from '../services/aws/sms';
 import { PlayMobileService } from '../services/playmobile/api';
 import { SmsTemplateService } from '../services/sms/template-service';
+import { buildParentNotificationMessageUrl } from '../utils/parent-app-links';
 import {
     analyzeToken,
     detectTokenType,
@@ -204,7 +205,10 @@ class NotificationTokenTester {
         try {
             console.log('\n📤 Sending SMS...');
             const studentName = `${testPost.given_name} ${testPost.family_name}`;
-            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${testPost.student_id}/message/${testPost.id}`;
+            const link = buildParentNotificationMessageUrl(
+                testPost.student_id,
+                testPost.id
+            );
             const language = routing.isUzbekistan ? 'uz' : 'ja';
 
             const text = this.smsTemplateService.generateNotificationSms(

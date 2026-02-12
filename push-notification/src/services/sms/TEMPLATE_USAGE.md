@@ -4,9 +4,9 @@ The `SmsTemplateService` provides a flexible and type-safe way to generate SMS m
 
 ## Features
 
-- ✅ **Language support**: 
-  - **Uzbek (uz)** - For Uzbekistan numbers
-  - **Japanese (ja)** - For international numbers
+- ✅ **Language support**:
+    - **Uzbek (uz)** - For Uzbekistan numbers
+    - **Japanese (ja)** - For international numbers
 - ✅ **Multiple template types**: Account creation, login codes, password reset, notifications
 - ✅ **Automatic message shortening**: Reduces SMS costs by keeping messages within single-SMS limits
 - ✅ **Cost analysis**: Analyzes message encoding, length, and parts
@@ -23,14 +23,17 @@ import { SmsTemplateService } from './template-service';
 
 const smsService = new SmsTemplateService();
 
-const message = smsService.generateAccountCreationSms({
-    login: '+998901234567',
-    tempPassword: 'qwerty123',
-    appLink: 'https://appuri-hogosha.vercel.app/parentnotification'
-}, { language: 'uz' });
+const message = smsService.generateAccountCreationSms(
+    {
+        login: '+998901234567',
+        tempPassword: 'qwerty123',
+        appLink: 'https://parents.jdu.uz/parentnotification',
+    },
+    { language: 'uz' }
+);
 
 // Output (Uzbek):
-// "Parent Notification tizimiga kirish uchun hisob ochildi. Login: +998901234567 Vaqtinchalik parol: qwerty123 Kirish: https://appuri-hogosha.vercel.app/parentnotification"
+// "Parent Notification tizimiga kirish uchun hisob ochildi. Login: +998901234567 Vaqtinchalik parol: qwerty123 Kirish: https://parents.jdu.uz/parentnotification"
 ```
 
 ### 2. Login Code SMS
@@ -38,10 +41,13 @@ const message = smsService.generateAccountCreationSms({
 Used for OTP-based login with expiration time.
 
 ```typescript
-const message = smsService.generateLoginCodeSms({
-    code: '123456',
-    expiryMinutes: 5
-}, { language: 'uz' });
+const message = smsService.generateLoginCodeSms(
+    {
+        code: '123456',
+        expiryMinutes: 5,
+    },
+    { language: 'uz' }
+);
 
 // Output (Uzbek):
 // "123456 — Parent Notification kirish kodi. Kodni hech kimga bermang. 5 daqiqa amal qiladi."
@@ -52,10 +58,13 @@ const message = smsService.generateLoginCodeSms({
 Used for password reset verification with expiration time.
 
 ```typescript
-const message = smsService.generatePasswordResetSms({
-    code: '123456',
-    expiryMinutes: 5
-}, { language: 'uz' });
+const message = smsService.generatePasswordResetSms(
+    {
+        code: '123456',
+        expiryMinutes: 5,
+    },
+    { language: 'uz' }
+);
 
 // Output (Uzbek):
 // "123456 — Parent Notification parolni tiklash kodi. Kodni hech kimga bermang. 5 daqiqa amal qiladi."
@@ -66,12 +75,15 @@ const message = smsService.generatePasswordResetSms({
 Used for sending notifications about new messages/posts.
 
 ```typescript
-const message = smsService.generateNotificationSms({
-    title: 'Maktabdan yangi xabar',
-    description: 'Ertaga dars bo\'lmaydi',
-    studentName: 'Abdulla Abdullayev',
-    link: 'https://appuri-hogosha.vercel.app/parentnotification/student/1/message/1'
-}, { language: 'uz' });
+const message = smsService.generateNotificationSms(
+    {
+        title: 'Maktabdan yangi xabar',
+        description: "Ertaga dars bo'lmaydi",
+        studentName: 'Abdulla Abdullayev',
+        link: 'https://parents.jdu.uz/parentnotification/student/1/message/1',
+    },
+    { language: 'uz' }
+);
 
 // Output (Uzbek):
 // "Parent Notification: sizga yangi xabar bor Maktabdan yangi xabar Ertaga dars bo'lmaydi O'quvchi: Abdulla Abdullayev Batafsil: https://..."
@@ -93,12 +105,16 @@ The service automatically shortens messages to avoid multi-part SMS charges:
 
 ```typescript
 // Long message
-const longMessage = smsService.generateNotificationSms({
-    title: 'Very long title that exceeds the character limit',
-    description: 'Even longer description that would cause the message to be split into multiple SMS parts which increases costs significantly',
-    studentName: 'Student Full Name',
-    link: 'https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456'
-}, { language: 'uz' });
+const longMessage = smsService.generateNotificationSms(
+    {
+        title: 'Very long title that exceeds the character limit',
+        description:
+            'Even longer description that would cause the message to be split into multiple SMS parts which increases costs significantly',
+        studentName: 'Student Full Name',
+        link: 'https://parents.jdu.uz/parentnotification/student/123/message/456',
+    },
+    { language: 'uz' }
+);
 
 // Automatic shortening:
 // 1. Removes description first
@@ -117,10 +133,13 @@ const longMessage = smsService.generateNotificationSms({
 Analyze message cost before sending:
 
 ```typescript
-const message = smsService.generateLoginCodeSms({ 
-    code: '123456', 
-    expiryMinutes: 5 
-}, { language: 'uz' });
+const message = smsService.generateLoginCodeSms(
+    {
+        code: '123456',
+        expiryMinutes: 5,
+    },
+    { language: 'uz' }
+);
 
 const analysis = smsService.analyzeMessage(message);
 console.log(analysis);
@@ -136,10 +155,10 @@ console.log(analysis);
 
 ### SMS Length Limits
 
-| Encoding | Single SMS | Multi-part SMS |
-|----------|------------|----------------|
-| GSM-7 (Latin) | 160 chars | 153 chars per part |
-| Unicode (Cyrillic, Japanese, etc.) | 70 chars | 67 chars per part |
+| Encoding                           | Single SMS | Multi-part SMS     |
+| ---------------------------------- | ---------- | ------------------ |
+| GSM-7 (Latin)                      | 160 chars  | 153 chars per part |
+| Unicode (Cyrillic, Japanese, etc.) | 70 chars   | 67 chars per part  |
 
 ## Integration Examples
 
@@ -150,10 +169,13 @@ console.log(analysis);
 const smsService = new SmsTemplateService();
 
 // For login verification
-const message = smsService.generateLoginCodeSms({
-    code: decryptedCode,
-    expiryMinutes: 5
-}, { language: userLanguage });
+const message = smsService.generateLoginCodeSms(
+    {
+        code: decryptedCode,
+        expiryMinutes: 5,
+    },
+    { language: userLanguage }
+);
 
 await playMobileService.sendSms(phoneNumber, message);
 ```
@@ -164,17 +186,22 @@ await playMobileService.sendSms(phoneNumber, message);
 // In push-notifications.ts
 const smsService = new SmsTemplateService();
 
-const message = smsService.generateNotificationSms({
-    title: post.title,
-    description: post.description,
-    studentName: `${post.given_name} ${post.family_name}`,
-    link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`
-}, { 
-    language: (post.language as SmsLanguage) || 'uz'
-});
+const message = smsService.generateNotificationSms(
+    {
+        title: post.title,
+        description: post.description,
+        studentName: `${post.given_name} ${post.family_name}`,
+        link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`,
+    },
+    {
+        language: (post.language as SmsLanguage) || 'uz',
+    }
+);
 
 const analysis = smsService.analyzeMessage(message);
-console.log(`📊 SMS: ${analysis.length} chars, ${analysis.encoding}, ${analysis.parts} part(s)`);
+console.log(
+    `📊 SMS: ${analysis.length} chars, ${analysis.encoding}, ${analysis.parts} part(s)`
+);
 
 await playMobileService.sendSms(phoneNumber, message);
 ```
@@ -183,12 +210,12 @@ await playMobileService.sendSms(phoneNumber, message);
 
 Templates match the format specified in the requirements:
 
-| Template Type | Format | Variables |
-|--------------|--------|-----------|
-| Account Creation | `Login: %w Temporary password: %w Access: %w` | login, tempPassword, appLink |
-| Login Code | `%d{1,6} — ... %d{1,2} minutes` | code (6 digits), expiryMinutes |
-| Password Reset | `%d{1,6} — ... %d{1,2} minutes` | code (6 digits), expiryMinutes |
-| Notification | `...message... Student: %w Details: %w` | title, description, studentName, link |
+| Template Type    | Format                                        | Variables                             |
+| ---------------- | --------------------------------------------- | ------------------------------------- |
+| Account Creation | `Login: %w Temporary password: %w Access: %w` | login, tempPassword, appLink          |
+| Login Code       | `%d{1,6} — ... %d{1,2} minutes`               | code (6 digits), expiryMinutes        |
+| Password Reset   | `%d{1,6} — ... %d{1,2} minutes`               | code (6 digits), expiryMinutes        |
+| Notification     | `...message... Student: %w Details: %w`       | title, description, studentName, link |
 
 ## Best Practices
 
@@ -201,19 +228,24 @@ Templates match the format specified in the requirements:
 ## Migration from Old System
 
 ### Before (old localization.ts):
+
 ```typescript
 const text = generateSmsText(post);
 ```
 
 ### After (new template-service.ts):
+
 ```typescript
 const smsService = new SmsTemplateService();
-const text = smsService.generateNotificationSms({
-    title: post.title,
-    description: post.description,
-    studentName: `${post.given_name} ${post.family_name}`,
-    link: `https://...`
-}, { language: post.language });
+const text = smsService.generateNotificationSms(
+    {
+        title: post.title,
+        description: post.description,
+        studentName: `${post.given_name} ${post.family_name}`,
+        link: `https://...`,
+    },
+    { language: post.language }
+);
 ```
 
 ## Testing
@@ -224,11 +256,14 @@ const languages: SmsLanguage[] = ['ja', 'uz'];
 const smsService = new SmsTemplateService();
 
 languages.forEach(lang => {
-    const message = smsService.generateLoginCodeSms({
-        code: '123456',
-        expiryMinutes: 5
-    }, { language: lang });
-    
+    const message = smsService.generateLoginCodeSms(
+        {
+            code: '123456',
+            expiryMinutes: 5,
+        },
+        { language: lang }
+    );
+
     const analysis = smsService.analyzeMessage(message);
     console.log(`${lang}: ${analysis.length} chars, ${analysis.parts} part(s)`);
 });
