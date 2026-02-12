@@ -191,7 +191,7 @@ const message = smsService.generateNotificationSms(
         title: post.title,
         description: post.description,
         studentName: `${post.given_name} ${post.family_name}`,
-        link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`,
+        link: `https://parents.jdu.uz/parentnotification/student/${post.student_id}/message/${post.id}`,
     },
     {
         language: (post.language as SmsLanguage) || 'uz',

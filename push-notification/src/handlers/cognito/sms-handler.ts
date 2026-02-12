@@ -5,6 +5,7 @@ import { CognitoTemplateService } from '../../services/cognito/template-service'
 import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
+import { ENVIRONMENT } from '../../config/environment';
 
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
