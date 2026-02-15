@@ -70,12 +70,12 @@ export const getExternalTestCommands = () => {
     android: [
       'adb shell am start -a android.intent.action.VIEW -d "jduapp://home" com.jduapp.parentnotification',
       'adb shell am start -a android.intent.action.VIEW -d "jduapp://student/123/message/456" com.jduapp.parentnotification',
-      'adb shell am start -a android.intent.action.VIEW -d "https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456" com.jduapp.parentnotification',
+      'adb shell am start -a android.intent.action.VIEW -d "https://parents.jdu.uz/parentnotification/student/123/message/456" com.jduapp.parentnotification',
     ],
     ios: [
       'xcrun simctl openurl booted "jduapp://home"',
       'xcrun simctl openurl booted "jduapp://student/123/message/456"',
-      'xcrun simctl openurl booted "https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456"',
+      'xcrun simctl openurl booted "https://parents.jdu.uz/parentnotification/student/123/message/456"',
     ],
   };
 
@@ -107,7 +107,7 @@ export const DeepLinkDebugHelper = {
   // Web URL format (for testing universal links)
   testWebUrl: () => {
     const url =
-      'https://appuri-hogosha.vercel.app/parentnotification/student/123/message/456';
+      'https://parents.jdu.uz/parentnotification/student/123/message/456';
     console.log(`Testing web URL: ${url}`);
     Linking.openURL(url)
       .then(() => console.log('Web URL test successful'))

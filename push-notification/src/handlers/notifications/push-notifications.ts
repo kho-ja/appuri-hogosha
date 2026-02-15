@@ -4,6 +4,7 @@ import { PlayMobileService } from '../../services/playmobile/api';
 import { AwsSmsService } from '../../services/aws/sms';
 import { TelegramService } from '../../services/telegram/bot';
 import { SmsTemplateService } from '../../services/sms/template-service';
+import { buildParentNotificationMessageUrl } from '../../utils/parent-app-links';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { NotificationPost } from '../../types/events';
 import { NotificationResult } from 'types/responses';
@@ -219,7 +220,10 @@ export class NotificationProcessor {
 
             // Generate SMS using template service with automatic shortening
             const studentName = `${post.given_name} ${post.family_name}`;
-            const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
+            const link = buildParentNotificationMessageUrl(
+                post.student_id,
+                post.id
+            );
 
             const text = this.smsTemplateService.generateNotificationSms(
                 {

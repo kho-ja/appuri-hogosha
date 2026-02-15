@@ -5,6 +5,7 @@ import { CognitoTemplateService } from '../../services/cognito/template-service'
 import { SmsTemplateService } from '../../services/sms/template-service';
 import { getUzbekistanOperatorRouting } from '../../utils/validation';
 import { CognitoEvent } from '../../types/events';
+import { ENVIRONMENT } from '../../config/environment';
 
 export class CognitoHandler {
     private kmsService: KmsDecryptionService;
@@ -459,6 +460,7 @@ export class CognitoHandler {
      * Build a simple universal link to the mobile app (no extra params)
      */
     private buildAuthDeepLink(): string {
-        return 'https://appuri-hogosha.vercel.app/parentnotification';
+        // Web entrypoint for parents (used in account creation / password reset SMS)
+        return `${ENVIRONMENT.PARENT_APP_BASE_URL.replace(/\/+$/, '')}/parentnotification`;
     }
 }

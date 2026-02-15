@@ -47,10 +47,7 @@ export function redirectSystemPath({
     const url = new URL(path);
 
     // Universal links
-    if (
-      url.protocol === 'https:' &&
-      url.hostname === 'appuri-hogosha.vercel.app'
-    ) {
+    if (url.protocol === 'https:' && url.hostname === 'parents.jdu.uz') {
       let pathname = url.pathname;
       if (pathname.startsWith('/parentnotification')) {
         pathname = pathname.replace('/parentnotification', '') || '/';

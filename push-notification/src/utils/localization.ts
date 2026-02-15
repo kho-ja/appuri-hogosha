@@ -1,4 +1,5 @@
 import { NotificationPost } from '../types/events';
+import { buildParentNotificationMessageUrl } from './parent-app-links';
 
 export const getLocalizedText = (
     language: string,
@@ -7,7 +8,7 @@ export const getLocalizedText = (
 ): string => {
     const studentName = `${data.given_name} ${data.family_name}`;
 
-    const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${data.student_id}/message/${data.id}`;
+    const link = buildParentNotificationMessageUrl(data.student_id, data.id);
     const texts = {
         jp: {
             title: `新しい投稿: ${data.title}`,
@@ -41,12 +42,12 @@ export const getLocalizedText = (
  *     title: post.title,
  *     description: post.description,
  *     studentName: `${post.given_name} ${post.family_name}`,
- *     link: `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`
+ *     link: `https://parents.jdu.uz/parentnotification/student/${post.student_id}/message/${post.id}`
  * }, { language: post.language === 'jp' ? 'ja' : 'uz' });
  * ```
  */
 export const generateSmsText = (post: NotificationPost): string => {
-    const link = `https://appuri-hogosha.vercel.app/parentnotification/student/${post.student_id}/message/${post.id}`;
+    const link = buildParentNotificationMessageUrl(post.student_id, post.id);
     if (post.language === 'jp') {
         return (
             '新しい投稿: ' +
