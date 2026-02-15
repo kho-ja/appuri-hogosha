@@ -4,15 +4,11 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { config } from '../config';
 
-const allowedOrigins: (string | RegExp)[] = (config.ALLOWED_FRONTEND_URLS || "")
-    .split(",")
-    .map(origin => origin.trim().replace(/\/$/, "")) // remove trailing slash
-    .filter(Boolean);
-
-allowedOrigins.push(
+const allowedOrigins = [
+    ...config.ALLOWED_FRONTEND_URLS,
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
-    /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/
-);
+    /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
+];
 class App {
     public app: Application;
 
