@@ -1,18 +1,11 @@
 import express from 'express';
 import { Application } from 'express';
 import cors from 'cors';
-import process from 'node:process';
 import morgan from 'morgan';
-
-const configuredFrontendOrigins = [
-    process.env.FRONTEND_URL,
-    ...(process.env.ALLOWED_FRONTEND_URLS?.split(',') ?? []),
-]
-    .map(origin => origin?.trim().replace(/\/$/, ''))
-    .filter((origin): origin is string => Boolean(origin));
+import { config } from '../config';
 
 const allowedOrigins = [
-    ...configuredFrontendOrigins,
+    ...config.ALLOWED_FRONTEND_URLS,
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
     /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
 ];
@@ -69,9 +62,9 @@ class App {
     }
 
     public listen() {
-        if (process.env.NODE_ENV !== 'production') {
-            this.app.listen(process.env.PORT, () => {
-                console.log(`http://127.0.0.1:${process.env.PORT}/`);
+        if (config.NODE_ENV !== 'production') {
+            this.app.listen(config.PORT, () => {
+                console.log(`http://127.0.0.1:${config.PORT}/`);
             });
         }
 
