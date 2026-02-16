@@ -44,9 +44,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const user = session?.user as User;
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      handleSignOut();
+    }
+  }, [session?.error]);
 
-  if (session?.error === "RefreshAccessTokenError") handleSignOut();
+  const user = session?.user as User;
 
   const toggleSidebar = () => {
     setIsMenuOpen((prev) => {
