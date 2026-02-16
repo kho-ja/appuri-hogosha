@@ -27,7 +27,7 @@ import LanguageSelect from "@/components/LanguageSelect";
 import { User } from "next-auth";
 
 const handleSignOut = async () => {
-  return await signOut({ callbackUrl: "/" });
+  return await signOut({ callbackUrl: "/login" });
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -200,7 +200,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={async () => await signOut()}
+                  onClick={async () => await signOut({ callbackUrl: "/login" })}
                   className="hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
                 >
                   {t("logout")}
