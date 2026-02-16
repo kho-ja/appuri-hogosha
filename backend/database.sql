@@ -65,7 +65,7 @@ CREATE TABLE
   `Parent` (
     `id` int NOT NULL AUTO_INCREMENT,
     `cognito_sub_id` varchar(255) NOT NULL,
-    `email` varchar(255) NOT NULL,
+    `email` varchar(255) DEFAULT NULL,
     `phone_number` varchar(255) NOT NULL,
     `given_name` varchar(255) NOT NULL,
     `family_name` varchar(255) NOT NULL,

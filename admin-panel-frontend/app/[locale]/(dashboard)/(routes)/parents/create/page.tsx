@@ -128,9 +128,7 @@ export default function CreateParent() {
                           type="text"
                         />
                       </FormControl>
-                      <FormMessage>
-                        {formState.errors.given_name && t("InvalidName")}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -148,9 +146,7 @@ export default function CreateParent() {
                           type="text"
                         />
                       </FormControl>
-                      <FormMessage>
-                        {formState.errors.family_name && t("InvalidFamilyName")}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -159,7 +155,7 @@ export default function CreateParent() {
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field, formState }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("ParentEmail")}</FormLabel>
                     <FormControl>
@@ -169,10 +165,7 @@ export default function CreateParent() {
                         type="email"
                       />
                     </FormControl>
-                    <FormMessage>
-                      {formState.errors.email &&
-                        "Parent email is required. Parent email should be valid"}
-                    </FormMessage>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

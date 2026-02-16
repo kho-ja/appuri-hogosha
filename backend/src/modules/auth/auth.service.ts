@@ -13,6 +13,7 @@ import {
     UserInfoResponse,
     CognitoAuthData,
 } from './auth.dto';
+import { config } from '../../config';
 
 export class AuthService {
     constructor(
@@ -240,7 +241,7 @@ export class AuthService {
     }
 
     private async getUserInfo(accessToken: string) {
-        const cognitoDomain = process.env.COGNITO_DOMAIN;
+        const cognitoDomain = config.COGNITO_DOMAIN;
         if (!cognitoDomain) throw new Error('COGNITO_DOMAIN not configured');
 
         const resp = await fetch(`${cognitoDomain}/oauth2/userInfo`, {
@@ -264,9 +265,8 @@ export class AuthService {
     }
 
     private async exchangeCodeForTokens(code: string, redirectUri: string) {
-        const cognitoDomain = process.env.COGNITO_DOMAIN;
-        const clientId = process.env.ADMIN_CLIENT_ID;
-        const clientSecret = process.env.ADMIN_CLIENT_SECRET;
+        const cognitoDomain = config.COGNITO_DOMAIN;
+        const clientId = config.ADMIN_CLIENT_ID;
 
         const tokenUrl = `${cognitoDomain}/oauth2/token`;
 
@@ -280,12 +280,6 @@ export class AuthService {
         const headers: Record<string, string> = {
             'Content-Type': 'application/x-www-form-urlencoded',
         };
-        if (clientSecret) {
-            const basic = Buffer.from(`${clientId}:${clientSecret}`).toString(
-                'base64'
-            );
-            headers['Authorization'] = `Basic ${basic}`;
-        }
 
         const response = await fetch(tokenUrl, {
             method: 'POST',

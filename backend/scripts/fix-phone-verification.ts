@@ -6,10 +6,7 @@ import {
     AdminUpdateUserAttributesCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import DB from '../src/utils/db-client';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
+import { config } from '../src/config';
 
 interface Parent {
     phone_number: string;
@@ -19,14 +16,14 @@ interface Parent {
 }
 
 const client = new CognitoIdentityProviderClient({
-    region: process.env.SERVICE_REGION,
+    region: config.SERVICE_REGION,
     credentials: {
-        accessKeyId: process.env.ACCESS_KEY ?? '',
-        secretAccessKey: process.env.SECRET_ACCESS_KEY ?? '',
+        accessKeyId: config.ACCESS_KEY ?? '',
+        secretAccessKey: config.SECRET_ACCESS_KEY ?? '',
     },
 });
 
-const PARENT_POOL_ID = process.env.PARENT_POOL_ID ?? '';
+const PARENT_POOL_ID = config.PARENT_POOL_ID ?? '';
 
 async function fixExistingUsers(): Promise<void> {
     console.log('🔧 Fixing phone verification for existing users...\n');
@@ -34,8 +31,8 @@ async function fixExistingUsers(): Promise<void> {
     try {
         // Get all parents from database
         const parents: Parent[] = await DB.query(`
-            SELECT phone_number, email, given_name, family_name 
-            FROM Parent 
+            SELECT phone_number, email, given_name, family_name
+            FROM Parent
             ORDER BY id
         `);
 

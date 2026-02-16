@@ -111,10 +111,7 @@ export default function EditParent({
                           type="text"
                         />
                       </FormControl>
-                      <FormMessage>
-                        {formState.errors.given_name &&
-                          "Invalid parent given name"}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -122,7 +119,7 @@ export default function EditParent({
                 <FormField
                   control={form.control}
                   name="family_name"
-                  render={({ field, formState }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("ParentFamilyName")}</FormLabel>
                       <FormControl>
@@ -132,10 +129,7 @@ export default function EditParent({
                           type="text"
                         />
                       </FormControl>
-                      <FormMessage>
-                        {formState.errors.family_name &&
-                          "Invalid parent family name"}
-                      </FormMessage>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -144,7 +138,7 @@ export default function EditParent({
               <FormField
                 control={form.control}
                 name="email"
-                render={({ field, formState }) => (
+                render={({ field }) => (
                   <FormItem className="sm:w-1/2">
                     <FormLabel>{t("ParentEmail")}</FormLabel>
                     <FormControl>
@@ -154,9 +148,7 @@ export default function EditParent({
                         type="email"
                       />
                     </FormControl>
-                    <FormMessage>
-                      {formState.errors.email && "Parent email is required"}
-                    </FormMessage>
+                    <FormMessage />
                   </FormItem>
                 )}
               />

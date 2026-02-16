@@ -22,6 +22,7 @@ import type {
     DeleteMultiplePostsRequest,
     DeleteMultiplePostsResponse,
 } from './types/post.dto';
+import { config } from '../../config';
 
 // Helper: Get all descendant group IDs
 async function getAllDescendantGroupIds(
@@ -287,7 +288,7 @@ export class PostService {
         schoolId: number
     ): Promise<ListPostsResponse> {
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE || '10');
+        const limit = config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const filters = {

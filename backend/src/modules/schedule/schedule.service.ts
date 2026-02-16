@@ -24,6 +24,7 @@ import {
 import { generatePaginationLinks, randomImageName } from '../../utils/helper';
 import { DateTime } from 'luxon';
 import DB from '../../utils/db-client';
+import { config } from '../../config';
 
 export class ScheduleService {
     constructor(private repository: ScheduleRepository) {}
@@ -159,7 +160,7 @@ export class ScheduleService {
         schoolId: number
     ): Promise<ScheduledPostListResponse> {
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE + '') || 10;
+        const limit = parseInt(config.PER_PAGE + '') || 10;
         const offset = (page - 1) * limit;
 
         const postList = await this.repository.findWithPagination({

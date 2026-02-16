@@ -6,10 +6,7 @@ import {
     AdminUpdateUserAttributesCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
 import DB from '../src/utils/db-client';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
+import { config } from '../src/config';
 
 interface Admin {
     email: string;
@@ -19,14 +16,14 @@ interface Admin {
 }
 
 const client = new CognitoIdentityProviderClient({
-    region: process.env.SERVICE_REGION,
+    region: config.SERVICE_REGION,
     credentials: {
-        accessKeyId: process.env.ACCESS_KEY ?? '',
-        secretAccessKey: process.env.SECRET_ACCESS_KEY ?? '',
+        accessKeyId: config.ACCESS_KEY ?? '',
+        secretAccessKey: config.SECRET_ACCESS_KEY ?? '',
     },
 });
 
-const ADMIN_POOL_ID = process.env.ADMIN_POOL_ID ?? '';
+const ADMIN_POOL_ID = config.ADMIN_POOL_ID ?? '';
 
 async function fixExistingAdmins(): Promise<void> {
     console.log('🔧 Fixing email verification for existing admin users...\n');
@@ -34,8 +31,8 @@ async function fixExistingAdmins(): Promise<void> {
     try {
         // Get all admins from database
         const admins: Admin[] = await DB.query(`
-            SELECT email, phone_number, given_name, family_name 
-            FROM Admin 
+            SELECT email, phone_number, given_name, family_name
+            FROM Admin
             ORDER BY id
         `);
 

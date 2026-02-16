@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
-dotenv.config();
+import { config } from '../src/config';
 import csv from 'csv-parser';
 
 // basic arg parsing
@@ -30,11 +29,11 @@ function normalizePhone(s: string) {
 async function main() {
     // Preflight validation for required env vars (helps avoid cryptic AWS errors)
     const missing: string[] = [];
-    if (!process.env.SERVICE_REGION) missing.push('SERVICE_REGION');
-    if (!process.env.ACCESS_KEY) missing.push('ACCESS_KEY');
-    if (!process.env.SECRET_ACCESS_KEY) missing.push('SECRET_ACCESS_KEY');
-    if (!process.env.PARENT_POOL_ID) missing.push('PARENT_POOL_ID');
-    if (!process.env.PARENT_CLIENT_ID) missing.push('PARENT_CLIENT_ID');
+    if (!config.SERVICE_REGION) missing.push('SERVICE_REGION');
+    if (!config.ACCESS_KEY) missing.push('ACCESS_KEY');
+    if (!config.SECRET_ACCESS_KEY) missing.push('SECRET_ACCESS_KEY');
+    if (!config.PARENT_POOL_ID) missing.push('PARENT_POOL_ID');
+    if (!config.PARENT_CLIENT_ID) missing.push('PARENT_CLIENT_ID');
     if (missing.length) {
         console.error(
             `Missing required environment variables: ${missing.join(', ')}\n` +

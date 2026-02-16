@@ -18,6 +18,7 @@ import type {
     UpdateAdminResponse,
     DeleteAdminResponse,
 } from './types/admin.dto';
+import { config } from '../../config';
 
 export class AdminService {
     constructor(private cognitoClient: any) {}
@@ -103,7 +104,7 @@ export class AdminService {
         schoolId: number
     ): Promise<ListAdminsResponse> {
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE || '10');
+        const limit = config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const filters = {

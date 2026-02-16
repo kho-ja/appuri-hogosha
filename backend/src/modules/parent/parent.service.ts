@@ -325,6 +325,7 @@ class ParentService {
         if (duplicates.length > 0) {
             const duplicate = duplicates[0];
             if (
+                params.email &&
                 params.email === duplicate.email &&
                 params.phone_number === duplicate.phone_number
             ) {
@@ -334,7 +335,7 @@ class ParentService {
             }
             if (params.phone_number === duplicate.phone_number) {
                 throw ApiError.badRequest('phone_number_already_exists');
-            } else {
+            } else if (params.email && params.email === duplicate.email) {
                 throw ApiError.badRequest('email_already_exists');
             }
         }
