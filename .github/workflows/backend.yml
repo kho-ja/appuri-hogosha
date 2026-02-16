@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 540-review-and-fix-frontend-url-configuration
     paths:
       - "backend/**"
 
