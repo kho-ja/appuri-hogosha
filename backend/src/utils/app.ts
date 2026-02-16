@@ -5,8 +5,9 @@ import morgan from 'morgan';
 import { config } from '../config';
 
 const allowedOrigins = [
-    ...config.ALLOWED_FRONTEND_URLS,
+    config.FRONTEND_URL,
     /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
+    /^https:\/\/www\.parents\.jdu\.uz\/?$/,
     /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
 ];
 class App {

@@ -8,7 +8,7 @@ interface Config {
 
     // CORS
     FRONTEND_URL: string;
-    ALLOWED_FRONTEND_URLS: string[];
+    ALLOWED_FRONTEND_URLS?: string;
 
     // Pagination
     PER_PAGE: number;
@@ -69,18 +69,6 @@ function getEnvAsBool(key: string, defaultValue: boolean = false): boolean {
     return raw === 'true' || raw === '1';
 }
 
-function normalizeUrlValue(value: string): string {
-    return value.trim().replace(/\/$/, '');
-}
-
-function getEnvList(key: string, defaultValue: string[] = []): string[] {
-    const raw = process.env[key];
-    const values = raw
-        ? raw.split(',').map(normalizeUrlValue).filter(Boolean)
-        : defaultValue.map(normalizeUrlValue).filter(Boolean);
-    return Array.from(new Set(values));
-}
-
 // Load and validate all config at startup
 export const config: Config = {
     // Server
@@ -88,11 +76,7 @@ export const config: Config = {
     NODE_ENV: getEnv('NODE_ENV', 'development') as Config['NODE_ENV'],
 
     // CORS
-    FRONTEND_URL: normalizeUrlValue(getEnv('FRONTEND_URL')),
-    ALLOWED_FRONTEND_URLS: getEnvList('ALLOWED_FRONTEND_URLS', [
-        normalizeUrlValue(getEnv('FRONTEND_URL')),
-    ]),
-    // BACKEND_URL: normalizeUrlValue(getEnv('BACKEND_URL')),
+    FRONTEND_URL: getEnv('FRONTEND_URL'),
 
     // Pagination
     PER_PAGE: getEnvAsInt('PER_PAGE', 10),
@@ -122,7 +106,7 @@ export function getConfigSummary(): Record<string, string | number | boolean> {
         PORT: config.PORT,
         NODE_ENV: config.NODE_ENV,
         FRONTEND_URL: config.FRONTEND_URL,
-        ALLOWED_FRONTEND_URLS: config.ALLOWED_FRONTEND_URLS.join(', '),
+        ALLOWED_FRONTEND_URLS: getEnv('ALLOWED_FRONTEND_URLS'),
         PER_PAGE: config.PER_PAGE,
         SERVICE_REGION: config.SERVICE_REGION,
         BUCKET_NAME: config.BUCKET_NAME,
