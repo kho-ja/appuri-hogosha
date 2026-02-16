@@ -9,7 +9,6 @@ import { studentRepository } from './student.repository';
 import { ApiError } from '../../errors/ApiError';
 import { generatePaginationLinks } from '../../utils/helper';
 import { ErrorKeys } from '../../utils/error-codes';
-import process from 'node:process';
 import type {
     GetStudentsByIdsResponse,
     GetStudentListRequest,
@@ -24,6 +23,7 @@ import type {
     ChangeStudentParentsRequest,
     ChangeStudentParentsResponse,
 } from './types/student.dto';
+import { config } from '../../config';
 
 export class StudentService {
     /**
@@ -51,7 +51,7 @@ export class StudentService {
         schoolId: number
     ): Promise<GetStudentListResponse> {
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE || '10');
+        const limit = config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const filterBy = request.filterBy || 'all';

@@ -7,6 +7,7 @@ import {
     PutObjectCommandInput,
     S3Client,
 } from '@aws-sdk/client-s3';
+import { config as envConfig } from '../config';
 
 class MyS3Client {
     private client: S3Client;
@@ -14,15 +15,12 @@ class MyS3Client {
 
     constructor(bucket: string) {
         const config: ConstructorParameters<typeof S3Client>[0] = {
-            region: process.env.SERVICE_REGION ?? '',
+            region: envConfig.SERVICE_REGION ?? '',
         };
-        if (
-            process.env.BUCKET_ACCESS_KEY &&
-            process.env.BUCKET_SECRET_ACCESS_KEY
-        ) {
+        if (envConfig.BUCKET_ACCESS_KEY && envConfig.BUCKET_SECRET_ACCESS_KEY) {
             config.credentials = {
-                accessKeyId: process.env.BUCKET_ACCESS_KEY,
-                secretAccessKey: process.env.BUCKET_SECRET_ACCESS_KEY,
+                accessKeyId: envConfig.BUCKET_ACCESS_KEY,
+                secretAccessKey: envConfig.BUCKET_SECRET_ACCESS_KEY,
             };
         }
         this.client = new S3Client(config);
@@ -83,6 +81,6 @@ class MyS3Client {
     }
 }
 
-const Images3Client = new MyS3Client(process.env.BUCKET_NAME ?? '');
+const Images3Client = new MyS3Client(envConfig.BUCKET_NAME ?? '');
 
 export { Images3Client };

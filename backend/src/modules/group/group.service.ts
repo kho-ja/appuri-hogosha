@@ -8,7 +8,6 @@
 import { groupRepository } from './group.repository';
 import { ApiError } from '../../errors/ApiError';
 import { generatePaginationLinks } from '../../utils/helper';
-import process from 'node:process';
 import type {
     GetGroupsByIdsResponse,
     GetGroupListRequest,
@@ -22,6 +21,7 @@ import type {
     DeleteGroupResponse,
     GetSubGroupsResponse,
 } from './types/group.dto';
+import { config } from '../../config';
 
 export class GroupService {
     /**
@@ -46,7 +46,7 @@ export class GroupService {
         schoolId: number
     ): Promise<GetGroupListResponse> {
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE || '10');
+        const limit = config.PER_PAGE;
         const offset = (page - 1) * limit;
         const all = request.all || false;
         const name = request.name;
@@ -97,7 +97,7 @@ export class GroupService {
         }
 
         const page = request.page || 1;
-        const limit = parseInt(process.env.PER_PAGE || '10');
+        const limit = config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const email = request.email || '';

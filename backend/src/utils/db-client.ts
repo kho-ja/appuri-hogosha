@@ -3,7 +3,7 @@ import mysql, {
     RowDataPacket,
     ResultSetHeader,
 } from 'mysql2/promise';
-import process from 'node:process';
+import { config } from '../config';
 
 class DatabaseClient {
     private connection: Connection | null = null;
@@ -12,11 +12,11 @@ class DatabaseClient {
         const maxRetries = 3;
         try {
             const connection: Connection = await mysql.createConnection({
-                host: process.env.DB_HOST,
-                port: Number(process.env.DB_PORT) || 3306,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_DATABASE,
+                host: config.DB_HOST,
+                port: Number(config.DB_PORT) || 3306,
+                user: config.DB_USER,
+                password: config.DB_PASSWORD,
+                database: config.DB_DATABASE,
                 multipleStatements: false,
                 connectTimeout: 10_000,
             });

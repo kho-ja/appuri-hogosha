@@ -1,11 +1,9 @@
 import express, { Router } from 'express';
-import process from 'node:process';
-
 import { IController } from '../../utils/icontroller';
 import { Admin } from '../../utils/cognito-client';
 import { MockCognitoClient } from '../../utils/mock-cognito-client';
-
 import AdminModuleController from '../../modules/admin/admin.controller';
+import { config } from '../../config';
 
 class AdminController implements IController {
     public router: Router = express.Router();
@@ -13,8 +11,9 @@ class AdminController implements IController {
     private adminModule: AdminModuleController;
 
     constructor() {
-        this.cognitoClient =
-            process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
+        this.cognitoClient = config.USE_MOCK_COGNITO
+            ? MockCognitoClient
+            : Admin;
 
         this.adminModule = new AdminModuleController(this.cognitoClient);
         this.initRoutes();

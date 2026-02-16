@@ -3,8 +3,8 @@ import { ScheduleService } from './schedule.service';
 import { ExtendedRequest } from '../../middlewares/auth';
 import { isValidId, isValidPriority } from '../../utils/validate';
 import cron from 'node-cron';
-import process from 'node:process';
 import { ApiError } from '../../errors/ApiError';
+import { config } from '../../config';
 
 export class ScheduleController {
     public router: Router = express.Router();
@@ -41,7 +41,7 @@ export class ScheduleController {
     }
 
     private initCronJob(): void {
-        if (process.env.NODE_ENV !== 'test') {
+        if (config.NODE_ENV !== 'test') {
             cron.schedule('* * * * *', async () => {
                 console.log(
                     'Checking for scheduled messages...',

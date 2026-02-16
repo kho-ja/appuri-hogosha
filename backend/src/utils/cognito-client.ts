@@ -21,8 +21,7 @@ import {
     AdminUpdateUserAttributesCommand,
     AdminUpdateUserAttributesCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
-import process from 'node:process';
-
+import { config as envConfig } from '../config';
 /**
  * CognitoClient class for handling AWS Cognito operations
  *
@@ -44,12 +43,12 @@ class CognitoClient {
         const config: ConstructorParameters<
             typeof CognitoIdentityProviderClient
         >[0] = {
-            region: process.env.SERVICE_REGION,
+            region: envConfig.SERVICE_REGION,
         };
-        if (process.env.ACCESS_KEY && process.env.SECRET_ACCESS_KEY) {
+        if (envConfig.ACCESS_KEY && envConfig.SECRET_ACCESS_KEY) {
             config.credentials = {
-                accessKeyId: process.env.ACCESS_KEY,
-                secretAccessKey: process.env.SECRET_ACCESS_KEY,
+                accessKeyId: envConfig.ACCESS_KEY,
+                secretAccessKey: envConfig.SECRET_ACCESS_KEY,
             };
         }
         this.client = new CognitoIdentityProviderClient(config);
@@ -864,13 +863,13 @@ interface signInWithPhoneThrow {
 }
 
 const Parent = new CognitoClient(
-    process.env.PARENT_POOL_ID ?? '',
-    process.env.PARENT_CLIENT_ID ?? ''
+    envConfig.PARENT_POOL_ID ?? '',
+    envConfig.PARENT_CLIENT_ID ?? ''
 );
 
 const Admin = new CognitoClient(
-    process.env.ADMIN_POOL_ID ?? '',
-    process.env.ADMIN_CLIENT_ID ?? ''
+    envConfig.ADMIN_POOL_ID ?? '',
+    envConfig.ADMIN_CLIENT_ID ?? ''
 );
 
 export { Parent, Admin };

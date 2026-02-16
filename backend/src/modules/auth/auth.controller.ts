@@ -3,13 +3,13 @@ import rateLimit from 'express-rate-limit';
 import { AuthService } from './auth.service';
 import { ExtendedRequest } from '../../middlewares/auth';
 import { ApiError } from '../../errors/ApiError';
+import { config } from '../../config';
 
 // Allowed frontend base URLs for redirects
-const DEFAULT_FRONTEND_URL =
-    process.env.FRONTEND_URL || 'http://localhost:3000';
+const DEFAULT_FRONTEND_URL = config.FRONTEND_URL || 'http://localhost:3000';
 const VALID_FRONTEND_URLS: string[] = (
-    process.env.ALLOWED_FRONTEND_URLS
-        ? process.env.ALLOWED_FRONTEND_URLS.split(',')
+    config.ALLOWED_FRONTEND_URLS
+        ? config.ALLOWED_FRONTEND_URLS.split(',')
               .map(s => s.trim())
               .filter(Boolean)
         : [DEFAULT_FRONTEND_URL]
@@ -176,13 +176,12 @@ export class AuthController {
 
     googleLogin = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const cognitoDomain = process.env.COGNITO_DOMAIN;
-            const clientId = process.env.ADMIN_CLIENT_ID;
-            const callbackUrl = `${process.env.BACKEND_URL}/admin-panel/google/callback`;
-            const frontendUrl =
-                process.env.FRONTEND_URL || 'http://localhost:3000';
+            const cognitoDomain = config.COGNITO_DOMAIN;
+            const clientId = config.ADMIN_CLIENT_ID;
+            const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            const frontendUrl = config.FRONTEND_URL || 'http://localhost:3000';
 
-            if (!cognitoDomain || !clientId || !process.env.BACKEND_URL) {
+            if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
             }
 
@@ -218,7 +217,7 @@ export class AuthController {
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
-            const redirectUri = `${process.env.BACKEND_URL}/admin-panel/google/callback`;
+            const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri

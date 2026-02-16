@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Parent } from '../utils/cognito-client';
 import { MockCognitoClient } from '../utils/mock-cognito-client';
 import DB from '../utils/db-client';
+import { config } from '../config/index';
 
 const bearerRegex = /^Bearer .+$/;
 
@@ -26,8 +27,7 @@ export const verifyToken = async (
     }
 
     const token = authHeader.split(' ')[1];
-    const cognitoClient =
-        process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Parent;
+    const cognitoClient = config.USE_MOCK_COGNITO ? MockCognitoClient : Parent;
 
     try {
         const userData = await cognitoClient.accessToken(token);

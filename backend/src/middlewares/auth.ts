@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Admin } from '../utils/cognito-client';
 import { MockCognitoClient } from '../utils/mock-cognito-client';
 import DB from '../utils/db-client';
+import { config } from '../config';
 
 const bearerRegex = /^Bearer .+$/;
 
@@ -16,7 +17,7 @@ export const verifyToken = async (
 ) => {
     // Test-only bypass for smoke tests.
     // Requires NODE_ENV=test and an explicit header so it cannot be triggered accidentally.
-    if (process.env.NODE_ENV === 'test' && req.headers['x-test-auth'] === '1') {
+    if (config.NODE_ENV === 'test' && req.headers['x-test-auth'] === '1') {
         req.user = { id: 'test-user', email: 'test@example.com', school_id: 1 };
         req.token = 'test-token';
         return next();
@@ -34,8 +35,7 @@ export const verifyToken = async (
     }
 
     const token = authHeader.split(' ')[1];
-    const cognitoClient =
-        process.env.USE_MOCK_COGNITO === 'true' ? MockCognitoClient : Admin;
+    const cognitoClient = config.USE_MOCK_COGNITO ? MockCognitoClient : Admin;
 
     try {
         let userData;
@@ -45,7 +45,7 @@ export const verifyToken = async (
             // Fallback for OAuth access tokens from Cognito Hosted UI (Google): use userInfo endpoint
             if (err?.status === 401) {
                 const resp = await fetch(
-                    `${process.env.COGNITO_DOMAIN}/oauth2/userInfo`,
+                    `${config.COGNITO_DOMAIN}/oauth2/userInfo`,
                     {
                         method: 'GET',
                         headers: {
