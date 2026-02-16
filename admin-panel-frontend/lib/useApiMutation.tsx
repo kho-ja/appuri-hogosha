@@ -32,25 +32,26 @@ export default function useApiMutation<TResponse, TInput = void>(
         token: session?.sessionToken,
         body: data,
       }),
-    onMutate: (variables) => {
+    onMutate: (variables, context) => {
       // Show loading toast unless custom onMutate is provided
       if (!customOnMutate) {
         toast({
           title: t("loading"),
           description: t("loadingDescription"),
         });
+        return undefined;
       } else {
         // Call custom onMutate if provided
-        customOnMutate(variables);
+        return customOnMutate(variables, context);
       }
     },
-    onError: (error, variables, context) => {
+    onError: (error, variables, onMutateResult, context) => {
       // Use centralized error handler unless custom onError is provided
       if (!customOnError) {
         handleError(error);
       } else {
         // Call custom onError if provided
-        customOnError(error, variables, context);
+        customOnError(error, variables, onMutateResult, context);
       }
     },
     ...restOptions,
