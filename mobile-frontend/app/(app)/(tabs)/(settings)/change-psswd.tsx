@@ -109,8 +109,22 @@ export default function Index() {
 
       router.back();
     },
-    onError: (error: Error) => {
-      setErrorMessage(error.message);
+    onError: (error: any) => {
+      let translatedMessage = i18n[language].invalidCurrentPassword;
+
+      // Debug: check error structure
+      console.log('Error details:', {
+        status: error.response?.status,
+        errorStatus: error.status,
+        message: error.message,
+      });
+
+      // If not 401, show password requirements message
+      if (error.response?.status !== 401 && error.status !== 401) {
+        translatedMessage = i18n[language].passwordRequirementsNotMet;
+      }
+
+      setErrorMessage(translatedMessage);
       console.error(error);
     },
   });

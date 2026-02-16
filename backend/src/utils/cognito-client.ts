@@ -435,11 +435,20 @@ class CognitoClient {
             console.log('password change successfully', changeData);
         } catch (e: any) {
             if (e.name === 'NotAuthorizedException') {
-                console.log(e.message);
+                throw {
+                    status: 401,
+                    message: 'Current password is incorrect',
+                };
             } else if (e.name === 'InvalidPasswordException') {
-                console.log(e.message);
+                throw {
+                    status: 400,
+                    message: e.message || 'Invalid password',
+                };
             } else {
-                console.log('error:', e);
+                throw {
+                    status: 500,
+                    message: 'Failed to change password',
+                };
             }
         }
     }
