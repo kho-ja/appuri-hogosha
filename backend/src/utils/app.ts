@@ -31,8 +31,8 @@ class App {
 
                     const isAllowed = allowedOrigins.some(allowed =>
                         typeof allowed === 'string'
-                            ? allowed === origin
-                            : allowed?.test(origin)
+                            ? allowed.replace(/\/$/, '') === origin.replace(/\/$/, '')
+                            : allowed.test(origin)
                     );
 
                     if (isAllowed) {
