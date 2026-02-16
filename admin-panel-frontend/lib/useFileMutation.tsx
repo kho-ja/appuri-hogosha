@@ -60,29 +60,28 @@ export default function useFileMutation<T>(
 
       return blob as T;
     },
-    onMutate: () => {
+    onMutate: (variables, context) => {
       // Show loading toast unless custom onMutate is provided
       if (!customOnMutate) {
         toast({
           title: t("loading"),
           description: t("loadingDescription"),
         });
+        return undefined;
       }
       // Call custom onMutate if provided
-      if (customOnMutate) {
-        customOnMutate();
-      }
+      return customOnMutate(variables, context);
     },
-    onError: (error, variables, context) => {
+    onError: (error, variables, onMutateResult, context) => {
       // Use centralized error handler unless custom onError is provided
       if (!customOnError) {
         handleError(error);
       } else {
         // Call custom onError if provided
-        customOnError(error, variables, context);
+        customOnError(error, variables, onMutateResult, context);
       }
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data, variables, onMutateResult, context) => {
       // Show success toast unless custom onSuccess is provided
       if (!customOnSuccess) {
         toast({
@@ -92,7 +91,7 @@ export default function useFileMutation<T>(
       }
       // Call custom onSuccess if provided
       if (customOnSuccess) {
-        customOnSuccess(data, variables, context);
+        customOnSuccess(data, variables, onMutateResult, context);
       }
     },
     ...restOptions,
