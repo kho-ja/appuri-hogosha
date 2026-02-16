@@ -140,14 +140,14 @@ class CognitoClient {
 
     async register(
         identifier: string,
-        email: string,
+        email: string | null,
         phone_number: string
     ): Promise<registerOutput> {
         const params: AdminCreateUserCommandInput = {
             UserPoolId: this.pool_id,
             Username: identifier,
             UserAttributes: [
-                { Name: 'email', Value: email },
+                ...(email ? [{ Name: 'email', Value: email }] : []),
                 ...(phone_number
                     ? [{ Name: 'phone_number', Value: phone_number }]
                     : []),
