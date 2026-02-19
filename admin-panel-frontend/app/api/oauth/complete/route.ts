@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const userData = JSON.parse(userParam);
+    const userData = JSON.parse(decodeURIComponent(userParam));
 
     // Use server-side NextAuth signIn to set session and redirect to dashboard
     return await signIn("credentials", {
