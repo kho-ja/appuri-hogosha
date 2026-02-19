@@ -13,8 +13,8 @@ function getDefaultFrontendUrl(): string {
 function getValidFrontendUrls(): string[] {
     return config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-              .map(s => s.trim())
-              .filter(Boolean)
+            .map(s => s.trim())
+            .filter(Boolean)
         : [getDefaultFrontendUrl()];
 }
 
@@ -189,7 +189,19 @@ export class AuthController {
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
-            const frontendUrl = config.FRONTEND_URL;
+            const frontendUrl = (req.query.redirect_url as string) || config.FRONTEND_URL;
+            const validFrontendUrls = getValidFrontendUrls();
+            const isValidUrl = validFrontendUrls.some(url => {
+                try {
+                    const candidate = new URL(frontendUrl);
+                    const allowed = new URL(url);
+                    return candidate.origin === allowed.origin;
+                } catch (e) {
+                    return false;
+                }
+            });
+
+            const finalFrontendUrl = isValidUrl ? frontendUrl : config.FRONTEND_URL;
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
@@ -202,7 +214,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodeURIComponent(finalFrontendUrl)}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -234,7 +246,7 @@ export class AuthController {
             );
 
             const base = getAllowedFrontendBase(state);
-            const redirectUrlObj = new URL('/', base);
+            const redirectUrlObj = new URL('/api/oauth/complete', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set(
