@@ -5,6 +5,12 @@ import { ExtendedRequest } from '../../middlewares/auth';
 import { ApiError } from '../../errors/ApiError';
 import { config } from '../../config';
 
+// old code
+// Allowed frontend base URLs for redirects
+// const DEFAULT_FRONTEND_URL = config.FRONTEND_URL || 'http://localhost:3000';
+// const VALID_FRONTEND_URLS: string[] = (
+//     config.ALLOWED_FRONTEND_URLS
+
 // Allowed frontend base URLs for redirects - read at runtime to ensure env vars are fresh
 function getDefaultFrontendUrl(): string {
     return config.FRONTEND_URL || 'http://localhost:3000';
@@ -15,8 +21,21 @@ function getValidFrontendUrls(): string[] {
         ? config.ALLOWED_FRONTEND_URLS.split(',')
             .map(s => s.trim())
             .filter(Boolean)
+        // old code
+        //              : [DEFAULT_FRONTEND_URL]
+        // ) as string[];
         : [getDefaultFrontendUrl()];
 }
+
+
+// old code
+// const ALLOWED_FRONTEND_ORIGINS: string[] = VALID_FRONTEND_URLS.map(v => {
+//     try {
+//         return new URL(v).origin;
+//     } catch {
+//         return '';
+//     }
+// }).filter(Boolean);
 
 function getAllowedFrontendOrigins(): string[] {
     return getValidFrontendUrls()
@@ -31,6 +50,8 @@ function getAllowedFrontendOrigins(): string[] {
 }
 
 function getAllowedFrontendBase(state: any): string {
+    // old code
+    // const defaultBase = DEFAULT_FRONTEND_URL;
     const defaultBase = getDefaultFrontendUrl();
     const validFrontendUrls = getValidFrontendUrls();
     const allowedOrigins = getAllowedFrontendOrigins();
@@ -44,8 +65,13 @@ function getAllowedFrontendBase(state: any): string {
         const parsed = new URL(candidate, defaultBase);
         if (
             (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+            // old code
+            // ALLOWED_FRONTEND_ORIGINS.includes(parsed.origin)
             allowedOrigins.includes(parsed.origin)
         ) {
+            // old code
+            // const idx = ALLOWED_FRONTEND_ORIGINS.indexOf(parsed.origin);
+            // return VALID_FRONTEND_URLS[idx];
             const idx = allowedOrigins.indexOf(parsed.origin);
             return validFrontendUrls[idx];
         }
@@ -189,6 +215,10 @@ export class AuthController {
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            // old code
+            // const frontendUrl = config.FRONTEND_URL || 'http://localhost:3000';
+            // old code
+            // const frontendUrl = config.FRONTEND_URL;
             const frontendUrl = (req.query.redirect_url as string) || config.FRONTEND_URL;
             const validFrontendUrls = getValidFrontendUrls();
             const isValidUrl = validFrontendUrls.some(url => {
@@ -214,6 +244,8 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
+                // old code
+                // `state=${encodeURIComponent(frontendUrl)}`;
                 `state=${encodeURIComponent(finalFrontendUrl)}`;
 
             return res.redirect(cognitoUrl);
@@ -256,7 +288,7 @@ export class AuthController {
             }
             redirectUrlObj.searchParams.set(
                 'user',
-                encodeURIComponent(JSON.stringify(result.admin))
+                JSON.stringify(result.admin)
             );
 
             return res.redirect(redirectUrlObj.toString());
