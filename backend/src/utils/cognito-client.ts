@@ -477,6 +477,12 @@ class CognitoClient {
                         message: 'Access token is invalid.',
                     } as accessTokenThrow;
                 }
+            } else if (e.name === 'UserNotFoundException') {
+                // User was deleted from Cognito (deleted by admin from backend)
+                throw {
+                    status: 401,
+                    message: 'User account no longer exists.',
+                } as accessTokenThrow;
             } else {
                 throw {
                     status: 500,

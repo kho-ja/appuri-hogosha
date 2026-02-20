@@ -30,7 +30,23 @@ export const verifyToken = async (
     const cognitoClient = config.USE_MOCK_COGNITO ? MockCognitoClient : Parent;
 
     try {
-        const userData = await cognitoClient.accessToken(token);
+        let userData;
+        try {
+            userData = await cognitoClient.accessToken(token);
+        } catch (cognitoError: any) {
+            // Cognito returned 401 - token invalid or user deleted
+            if (cognitoError.status === 401) {
+                return res
+                    .status(401)
+                    .json({
+                        message: cognitoError.message,
+                    })
+                    .end();
+            }
+
+            throw cognitoError;
+        }
+
         const parents = await DB.query(
             `SELECT * FROM Parent as pa
             WHERE pa.phone_number = :phone_number and pa.cognito_sub_id = :sub_id`,
@@ -41,10 +57,13 @@ export const verifyToken = async (
         );
 
         if (parents.length <= 0) {
-            throw {
-                status: 401,
-                message: 'Invalid access token',
-            };
+            // Parent was deleted from database - return 403 Forbidden
+            return res
+                .status(403)
+                .json({
+                    message: 'Parent account has been deleted',
+                })
+                .end();
         }
 
         const parent = parents[0];

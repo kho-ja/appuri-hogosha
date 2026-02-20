@@ -166,15 +166,22 @@ export const StudentSelector: React.FC<StudentSelectorProps> = React.memo(
                     </Text>
                   </ThemedText>
                 </View>
-                <ThemedText style={{ width: 25, height: 25 }}>
-                  {student.unread_count ? (
+                {student.unread_count ? (
+                  <View style={styles.messageCountWrapper}>
                     <ThemedView style={styles.MessageCount}>
-                      <ThemedText style={styles.MessageCountText}>
-                        {student.unread_count}
+                      <ThemedText
+                        style={styles.MessageCountText}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.8}
+                      >
+                        {Number(student.unread_count) > 99
+                          ? '99+'
+                          : student.unread_count}
                       </ThemedText>
                     </ThemedView>
-                  ) : null}
-                </ThemedText>
+                  </View>
+                ) : null}
               </ThemedView>
             </Pressable>
           </React.Fragment>
@@ -225,18 +232,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 4,
   },
+  messageCountWrapper: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   MessageCount: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.tintLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   MessageCountText: {
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 12,
     color: '#fff',
     fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
   },
   StudentContainer: {
     flexDirection: 'row',

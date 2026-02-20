@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useFontSize } from '@/contexts/FontSizeContext';
+import { useTheme } from '@rneui/themed';
 
 const FONT_SIZES = [1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2];
 
@@ -94,13 +95,11 @@ const sampleTextStyles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 15,
-    backgroundColor: '#F2F2F7',
     borderRadius: 12,
     marginTop: 20,
   },
   text: {
     textAlign: 'center',
-    color: '#000',
     flexShrink: 1,
   },
 });
@@ -110,17 +109,24 @@ export const SampleText: React.FC<{
   overrideMultiplier?: number;
 }> = ({ text, overrideMultiplier }) => {
   const { multiplier } = useFontSize();
+  const { theme } = useTheme();
   const effectiveMultiplier = overrideMultiplier ?? multiplier;
   const fontSize = 16 * effectiveMultiplier;
 
+  // Определяем темный режим и применяем соответствующие цвета
+  const isDark = theme.mode === 'dark';
+  const bgColor = isDark ? '#2C2C2E' : '#F2F2F7';
+  const textColor = isDark ? '#FFFFFF' : '#000000';
+
   return (
-    <View style={sampleTextStyles.container}>
+    <View style={[sampleTextStyles.container, { backgroundColor: bgColor }]}>
       <Text
         style={[
           sampleTextStyles.text,
           {
             fontSize,
             lineHeight: fontSize * 1.2,
+            color: textColor,
           },
         ]}
       >
