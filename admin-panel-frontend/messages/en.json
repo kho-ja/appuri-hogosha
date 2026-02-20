@@ -782,7 +782,12 @@
   },
   "table": {
     "noResults": "No results found.",
-    "noData": "No data available."
+    "noData": "No data available.",
+    "selected": "{count} selected",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selectFiltered": "Select Filtered",
+    "selecting": "Selecting..."
   },
   "names": {
     "name": "{given_name} {family_name}"

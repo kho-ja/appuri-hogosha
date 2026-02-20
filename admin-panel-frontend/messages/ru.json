@@ -777,7 +777,12 @@
   },
   "table": {
     "noResults": "Результатов не найдено",
-    "noData": "Нет данных."
+    "noData": "Нет данных.",
+    "selected": "Выбрано: {count}",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Отменить выбор",
+    "selectFiltered": "Выбрать отфильтрованные",
+    "selecting": "Выбор..."
   },
   "names": {
     "name": "{given_name} {family_name}"

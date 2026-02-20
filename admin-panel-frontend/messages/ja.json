@@ -779,7 +779,12 @@
   },
   "table": {
     "noResults": "結果がありません。",
-    "noData": "データがありません。"
+    "noData": "データがありません。",
+    "selected": "{count}個選択済み",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択を解除",
+    "selectFiltered": "フィルタされた項目を選択",
+    "selecting": "選択中..."
   },
   "names": {
     "name": "{family_name} {given_name}"
