@@ -188,8 +188,9 @@ export class AuthController {
         try {
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
-            const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            const callbackUrl = `${config.BACKEND_URL}/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
+            const encodedState = encodeURIComponent(frontendUrl);
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
@@ -202,7 +203,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodedState}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -231,7 +232,7 @@ export class AuthController {
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
-            const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            const redirectUri = `${config.BACKEND_URL}/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
