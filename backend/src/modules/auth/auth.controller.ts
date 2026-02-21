@@ -186,11 +186,22 @@ export class AuthController {
 
     googleLogin = async (req: Request, res: Response, next: NextFunction) => {
         try {
+            console.log("========== GOOGLE LOGIN START ==========");
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
             const encodedState = encodeURIComponent(frontendUrl);
+
+            console.log("🔧 Configuration:");
+            console.log("  COGNITO_DOMAIN:", cognitoDomain);
+            console.log("  CLIENT_ID:", clientId);
+            console.log("  BACKEND_URL:", config.BACKEND_URL);
+            console.log("  CALLBACK_URL:", callbackUrl);
+            console.log("  FRONTEND_URL:", frontendUrl);
+            console.log("");
+            console.log("⚠️  IMPORTANT: This callback URL must be whitelisted in Cognito:");
+            console.log("  👉", callbackUrl);
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
@@ -205,8 +216,12 @@ export class AuthController {
                 `prompt=select_account&` +
                 `state=${encodedState}`;
 
+            console.log("✓ Redirecting to Cognito URL");
+            console.log("========== GOOGLE LOGIN END ==========");
             return res.redirect(cognitoUrl);
         } catch (e: any) {
+            console.error("========== GOOGLE LOGIN ERROR ==========");
+            console.error("Error:", e);
             if (e?.status) return next(new ApiError(e.status, e.message));
             return next(e);
         }
