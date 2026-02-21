@@ -66,14 +66,6 @@ export class AuthController {
         },
         standardHeaders: true,
         legacyHeaders: false,
-        keyGenerator: (req: Request) => {
-            // For AWS Lambda behind ALB/Cloudfront, get IP from headers
-            const forwarded = req.headers['x-forwarded-for'];
-            if (typeof forwarded === 'string') {
-                return forwarded.split(',')[0].trim();
-            }
-            return req.socket.remoteAddress || 'unknown';
-        },
     });
 
     private adminAuthLimiter = rateLimit({
@@ -84,14 +76,6 @@ export class AuthController {
         },
         standardHeaders: true,
         legacyHeaders: false,
-        keyGenerator: (req: Request) => {
-            // For AWS Lambda behind ALB/Cloudfront, get IP from headers
-            const forwarded = req.headers['x-forwarded-for'];
-            if (typeof forwarded === 'string') {
-                return forwarded.split(',')[0].trim();
-            }
-            return req.socket.remoteAddress || 'unknown';
-        },
     });
 
     constructor(private service: AuthService) {
@@ -204,8 +188,9 @@ export class AuthController {
         try {
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
-            const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            const callbackUrl = `${config.BACKEND_URL}/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
+            const encodedState = encodeURIComponent(frontendUrl);
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
@@ -218,7 +203,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodedState}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -231,40 +216,42 @@ export class AuthController {
         try {
             const { code, state, error } = req.query;
 
+            console.log("========== GOOGLE CALLBACK START ==========");
+            console.log("BACKEND_URL:", config.BACKEND_URL);
             console.log("FRONTEND_URL:", config.FRONTEND_URL);
             console.log("ALLOWED_FRONTEND_URLS:", config.ALLOWED_FRONTEND_URLS);
             console.log("STATE:", state);
+            console.log("CODE:", code ? 'exists' : 'missing');
+            console.log("ERROR:", error);
 
             if (error) {
-                console.error('Google OAuth error:', error);
+                console.error('❌ Google OAuth error from Cognito:', error);
                 const base = getAllowedFrontendBase(state);
+                console.log("Redirecting to login with error. Base:", base);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
+                console.log("Final redirect URL:", url.toString());
                 return res.redirect(url.toString());
             }
 
             if (!code) {
-                console.error('Authorization code missing');
+                console.error('❌ Authorization code missing');
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
-            console.log('Processing authorization code:', code);
-            const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
-            console.log('Redirect URI:', redirectUri);
-
+            console.log("✓ Authorization code received, calling backend service...");
+            const redirectUri = `${config.BACKEND_URL}/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
             );
 
-            console.log('Google callback result received:', {
-                adminEmail: result.admin?.email,
-                hasAccessToken: !!result.accessToken,
-                hasRefreshToken: !!result.refreshToken,
-            });
+            console.log("✓ Google callback service successful");
+            console.log("Admin email:", result.admin?.email);
 
             const base = getAllowedFrontendBase(state);
-            const redirectUrlObj = new URL('/', base);
+            // FIX: Redirect to /api/oauth/complete instead of root path
+            const redirectUrlObj = new URL('/api/oauth/complete', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set(
@@ -272,27 +259,24 @@ export class AuthController {
                     result.refreshToken
                 );
             }
+            redirectUrlObj.searchParams.set(
+                'user',
+                encodeURIComponent(JSON.stringify(result.admin))
+            );
 
-            const userJson = JSON.stringify(result.admin);
-            console.log('Encoded user data length:', userJson.length);
-            redirectUrlObj.searchParams.set('user', encodeURIComponent(userJson));
-
-            const finalUrl = redirectUrlObj.toString();
-            console.log('Redirecting to:', finalUrl.substring(0, 100) + '...');
-
-            return res.redirect(finalUrl);
+            console.log("✓ Redirecting to frontend complete endpoint");
+            console.log("Final redirect URL:", redirectUrlObj.toString());
+            console.log("========== GOOGLE CALLBACK END ==========");
+            return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
-            console.error('Google callback error:', {
-                name: e?.name,
-                message: e?.message,
-                code: e?.code,
-                status: e?.status,
-                stack: e?.stack,
-            });
+            console.error('========== GOOGLE CALLBACK ERROR ==========');
+            console.error('Error details:', e);
+            console.error('Error message:', e?.message);
+            console.error('Error status:', e?.status);
             const base = getAllowedFrontendBase(req.query.state);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');
-            console.log('Redirecting to error URL:', url.toString());
+            console.error('Redirecting to error page:', url.toString());
             return res.redirect(url.toString());
         }
     };

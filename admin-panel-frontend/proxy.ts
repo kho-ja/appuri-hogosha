@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { onlyAdminPathNameRegex, publicPathnameRegex } from "@/lib/routeAccess";
 
@@ -10,7 +10,6 @@ const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
   let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
 
-  // OAuth callback - don't process auth, just redirect to handler
   const hasOAuthParams =
     req.nextUrl.searchParams.has("access_token") &&
     req.nextUrl.searchParams.has("user");
@@ -18,7 +17,7 @@ const authMiddleware = auth((req) => {
     const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
     const paramsArray = Array.from(req.nextUrl.searchParams.entries());
     paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
-    return NextResponse.redirect(redirectUrl);
+    return Response.redirect(redirectUrl);
   }
 
   if (!isPublicPage) {
@@ -33,14 +32,17 @@ const authMiddleware = auth((req) => {
     }
   }
 
+  // Redirect to login if not authenticated and not on public page
   if (!req.auth && !isPublicPage) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
     const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
+  // Redirect authenticated users away from login/forgot-password pages
+  // Only redirect if session is valid (check if user exists)
   if (
-    req.auth &&
+    req.auth?.user &&
     (req.nextUrl.pathname.endsWith("/login") ||
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
