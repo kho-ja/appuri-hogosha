@@ -13,8 +13,8 @@ function getDefaultFrontendUrl(): string {
 function getValidFrontendUrls(): string[] {
     return config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-              .map(s => s.trim())
-              .filter(Boolean)
+            .map(s => s.trim())
+            .filter(Boolean)
         : [getDefaultFrontendUrl()];
 }
 
@@ -66,6 +66,14 @@ export class AuthController {
         },
         standardHeaders: true,
         legacyHeaders: false,
+        keyGenerator: (req: Request) => {
+            // For AWS Lambda behind ALB/Cloudfront, get IP from headers
+            const forwarded = req.headers['x-forwarded-for'];
+            if (typeof forwarded === 'string') {
+                return forwarded.split(',')[0].trim();
+            }
+            return req.socket.remoteAddress || 'unknown';
+        },
     });
 
     private adminAuthLimiter = rateLimit({
@@ -76,6 +84,14 @@ export class AuthController {
         },
         standardHeaders: true,
         legacyHeaders: false,
+        keyGenerator: (req: Request) => {
+            // For AWS Lambda behind ALB/Cloudfront, get IP from headers
+            const forwarded = req.headers['x-forwarded-for'];
+            if (typeof forwarded === 'string') {
+                return forwarded.split(',')[0].trim();
+            }
+            return req.socket.remoteAddress || 'unknown';
+        },
     });
 
     constructor(private service: AuthService) {
@@ -220,7 +236,7 @@ export class AuthController {
             console.log("STATE:", state);
 
             if (error) {
-                console.error('Google OAuth error');
+                console.error('Google OAuth error:', error);
                 const base = getAllowedFrontendBase(state);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
@@ -228,14 +244,24 @@ export class AuthController {
             }
 
             if (!code) {
+                console.error('Authorization code missing');
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
+            console.log('Processing authorization code:', code);
             const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            console.log('Redirect URI:', redirectUri);
+
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
             );
+
+            console.log('Google callback result received:', {
+                adminEmail: result.admin?.email,
+                hasAccessToken: !!result.accessToken,
+                hasRefreshToken: !!result.refreshToken,
+            });
 
             const base = getAllowedFrontendBase(state);
             const redirectUrlObj = new URL('/', base);
@@ -246,17 +272,27 @@ export class AuthController {
                     result.refreshToken
                 );
             }
-            redirectUrlObj.searchParams.set(
-                'user',
-                encodeURIComponent(JSON.stringify(result.admin))
-            );
 
-            return res.redirect(redirectUrlObj.toString());
+            const userJson = JSON.stringify(result.admin);
+            console.log('Encoded user data length:', userJson.length);
+            redirectUrlObj.searchParams.set('user', encodeURIComponent(userJson));
+
+            const finalUrl = redirectUrlObj.toString();
+            console.log('Redirecting to:', finalUrl.substring(0, 100) + '...');
+
+            return res.redirect(finalUrl);
         } catch (e: any) {
-            console.error('Google callback error:', e);
+            console.error('Google callback error:', {
+                name: e?.name,
+                message: e?.message,
+                code: e?.code,
+                status: e?.status,
+                stack: e?.stack,
+            });
             const base = getAllowedFrontendBase(req.query.state);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');
+            console.log('Redirecting to error URL:', url.toString());
             return res.redirect(url.toString());
         }
     };
