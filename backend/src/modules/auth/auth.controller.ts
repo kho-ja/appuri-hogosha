@@ -189,10 +189,9 @@ export class AuthController {
             console.log("========== GOOGLE LOGIN START ==========");
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
-            const callbackUrl = `${config.BACKEND_URL}/google/callback`;
+            const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
-            const encodedState = encodeURIComponent(frontendUrl);
-
+            const encodedState = encodeURIComponent(frontendUrl);   
             console.log("🔧 Configuration:");
             console.log("  COGNITO_DOMAIN:", cognitoDomain);
             console.log("  CLIENT_ID:", clientId);
@@ -255,7 +254,7 @@ export class AuthController {
             }
 
             console.log("✓ Authorization code received, calling backend service...");
-            const redirectUri = `${config.BACKEND_URL}/google/callback`;
+            const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
