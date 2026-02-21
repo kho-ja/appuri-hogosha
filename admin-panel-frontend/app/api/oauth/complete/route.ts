@@ -3,12 +3,15 @@ import { signIn } from "@/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  // Ensure origin is always correct - fallback to FRONTEND_URL if needed
+  
+  // Get the correct origin for redirects
+  // Priority: NEXTAUTH_URL > NEXT_PUBLIC_FRONTEND_URL > url.origin (if not localhost)
   let origin = url.origin;
-
-  // If origin is localhost, use environment variable
-  if (!origin || origin.includes('localhost')) {
-    origin = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.parents.jdu.uz';
+  
+  if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    origin = process.env.NEXTAUTH_URL || 
+             process.env.NEXT_PUBLIC_FRONTEND_URL || 
+             'https://www.parents.jdu.uz';
   }
 
   const accessToken = url.searchParams.get("access_token");
@@ -18,6 +21,7 @@ export async function GET(req: Request) {
   console.log("========== OAUTH COMPLETE ROUTE START ==========");
   console.log("Request URL:", req.url);
   console.log("Parsed Origin:", url.origin);
+  console.log("Using NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
   console.log("Final Origin:", origin);
   console.log("Access Token:", accessToken ? "exists" : "MISSING ❌");
   console.log("Refresh Token:", refreshToken ? "exists" : "N/A");

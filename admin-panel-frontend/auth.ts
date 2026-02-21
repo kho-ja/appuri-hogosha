@@ -19,7 +19,19 @@ class InvalidCredentialsError extends AuthError {
   }
 }
 
+const nextAuthUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.parents.jdu.uz';
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Critical for production: configure the base URL
+  basePath: "/api/auth",
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
+  
+  // NextAuth URL for callbacks
+  // @ts-ignore
+  url: nextAuthUrl,
+  
   providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
