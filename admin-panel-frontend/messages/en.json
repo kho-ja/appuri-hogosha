@@ -989,7 +989,11 @@
   },
   "errors": {
     "wentWrong": "Something went wrong.",
+    "unexpectedError": "An unexpected error occurred.",
+    "errorDescription": "Don't worry, you can try again or go back to the home page.",
+    "tryAgain": "Try again",
     "pageNotFound": "Page not found.",
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
     "returnHome": "Return to home page",
     "loading": "Loading...",
     "loadingDescription": "Please wait while we loading.",

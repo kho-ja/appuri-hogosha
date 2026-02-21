@@ -988,7 +988,11 @@
   },
   "errors": {
     "wentWrong": "Nimadir noto'g'ri ketdi.",
+    "unexpectedError": "Kutilmagan xatolik yuz berdi.",
+    "errorDescription": "Xavotir olmang, qayta urinib ko'rishingiz yoki bosh sahifaga qaytishingiz mumkin.",
+    "tryAgain": "Qayta urinish",
     "pageNotFound": "Sahifa topilmadi",
+    "notFoundDescription": "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
     "returnHome": "Bosh sahifaga qaytish",
     "loading": "Yuklanmoqda...",
     "loadingDescription": "Iltimos, yuklanayotgan vaqtda kutib turing.",
