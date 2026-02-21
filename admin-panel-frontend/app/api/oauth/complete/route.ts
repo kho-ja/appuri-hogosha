@@ -9,49 +9,28 @@ export async function GET(req: Request) {
   const refreshToken = url.searchParams.get("refresh_token") || "";
   const userParam = url.searchParams.get("user");
 
-  console.log("OAuth callback received with params:", {
-    hasAccessToken: !!accessToken,
-    hasRefreshToken: !!refreshToken,
-    hasUserParam: !!userParam,
-    userParamLength: userParam?.length,
-  });
-
   if (!accessToken || !userParam) {
-    console.error("Missing OAuth parameters:", {
-      accessToken,
-      userParam,
-    });
     return NextResponse.redirect(
       new URL("/login?error=oauth_missing_params", origin)
     );
   }
 
   try {
-    console.log("Attempting to parse user parameter...");
     const userData = JSON.parse(decodeURIComponent(userParam));
 
-    console.log("User data parsed successfully:", {
-      email: userData.email,
-      given_name: userData.given_name,
-    });
-
-    // Use server-side NextAuth signIn to set session and redirect to dashboard
-    const result = await signIn("credentials", {
+    // Use server-side NextAuth signIn to set session and redirect
+    await signIn("credentials", {
       email: userData.email,
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirectTo: "/dashboard",
+      redirect: true,
     });
 
-    console.log("SignIn result:", result);
-    return result;
+    // If signIn succeeds, it redirects automatically
+    // This line won't execute if redirect happens
+    return NextResponse.redirect(new URL("/dashboard", origin));
   } catch (error) {
-    console.error("OAuth processing error:", {
-      name: error instanceof Error ? error.name : "unknown",
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
     return NextResponse.redirect(
       new URL("/login?error=oauth_processing_failed", origin)
     );

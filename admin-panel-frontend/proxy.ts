@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
 import { onlyAdminPathNameRegex, publicPathnameRegex } from "@/lib/routeAccess";
 
@@ -10,6 +10,7 @@ const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
   let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
 
+  // OAuth callback - don't process auth, just redirect to handler
   const hasOAuthParams =
     req.nextUrl.searchParams.has("access_token") &&
     req.nextUrl.searchParams.has("user");
@@ -17,7 +18,7 @@ const authMiddleware = auth((req) => {
     const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
     const paramsArray = Array.from(req.nextUrl.searchParams.entries());
     paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
-    return Response.redirect(redirectUrl);
+    return NextResponse.redirect(redirectUrl);
   }
 
   if (!isPublicPage) {
