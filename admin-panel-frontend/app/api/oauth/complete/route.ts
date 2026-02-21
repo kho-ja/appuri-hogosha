@@ -3,15 +3,15 @@ import { signIn } from "@/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  
+
   // Get the correct origin for redirects
   // Priority: NEXTAUTH_URL > NEXT_PUBLIC_FRONTEND_URL > url.origin (if not localhost)
   let origin = url.origin;
-  
+
   if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    origin = process.env.NEXTAUTH_URL || 
-             process.env.NEXT_PUBLIC_FRONTEND_URL || 
-             'https://www.parents.jdu.uz';
+    origin = process.env.NEXTAUTH_URL ||
+      process.env.NEXT_PUBLIC_FRONTEND_URL ||
+      'https://www.parents.jdu.uz';
   }
 
   const accessToken = url.searchParams.get("access_token");

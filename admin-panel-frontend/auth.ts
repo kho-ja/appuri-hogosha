@@ -27,11 +27,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
-  
+
   // NextAuth URL for callbacks
   // @ts-ignore
   url: nextAuthUrl,
-  
+
   providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
