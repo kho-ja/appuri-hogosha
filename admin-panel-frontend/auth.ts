@@ -36,37 +36,30 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           // Handle OAuth callback scenario
           if (credentials?.accessToken && !credentials?.password) {
-            console.log("OAuth callback scenario detected");
             // This is an OAuth callback, we already have the tokens
             // Try using userJson first; if missing, get user info using the access token
             const backendUrl =
               process.env.BACKEND_URL || "http://localhost:3001/admin-panel";
             if (credentials.userJson) {
-              console.log("Parsing userJson from credentials...");
               const parsed = JSON.parse(credentials.userJson as string);
-              console.log("Parsed user:", {
-                email: parsed.email,
-                given_name: parsed.given_name,
-                school_name: parsed.school_name,
-              });
 
-              const returnUser = {
-                ...parsed,
+              // Ensure user has required fields for NextAuth User object
+              return {
+                id: String(parsed.id || parsed.email),
+                email: parsed.email,
+                name: `${parsed.given_name} ${parsed.family_name}`,
                 given_name: parsed.given_name,
                 family_name: parsed.family_name,
+                phone_number: parsed.phone_number,
+                role: parsed.role,
+                school_id: parsed.school_id,
+                school_name: parsed.school_name || parsed.schoolName,
                 refreshToken: credentials.refreshToken,
                 accessToken: credentials.accessToken,
                 accessTokenExpires: Date.now() + 60 * 60 * 24 * 1000,
-                schoolName: parsed.school_name ?? parsed.schoolName,
-              };
-              console.log("Returning OAuth user:", {
-                email: returnUser.email,
-                role: (returnUser as any).role,
-              });
-              return returnUser as any;
+              } as any;
             }
 
-            console.log("No userJson, attempting to fetch user info...");
             const userInfoResponse = await fetch(`${backendUrl}/user-info`, {
               headers: {
                 Authorization: `Bearer ${credentials.accessToken}`,
@@ -76,22 +69,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             if (userInfoResponse.ok) {
               const userData = await userInfoResponse.json();
-              console.log("User info fetched:", {
-                email: userData.user?.email,
-              });
               return {
-                ...userData.user,
-                given_name: userData.user.given_name,
-                family_name: userData.user.family_name,
+                id: String(userData.user?.id),
+                email: userData.user?.email,
+                name: `${userData.user?.given_name} ${userData.user?.family_name}`,
+                given_name: userData.user?.given_name,
+                family_name: userData.user?.family_name,
+                phone_number: userData.user?.phone_number,
+                school_name: userData.school_name,
                 refreshToken: credentials.refreshToken,
                 accessToken: credentials.accessToken,
                 accessTokenExpires: Date.now() + 60 * 60 * 24 * 1000,
-                schoolName: userData.school_name,
-              };
+              } as any;
             } else {
-              console.error("Failed to get user info with access token", {
-                status: userInfoResponse.status,
-              });
               return null;
             }
           }

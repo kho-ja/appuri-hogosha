@@ -18,18 +18,29 @@ export async function GET(req: Request) {
   try {
     const userData = JSON.parse(decodeURIComponent(userParam));
 
-    // Use server-side NextAuth signIn to set session and redirect
-    await signIn("credentials", {
+    if (!userData.email) {
+      return NextResponse.redirect(
+        new URL("/login?error=invalid_user_data", origin)
+      );
+    }
+
+    // SignIn with OAuth credentials
+    const result = await signIn("credentials", {
       email: userData.email,
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirect: true,
+      redirect: false,
     });
 
-    // If signIn succeeds, it redirects automatically
-    // This line won't execute if redirect happens
-    return NextResponse.redirect(new URL("/dashboard", origin));
+    // signIn returns the user object if successful, or null/error if failed
+    if (result && !result.error) {
+      return NextResponse.redirect(new URL("/dashboard", origin));
+    } else {
+      return NextResponse.redirect(
+        new URL(`/login?error=oauth_signin_failed`, origin)
+      );
+    }
   } catch (error) {
     return NextResponse.redirect(
       new URL("/login?error=oauth_processing_failed", origin)
