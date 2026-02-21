@@ -3,7 +3,13 @@ import { signIn } from "@/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const origin = url.origin;
+  // Ensure origin is always correct - fallback to FRONTEND_URL if needed
+  let origin = url.origin;
+
+  // If origin is localhost, use environment variable
+  if (!origin || origin.includes('localhost')) {
+    origin = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.parents.jdu.uz';
+  }
 
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
@@ -11,7 +17,8 @@ export async function GET(req: Request) {
 
   console.log("========== OAUTH COMPLETE ROUTE START ==========");
   console.log("Request URL:", req.url);
-  console.log("Origin:", origin);
+  console.log("Parsed Origin:", url.origin);
+  console.log("Final Origin:", origin);
   console.log("Access Token:", accessToken ? "exists" : "MISSING ❌");
   console.log("Refresh Token:", refreshToken ? "exists" : "N/A");
   console.log("User Param:", userParam ? "exists" : "MISSING ❌");
