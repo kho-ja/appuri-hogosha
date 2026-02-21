@@ -16,6 +16,9 @@ class App {
     constructor(routes: any[]) {
         this.app = express();
 
+        // Trust proxy for AWS Lambda and load balancers
+        this.app.set('trust proxy', true);
+
         this.app.use(
             express.json({
                 limit: '20mb',
