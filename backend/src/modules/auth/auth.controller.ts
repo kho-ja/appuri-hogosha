@@ -264,8 +264,7 @@ export class AuthController {
             console.log("Admin email:", result.admin?.email);
 
             const base = getAllowedFrontendBase(state);
-            // FIX: Redirect to /api/oauth/complete instead of root path
-            const redirectUrlObj = new URL('/api/oauth/complete', base);
+            const redirectUrlObj = new URL('/', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set(

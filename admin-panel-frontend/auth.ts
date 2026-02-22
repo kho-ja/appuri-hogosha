@@ -19,19 +19,7 @@ class InvalidCredentialsError extends AuthError {
   }
 }
 
-const nextAuthUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://www.parents.jdu.uz';
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // Critical for production: configure the base URL
-  basePath: "/api/auth",
-  trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
-
-  // NextAuth URL for callbacks
-  // @ts-ignore
-  url: nextAuthUrl,
-
   providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
@@ -61,28 +49,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (credentials.userJson) {
               console.log("✓ Using userJson from OAuth callback");
               const parsed = JSON.parse(credentials.userJson as string);
-              console.log("Parsed user email:", parsed.email);
-              console.log("Parsed user given_name:", parsed.given_name);
-
-              // Ensure user has required fields for NextAuth User object
-              const user = {
-                id: String(parsed.id || parsed.email),
-                email: parsed.email,
-                name: `${parsed.given_name} ${parsed.family_name}`,
+              return {
+                ...parsed,
                 given_name: parsed.given_name,
                 family_name: parsed.family_name,
-                phone_number: parsed.phone_number,
-                role: parsed.role,
-                school_id: parsed.school_id,
-                school_name: parsed.school_name || parsed.schoolName,
                 refreshToken: credentials.refreshToken,
                 accessToken: credentials.accessToken,
                 accessTokenExpires: Date.now() + 60 * 60 * 24 * 1000,
+                schoolName: parsed.school_name ?? parsed.schoolName,
               } as any;
-
-              console.log("✓ OAuth user created successfully");
-              console.log("========== OAUTH AUTHORIZE END (SUCCESS) ==========");
-              return user;
             }
 
             console.log("⚠ No userJson, fetching from user-info endpoint...");
@@ -97,29 +72,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
             if (userInfoResponse.ok) {
               const userData = await userInfoResponse.json();
-              console.log("✓ User info fetched, email:", userData.user?.email);
-
-              const user = {
-                id: String(userData.user?.id),
-                email: userData.user?.email,
-                name: `${userData.user?.given_name} ${userData.user?.family_name}`,
-                given_name: userData.user?.given_name,
-                family_name: userData.user?.family_name,
-                phone_number: userData.user?.phone_number,
-                school_name: userData.school_name,
+              return {
+                ...userData.user,
+                given_name: userData.user.given_name,
+                family_name: userData.user.family_name,
                 refreshToken: credentials.refreshToken,
                 accessToken: credentials.accessToken,
                 accessTokenExpires: Date.now() + 60 * 60 * 24 * 1000,
-              } as any;
-
-              console.log("✓ OAuth user created from user-info");
-              console.log("========== OAUTH AUTHORIZE END (SUCCESS) ==========");
-              return user;
+                schoolName: userData.school_name,
+              };
             } else {
-              console.error("❌ User-info endpoint failed with status:", userInfoResponse.status);
-              const errorText = await userInfoResponse.text();
-              console.error("Error response:", errorText);
-              console.log("========== OAUTH AUTHORIZE END (FAILED) ==========");
+              console.error("Failed to get user info with access token");
               return null;
             }
           }

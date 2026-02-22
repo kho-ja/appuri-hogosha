@@ -1,37 +1,28 @@
 import { NextResponse } from "next/server";
 import { signIn } from "@/auth";
+import { AuthError } from "next-auth"; // QO'SHILDI: Xatoni farqlash uchun
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-
-  // Get the correct origin for redirects
-  // Priority: NEXTAUTH_URL > NEXT_PUBLIC_FRONTEND_URL > url.origin (if not localhost)
-  let origin = url.origin;
-
-  if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    origin = process.env.NEXTAUTH_URL ||
-      process.env.NEXT_PUBLIC_FRONTEND_URL ||
-      'https://www.parents.jdu.uz';
-  }
+  
+  // FIX 1: Host va Origin ni xavfsiz o'qish (localhost ga ketib qolmasligi uchun)
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host");
+  const protocol = req.headers.get("x-forwarded-proto") || "https";
+  const origin = process.env.NEXTAUTH_URL || (host ? `${protocol}://${host}` : url.origin);
 
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
   const userParam = url.searchParams.get("user");
 
   console.log("========== OAUTH COMPLETE ROUTE START ==========");
-  console.log("Request URL:", req.url);
-  console.log("Parsed Origin:", url.origin);
-  console.log("Using NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-  console.log("Final Origin:", origin);
+  console.log("Calculated Origin:", origin);
   console.log("Access Token:", accessToken ? "exists" : "MISSING ❌");
-  console.log("Refresh Token:", refreshToken ? "exists" : "N/A");
   console.log("User Param:", userParam ? "exists" : "MISSING ❌");
 
   if (!accessToken || !userParam) {
-    console.error("❌ Missing required parameters");
-    const errorUrl = new URL("/login?error=oauth_missing_params", origin);
-    console.log("Redirecting to:", errorUrl.toString());
-    return NextResponse.redirect(errorUrl);
+    return NextResponse.redirect(
+      new URL("/login?error=oauth_missing_params", origin)
+    );
   }
 
   try {
@@ -39,49 +30,27 @@ export async function GET(req: Request) {
     const userData = JSON.parse(decodeURIComponent(userParam));
     console.log("✓ User data parsed. Email:", userData.email);
 
-    if (!userData.email) {
-      console.error("❌ User data missing email");
-      return NextResponse.redirect(
-        new URL("/login?error=invalid_user_data", origin)
-      );
-    }
-
-    // SignIn with OAuth credentials
-    console.log("Calling signIn with credentials provider...");
-    const result = await signIn("credentials", {
+    // Muvaffaqiyatli signIn Next.js da "NEXT_REDIRECT" xatoligini otadi
+    await signIn("credentials", {
       email: userData.email,
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirect: false,
+      redirectTo: "/dashboard",
     });
-
-    console.log("SignIn result:", {
-      success: result && !result.error,
-      error: result?.error,
-      ok: result?.ok,
-      status: result?.status,
-    });
-
-    // signIn returns the user object if successful, or null/error if failed
-    if (result && !result.error) {
-      console.log("✓ SignIn successful, redirecting to dashboard");
-      console.log("========== OAUTH COMPLETE ROUTE END (SUCCESS) ==========");
-      return NextResponse.redirect(new URL("/dashboard", origin));
-    } else {
-      console.error("❌ SignIn failed with error:", result?.error);
-      console.log("========== OAUTH COMPLETE ROUTE END (SIGNIN FAILED) ==========");
+    
+    // Agar bu yerga yetib kelsa (exception otilmasa), fallback redirect
+    return NextResponse.redirect(new URL("/dashboard", origin));
+  } catch (error) {
+    // FIX 2: Haqiqiy xatolik bo'lsagina ushlab qolamiz
+    if (error instanceof AuthError) {
+      console.error("AuthError detected:", error.message);
       return NextResponse.redirect(
-        new URL(`/login?error=oauth_signin_failed`, origin)
+        new URL("/login?error=oauth_processing_failed", origin)
       );
     }
-  } catch (error) {
-    console.error("========== OAUTH COMPLETE ROUTE ERROR ==========");
-    console.error("Error:", error);
-    console.error("Error message:", (error as Error)?.message);
-    console.error("Error stack:", (error as Error)?.stack);
-    return NextResponse.redirect(
-      new URL("/login?error=oauth_processing_failed", origin)
-    );
+    
+    // Muvaffaqiyatli redirect ishlashi uchun qolgan xatolarni Next.js ga qaytaramiz
+    throw error;
   }
 }
