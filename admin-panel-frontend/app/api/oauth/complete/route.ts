@@ -1,9 +1,36 @@
 import { NextResponse } from "next/server";
 import { signIn } from "@/auth";
 
+function resolveBaseUrl(req: Request): string {
+  const envBase =
+    process.env.AUTH_URL ||
+    process.env.NEXTAUTH_URL ||
+    process.env.FRONTEND_URL ||
+    process.env.NEXT_PUBLIC_FRONTEND_URL;
+
+  if (envBase) return envBase;
+
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const forwardedProto = req.headers.get("x-forwarded-proto") || "https";
+
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return new URL(req.url).origin;
+}
+
+function parseUserParam(userParam: string) {
+  try {
+    return JSON.parse(decodeURIComponent(userParam));
+  } catch {
+    return JSON.parse(userParam);
+  }
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const origin = url.origin;
+  const baseUrl = resolveBaseUrl(req);
 
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
@@ -11,14 +38,13 @@ export async function GET(req: Request) {
 
   if (!accessToken || !userParam) {
     return NextResponse.redirect(
-      new URL("/login?error=oauth_missing_params", origin)
+      new URL("/login?error=oauth_missing_params", baseUrl)
     );
   }
 
   try {
-    const userData = JSON.parse(decodeURIComponent(userParam));
+    const userData = parseUserParam(userParam);
 
-    // Use server-side NextAuth signIn to set session and redirect to dashboard
     return await signIn("credentials", {
       email: userData.email,
       accessToken,
@@ -28,7 +54,7 @@ export async function GET(req: Request) {
     });
   } catch {
     return NextResponse.redirect(
-      new URL("/login?error=oauth_processing_failed", origin)
+      new URL("/login?error=oauth_processing_failed", baseUrl)
     );
   }
 }
