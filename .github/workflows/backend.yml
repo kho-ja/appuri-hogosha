@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 551-admin-panelga-google-bilan-login-qilyaptgandagi-errroni-togirlash
     paths:
       - "backend/**"
 

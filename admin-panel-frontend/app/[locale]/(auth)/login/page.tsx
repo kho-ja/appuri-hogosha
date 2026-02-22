@@ -11,7 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useMessages, useTranslations } from "next-intl";
+import { useMessages, useTranslations, useLocale } from "next-intl";
 import { login } from "@/login";
 import LanguageSelect from "@/components/LanguageSelect";
 import { ToggleMode } from "@/components/toggle-mode";
@@ -44,6 +44,7 @@ export default function LoginForm() {
   const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState<boolean>(false);
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("LoginForm");
   const { toast } = useToast();
   const [feedbackPassword, setFeedbackPassword] = useState("");
@@ -68,7 +69,7 @@ export default function LoginForm() {
     // Redirect to backend Google login endpoint
     window.location.href = `${
       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001/admin-panel"
-    }/google`;
+    }/google?locale=${locale}`;
   };
 
   useEffect(() => {

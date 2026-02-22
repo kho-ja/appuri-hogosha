@@ -13,8 +13,8 @@ function getDefaultFrontendUrl(): string {
 function getValidFrontendUrls(): string[] {
     return config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-              .map(s => s.trim())
-              .filter(Boolean)
+            .map(s => s.trim())
+            .filter(Boolean)
         : [getDefaultFrontendUrl()];
 }
 
@@ -190,11 +190,13 @@ export class AuthController {
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
+            const locale = (req.query.locale as string) || 'uz';
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
             }
 
+            const stateData = JSON.stringify({ frontendUrl, locale });
             const cognitoUrl =
                 `${cognitoDomain}/oauth2/authorize?` +
                 `response_type=code&` +
@@ -202,7 +204,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodeURIComponent(stateData)}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -213,11 +215,31 @@ export class AuthController {
 
     googleCallback = async (req: Request, res: Response) => {
         try {
+            console.error("===== GOOGLE CALLBACK DEBUG =====");
+            console.error("req.query:", req.query);
+            console.error("state param:", req.query.state);
+            console.error("code param:", req.query.code);
+            console.error("error param:", req.query.error);
+            console.error("headers:", req.headers);
+            console.error("================================");
+
             const { code, state, error } = req.query;
 
+            let parsedState: any = {};
+            let locale = 'uz';
+            try {
+                if (typeof state === 'string') {
+                    parsedState = JSON.parse(state);
+                    locale = parsedState.locale || 'uz';
+                }
+            } catch {
+                parsedState = { frontendUrl: state };
+            }
+
             if (error) {
-                console.error('Google OAuth error');
-                const base = getAllowedFrontendBase(state);
+                console.error('Google OAuth returned an error:', error);
+                const base = getAllowedFrontendBase(parsedState.frontendUrl || state);
+                console.error('Redirect base URL:', base);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
                 return res.redirect(url.toString());
@@ -228,29 +250,37 @@ export class AuthController {
             }
 
             const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
-            const result = await this.service.handleGoogleCallback(
-                code as string,
-                redirectUri
-            );
+            console.error('Calling handleGoogleCallback with code:', code);
+            const result = await this.service.handleGoogleCallback(code as string, redirectUri);
 
-            const base = getAllowedFrontendBase(state);
-            const redirectUrlObj = new URL('/', base);
+            console.error('handleGoogleCallback result:', result);
+
+            const base = getAllowedFrontendBase(parsedState.frontendUrl || state);
+            console.error('Final redirect base:', base);
+
+            const redirectUrlObj = new URL('/api/oauth/complete', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
-                redirectUrlObj.searchParams.set(
-                    'refresh_token',
-                    result.refreshToken
-                );
+                redirectUrlObj.searchParams.set('refresh_token', result.refreshToken);
             }
-            redirectUrlObj.searchParams.set(
-                'user',
-                encodeURIComponent(JSON.stringify(result.admin))
-            );
+            redirectUrlObj.searchParams.set('user', JSON.stringify(result.admin));
+            redirectUrlObj.searchParams.set('locale', locale);
+
+            console.error('Redirecting to URL:', redirectUrlObj.toString());
 
             return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
             console.error('Google callback error:', e);
-            const base = getAllowedFrontendBase(req.query.state);
+            let parsedState: any = {};
+            try {
+                if (typeof req.query.state === 'string') {
+                    parsedState = JSON.parse(req.query.state);
+                }
+            } catch {
+                parsedState = { frontendUrl: req.query.state };
+            }
+            const base = getAllowedFrontendBase(parsedState.frontendUrl || req.query.state);
+            console.error('Redirecting to login, base URL:', base);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');
             return res.redirect(url.toString());
