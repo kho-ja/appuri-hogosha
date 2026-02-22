@@ -35,6 +35,7 @@ interface Config {
     // Admin Pool
     ADMIN_POOL_ID: string;
     ADMIN_CLIENT_ID: string;
+    ADMIN_CLIENT_SECRET?: string;
 
     // Database
     DB_HOST: string;
@@ -114,6 +115,7 @@ export const config: Config = {
     // Admin Pool
     ADMIN_POOL_ID: getEnv('ADMIN_POOL_ID'),
     ADMIN_CLIENT_ID: getEnv('ADMIN_CLIENT_ID'),
+    ADMIN_CLIENT_SECRET: process.env.ADMIN_CLIENT_SECRET || undefined,
 
     // Database
     DB_HOST: getEnv('DB_HOST'),

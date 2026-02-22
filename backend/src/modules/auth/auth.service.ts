@@ -267,6 +267,7 @@ export class AuthService {
     private async exchangeCodeForTokens(code: string, redirectUri: string) {
         const cognitoDomain = config.COGNITO_DOMAIN;
         const clientId = config.ADMIN_CLIENT_ID;
+        const clientSecret = config.ADMIN_CLIENT_SECRET;
 
         const tokenUrl = `${cognitoDomain}/oauth2/token`;
 
@@ -276,6 +277,11 @@ export class AuthService {
             code: code,
             redirect_uri: redirectUri,
         });
+
+        // Include client_secret if it exists (for confidential clients)
+        if (clientSecret) {
+            params.append('client_secret', clientSecret);
+        }
 
         const headers: Record<string, string> = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -288,7 +294,9 @@ export class AuthService {
         });
 
         if (!response.ok) {
-            console.error('Token exchange failed');
+            const errorBody = await response.text();
+            console.error('Token exchange failed with status:', response.status);
+            console.error('Error response body:', errorBody);
             throw new Error('Failed to exchange code for tokens');
         }
 
