@@ -781,7 +781,12 @@
   },
   "table": {
     "noResults": "Natijalar topilmadi.",
-    "noData": "Ma'lumot yo'q."
+    "noData": "Ma'lumot yo'q.",
+    "selected": "{count} ta tanlangan",
+    "selectAll": "Hammasini tanlash",
+    "deselectAll": "Tanlashni bekor qilish",
+    "selectFiltered": "Siz qidirganlarni tanlash",
+    "selecting": "Tanlanyapti..."
   },
   "names": {
     "name": "{family_name} {given_name}"
