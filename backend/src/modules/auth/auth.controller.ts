@@ -13,8 +13,8 @@ function getDefaultFrontendUrl(): string {
 function getValidFrontendUrls(): string[] {
     return config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-              .map(s => s.trim())
-              .filter(Boolean)
+            .map(s => s.trim())
+            .filter(Boolean)
         : [getDefaultFrontendUrl()];
 }
 
@@ -213,11 +213,20 @@ export class AuthController {
 
     googleCallback = async (req: Request, res: Response) => {
         try {
+            console.error("===== GOOGLE CALLBACK DEBUG =====");
+            console.error("req.query:", req.query);
+            console.error("state param:", req.query.state);
+            console.error("code param:", req.query.code);
+            console.error("error param:", req.query.error);
+            console.error("headers:", req.headers);
+            console.error("================================");
+
             const { code, state, error } = req.query;
 
             if (error) {
-                console.error('Google OAuth error');
+                console.error('Google OAuth returned an error:', error);
                 const base = getAllowedFrontendBase(state);
+                console.error('Redirect base URL:', base);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
                 return res.redirect(url.toString());
@@ -228,29 +237,28 @@ export class AuthController {
             }
 
             const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
-            const result = await this.service.handleGoogleCallback(
-                code as string,
-                redirectUri
-            );
+            console.error('Calling handleGoogleCallback with code:', code);
+            const result = await this.service.handleGoogleCallback(code as string, redirectUri);
+
+            console.error('handleGoogleCallback result:', result);
 
             const base = getAllowedFrontendBase(state);
+            console.error('Final redirect base:', base);
+
             const redirectUrlObj = new URL('/', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
-                redirectUrlObj.searchParams.set(
-                    'refresh_token',
-                    result.refreshToken
-                );
+                redirectUrlObj.searchParams.set('refresh_token', result.refreshToken);
             }
-            redirectUrlObj.searchParams.set(
-                'user',
-                encodeURIComponent(JSON.stringify(result.admin))
-            );
+            redirectUrlObj.searchParams.set('user', encodeURIComponent(JSON.stringify(result.admin)));
+
+            console.error('Redirecting to URL:', redirectUrlObj.toString());
 
             return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
             console.error('Google callback error:', e);
             const base = getAllowedFrontendBase(req.query.state);
+            console.error('Redirecting to login, base URL:', base);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');
             return res.redirect(url.toString());
