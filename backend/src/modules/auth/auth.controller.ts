@@ -190,11 +190,13 @@ export class AuthController {
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
+            const locale = (req.query.locale as string) || 'uz';
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
             }
 
+            const stateData = JSON.stringify({ frontendUrl, locale });
             const cognitoUrl =
                 `${cognitoDomain}/oauth2/authorize?` +
                 `response_type=code&` +
@@ -202,7 +204,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodeURIComponent(stateData)}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -223,9 +225,20 @@ export class AuthController {
 
             const { code, state, error } = req.query;
 
+            let parsedState: any = {};
+            let locale = 'uz';
+            try {
+                if (typeof state === 'string') {
+                    parsedState = JSON.parse(state);
+                    locale = parsedState.locale || 'uz';
+                }
+            } catch {
+                parsedState = { frontendUrl: state };
+            }
+
             if (error) {
                 console.error('Google OAuth returned an error:', error);
-                const base = getAllowedFrontendBase(state);
+                const base = getAllowedFrontendBase(parsedState.frontendUrl || state);
                 console.error('Redirect base URL:', base);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
@@ -242,7 +255,7 @@ export class AuthController {
 
             console.error('handleGoogleCallback result:', result);
 
-            const base = getAllowedFrontendBase(state);
+            const base = getAllowedFrontendBase(parsedState.frontendUrl || state);
             console.error('Final redirect base:', base);
 
             const redirectUrlObj = new URL('/', base);
@@ -250,14 +263,23 @@ export class AuthController {
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set('refresh_token', result.refreshToken);
             }
-            redirectUrlObj.searchParams.set('user', encodeURIComponent(JSON.stringify(result.admin)));
+            redirectUrlObj.searchParams.set('user', JSON.stringify(result.admin));
+            redirectUrlObj.searchParams.set('locale', locale);
 
             console.error('Redirecting to URL:', redirectUrlObj.toString());
 
             return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
             console.error('Google callback error:', e);
-            const base = getAllowedFrontendBase(req.query.state);
+            let parsedState: any = {};
+            try {
+                if (typeof req.query.state === 'string') {
+                    parsedState = JSON.parse(req.query.state);
+                }
+            } catch {
+                parsedState = { frontendUrl: req.query.state };
+            }
+            const base = getAllowedFrontendBase(parsedState.frontendUrl || req.query.state);
             console.error('Redirecting to login, base URL:', base);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');

@@ -24,9 +24,11 @@ export async function GET(req: Request) {
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
   const userParam = url.searchParams.get("user");
+  const locale = url.searchParams.get("locale") || "uz";
 
   console.error("Access token exists:", !!accessToken);
   console.error("User param exists:", !!userParam);
+  console.error("Locale:", locale);
 
   if (!accessToken || !userParam) {
     console.error("❌ Missing params - redirecting to login");
@@ -34,13 +36,15 @@ export async function GET(req: Request) {
     // 🔹 Log flush qilish uchun kichik delay
     await new Promise((resolve) => setTimeout(resolve, 5));
 
+    const loginUrl = locale === "uz" ? "/login" : `/${locale}/login`;
     return NextResponse.redirect(
-      new URL("/login?error=oauth_missing_params", origin)
+      new URL(`${loginUrl}?error=oauth_missing_params`, origin)
     );
   }
 
   try {
-    const userData = userParam ? JSON.parse(decodeURIComponent(userParam)) : null;
+    console.error("Raw userParam:", userParam);
+    const userData = JSON.parse(userParam);
 
     if (!userData) {
       throw new Error("User data is null or undefined");
@@ -48,12 +52,13 @@ export async function GET(req: Request) {
 
     console.error("✅ User parsed successfully:", userData.email);
 
+    const dashboardPath = locale === "uz" ? "/dashboard" : `/${locale}/dashboard`;
     return await signIn("credentials", {
       email: userData.email,
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirectTo: "/dashboard",
+      redirectTo: dashboardPath,
     });
   } catch (error) {
     console.error("❌ JSON PARSE ERROR:", error);
@@ -62,8 +67,9 @@ export async function GET(req: Request) {
     // 🔹 Log flush
     await new Promise((resolve) => setTimeout(resolve, 5));
 
+    const loginUrl = locale === "uz" ? "/login" : `/${locale}/login`;
     return NextResponse.redirect(
-      new URL("/login?error=oauth_processing_failed", origin)
+      new URL(`${loginUrl}?error=oauth_processing_failed`, origin)
     );
   }
 }
