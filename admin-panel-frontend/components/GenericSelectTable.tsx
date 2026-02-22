@@ -10,7 +10,7 @@ import {
   Updater,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { useEffect, useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -106,6 +106,7 @@ export function GenericSelectTable<T extends BaseEntity>({
 
   const [filterBy, setFilterBy] = useState(config.filterBy || "all");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const pendingSelectionSyncRef = useRef(false);
 
   useEffect(() => {
     if (config.filterBy) {
@@ -146,12 +147,16 @@ export function GenericSelectTable<T extends BaseEntity>({
   );
 
   useEffect(() => {
-    const newSelection: Record<string, boolean> = {};
-    selectedItemIds.forEach((id) => {
-      newSelection[id] = true;
+    // Keep the table's rowSelection in sync with the external selectedItems,
+    // but only for rows that exist on the current page.
+    const nextSelection: Record<string, boolean> = {};
+    tableData.forEach((item) => {
+      if (selectedItemIds.has(item.id)) {
+        nextSelection[item.id] = true;
+      }
     });
-    setRowSelection(newSelection);
-  }, [selectedItemIds]);
+    setRowSelection(nextSelection);
+  }, [selectedItemIds, tableData]);
 
   const { data: selectedItemsData } = useQuery({
     queryKey: ["selected" + entityKey, Array.from(selectedItemIds).sort()],
@@ -292,40 +297,43 @@ export function GenericSelectTable<T extends BaseEntity>({
 
   const onRowSelectionChange = useCallback(
     (updater: Updater<RowSelectionState>) => {
-      setRowSelection((prevSelection) => {
-        const nextSelection =
-          typeof updater === "function" ? updater(prevSelection) : updater;
-
-        // IMPORTANT: only mutate selectedItems for IDs that exist on the current page.
-        // This prevents deselecting current page from clearing selections from other pages.
-        const currentPageIds = new Set(tableData.map((item) => item.id));
-        const currentPageSelectedIds = new Set(
-          tableData
-            .filter((item) => !!nextSelection[item.id])
-            .map((item) => item.id)
-        );
-
-        setSelectedItems((prev) => {
-          const kept = prev.filter((item) => {
-            if (!currentPageIds.has(item.id)) return true;
-            return currentPageSelectedIds.has(item.id);
-          });
-
-          const keptIds = new Set(kept.map((item) => item.id));
-
-          const added = tableData.filter(
-            (item) =>
-              currentPageSelectedIds.has(item.id) && !keptIds.has(item.id)
-          );
-
-          return [...kept, ...added];
-        });
-
-        return nextSelection;
-      });
+      pendingSelectionSyncRef.current = true;
+      setRowSelection((prevSelection) =>
+        typeof updater === "function" ? updater(prevSelection) : updater
+      );
     },
-    [tableData, setSelectedItems]
+    []
   );
+
+  useEffect(() => {
+    if (!pendingSelectionSyncRef.current) return;
+    pendingSelectionSyncRef.current = false;
+
+    // Sync external selectedItems from rowSelection, but only for the current page.
+    // This prevents header checkbox on one page from clearing selections on other pages.
+    const currentPageIds = new Set(tableData.map((item) => item.id));
+    const currentPageSelectedIds = new Set(
+      tableData.filter((item) => !!rowSelection[item.id]).map((item) => item.id)
+    );
+
+    setSelectedItems((prev) => {
+      const kept = prev.filter((item) => {
+        if (!currentPageIds.has(item.id)) return true;
+        return currentPageSelectedIds.has(item.id);
+      });
+
+      const keptIds = new Set(kept.map((item) => item.id));
+      const added = tableData.filter(
+        (item) => currentPageSelectedIds.has(item.id) && !keptIds.has(item.id)
+      );
+
+      if (added.length === 0 && kept.length === prev.length) {
+        return prev;
+      }
+
+      return [...kept, ...added];
+    });
+  }, [rowSelection, tableData, setSelectedItems]);
 
   const handleRowSelection = useCallback(
     (row: Row<T>, isSelected: boolean) => {
