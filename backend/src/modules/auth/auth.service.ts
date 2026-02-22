@@ -19,7 +19,7 @@ export class AuthService {
     constructor(
         private repository: AuthRepository,
         private cognitoClient: any
-    ) {}
+    ) { }
 
     async login(request: LoginRequest): Promise<LoginResponse> {
         const { email, password } = request;
@@ -228,13 +228,24 @@ export class AuthService {
 
         const admin = await this.repository.findAdminByEmail(userData.email);
         if (!admin) {
+            console.error('Admin not found for email:', userData.email);
             throw { status: 404, message: 'Admin not found for email' };
         }
 
         await this.repository.updateLastLogin(admin.id);
 
+        // Return plain object, not database model instance
+        const plainAdmin = {
+            id: admin.id,
+            email: admin.email,
+            phone_number: admin.phone_number,
+            given_name: admin.given_name,
+            family_name: admin.family_name,
+            school_name: admin.school_name,
+        };
+
         return {
-            admin,
+            admin: plainAdmin,
             accessToken: tokenResponse.access_token,
             refreshToken: tokenResponse.refresh_token,
         };

@@ -258,7 +258,7 @@ export class AuthController {
             const base = getAllowedFrontendBase(parsedState.frontendUrl || state);
             console.error('Final redirect base:', base);
 
-            const redirectUrlObj = new URL('/', base);
+            const redirectUrlObj = new URL('/api/oauth/complete', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set('refresh_token', result.refreshToken);
