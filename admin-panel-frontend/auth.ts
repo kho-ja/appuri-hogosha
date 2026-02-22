@@ -36,18 +36,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           // Handle OAuth callback scenario
           if (credentials?.accessToken && !credentials?.password) {
-            console.log("========== OAUTH AUTHORIZE START ==========");
             // This is an OAuth callback, we already have the tokens
             // Try using userJson first; if missing, get user info using the access token
             const backendUrl =
               process.env.BACKEND_URL || "http://localhost:3001/admin-panel";
-
-            console.log("Backend URL:", backendUrl);
-            console.log("Has userJson:", !!credentials.userJson);
-            console.log("Has accessToken:", !!credentials.accessToken);
-
             if (credentials.userJson) {
-              console.log("✓ Using userJson from OAuth callback");
               const parsed = JSON.parse(credentials.userJson as string);
               return {
                 ...parsed,
@@ -60,15 +53,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               } as any;
             }
 
-            console.log("⚠ No userJson, fetching from user-info endpoint...");
             const userInfoResponse = await fetch(`${backendUrl}/user-info`, {
               headers: {
                 Authorization: `Bearer ${credentials.accessToken}`,
                 "Content-Type": "application/json",
               },
             });
-
-            console.log("User-info response status:", userInfoResponse.status);
 
             if (userInfoResponse.ok) {
               const userData = await userInfoResponse.json();
@@ -142,16 +132,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
           return null;
         } catch (e) {
-          console.error("========== OAUTH AUTHORIZE ERROR ==========");
-          console.error("Error:", e);
-          console.error("Error message:", (e as any)?.message);
-          console.error("Error stack:", (e as any)?.stack);
-
           if (e instanceof AuthError) {
-            console.error("AuthError detected:", e.message);
             throw e;
           }
-          console.log("========== OAUTH AUTHORIZE END (CATCH) ==========");
           return null;
         }
       },

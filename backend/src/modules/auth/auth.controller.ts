@@ -5,36 +5,26 @@ import { ExtendedRequest } from '../../middlewares/auth';
 import { ApiError } from '../../errors/ApiError';
 import { config } from '../../config';
 
-// Allowed frontend base URLs for redirects - read at runtime to ensure env vars are fresh
-function getDefaultFrontendUrl(): string {
-    return config.FRONTEND_URL || 'http://localhost:3000';
-}
-
-function getValidFrontendUrls(): string[] {
-    return config.ALLOWED_FRONTEND_URLS
+// Allowed frontend base URLs for redirects
+const DEFAULT_FRONTEND_URL = config.FRONTEND_URL || 'http://localhost:3000';
+const VALID_FRONTEND_URLS: string[] = (
+    config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-        : [getDefaultFrontendUrl()];
-}
+              .map(s => s.trim())
+              .filter(Boolean)
+        : [DEFAULT_FRONTEND_URL]
+) as string[];
 
-function getAllowedFrontendOrigins(): string[] {
-    return getValidFrontendUrls()
-        .map(v => {
-            try {
-                return new URL(v).origin;
-            } catch {
-                return '';
-            }
-        })
-        .filter(Boolean);
-}
+const ALLOWED_FRONTEND_ORIGINS: string[] = VALID_FRONTEND_URLS.map(v => {
+    try {
+        return new URL(v).origin;
+    } catch {
+        return '';
+    }
+}).filter(Boolean);
 
 function getAllowedFrontendBase(state: any): string {
-    const defaultBase = getDefaultFrontendUrl();
-    const validFrontendUrls = getValidFrontendUrls();
-    const allowedOrigins = getAllowedFrontendOrigins();
-
+    const defaultBase = DEFAULT_FRONTEND_URL;
     const candidate = Array.isArray(state) ? state[0] : state;
     if (typeof candidate !== 'string' || candidate.length === 0) {
         return defaultBase;
@@ -44,10 +34,10 @@ function getAllowedFrontendBase(state: any): string {
         const parsed = new URL(candidate, defaultBase);
         if (
             (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
-            allowedOrigins.includes(parsed.origin)
+            ALLOWED_FRONTEND_ORIGINS.includes(parsed.origin)
         ) {
-            const idx = allowedOrigins.indexOf(parsed.origin);
-            return validFrontendUrls[idx];
+            const idx = ALLOWED_FRONTEND_ORIGINS.indexOf(parsed.origin);
+            return VALID_FRONTEND_URLS[idx];
         }
     } catch {
         // ignore and fall back
@@ -186,21 +176,10 @@ export class AuthController {
 
     googleLogin = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log("========== GOOGLE LOGIN START ==========");
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
-            const frontendUrl = config.FRONTEND_URL;
-            const encodedState = encodeURIComponent(frontendUrl);   
-            console.log("🔧 Configuration:");
-            console.log("  COGNITO_DOMAIN:", cognitoDomain);
-            console.log("  CLIENT_ID:", clientId);
-            console.log("  BACKEND_URL:", config.BACKEND_URL);
-            console.log("  CALLBACK_URL:", callbackUrl);
-            console.log("  FRONTEND_URL:", frontendUrl);
-            console.log("");
-            console.log("⚠️  IMPORTANT: This callback URL must be whitelisted in Cognito:");
-            console.log("  👉", callbackUrl);
+            const frontendUrl = config.FRONTEND_URL || 'http://localhost:3000';
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
@@ -213,14 +192,10 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodedState}`;
+                `state=${encodeURIComponent(frontendUrl)}`;
 
-            console.log("✓ Redirecting to Cognito URL");
-            console.log("========== GOOGLE LOGIN END ==========");
             return res.redirect(cognitoUrl);
         } catch (e: any) {
-            console.error("========== GOOGLE LOGIN ERROR ==========");
-            console.error("Error:", e);
             if (e?.status) return next(new ApiError(e.status, e.message));
             return next(e);
         }
@@ -230,38 +205,23 @@ export class AuthController {
         try {
             const { code, state, error } = req.query;
 
-            console.log("========== GOOGLE CALLBACK START ==========");
-            console.log("BACKEND_URL:", config.BACKEND_URL);
-            console.log("FRONTEND_URL:", config.FRONTEND_URL);
-            console.log("ALLOWED_FRONTEND_URLS:", config.ALLOWED_FRONTEND_URLS);
-            console.log("STATE:", state);
-            console.log("CODE:", code ? 'exists' : 'missing');
-            console.log("ERROR:", error);
-
             if (error) {
-                console.error('❌ Google OAuth error from Cognito:', error);
+                console.error('Google OAuth error');
                 const base = getAllowedFrontendBase(state);
-                console.log("Redirecting to login with error. Base:", base);
                 const url = new URL('/login', base);
                 url.searchParams.set('error', 'oauth_error');
-                console.log("Final redirect URL:", url.toString());
                 return res.redirect(url.toString());
             }
 
             if (!code) {
-                console.error('❌ Authorization code missing');
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
-            console.log("✓ Authorization code received, calling backend service...");
             const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
             );
-
-            console.log("✓ Google callback service successful");
-            console.log("Admin email:", result.admin?.email);
 
             const base = getAllowedFrontendBase(state);
             const redirectUrlObj = new URL('/', base);
@@ -277,19 +237,12 @@ export class AuthController {
                 encodeURIComponent(JSON.stringify(result.admin))
             );
 
-            console.log("✓ Redirecting to frontend complete endpoint");
-            console.log("Final redirect URL:", redirectUrlObj.toString());
-            console.log("========== GOOGLE CALLBACK END ==========");
             return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
-            console.error('========== GOOGLE CALLBACK ERROR ==========');
-            console.error('Error details:', e);
-            console.error('Error message:', e?.message);
-            console.error('Error status:', e?.status);
+            console.error('Google callback error:', e);
             const base = getAllowedFrontendBase(req.query.state);
             const url = new URL('/login', base);
             url.searchParams.set('error', 'callback_error');
-            console.error('Redirecting to error page:', url.toString());
             return res.redirect(url.toString());
         }
     };

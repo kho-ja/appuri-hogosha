@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { onlyAdminPathNameRegex, publicPathnameRegex } from "@/lib/routeAccess";
 
@@ -14,12 +14,10 @@ const authMiddleware = auth((req) => {
     req.nextUrl.searchParams.has("access_token") &&
     req.nextUrl.searchParams.has("user");
   if (hasOAuthParams) {
-    // FIX: URL manzilini va barcha query parametrlarni xavfsiz nusxalaymiz
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/api/oauth/complete";
-    
-    // Nusxalangan URL bilan redirect qilamiz (localhost muammosi hal bo'ladi)
-    return NextResponse.redirect(redirectUrl);
+    const redirectUrl = new URL("/api/oauth/complete", req.nextUrl.origin);
+    const paramsArray = Array.from(req.nextUrl.searchParams.entries());
+    paramsArray.forEach(([k, v]) => redirectUrl.searchParams.set(k, v));
+    return Response.redirect(redirectUrl);
   }
 
   if (!isPublicPage) {
@@ -37,28 +35,26 @@ const authMiddleware = auth((req) => {
   // Redirect to login if not authenticated and not on public page
   if (!req.auth && !isPublicPage) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const newUrl = req.nextUrl.clone();
-    newUrl.pathname = `/${locale}/login`;
-    return NextResponse.redirect(newUrl);
+    const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
+    return Response.redirect(newUrl);
   }
 
   // Redirect authenticated users away from login/forgot-password pages
+  // Only redirect if session is valid (check if user exists)
   if (
     req.auth?.user &&
     (req.nextUrl.pathname.endsWith("/login") ||
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const newUrl = req.nextUrl.clone();
-    newUrl.pathname = `/${locale}`;
-    return NextResponse.redirect(newUrl);
+    const newUrl = new URL(`/${locale}`, req.nextUrl.origin);
+    return Response.redirect(newUrl);
   }
 
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const newUrl = req.nextUrl.clone();
-    newUrl.pathname = `/${locale}`;
-    return NextResponse.redirect(newUrl);
+    const newUrl = new URL(`/${locale}`, req.nextUrl.origin);
+    return Response.redirect(newUrl);
   }
 
   return intlMiddleware(req);
