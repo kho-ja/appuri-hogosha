@@ -8,10 +8,11 @@ export async function GET(req: Request) {
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
   const userParam = url.searchParams.get("user");
+  const locale = url.searchParams.get("locale") || "uz";
 
   if (!accessToken || !userParam) {
     return NextResponse.redirect(
-      new URL("/login?error=oauth_missing_params", origin)
+      new URL(`/${locale}/login?error=oauth_missing_params`, origin)
     );
   }
 
@@ -24,11 +25,11 @@ export async function GET(req: Request) {
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirectTo: "/dashboard",
+      redirectTo: `/${locale}/dashboard`,
     });
   } catch {
     return NextResponse.redirect(
-      new URL("/login?error=oauth_processing_failed", origin)
+      new URL(`/${locale}/login?error=oauth_processing_failed`, origin)
     );
   }
 }

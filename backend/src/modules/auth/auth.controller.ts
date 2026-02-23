@@ -13,8 +13,8 @@ function getDefaultFrontendUrl(): string {
 function getValidFrontendUrls(): string[] {
     return config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
-              .map(s => s.trim())
-              .filter(Boolean)
+            .map(s => s.trim())
+            .filter(Boolean)
         : [getDefaultFrontendUrl()];
 }
 
@@ -30,18 +30,57 @@ function getAllowedFrontendOrigins(): string[] {
         .filter(Boolean);
 }
 
+function parseStateData(state: any): { frontendUrl: string; locale: string } {
+    const defaultBase = getDefaultFrontendUrl();
+    // Default locale should match the frontend's default
+    const defaultLocale = 'uz';
+
+    if (!state) {
+        return { frontendUrl: defaultBase, locale: defaultLocale };
+    }
+
+    const stateStr = Array.isArray(state) ? state[0] : state;
+    if (typeof stateStr !== 'string') {
+        return { frontendUrl: defaultBase, locale: defaultLocale };
+    }
+
+    try {
+        const stateData = JSON.parse(decodeURIComponent(stateStr));
+        if (stateData.frontendUrl && stateData.locale) {
+            return {
+                frontendUrl: stateData.frontendUrl,
+                locale: stateData.locale,
+            };
+        }
+    } catch {
+        // If it fails to parse as JSON, it might be a plain URL
+    }
+
+    // Try parsing as a plain URL string (for backward compatibility)
+    try {
+        const parsed = new URL(stateStr, defaultBase);
+        if (
+            (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+            getAllowedFrontendOrigins().includes(parsed.origin)
+        ) {
+            return { frontendUrl: stateStr, locale: defaultLocale };
+        }
+    } catch {
+        // ignore and fall back
+    }
+
+    return { frontendUrl: defaultBase, locale: defaultLocale };
+}
+
 function getAllowedFrontendBase(state: any): string {
     const defaultBase = getDefaultFrontendUrl();
     const validFrontendUrls = getValidFrontendUrls();
     const allowedOrigins = getAllowedFrontendOrigins();
 
-    const candidate = Array.isArray(state) ? state[0] : state;
-    if (typeof candidate !== 'string' || candidate.length === 0) {
-        return defaultBase;
-    }
+    const { frontendUrl } = parseStateData(state);
 
     try {
-        const parsed = new URL(candidate, defaultBase);
+        const parsed = new URL(frontendUrl, defaultBase);
         if (
             (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
             allowedOrigins.includes(parsed.origin)
@@ -53,6 +92,11 @@ function getAllowedFrontendBase(state: any): string {
         // ignore and fall back
     }
     return defaultBase;
+}
+
+function getAllowedFrontendLocale(state: any): string {
+    const { locale } = parseStateData(state);
+    return locale;
 }
 
 export class AuthController {
@@ -190,10 +234,18 @@ export class AuthController {
             const clientId = config.ADMIN_CLIENT_ID;
             const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const frontendUrl = config.FRONTEND_URL;
+            const locale = (req.query.locale as string) || 'uz';
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
             }
+
+            // Create state object with frontend URL and locale information
+            const stateData = {
+                frontendUrl: frontendUrl,
+                locale: locale,
+            };
+            const encodedState = encodeURIComponent(JSON.stringify(stateData));
 
             const cognitoUrl =
                 `${cognitoDomain}/oauth2/authorize?` +
@@ -202,7 +254,7 @@ export class AuthController {
                 `redirect_uri=${encodeURIComponent(callbackUrl)}&` +
                 `identity_provider=Google&` +
                 `prompt=select_account&` +
-                `state=${encodeURIComponent(frontendUrl)}`;
+                `state=${encodedState}`;
 
             return res.redirect(cognitoUrl);
         } catch (e: any) {
@@ -218,7 +270,8 @@ export class AuthController {
             if (error) {
                 console.error('Google OAuth error');
                 const base = getAllowedFrontendBase(state);
-                const url = new URL('/login', base);
+                const locale = getAllowedFrontendLocale(state);
+                const url = new URL(`/${locale}/login`, base);
                 url.searchParams.set('error', 'oauth_error');
                 return res.redirect(url.toString());
             }
@@ -234,7 +287,8 @@ export class AuthController {
             );
 
             const base = getAllowedFrontendBase(state);
-            const redirectUrlObj = new URL('/', base);
+            const locale = getAllowedFrontendLocale(state);
+            const redirectUrlObj = new URL('/api/oauth/complete', base);
             redirectUrlObj.searchParams.set('access_token', result.accessToken);
             if (result.refreshToken) {
                 redirectUrlObj.searchParams.set(
@@ -246,12 +300,14 @@ export class AuthController {
                 'user',
                 encodeURIComponent(JSON.stringify(result.admin))
             );
+            redirectUrlObj.searchParams.set('locale', locale);
 
             return res.redirect(redirectUrlObj.toString());
         } catch (e: any) {
             console.error('Google callback error:', e);
             const base = getAllowedFrontendBase(req.query.state);
-            const url = new URL('/login', base);
+            const locale = getAllowedFrontendLocale(req.query.state);
+            const url = new URL(`/${locale}/login`, base);
             url.searchParams.set('error', 'callback_error');
             return res.redirect(url.toString());
         }
