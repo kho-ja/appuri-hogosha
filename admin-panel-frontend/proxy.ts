@@ -32,17 +32,14 @@ const authMiddleware = auth((req) => {
     }
   }
 
-  // Redirect to login if not authenticated and not on public page
   if (!req.auth && !isPublicPage) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
     const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
-  // Redirect authenticated users away from login/forgot-password pages
-  // Only redirect if session is valid (check if user exists)
   if (
-    req.auth?.user &&
+    req.auth &&
     (req.nextUrl.pathname.endsWith("/login") ||
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
