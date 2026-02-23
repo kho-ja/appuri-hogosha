@@ -983,7 +983,6 @@
     "cohort": "Cohort",
     "cohortDescription": "Enter the matching field in your Kintone platform for the cohort (optional).",
     "optional": "Optional",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
     "export": "Export",
     "back": "Back"
   },

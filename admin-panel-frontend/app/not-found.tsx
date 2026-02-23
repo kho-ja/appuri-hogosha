@@ -2,7 +2,7 @@ import { routing, type Locale } from "@/i18n/routing";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
-import "./[locale]/globals.css";
+import "@/app/[locale]/globals.css";
 
 async function getLocale(): Promise<Locale> {
   try {
@@ -42,8 +42,29 @@ export default async function RootNotFound() {
   const locale = await getLocale();
   const t = await getMessages(locale);
 
+  const themeScript = `
+    (function() {
+      try {
+        var stored = localStorage.getItem('theme');
+        if (stored === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (stored === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          // "system" или нет значения — проверяем системные настройки
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+          }
+        }
+      } catch(e) {}
+    })();
+  `;
+
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="font-sans bg-background text-foreground">
         <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
           <div className="flex flex-col items-center gap-6">
