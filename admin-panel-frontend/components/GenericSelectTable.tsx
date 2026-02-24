@@ -298,11 +298,48 @@ export function GenericSelectTable<T extends BaseEntity>({
   const onRowSelectionChange = useCallback(
     (updater: Updater<RowSelectionState>) => {
       pendingSelectionSyncRef.current = true;
-      setRowSelection((prevSelection) =>
-        typeof updater === "function" ? updater(prevSelection) : updater
-      );
+      setRowSelection((prevSelection) => {
+        const baseNextSelection =
+          typeof updater === "function" ? updater(prevSelection) : updater;
+
+        if (!config.isTreeStructure || !config.treeDescendantsFinder) {
+          return baseNextSelection;
+        }
+
+        // In tree mode, selecting/unselecting a node should also affect its descendants.
+        const expandedSelection: Record<string, boolean> = {
+          ...baseNextSelection,
+        };
+        const allNodes = tableData;
+
+        const changedIds = new Set<string>();
+        const keys = new Set([
+          ...Object.keys(prevSelection),
+          ...Object.keys(baseNextSelection),
+        ]);
+        keys.forEach((k) => {
+          if (!!prevSelection[k] !== !!baseNextSelection[k]) {
+            changedIds.add(k);
+          }
+        });
+
+        changedIds.forEach((idStr) => {
+          const id = Number(idStr);
+          if (!Number.isFinite(id)) return;
+          const node = allNodes.find((n) => n.id === id);
+          if (!node) return;
+
+          const isSelectedNow = !!baseNextSelection[idStr];
+          const descendants = config.treeDescendantsFinder!(node, allNodes);
+          descendants.forEach((d) => {
+            expandedSelection[d.id] = isSelectedNow;
+          });
+        });
+
+        return expandedSelection;
+      });
     },
-    []
+    [config.isTreeStructure, config.treeDescendantsFinder, tableData]
   );
 
   useEffect(() => {
@@ -369,9 +406,7 @@ export function GenericSelectTable<T extends BaseEntity>({
     data: tableData,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: config.isTreeStructure
-      ? undefined
-      : onRowSelectionChange,
+    onRowSelectionChange,
     getRowId: (row) => row.id.toString(),
     state: {
       rowSelection,
