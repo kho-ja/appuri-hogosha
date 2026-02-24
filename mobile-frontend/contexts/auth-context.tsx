@@ -9,7 +9,7 @@ import { ICountry } from 'react-native-international-phone-number';
 import { useQueryClient } from '@tanstack/react-query';
 import DemoModeService from '@/services/demo-mode-service';
 import { normalizePhone } from '@/utils/phone';
-import apiClient, { ApiError } from '@/services/api-client';
+import apiClient, { ApiError, setAuthCallbacks } from '@/services/api-client';
 
 const AuthContext = React.createContext<{
   signIn: (
@@ -65,6 +65,18 @@ export function SessionProvider(props: React.PropsWithChildren) {
       setIsDemoMode(demoActive);
     };
     initializeDemoMode();
+  }, []);
+
+  // Set up API callbacks for handling auth errors globally
+  React.useEffect(() => {
+    setAuthCallbacks({
+      onUnauthorized: () => {
+        // Unauthorized - will be handled in request error handlers
+      },
+      onForbidden: () => {
+        // Forbidden - will be handled in request error handlers
+      },
+    });
   }, []);
 
   // Track session changes and invalidate queries when session becomes available after being null

@@ -346,10 +346,10 @@ const MessageList = ({
       return adaptedPosts;
     } catch (error) {
       if (error instanceof UnauthorizedError) {
-        refreshToken();
+        await signOut();
         return [];
       } else if (error instanceof ForbiddenError) {
-        signOut();
+        await signOut();
         return [];
       }
       console.error('Error fetching messages from API:', error);
@@ -453,10 +453,10 @@ const MessageList = ({
         return entry?.unread_count ?? 0;
       } catch (error) {
         if (error instanceof UnauthorizedError) {
-          refreshToken();
+          await signOut();
           return 0;
         } else if (error instanceof ForbiddenError) {
-          signOut();
+          await signOut();
           return 0;
         }
         throw error;

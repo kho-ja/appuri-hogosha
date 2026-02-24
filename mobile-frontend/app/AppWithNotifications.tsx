@@ -11,7 +11,13 @@ import { router, Slot } from 'expo-router';
 import { StudentProvider } from '@/contexts/student-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontSizeProvider } from '@/contexts/FontSizeContext';
-import { Platform, Alert, Linking } from 'react-native';
+import {
+  Platform,
+  Alert,
+  Linking,
+  AppState,
+  AppStateStatus,
+} from 'react-native';
 import { I18nContext } from '@/contexts/i18n-context';
 import { useUpdateAlerts } from '@/hooks/useUpdateAlerts';
 
@@ -113,6 +119,7 @@ const AppWithNotifications: React.FC = () => {
     React.useState(false);
   const hasInitialized = React.useRef(false);
   const permissionAlertShown = React.useRef(false);
+  const appState = React.useRef(AppState.currentState);
 
   useUpdateAlerts();
 
@@ -149,6 +156,31 @@ const AppWithNotifications: React.FC = () => {
       setShouldShowBatteryAlert(false);
     }
   }, [shouldShowBatteryAlert, language, i18n]);
+
+  // Listen to app state changes to refetch data when app returns to foreground
+  const handleAppStateChange = (nextState: AppStateStatus) => {
+    const previousState = appState.current;
+
+    if (previousState.match(/inactive|background/) && nextState === 'active') {
+      console.log(
+        '[AppState] App returned to foreground - refetching students'
+      );
+      // Trigger a refetch by invalidating the students query
+      // This will be done in StudentProvider through a separate mechanism
+    }
+
+    appState.current = nextState;
+  };
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // Initialize push notifications once (without language dependencies)
   React.useEffect(() => {

@@ -116,9 +116,14 @@ export default function VerifyOtp() {
   });
 
   const handleBackPress = useCallback(() => {
-    router.back();
+    router.replace({
+      pathname: '/sign-in',
+      params: {
+        phone: phoneNumber,
+      },
+    });
     return true;
-  }, [router]);
+  }, [router, phoneNumber]);
 
   React.useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -136,7 +141,14 @@ export default function VerifyOtp() {
         <ThemedView style={styles.container}>
           <View style={styles.headerContainer}>
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() =>
+                router.replace({
+                  pathname: '/sign-in',
+                  params: {
+                    phone: phoneNumber,
+                  },
+                })
+              }
               style={styles.backButton}
             >
               <Ionicons
