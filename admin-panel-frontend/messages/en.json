@@ -983,7 +983,6 @@
     "cohort": "Cohort",
     "cohortDescription": "Enter the matching field in your Kintone platform for the cohort (optional).",
     "optional": "Optional",
-    "student_numberDescription": "Enter the matching field in your Kintone instance for the student number.",
     "export": "Export",
     "back": "Back"
   },
@@ -1342,6 +1341,12 @@
     "resendPasswordDescription": "This will send a new temporary password to the admin's email address.",
     "resendPasswordDescriptionPhone": "This will send a new temporary password to the admin's phone number.",
     "userAlreadyActive": "This user has already activated their account and doesn't need a temporary password."
+  },
+  "LogoutConfirmationDialog": {
+    "title": "Confirm Logout",
+    "description": "Are you sure you want to logout from admin panel?",
+    "yes": "Logout",
+    "no": "Cancel"
   },
   "BulkResendPasswordDialog": {
     "bulkResendPassword": "Resend Passwords to All",

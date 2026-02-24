@@ -1340,6 +1340,12 @@
     "resendPasswordDescriptionPhone": "Bu adminning telefon raqamiga yangi vaqtinchalik parol yuboradi.",
     "userAlreadyActive": "Foydalanuvchi allaqachon faol. Vaqtinchalik parolni qayta yuborish mumkin emas."
   },
+  "LogoutConfirmationDialog": {
+    "title": "Chiqishni tasdiqlash",
+    "description": "Rostdan ham admin paneldan chiqmoqchimisiz?",
+    "yes": "Chiqish",
+    "no": "Bekor qilish"
+  },
   "BulkResendPasswordDialog": {
     "bulkResendPassword": "Barcha ota-onalarga parol qayta jo'natish",
     "bulkResendDescription": "Bu hali login qilmagan tanlangan barcha ota-onalarga SMS orqali yangi vaqtinchalik parollar jo'natadi.",
