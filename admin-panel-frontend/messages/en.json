@@ -1316,13 +1316,13 @@
     "close": "Close",
     "editGroups": "Edit Groups"
   },
-  "recievers": {
+  "receivers": {
     "ChangeRecievers": "Change Recievers",
     "Students": "Students",
     "Groups": "Groups",
     "confirm": "Confirm",
     "back": "Back",
-    "recieversChanged": "Recievers Changed Successfully",
+    "receiversChanged": "Recievers Changed Successfully",
     "post_sender_updated_successfully": "Post sender updated successfully",
     "post_receivers_updated_successfully": "Post receivers updated successfully"
   },

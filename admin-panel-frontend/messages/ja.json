@@ -1315,13 +1315,13 @@
     "close": "閉じる",
     "editGroups": "グループを編集"
   },
-  "recievers": {
+  "receivers": {
     "ChangeRecievers": "受信者を変更",
     "Students": "学生",
     "Groups": "グループ",
     "confirm": "確認",
     "back": "戻る",
-    "recieversChanged": "受信者が変更されました",
+    "receiversChanged": "受信者が変更されました",
     "post_sender_updated_successfully": "投稿送信者が正常に更新されました",
     "post_receivers_updated_successfully": "投稿受信者が正常に更新されました"
   },

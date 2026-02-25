@@ -24,7 +24,7 @@ export default function Recievers({
   params: Promise<{ messageId: string }>;
 }) {
   const { messageId } = React.use(params);
-  const t = useTranslations("recievers");
+  const t = useTranslations("receivers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
 
@@ -47,7 +47,7 @@ export default function Recievers({
   >(`post/${messageId}/sender`, "PUT", ["editMessageSender", messageId], {
     onSuccess: (data) => {
       toast({
-        title: t("recieversChanged"),
+        title: t("receiversChanged"),
         description: t(data?.message),
       });
       router.push(`/messages/${messageId}`);

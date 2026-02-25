@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/navigation";
 import { Button } from "@/components/ui/button";
 import localImageLoader from "@/lib/localImageLoader";
 import React, { useEffect } from "react";
@@ -61,10 +61,10 @@ export default function ParentNotificationPage({
             </span>
           </div>
           <nav className="flex gap-6">
-            <Link href="#" className="text-sm hover:underline">
+            <Link href="#hero" className="text-sm hover:underline">
               Home
             </Link>
-            <Link href="#" className="text-sm hover:underline">
+            <Link href="#features" className="text-sm hover:underline">
               Features
             </Link>
           </nav>
@@ -72,7 +72,7 @@ export default function ParentNotificationPage({
       </header>
 
       {/* Hero Section */}
-      <section className="container grid items-center gap-8 pb-8 pt-20 md:grid-cols-2 md:gap-16">
+      <section id="hero" className="container grid items-center gap-8 pb-8 pt-20 md:grid-cols-2 md:gap-16">
         <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl">
@@ -129,7 +129,7 @@ export default function ParentNotificationPage({
       </section>
 
       {/* Features Section */}
-      <section className="container grid gap-12 py-20 md:grid-cols-2 items-center">
+      <section id="features" className="container grid gap-12 py-20 md:grid-cols-2 items-center">
         <div className="space-y-6">
           <h2 className="text-3xl font-bold">Real-time Updates</h2>
           <p className="text-gray-600 dark:text-gray-400">

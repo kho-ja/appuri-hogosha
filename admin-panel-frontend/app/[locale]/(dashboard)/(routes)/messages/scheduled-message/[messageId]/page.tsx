@@ -67,8 +67,8 @@ export default function ScheduledMessagePage({
     ["scheduled-message", messageId]
   );
   const { data: recieverData } = useListQuery<ReceiversResponse>(
-    `schedule/${messageId}/recievers`,
-    ["scheduled-recievers", messageId]
+    `schedule/${messageId}/receivers`,
+    ["scheduled-receivers", messageId]
   );
 
   type StudentRow = {
@@ -186,7 +186,7 @@ export default function ScheduledMessagePage({
             <TabsTrigger value="students">{t("Students")}</TabsTrigger>
           </TabsList>
           <Link
-            href={`/messages/scheduled-message/${messageId}/recievers`}
+            href={`/messages/scheduled-message/${messageId}/receivers`}
             passHref
           >
             <Button>{t("editRecivers")}</Button>

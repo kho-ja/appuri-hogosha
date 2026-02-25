@@ -1312,13 +1312,13 @@
     "close": "Закрыть",
     "editGroups": "Редактировать группы"
   },
-  "recievers": {
+  "receivers": {
     "ChangeRecievers": "Изменить получателей",
     "Students": "Студенты",
     "Groups": "Группы",
     "confirm": "Подтвердить",
     "back": "Назад",
-    "recieversChanged": "Получатели изменены",
+    "receiversChanged": "Получатели изменены",
     "post_sender_updated_successfully": "Отправитель поста успешно обновлён",
     "post_receivers_updated_successfully": "Получатели поста успешно обновлены"
   },
