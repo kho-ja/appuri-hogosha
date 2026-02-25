@@ -471,6 +471,10 @@ export class PostModuleController implements IController {
     ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
+            const perPageParam = req.query.perPage || req.query.per_page;
+            const perPage = perPageParam
+                ? Math.max(parseInt(perPageParam as string) || 0, 1)
+                : undefined;
             const title = (req.query.title as string) || '';
             const description = (req.query.description as string) || '';
             const priority = (req.query.priority as string) || '';
@@ -480,6 +484,7 @@ export class PostModuleController implements IController {
             const result = await postService.getPostList(
                 {
                     page,
+                    perPage,
                     title,
                     description,
                     priority,

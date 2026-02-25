@@ -43,16 +43,18 @@ export function GroupSelect({
       </SelectTrigger>
       <SelectContent>
         {allowEmpty && <SelectItem value="none">{t("noParent")}</SelectItem>}
-        {groups.map((g) => (
-          <SelectItem key={g.id} value={g.id.toString()}>
-            {g.name}{" "}
-            {g.member_count !== undefined && (
-              <span className="text-muted-foreground ml-1">
-                ({g.member_count})
-              </span>
-            )}
-          </SelectItem>
-        ))}
+        <div className="max-h-[200px] overflow-y-auto">
+          {groups.map((g) => (
+            <SelectItem key={g.id} value={g.id.toString()}>
+              {g.name}{" "}
+              {g.member_count !== undefined && (
+                <span className="text-muted-foreground ml-1">
+                  ({g.member_count})
+                </span>
+              )}
+            </SelectItem>
+          ))}
+        </div>
       </SelectContent>
     </Select>
   );

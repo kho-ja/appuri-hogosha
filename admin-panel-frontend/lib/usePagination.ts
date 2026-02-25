@@ -77,6 +77,8 @@ export default function usePagination(
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [hasMounted, setHasMounted] = useState(false);
+
   // Track previous values to detect changes that should reset page
   const previousValues = useRef({
     perPage: defaultPerPage,
@@ -89,7 +91,7 @@ export default function usePagination(
 
   // Initialize state from URL or defaults
   const getInitialPage = () => {
-    if (persistToUrl && searchParams) {
+    if (persistToUrl && searchParams && hasMounted) {
       const pageParam = searchParams.get("page");
       return pageParam ? Number(pageParam) || defaultPage : defaultPage;
     }
@@ -97,7 +99,7 @@ export default function usePagination(
   };
 
   const getInitialSearch = (): string => {
-    if (persistToUrl && searchParams) {
+    if (persistToUrl && searchParams && hasMounted) {
       const searchParam = searchParams.get("search");
       return searchParam ? searchParam : defaultSearch;
     }
@@ -105,7 +107,7 @@ export default function usePagination(
   };
 
   const getInitialPerPage = () => {
-    if (persistToUrl && searchParams) {
+    if (persistToUrl && searchParams && hasMounted) {
       const perPageParam = searchParams.get("perPage");
       return perPageParam
         ? Number(perPageParam) || defaultPerPage
@@ -115,7 +117,7 @@ export default function usePagination(
   };
 
   const getInitialFilter = () => {
-    if (persistToUrl && searchParams) {
+    if (persistToUrl && searchParams && hasMounted) {
       const filterParam = searchParams.get("filter");
       return filterParam || defaultFilter;
     }
@@ -126,6 +128,10 @@ export default function usePagination(
   const [search, setSearch] = useState(getInitialSearch);
   const [perPage, setPerPage] = useState(getInitialPerPage);
   const [filter, setFilter] = useState<string | undefined>(getInitialFilter);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Sync state from URL when URL changes (e.g., browser back/forward)
   useEffect(() => {

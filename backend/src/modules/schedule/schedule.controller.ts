@@ -77,12 +77,17 @@ export class ScheduleController {
     ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
+            const perPageParam = req.query.perPage || req.query.per_page;
+            const perPage = perPageParam
+                ? Math.max(parseInt(perPageParam as string) || 0, 1)
+                : undefined;
             const priority = req.query.priority as string;
             const text = req.query.text as string;
 
             const result = await this.service.getScheduledPostList(
                 {
                     page,
+                    perPage,
                     priority:
                         priority && isValidPriority(priority)
                             ? priority

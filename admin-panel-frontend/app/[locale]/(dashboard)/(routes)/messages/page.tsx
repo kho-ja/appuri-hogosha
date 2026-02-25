@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import usePagination from "@/lib/usePagination";
@@ -49,10 +49,14 @@ export default function Info() {
     usePagination({ persistToUrl: true });
 
   const searchParams = useSearchParams();
-  const initialTab =
-    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+  const [tab, setTab] = useState<"messages" | "scheduled">("messages");
 
-  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
+  useEffect(() => {
+    const urlTab = searchParams?.get("tab");
+    if (urlTab === "messages" || urlTab === "scheduled") {
+      setTab(urlTab);
+    }
+  }, [searchParams]);
 
   // Selected items are separate from pagination state
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
