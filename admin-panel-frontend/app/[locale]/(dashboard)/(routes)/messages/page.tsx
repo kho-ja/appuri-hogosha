@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import usePagination from "@/lib/usePagination";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSearchParams } from "next/navigation";
@@ -47,6 +49,19 @@ export default function Info() {
   const { formatDateTime } = useDateFormatter();
   const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
     usePagination({ persistToUrl: true });
+
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      setSearch(normalizeSearch(nextValue));
+      setPage(1);
+    },
+    300
+  );
 
   const searchParams = useSearchParams();
   const initialTab =
@@ -397,10 +412,11 @@ export default function Info() {
             <div className="w-full sm:max-w-sm">
               <Input
                 placeholder={t("filter")}
-                value={search}
-                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setSearch(e.target.value);
-                  setPage(1);
+                value={searchInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const next = e.target.value;
+                  setSearchInput(next);
+                  commitSearch(next);
                 }}
                 className="w-full"
               />
@@ -448,10 +464,11 @@ export default function Info() {
             <div className="w-full sm:max-w-sm">
               <Input
                 placeholder={t("filter")}
-                value={search}
-                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setSearch(e.target.value);
-                  setPage(1);
+                value={searchInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const next = e.target.value;
+                  setSearchInput(next);
+                  commitSearch(next);
                 }}
                 className="w-full"
               />

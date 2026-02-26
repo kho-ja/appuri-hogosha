@@ -37,6 +37,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import pagination from "@/types/pagination";
 import { useTranslations } from "next-intl";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 
 export interface BaseEntity {
   id: number;
@@ -107,6 +109,21 @@ export function GenericSelectTable<T extends BaseEntity>({
   const [filterBy, setFilterBy] = useState(config.filterBy || "all");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const pendingSelectionSyncRef = useRef(false);
+
+  const [searchInput, setSearchInput] = useState(search);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      const normalized = normalizeSearch(nextValue);
+      setSearch(normalized);
+      setPage(1);
+    },
+    300
+  );
 
   useEffect(() => {
     if (config.filterBy) {
@@ -500,10 +517,11 @@ export function GenericSelectTable<T extends BaseEntity>({
           {(config.enableFilters !== false || !config.filters) && (
             <Input
               placeholder="Search..."
-              value={search}
-              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setSearch(e.target.value);
-                setPage(1);
+              value={searchInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const next = e.target.value;
+                setSearchInput(next);
+                commitSearch(next);
               }}
               className="flex-1 max-w-sm"
             />

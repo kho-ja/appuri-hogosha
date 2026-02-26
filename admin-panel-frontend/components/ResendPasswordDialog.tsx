@@ -57,13 +57,18 @@ const ResendPasswordDialog: React.FC<ResendPasswordDialogProps> = ({
 
       if (error.message) {
         // Handle specific error messages
-        if (
+        if (error.message === "userAlreadyActive") {
+          errorMessage = t("userAlreadyActive");
+        } else if (
+          error.message === "parent_not_found" ||
+          error.message === "User not found"
+        ) {
+          errorMessage = "User not found in the system.";
+        } else if (
           error.message ===
           "User has already activated their account. No temporary password needed."
         ) {
           errorMessage = t("userAlreadyActive");
-        } else if (error.message === "User not found") {
-          errorMessage = "User not found in the system.";
         } else {
           errorMessage = error.message || t("resendPasswordError");
         }

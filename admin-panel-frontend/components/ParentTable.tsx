@@ -38,7 +38,7 @@ export function ParentTable({
   const { data: rawData, isLoading } = useListQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
-    { page, search, showOnlyNonLoggedIn },
+    { page, name: search, showOnlyNonLoggedIn },
     "POST"
   );
 

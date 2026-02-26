@@ -21,12 +21,14 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import { useListQuery } from "@/lib/useListQuery";
 import usePagination from "@/lib/usePagination";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +41,19 @@ export default function Info() {
   const { page, setPage, search, setSearch } = usePagination({
     persistToUrl: true,
   });
+
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      setSearch(normalizeSearch(nextValue));
+      setPage(1);
+    },
+    300
+  );
   const { data } = useListQuery<ParentApi>(
     "parent/list",
     ["parents", page, search],
@@ -195,10 +210,11 @@ export default function Info() {
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
+            value={searchInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const next = e.target.value;
+              setSearchInput(next);
+              commitSearch(next);
             }}
             className="sm:max-w-sm mb-4"
           />
