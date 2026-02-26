@@ -197,8 +197,9 @@ export function StudentProvider(props: PropsWithChildren) {
     refetchIntervalInBackground: true, // Important: continue refetching even when app is in background
   });
 
-  // Compute final loading state: loading if initializing OR (fetching AND no cached data)
-  const isLoading = isInitializing || (isFetching && !students);
+  // Compute final loading state:
+  const isLoading =
+    isInitializing || (!students && (isFetching || (!isError && !!session)));
 
   useEffect(() => {
     if (isSuccess && data) {
