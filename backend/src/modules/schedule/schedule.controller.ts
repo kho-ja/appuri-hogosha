@@ -78,8 +78,18 @@ export class ScheduleController {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const perPageParam = req.query.perPage || req.query.per_page;
-            const perPage = perPageParam
-                ? Math.max(parseInt(perPageParam as string) || 0, 1)
+            const perPageParsed = perPageParam ? parseInt(perPageParam as string) : undefined;
+
+            // Validate perPage bounds (min: 1, max: 100)
+            if (perPageParsed !== undefined && (perPageParsed < 1 || perPageParsed > 100)) {
+                return res.status(400).json({
+                    error: 'invalid_per_page',
+                    message: 'perPage must be between 1 and 100'
+                }).end();
+            }
+
+            const perPage = perPageParsed
+                ? Math.max(perPageParsed, 1)
                 : undefined;
             const priority = req.query.priority as string;
             const text = req.query.text as string;

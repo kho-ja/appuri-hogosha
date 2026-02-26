@@ -163,7 +163,7 @@ export class ScheduleService {
         const limit =
             request.perPage && request.perPage > 0
                 ? request.perPage
-                : parseInt(config.PER_PAGE + '') || 10;
+                : config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const postList = await this.repository.findWithPagination({

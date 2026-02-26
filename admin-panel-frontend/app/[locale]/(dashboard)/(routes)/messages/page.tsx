@@ -45,8 +45,15 @@ export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();
-  const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
-    usePagination({ persistToUrl: true });
+  const {
+    page,
+    setPage,
+    search,
+    setSearch,
+    perPage,
+    handlePerPageChange,
+    isHydrated,
+  } = usePagination({ persistToUrl: true });
 
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<"messages" | "scheduled">("messages");
@@ -69,7 +76,9 @@ export default function Info() {
   const { data } = useListQuery<PostApi>(
     "post/list",
     ["posts", page, search, perPage],
-    { page, text: search, perPage }
+    { page, text: search, perPage },
+    "GET",
+    { enabled: isHydrated }
   );
   interface ScheduledPostsResponse {
     scheduledPosts: ScheduledPost[];
@@ -80,7 +89,7 @@ export default function Info() {
     ["schedule", page, search, perPage],
     { page, text: search, perPage },
     "GET",
-    { enabled: tab === "scheduled" }
+    { enabled: tab === "scheduled" && isHydrated }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

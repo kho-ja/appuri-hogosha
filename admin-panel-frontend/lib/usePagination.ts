@@ -37,6 +37,7 @@ export interface UsePaginationReturn {
   perPage: number;
   search: string;
   filter: string | undefined;
+  isHydrated: boolean;
 
   // Setters
   setPage: (page: number) => void;
@@ -89,6 +90,9 @@ export default function usePagination(
   // Track if we're syncing from URL to avoid loops
   const isSyncingFromUrl = useRef(false);
 
+  // Track if hydration from URL is complete
+  const isHydrated = useRef(false);
+
   // Initialize state from URL or defaults
   const getInitialPage = () => {
     if (persistToUrl && searchParams && hasMounted) {
@@ -131,6 +135,8 @@ export default function usePagination(
 
   useEffect(() => {
     setHasMounted(true);
+    // Mark as hydrated after mount (initial URL sync effect will run)
+    isHydrated.current = true;
   }, []);
 
   // Sync state from URL when URL changes (e.g., browser back/forward)
@@ -178,19 +184,34 @@ export default function usePagination(
   useEffect(() => {
     if (!persistToUrl || isSyncingFromUrl.current || !pathName) return;
 
-    const params = new URLSearchParams();
+    // Start with existing search params to preserve other params (e.g., tab)
+    const params = new URLSearchParams(
+      searchParams ? Array.from(searchParams.entries()) : []
+    );
 
+    // Update pagination-managed params
     if (page > 1) {
       params.set("page", page.toString());
+    } else {
+      params.delete("page");
     }
+
     if (search && search.trim() !== "") {
       params.set("search", search);
+    } else {
+      params.delete("search");
     }
+
     if (perPage !== defaultPerPage) {
       params.set("perPage", perPage.toString());
+    } else {
+      params.delete("perPage");
     }
+
     if (filter && filter !== defaultFilter && typeof filter === "string") {
       params.set("filter", filter);
+    } else {
+      params.delete("filter");
     }
 
     const query = params.toString();
@@ -207,6 +228,7 @@ export default function usePagination(
     defaultPerPage,
     defaultFilter,
     persistToUrl,
+    searchParams,
   ]);
 
   // Reset page to 1 when search, perPage, or filter changes
@@ -259,6 +281,7 @@ export default function usePagination(
     perPage,
     search,
     filter,
+    isHydrated: persistToUrl ? hasMounted : true,
     setPage,
     setPerPage,
     setSearch,
