@@ -120,7 +120,7 @@ const Card = ({
               : theme.mode === 'dark'
                 ? '#2C2C2E'
                 : '#E5E5EA',
-            borderWidth: !isRead ? 1 : 1,
+            borderWidth: !isRead ? 1.5 : 1,
           },
         ]}
       >
@@ -182,18 +182,26 @@ const Card = ({
           />
         </View>
         <View style={styles.bottomRow}>
-          <ThemedText
-            type='smaller'
-            style={[
-              styles.dateText,
-              {
-                color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
-                opacity: isRead ? 0.6 : 1,
-              },
-            ]}
-          >
-            {localDateTime.toFormat('dd.MM.yyyy   HH:mm')}
-          </ThemedText>
+          <View style={styles.dateAndStatus}>
+            <ThemedText
+              type='smaller'
+              style={[
+                styles.dateText,
+                {
+                  color: theme.mode === 'dark' ? '#8E8E93' : '#666666',
+                  opacity: isRead ? 0.6 : 1,
+                },
+              ]}
+            >
+              {localDateTime.toFormat('dd.MM.yyyy   HH:mm')}
+            </ThemedText>
+            <Ionicons
+              name={isRead ? 'checkmark-done' : 'checkmark'}
+              size={iconSize}
+              color={theme.mode === 'dark' ? '#0A84FF' : '#2089dc'}
+              style={{ opacity: isRead ? 1 : 0.8 }}
+            />
+          </View>
           <TouchableOpacity
             style={[styles.readMoreButton, { opacity: 1 }]}
             onPress={handlePress}
@@ -267,6 +275,11 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontWeight: '300',
+  },
+  dateAndStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   descriptionRow: {
     flexDirection: 'row',

@@ -129,7 +129,7 @@ export default function SignIn() {
       if (data?.session) {
         showSuccessToast('Verification code sent');
         // Navigate to verify-otp screen with params
-        router.push({
+        router.replace({
           pathname: '/verify-otp',
           params: {
             country: JSON.stringify(selectedCountry),

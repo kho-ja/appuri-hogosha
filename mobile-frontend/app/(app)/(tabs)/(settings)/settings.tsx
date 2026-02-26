@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useSession } from '@/contexts/auth-context';
@@ -209,39 +209,16 @@ export default function SettingsScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         style={[styles.container, { backgroundColor }]}
       >
-        <SafeAreaView style={[styles.container, { backgroundColor }]}>
-          <View style={[styles.container, { backgroundColor }]}>
-            <View style={styles.infoCard}>
-              <ThemedText style={styles.sectionTitle}>
-                {i18n[language].personalInfo}
-              </ThemedText>
-              <View style={styles.infoRow}>
-                {displayName ? (
-                  <View style={styles.row}>
-                    <Ionicons
-                      name='person-outline'
-                      size={22}
-                      color={theme.colors.grey1}
-                      style={styles.infoIcon}
-                    />
-                    <View>
-                      <ThemedText
-                        style={[
-                          styles.profileInitial,
-                          { color: theme.colors.grey1 },
-                        ]}
-                      >
-                        {i18n[language].name}
-                      </ThemedText>
-                      <ThemedText style={styles.profileText}>
-                        {user && `${user.given_name} ${user.family_name}`}
-                      </ThemedText>
-                    </View>
-                  </View>
-                ) : null}
+        <View style={[styles.container, { backgroundColor }]}>
+          <View style={styles.infoCard}>
+            <ThemedText style={styles.sectionTitle}>
+              {i18n[language].personalInfo}
+            </ThemedText>
+            <View style={styles.infoRow}>
+              {displayName ? (
                 <View style={styles.row}>
                   <Ionicons
-                    name='call-outline'
+                    name='person-outline'
                     size={22}
                     color={theme.colors.grey1}
                     style={styles.infoIcon}
@@ -253,75 +230,93 @@ export default function SettingsScreen() {
                         { color: theme.colors.grey1 },
                       ]}
                     >
-                      {i18n[language].phoneNumber}
+                      {i18n[language].name}
                     </ThemedText>
                     <ThemedText style={styles.profileText}>
-                      +{user && user.phone_number}
+                      {user && `${user.given_name} ${user.family_name}`}
                     </ThemedText>
                   </View>
                 </View>
+              ) : null}
+              <View style={styles.row}>
+                <Ionicons
+                  name='call-outline'
+                  size={22}
+                  color={theme.colors.grey1}
+                  style={styles.infoIcon}
+                />
+                <View>
+                  <ThemedText
+                    style={[
+                      styles.profileInitial,
+                      { color: theme.colors.grey1 },
+                    ]}
+                  >
+                    {i18n[language].phoneNumber}
+                  </ThemedText>
+                  <ThemedText style={styles.profileText}>
+                    +{user && user.phone_number}
+                  </ThemedText>
+                </View>
               </View>
             </View>
-            <View style={styles.infoCard}>
-              <ThemedText style={styles.sectionTitle}>
-                {i18n[language].preferences}
-              </ThemedText>
-              <Pressable onPress={handlePresentModal} style={styles.row}>
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='language-outline' size={20} />
-                </View>
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].language}
-                </ThemedText>
-                <View style={styles.rowSpacer} />
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <Pressable
-                onPress={() => router.navigate('change-psswd' as Href)}
-                style={styles.row}
-              >
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='lock-closed-outline' size={20} />
-                </View>
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].changePassword}
-                </ThemedText>
-                <View style={styles.rowSpacer} />
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <Pressable
-                style={styles.row}
-                onPress={handlePresentFontSizeModal}
-              >
-                <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
-                  <Ionicons color='#fff' name='text' size={20} />
-                </View>
-                <ThemedText style={styles.rowLabel}>
-                  {i18n[language].textSize}
-                </ThemedText>
-                <View style={styles.rowSpacer} />
-                <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
-              </Pressable>
-              <ThemeSwitcher />
-            </View>
-            <View
-              style={{
-                marginTop: 40,
-                marginBottom: 20,
-              }}
-            >
-              <Button
-                buttonStyle={styles.submitButton}
-                onPress={handlePress}
-                title={i18n[language].logout}
-                titleStyle={styles.text}
-                icon={
-                  <Ionicons name='log-out-outline' size={30} color='#FF4444' />
-                }
-              />
-            </View>
           </View>
-        </SafeAreaView>
+          <View style={styles.infoCard}>
+            <ThemedText style={styles.sectionTitle}>
+              {i18n[language].preferences}
+            </ThemedText>
+            <Pressable onPress={handlePresentModal} style={styles.row}>
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='language-outline' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].language}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <Pressable
+              onPress={() => router.navigate('change-psswd' as Href)}
+              style={styles.row}
+            >
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='lock-closed-outline' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].changePassword}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <Pressable style={styles.row} onPress={handlePresentFontSizeModal}>
+              <View style={[styles.rowIcon, { backgroundColor: '#64748B' }]}>
+                <Ionicons color='#fff' name='text' size={20} />
+              </View>
+              <ThemedText style={styles.rowLabel}>
+                {i18n[language].textSize}
+              </ThemedText>
+              <View style={styles.rowSpacer} />
+              <Ionicons color='#C6C6C6' name='chevron-forward' size={20} />
+            </Pressable>
+            <ThemeSwitcher />
+          </View>
+          <View
+            style={{
+              marginTop: 40,
+              marginBottom: 20,
+            }}
+          >
+            <Button
+              buttonStyle={styles.submitButton}
+              onPress={handlePress}
+              title={i18n[language].logout}
+              titleStyle={styles.text}
+              icon={
+                <Ionicons name='log-out-outline' size={30} color='#FF4444' />
+              }
+            />
+          </View>
+        </View>
       </ScrollView>
       <Modal
         visible={isLanguageOpen}
