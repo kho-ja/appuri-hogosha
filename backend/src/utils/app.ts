@@ -15,6 +15,8 @@ class App {
 
     constructor(routes: any[]) {
         this.app = express();
+        // Behind API Gateway/ALB, trust proxy headers for correct client IP handling.
+        this.app.set('trust proxy', 1);
 
         this.app.use(
             express.json({

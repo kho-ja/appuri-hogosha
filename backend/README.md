@@ -47,6 +47,12 @@ SNS_ARN=""
 
 USE_MOCK_COGNITO="false"
 
+# Admin Google OAuth
+COGNITO_DOMAIN="https://your-cognito-domain.auth.ap-northeast-1.amazoncognito.com"
+BACKEND_URL="https://api.parents.jdu.uz"
+FRONTEND_URL="https://www.parents.jdu.uz"
+ALLOWED_FRONTEND_URLS="https://www.parents.jdu.uz,https://parents.jdu.uz"
+
 ```
 
 4. **Environment "Variables**":
@@ -66,6 +72,10 @@ USE_MOCK_COGNITO="false"
 - `ADMIN_POOL_ID`: The pool ID of the admin user.
 - `ADMIN_CLIENT_ID`: The client ID of the admin user.
 - `USE_MOCK_COGNITO`: Whatever hasn't aws services to use mock cognito.
+- `COGNITO_DOMAIN`: Cognito hosted UI domain used for OAuth token/userinfo endpoints.
+- `BACKEND_URL`: Public backend base URL used to build Google callback endpoint.
+- `FRONTEND_URL`: Canonical frontend URL used as OAuth redirect state target.
+- `ALLOWED_FRONTEND_URLS`: Comma-separated allowlist of valid frontend redirect bases.
 
 5. **Install Dependencies**: Run the following command to install the required dependencies:
 
