@@ -5,42 +5,26 @@ import { ExtendedRequest } from '../../middlewares/auth';
 import { ApiError } from '../../errors/ApiError';
 import { config } from '../../config';
 
-// Allowed frontend base URLs for redirects - read at runtime to ensure env vars are fresh
-function getDefaultFrontendUrl(): string {
-    return config.FRONTEND_URL;
-}
-
-function getValidFrontendUrls(): string[] {
-    const configured = config.ALLOWED_FRONTEND_URLS
+// Allowed frontend base URLs for redirects
+const DEFAULT_FRONTEND_URL = config.FRONTEND_URL || 'http://localhost:3000';
+const VALID_FRONTEND_URLS: string[] = (
+    config.ALLOWED_FRONTEND_URLS
         ? config.ALLOWED_FRONTEND_URLS.split(',')
               .map(s => s.trim())
               .filter(Boolean)
-        : [];
+        : [DEFAULT_FRONTEND_URL]
+) as string[];
 
-    if (!configured.includes(config.FRONTEND_URL)) {
-        configured.unshift(config.FRONTEND_URL);
+const ALLOWED_FRONTEND_ORIGINS: string[] = VALID_FRONTEND_URLS.map(v => {
+    try {
+        return new URL(v).origin;
+    } catch {
+        return '';
     }
-
-    return configured;
-}
-
-function getAllowedFrontendOrigins(): string[] {
-    return getValidFrontendUrls()
-        .map(v => {
-            try {
-                return new URL(v).origin;
-            } catch {
-                return '';
-            }
-        })
-        .filter(Boolean);
-}
+}).filter(Boolean);
 
 function getAllowedFrontendBase(state: any): string {
-    const defaultBase = getDefaultFrontendUrl();
-    const validFrontendUrls = getValidFrontendUrls();
-    const allowedOrigins = getAllowedFrontendOrigins();
-
+    const defaultBase = DEFAULT_FRONTEND_URL;
     const candidate = Array.isArray(state) ? state[0] : state;
     if (typeof candidate !== 'string' || candidate.length === 0) {
         return defaultBase;
@@ -50,29 +34,15 @@ function getAllowedFrontendBase(state: any): string {
         const parsed = new URL(candidate, defaultBase);
         if (
             (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
-            allowedOrigins.includes(parsed.origin)
+            ALLOWED_FRONTEND_ORIGINS.includes(parsed.origin)
         ) {
-            const idx = allowedOrigins.indexOf(parsed.origin);
-            return validFrontendUrls[idx];
+            const idx = ALLOWED_FRONTEND_ORIGINS.indexOf(parsed.origin);
+            return VALID_FRONTEND_URLS[idx];
         }
     } catch {
         // ignore and fall back
     }
     return defaultBase;
-}
-
-function getGoogleCallbackUrl(): string {
-    const base = new URL(config.BACKEND_URL);
-    const normalizedPath = base.pathname.endsWith('/')
-        ? base.pathname
-        : `${base.pathname}/`;
-
-    const adminBasePath = normalizedPath.includes('/admin-panel')
-        ? normalizedPath
-        : '/admin-panel/';
-
-    base.pathname = `${adminBasePath}google/callback`;
-    return base.toString();
 }
 
 export class AuthController {
@@ -208,27 +178,11 @@ export class AuthController {
         try {
             const cognitoDomain = config.COGNITO_DOMAIN;
             const clientId = config.ADMIN_CLIENT_ID;
-            const callbackUrl = getGoogleCallbackUrl();
-            const frontendUrl = config.FRONTEND_URL;
+            const callbackUrl = `${config.BACKEND_URL}/admin-panel/google/callback`;
+            const frontendUrl = config.FRONTEND_URL || 'http://localhost:3000';
 
             if (!cognitoDomain || !clientId || !config.BACKEND_URL) {
                 throw new ApiError(500, 'Cognito configuration missing');
-            }
-            try {
-                const parsed = new URL(frontendUrl);
-                if (
-                    parsed.protocol !== 'https:' &&
-                    parsed.hostname !== 'localhost'
-                ) {
-                    throw new Error(
-                        'Invalid frontend protocol for OAuth state'
-                    );
-                }
-            } catch {
-                throw new ApiError(
-                    500,
-                    'Frontend URL configuration is invalid for OAuth'
-                );
             }
 
             const cognitoUrl =
@@ -263,7 +217,7 @@ export class AuthController {
                 throw { status: 400, message: 'Authorization code missing' };
             }
 
-            const redirectUri = getGoogleCallbackUrl();
+            const redirectUri = `${config.BACKEND_URL}/admin-panel/google/callback`;
             const result = await this.service.handleGoogleCallback(
                 code as string,
                 redirectUri
