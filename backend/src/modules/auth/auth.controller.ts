@@ -62,10 +62,17 @@ function getAllowedFrontendBase(state: any): string {
 }
 
 function getGoogleCallbackUrl(): string {
-    return new URL(
-        '/admin-panel/google/callback',
-        config.BACKEND_URL
-    ).toString();
+    const base = new URL(config.BACKEND_URL);
+    const normalizedPath = base.pathname.endsWith('/')
+        ? base.pathname
+        : `${base.pathname}/`;
+
+    const adminBasePath = normalizedPath.includes('/admin-panel')
+        ? normalizedPath
+        : '/admin-panel/';
+
+    base.pathname = `${adminBasePath}google/callback`;
+    return base.toString();
 }
 
 export class AuthController {
