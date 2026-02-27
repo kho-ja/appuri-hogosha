@@ -288,7 +288,7 @@ export class PostService {
         schoolId: number
     ): Promise<ListPostsResponse> {
         const page = request.page || 1;
-        const limit = config.PER_PAGE;
+        const limit = request.perPage || config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const filters = {
