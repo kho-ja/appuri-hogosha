@@ -292,6 +292,7 @@ export class PostService {
         const offset = (page - 1) * limit;
 
         const filters = {
+            text: request.text,
             title: request.title,
             description: request.description,
             priority: request.priority,

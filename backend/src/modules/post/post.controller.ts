@@ -471,6 +471,7 @@ export class PostModuleController implements IController {
     ) => {
         try {
             const page = parseInt(req.query.page as string) || 1;
+            const text = (req.query.text as string) || '';
             const title = (req.query.title as string) || '';
             const description = (req.query.description as string) || '';
             const priority = (req.query.priority as string) || '';
@@ -480,6 +481,7 @@ export class PostModuleController implements IController {
             const result = await postService.getPostList(
                 {
                     page,
+                    text,
                     title,
                     description,
                     priority,

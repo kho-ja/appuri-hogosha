@@ -67,6 +67,7 @@ export interface UpdatePostData {
 }
 
 export interface ListFilters {
+    text?: string;
     title?: string;
     description?: string;
     priority?: string;
@@ -151,6 +152,12 @@ export class PostRepository {
             offset,
         };
 
+        if (filters?.text) {
+            filterClauses.push(
+                '(po.title LIKE :text OR po.description LIKE :text)'
+            );
+            params.text = `%${filters.text}%`;
+        }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
             params.title = `%${filters.title}%`;
@@ -205,6 +212,12 @@ export class PostRepository {
         const filterClauses: string[] = ['po.school_id = :school_id'];
         const params: any = { school_id: schoolId };
 
+        if (filters?.text) {
+            filterClauses.push(
+                '(po.title LIKE :text OR po.description LIKE :text)'
+            );
+            params.text = `%${filters.text}%`;
+        }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
             params.title = `%${filters.title}%`;
