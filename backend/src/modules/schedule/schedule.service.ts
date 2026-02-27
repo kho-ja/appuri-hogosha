@@ -160,7 +160,7 @@ export class ScheduleService {
         schoolId: number
     ): Promise<ScheduledPostListResponse> {
         const page = request.page || 1;
-        const limit = parseInt(config.PER_PAGE + '') || 10;
+        const limit = request.perPage || parseInt(config.PER_PAGE + '') || 10;
         const offset = (page - 1) * limit;
 
         const postList = await this.repository.findWithPagination({

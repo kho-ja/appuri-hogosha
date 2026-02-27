@@ -61,6 +61,7 @@ export interface CreatePostResponse {
 
 export interface ListPostsRequest {
     page?: number;
+    perPage?: number;
     text?: string;
     title?: string;
     description?: string;

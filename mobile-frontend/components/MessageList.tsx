@@ -599,13 +599,25 @@ const MessageList = ({
   const hasCachedData =
     (data?.pages.flat().length ?? 0) > 0 || localMessages.length > 0;
 
+  // Check if the query is expected to run but hasn't produced any result yet.
+  // This covers the gap between `student` being set (enabling the query) and
+  // React Query actually starting to fetch (`isLoading` becoming true).
+  // Without this, there is one render frame where student is set, isLoading is
+  // false, and data is undefined — which would incorrectly show "no messages".
+  const isQueryPending =
+    !hasCachedData &&
+    !data &&
+    !isError &&
+    Boolean(student && session && (isDemoMode || isOnline));
+
   // Show loading state during initial load
   // Don't show loading if we have cached data to display
   if (
     !student ||
     (!isDemoMode && isOnline && !session) ||
     (isLoading && (isDemoMode || (isOnline && session)) && !hasCachedData) ||
-    (!isOnline && !isDemoMode && !hasLoadedOffline && !hasCachedData)
+    (!isOnline && !isDemoMode && !hasLoadedOffline && !hasCachedData) ||
+    isQueryPending
   ) {
     return <MessageListLoading />;
   }
