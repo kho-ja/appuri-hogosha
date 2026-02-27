@@ -292,6 +292,7 @@ export class PostService {
         const offset = (page - 1) * limit;
 
         const filters = {
+            text: request.text,
             title: request.title,
             description: request.description,
             priority: request.priority,
@@ -754,7 +755,7 @@ export class PostService {
 
         await postRepository.resetGroupPushNotifications(postId, groupId);
 
-        return { message: 'Push notifications reset for group' };
+        return { message: 'notificationReSent' };
     }
 
     /**
@@ -763,7 +764,7 @@ export class PostService {
     async retryStudentPush(postId: number, studentId: number) {
         await postRepository.resetStudentPushNotifications(postId, studentId);
 
-        return { message: 'Push notifications reset for student' };
+        return { message: 'notificationReSent' };
     }
 
     /**
@@ -772,7 +773,7 @@ export class PostService {
     async retryParentPush(postId: number, parentId: number) {
         await postRepository.resetParentPushNotification(postId, parentId);
 
-        return { message: 'Push notification reset for parent' };
+        return { message: 'notificationReSent' };
     }
 
     // ==================== Update Senders ====================
@@ -833,16 +834,8 @@ export class PostService {
             await postRepository.insertPostStudents(postId, allStudentIds);
             await postRepository.insertPostGroups(postId, groupIds);
 
-            // Get all parents for the students
-            const parentIds =
-                await postRepository.findParentsByStudents(allStudentIds);
-
-            // Delete old parents and insert new ones
-            await postRepository.deletePostParentsNotInStudents(
-                postId,
-                allStudentIds
-            );
-            await postRepository.insertPostParents(postId, parentIds);
+            // Rebuild post parents for the new PostStudent set
+            await postRepository.insertPostParents(postId);
 
             // Commit transaction
             await DB.execute('COMMIT');

@@ -21,7 +21,7 @@ import {
 import TableApi from "@/components/TableApi";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import AdminApi from "@/types/adminApi";
 import useApiMutation from "@/lib/useApiMutation";
@@ -30,6 +30,8 @@ import usePagination from "@/lib/usePagination";
 import { Plus } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { useListQuery } from "@/lib/useListQuery";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 
 export default function Admins() {
   const t = useTranslations("admins");
@@ -37,6 +39,19 @@ export default function Admins() {
   const { page, setPage, search, setSearch } = usePagination({
     persistToUrl: true,
   });
+
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      setSearch(normalizeSearch(nextValue));
+      setPage(1);
+    },
+    300
+  );
   const { data } = useListQuery<AdminApi>(
     "admin/list",
     ["admins", page, search],
@@ -132,10 +147,11 @@ export default function Admins() {
         <div className="flex flex-col sm:flex-row justify-between">
           <Input
             placeholder={t("filter")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
+            value={searchInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const next = e.target.value;
+              setSearchInput(next);
+              commitSearch(next);
             }}
             className="sm:max-w-sm mb-4"
           />
