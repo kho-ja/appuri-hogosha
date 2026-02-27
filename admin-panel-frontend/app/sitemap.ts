@@ -1,44 +1,59 @@
 import type { MetadataRoute } from "next";
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://appuri-hogosha.vercel.app";
-
-// defaultLocale "uz" uses no prefix (localePrefix: "as-needed")
-const localePathMap: Record<string, string> = {
-  uz: "",
-  en: "/en",
-  ja: "/ja",
-  ru: "/ru",
-};
+import { getAllPosts } from "@/lib/blog";
+import { SITE_URL, LOCALES, LOCALE_PATH_MAP, localePath } from "@/lib/i18nConfig";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  // Generate entries for each locale
-  const parentNotificationEntries = Object.entries(localePathMap).map(
-    ([locale, prefix]) => ({
-      url: `${siteUrl}${prefix}/parentnotification`,
+  const parentNotificationEntries = (Object.entries(LOCALE_PATH_MAP) as [string, string][]).map(
+    ([, prefix]) => ({
+      url: `${SITE_URL}${prefix}/parentnotification`,
       lastModified: now,
       changeFrequency: "monthly" as const,
       priority: 1.0,
       alternates: {
-        languages: {
-          en: `${siteUrl}/en/parentnotification`,
-          uz: `${siteUrl}/parentnotification`,
-          ja: `${siteUrl}/ja/parentnotification`,
-          ru: `${siteUrl}/ru/parentnotification`,
-          "x-default": `${siteUrl}/parentnotification`,
-        },
+        languages: Object.fromEntries([
+          ...LOCALES.map((l) => [l, `${SITE_URL}${localePath(l)}/parentnotification`]),
+          ["x-default", `${SITE_URL}/parentnotification`],
+        ]),
       },
     })
   );
 
-  const loginEntries = Object.entries(localePathMap).map(([, prefix]) => ({
-    url: `${siteUrl}${prefix}/login`,
+  const loginEntries = Object.entries(LOCALE_PATH_MAP).map(([, prefix]) => ({
+    url: `${SITE_URL}${prefix}/login`,
     lastModified: now,
     changeFrequency: "yearly" as const,
     priority: 0.3,
   }));
 
-  return [...parentNotificationEntries, ...loginEntries];
+  const blogListEntries = Object.entries(LOCALE_PATH_MAP).map(([, prefix]) => ({
+    url: `${SITE_URL}${prefix}/blog`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  }));
+
+  // One getAllPosts call per locale (not per slug)
+  const blogPostEntries: MetadataRoute.Sitemap = LOCALES.flatMap((locale) => {
+    const prefix = localePath(locale);
+    return getAllPosts(locale).map((post) => ({
+      url: `${SITE_URL}${prefix}/blog/${post.slug}`,
+      lastModified: new Date(post.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+      alternates: {
+        languages: Object.fromEntries(
+          LOCALES.map((l) => [l, `${SITE_URL}${localePath(l)}/blog/${post.slug}`])
+        ),
+      },
+    }));
+  });
+
+  return [
+    ...parentNotificationEntries,
+    ...loginEntries,
+    ...blogListEntries,
+    ...blogPostEntries,
+  ];
 }
