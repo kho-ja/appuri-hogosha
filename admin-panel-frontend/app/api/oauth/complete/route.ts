@@ -26,7 +26,20 @@ export async function GET(req: Request) {
       userJson: JSON.stringify(userData),
       redirectTo: "/dashboard",
     });
-  } catch {
+  } catch (error: unknown) {
+    // Auth.js may throw framework redirect-like errors to complete navigation.
+    // Re-throw them so successful sign-in is not converted into oauth_processing_failed.
+    const err = error as { digest?: string; message?: string };
+    const digest = typeof err?.digest === "string" ? err.digest : "";
+    const message = typeof err?.message === "string" ? err.message : "";
+    if (digest.startsWith("NEXT_REDIRECT") || message.includes("NEXT_REDIRECT")) {
+      throw error;
+    }
+
+    console.error("OAuth complete processing failed", {
+      digest: err?.digest,
+      message: err?.message,
+    });
     return NextResponse.redirect(
       new URL("/login?error=oauth_processing_failed", origin)
     );
