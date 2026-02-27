@@ -37,7 +37,6 @@ export interface UsePaginationReturn {
   perPage: number;
   search: string;
   filter: string | undefined;
-  isHydrated: boolean;
 
   // Setters
   setPage: (page: number) => void;
@@ -78,8 +77,6 @@ export default function usePagination(
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [hasMounted, setHasMounted] = useState(false);
-
   // Track previous values to detect changes that should reset page
   const previousValues = useRef({
     perPage: defaultPerPage,
@@ -90,12 +87,9 @@ export default function usePagination(
   // Track if we're syncing from URL to avoid loops
   const isSyncingFromUrl = useRef(false);
 
-  // Track if hydration from URL is complete
-  const isHydrated = useRef(false);
-
   // Initialize state from URL or defaults
   const getInitialPage = () => {
-    if (persistToUrl && searchParams && hasMounted) {
+    if (persistToUrl && searchParams) {
       const pageParam = searchParams.get("page");
       return pageParam ? Number(pageParam) || defaultPage : defaultPage;
     }
@@ -103,7 +97,7 @@ export default function usePagination(
   };
 
   const getInitialSearch = (): string => {
-    if (persistToUrl && searchParams && hasMounted) {
+    if (persistToUrl && searchParams) {
       const searchParam = searchParams.get("search");
       return searchParam ? searchParam : defaultSearch;
     }
@@ -111,7 +105,7 @@ export default function usePagination(
   };
 
   const getInitialPerPage = () => {
-    if (persistToUrl && searchParams && hasMounted) {
+    if (persistToUrl && searchParams) {
       const perPageParam = searchParams.get("perPage");
       return perPageParam
         ? Number(perPageParam) || defaultPerPage
@@ -121,7 +115,7 @@ export default function usePagination(
   };
 
   const getInitialFilter = () => {
-    if (persistToUrl && searchParams && hasMounted) {
+    if (persistToUrl && searchParams) {
       const filterParam = searchParams.get("filter");
       return filterParam || defaultFilter;
     }
@@ -132,12 +126,6 @@ export default function usePagination(
   const [search, setSearch] = useState(getInitialSearch);
   const [perPage, setPerPage] = useState(getInitialPerPage);
   const [filter, setFilter] = useState<string | undefined>(getInitialFilter);
-
-  useEffect(() => {
-    setHasMounted(true);
-    // Mark as hydrated after mount (initial URL sync effect will run)
-    isHydrated.current = true;
-  }, []);
 
   // Sync state from URL when URL changes (e.g., browser back/forward)
   useEffect(() => {
@@ -184,34 +172,19 @@ export default function usePagination(
   useEffect(() => {
     if (!persistToUrl || isSyncingFromUrl.current || !pathName) return;
 
-    // Start with existing search params to preserve other params (e.g., tab)
-    const params = new URLSearchParams(
-      searchParams ? Array.from(searchParams.entries()) : []
-    );
+    const params = new URLSearchParams();
 
-    // Update pagination-managed params
     if (page > 1) {
       params.set("page", page.toString());
-    } else {
-      params.delete("page");
     }
-
     if (search && search.trim() !== "") {
       params.set("search", search);
-    } else {
-      params.delete("search");
     }
-
     if (perPage !== defaultPerPage) {
       params.set("perPage", perPage.toString());
-    } else {
-      params.delete("perPage");
     }
-
     if (filter && filter !== defaultFilter && typeof filter === "string") {
       params.set("filter", filter);
-    } else {
-      params.delete("filter");
     }
 
     const query = params.toString();
@@ -228,7 +201,6 @@ export default function usePagination(
     defaultPerPage,
     defaultFilter,
     persistToUrl,
-    searchParams,
   ]);
 
   // Reset page to 1 when search, perPage, or filter changes
@@ -281,7 +253,6 @@ export default function usePagination(
     perPage,
     search,
     filter,
-    isHydrated: persistToUrl ? hasMounted : true,
     setPage,
     setPerPage,
     setSearch,

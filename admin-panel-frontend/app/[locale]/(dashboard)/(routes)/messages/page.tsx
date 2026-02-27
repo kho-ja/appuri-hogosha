@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import usePagination from "@/lib/usePagination";
@@ -45,25 +45,14 @@ export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
   const { formatDateTime } = useDateFormatter();
-  const {
-    page,
-    setPage,
-    search,
-    setSearch,
-    perPage,
-    handlePerPageChange,
-    isHydrated,
-  } = usePagination({ persistToUrl: true });
+  const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
+    usePagination({ persistToUrl: true });
 
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<"messages" | "scheduled">("messages");
+  const initialTab =
+    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
 
-  useEffect(() => {
-    const urlTab = searchParams?.get("tab");
-    if (urlTab === "messages" || urlTab === "scheduled") {
-      setTab(urlTab);
-    }
-  }, [searchParams]);
+  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
 
   // Selected items are separate from pagination state
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
@@ -76,9 +65,7 @@ export default function Info() {
   const { data } = useListQuery<PostApi>(
     "post/list",
     ["posts", page, search, perPage],
-    { page, text: search, perPage },
-    "GET",
-    { enabled: isHydrated }
+    { page, text: search, perPage }
   );
   interface ScheduledPostsResponse {
     scheduledPosts: ScheduledPost[];
@@ -89,7 +76,7 @@ export default function Info() {
     ["schedule", page, search, perPage],
     { page, text: search, perPage },
     "GET",
-    { enabled: tab === "scheduled" && isHydrated }
+    { enabled: tab === "scheduled" }
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

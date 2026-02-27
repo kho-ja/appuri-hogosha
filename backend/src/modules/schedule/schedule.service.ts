@@ -27,7 +27,7 @@ import DB from '../../utils/db-client';
 import { config } from '../../config';
 
 export class ScheduleService {
-    constructor(private repository: ScheduleRepository) { }
+    constructor(private repository: ScheduleRepository) {}
 
     private isSafeUploadedImageName(imageName: string): boolean {
         if (!imageName || typeof imageName !== 'string') return false;
@@ -160,10 +160,7 @@ export class ScheduleService {
         schoolId: number
     ): Promise<ScheduledPostListResponse> {
         const page = request.page || 1;
-        const limit =
-            request.perPage && request.perPage > 0
-                ? request.perPage
-                : config.PER_PAGE;
+        const limit = request.perPage || parseInt(config.PER_PAGE + '') || 10;
         const offset = (page - 1) * limit;
 
         const postList = await this.repository.findWithPagination({

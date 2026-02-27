@@ -182,8 +182,8 @@ export class PostService {
         const groupIds =
             groups && Array.isArray(groups)
                 ? groups
-                    .map((id: any) => parseInt(id, 10))
-                    .filter((id: number) => !isNaN(id))
+                      .map((id: any) => parseInt(id, 10))
+                      .filter((id: number) => !isNaN(id))
                 : [];
 
         if (groupIds.length > 0) {
@@ -288,10 +288,7 @@ export class PostService {
         schoolId: number
     ): Promise<ListPostsResponse> {
         const page = request.page || 1;
-        const limit =
-            request.perPage && request.perPage > 0
-                ? request.perPage
-                : config.PER_PAGE;
+        const limit = request.perPage || config.PER_PAGE;
         const offset = (page - 1) * limit;
 
         const filters = {
