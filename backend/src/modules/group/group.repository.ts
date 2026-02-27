@@ -20,6 +20,7 @@ export interface GroupDetailInfo {
     created_at: Date;
     sub_group_id: number | null;
     sub_group_name: string | null;
+    member_count: number;
 }
 
 export interface StudentMember {
@@ -116,7 +117,8 @@ export class GroupRepository {
                 sg.name,
                 sg.created_at,
                 sg.sub_group_id,
-                parent.name as sub_group_name
+                parent.name as sub_group_name,
+                (SELECT COUNT(*) FROM GroupMember WHERE group_id = sg.id) as member_count
             FROM StudentGroup sg
             LEFT JOIN StudentGroup parent ON sg.sub_group_id = parent.id
             WHERE ${whereClause}
@@ -155,7 +157,8 @@ export class GroupRepository {
                 sg.name,
                 sg.created_at,
                 sg.sub_group_id,
-                parent_sg.name as sub_group_name
+                parent_sg.name as sub_group_name,
+                (SELECT COUNT(*) FROM GroupMember WHERE group_id = sg.id) as member_count
             FROM StudentGroup sg
             LEFT JOIN StudentGroup parent_sg ON sg.sub_group_id = parent_sg.id
             WHERE sg.id = :id AND sg.school_id = :school_id`,

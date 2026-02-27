@@ -1346,6 +1346,12 @@
     "resendPasswordDescriptionPhone": "この管理者の電話番号に新しい一時パスワードを送信します。",
     "userAlreadyActive": "このユーザーはすでにアクティブです。パスワードを再送信する必要はありません。"
   },
+  "LogoutConfirmationDialog": {
+    "title": "ログアウトの確認",
+    "description": "本当に管理パネルからログアウトしますか？",
+    "yes": "ログアウト",
+    "no": "キャンセル"
+  },
   "BulkResendPasswordDialog": {
     "bulkResendPassword": "全ての保護者にパスワード再送信",
     "bulkResendDescription": "まだログインしていない選択された全ての保護者にSMSで新しい一時パスワードを送信します。",

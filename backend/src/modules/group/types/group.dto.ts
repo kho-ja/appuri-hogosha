@@ -27,6 +27,7 @@ export interface GroupDetailData {
     created_at: Date;
     sub_group_id: number | null;
     sub_group_name: string | null;
+    member_count: number;
 }
 
 export interface StudentMemberData {
