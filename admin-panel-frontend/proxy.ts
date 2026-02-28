@@ -9,6 +9,8 @@ const intlMiddleware = createMiddleware(routing);
 const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
   let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
+  const hasRefreshTokenError = req.auth?.error === "RefreshAccessTokenError";
+  const isAuthenticated = Boolean(req.auth && !hasRefreshTokenError);
 
   const hasOAuthParams =
     req.nextUrl.searchParams.has("access_token") &&
@@ -32,14 +34,17 @@ const authMiddleware = auth((req) => {
     }
   }
 
-  if (!req.auth && !isPublicPage) {
+  if (!isAuthenticated && !isPublicPage) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
     const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
+    if (hasRefreshTokenError) {
+      newUrl.searchParams.set("session", "expired");
+    }
     return Response.redirect(newUrl);
   }
 
   if (
-    req.auth &&
+    isAuthenticated &&
     (req.nextUrl.pathname.endsWith("/login") ||
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
@@ -48,7 +53,7 @@ const authMiddleware = auth((req) => {
     return Response.redirect(newUrl);
   }
 
-  if (req.auth?.user?.role !== "admin" && isAdminPath) {
+  if (isAuthenticated && req.auth?.user?.role !== "admin" && isAdminPath) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
     const newUrl = new URL(`/${locale}`, req.nextUrl.origin);
     return Response.redirect(newUrl);
