@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Link } from "@/navigation";
 import {
   CircleUser,
@@ -9,6 +8,8 @@ import {
   Package2,
   ChevronLeft,
   ChevronRight,
+  LogOut,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,30 +27,13 @@ import { signOut, useSession } from "next-auth/react";
 import NavLinks from "@/components/NavLinks";
 import LanguageSelect from "@/components/LanguageSelect";
 import { User } from "next-auth";
-import { routing, type Locale } from "@/i18n/routing";
+import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
 
-const isLocale = (value: string): value is Locale =>
-  (routing.locales as readonly string[]).includes(value);
-
-const getLoginUrlWithLocale = (pathname: string): string => {
-  const pathSegments = pathname.split("/").filter(Boolean);
-  const firstSegment = pathSegments[0];
-  const locale: Locale =
-    firstSegment && isLocale(firstSegment)
-      ? firstSegment
-      : routing.defaultLocale;
-
-  return locale === routing.defaultLocale ? "/login" : `/${locale}/login`;
-};
-
-const handleSignOut = async (pathname: string | null) => {
-  const safePathname = pathname ?? "/";
-  const loginUrl = getLoginUrlWithLocale(safePathname);
-  return await signOut({ callbackUrl: loginUrl });
+const handleSignOut = async () => {
+  return await signOut({ callbackUrl: "/login" });
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const { data: session } = useSession({ required: true });
   const t = useTranslations("app");
   const tName = useTranslations("names");
@@ -65,9 +49,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (session?.error === "RefreshAccessTokenError") {
-      handleSignOut(pathname);
+      handleSignOut();
     }
-  }, [session?.error, pathname]);
+  }, [session?.error]);
 
   const user = session?.user as User;
 
@@ -222,12 +206,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   {t("support")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => await handleSignOut(pathname)}
-                  className="hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
-                >
-                  {t("logout")}
-                </DropdownMenuItem>
+                <LogoutConfirmationDialog>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex items-center gap-2 text-destructive hover:bg-destructive hover:text-white transition-colors duration-200 cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t("logout")}
+                  </DropdownMenuItem>
+                </LogoutConfirmationDialog>
                 <div className="sm:hidden">
                   <DropdownMenuSeparator />
                   <div className="flex gap-2">
