@@ -50,6 +50,8 @@ import {
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
 import usePagination from "@/lib/usePagination";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 import PageHeader from "@/components/PageHeader";
 import {
   Table,
@@ -167,6 +169,19 @@ export default function Groups() {
   const { page, setPage, search, setSearch } = usePagination({
     persistToUrl: true,
   });
+
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      setSearch(normalizeSearch(nextValue));
+      setPage(1);
+    },
+    300
+  );
   const { data } = useListQuery<GroupApi>(
     `group/list?name=${search}&all=true`,
     ["groups", search]
@@ -484,10 +499,11 @@ export default function Groups() {
           <div className="w-full sm:max-w-sm">
             <Input
               placeholder={t("filter")}
-              value={search}
-              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setSearch(e.target.value);
-                setPage(1);
+              value={searchInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const next = e.target.value;
+                setSearchInput(next);
+                commitSearch(next);
               }}
               className="w-full"
             />

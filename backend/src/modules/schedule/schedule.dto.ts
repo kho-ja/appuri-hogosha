@@ -21,6 +21,7 @@ export interface CreateScheduledPostResponse {
 // List Scheduled Posts
 export interface ScheduledPostListRequest {
     page?: number;
+    perPage?: number;
     priority?: string;
     text?: string;
 }
