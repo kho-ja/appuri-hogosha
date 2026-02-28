@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Link } from "@/navigation";
 import {
   CircleUser,
@@ -25,12 +26,30 @@ import { signOut, useSession } from "next-auth/react";
 import NavLinks from "@/components/NavLinks";
 import LanguageSelect from "@/components/LanguageSelect";
 import { User } from "next-auth";
+import { routing, type Locale } from "@/i18n/routing";
 
-const handleSignOut = async () => {
-  return await signOut({ callbackUrl: "/login" });
+const isLocale = (value: string): value is Locale =>
+  (routing.locales as readonly string[]).includes(value);
+
+const getLoginUrlWithLocale = (pathname: string): string => {
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const firstSegment = pathSegments[0];
+  const locale: Locale =
+    firstSegment && isLocale(firstSegment)
+      ? firstSegment
+      : routing.defaultLocale;
+
+  return locale === routing.defaultLocale ? "/login" : `/${locale}/login`;
+};
+
+const handleSignOut = async (pathname: string | null) => {
+  const safePathname = pathname ?? "/";
+  const loginUrl = getLoginUrlWithLocale(safePathname);
+  return await signOut({ callbackUrl: loginUrl });
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { data: session } = useSession({ required: true });
   const t = useTranslations("app");
   const tName = useTranslations("names");
@@ -46,9 +65,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (session?.error === "RefreshAccessTokenError") {
-      handleSignOut();
+      handleSignOut(pathname);
     }
-  }, [session?.error]);
+  }, [session?.error, pathname]);
 
   const user = session?.user as User;
 
@@ -204,7 +223,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={async () => await signOut({ callbackUrl: "/login" })}
+                  onClick={async () => await handleSignOut(pathname)}
                   className="hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
                 >
                   {t("logout")}
