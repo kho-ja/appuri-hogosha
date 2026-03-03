@@ -35,7 +35,8 @@
     "oauth_processing_failed": "Не удалось обработать ответ OAuth.",
     "user_not_found": "Ваш аккаунт Google не зарегистрирован как админ.",
     "oauth_missing_params": "Отсутствуют параметры OAuth.",
-    "callback_error": "Ошибка при обработке callback. Пожалуйста, попробуйте еще раз."
+    "callback_error": "Ошибка при обработке callback. Пожалуйста, попробуйте еще раз.",
+    "session_expired": "Ваша сессия истекла. Пожалуйста, войдите снова."
   },
   "ForgotPasswordPage": {
     "title": "Забыли пароль?",

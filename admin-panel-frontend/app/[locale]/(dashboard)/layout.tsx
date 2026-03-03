@@ -30,7 +30,9 @@ import { User } from "next-auth";
 import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
 
 const handleSignOut = async () => {
-  return await signOut({ callbackUrl: "/login" });
+  const loginUrl = new URL("/login", typeof window !== "undefined" ? window.location.origin : "");
+  loginUrl.searchParams.set("error", "session_expired");
+  return await signOut({ callbackUrl: loginUrl.toString() });
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

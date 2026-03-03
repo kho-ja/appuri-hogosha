@@ -35,7 +35,8 @@
     "oauth_processing_failed": "Could not process OAuth response.",
     "user_not_found": "Your Google account is not registered as an admin.",
     "oauth_missing_params": "Missing OAuth parameters.",
-    "callback_error": "Login failed during callback. Please try again."
+    "callback_error": "Login failed during callback. Please try again.",
+    "session_expired": "Your session has expired. Please log in again."
   },
   "ForgotPasswordPage": {
     "title": "Forgot Password",

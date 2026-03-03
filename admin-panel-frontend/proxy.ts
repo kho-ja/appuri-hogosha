@@ -59,14 +59,14 @@ const authMiddleware = auth((req) => {
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const homePath = getLocalePath("", locale) || "/";
+    const homePath = getLocalePath("/", locale);
     const newUrl = new URL(homePath, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const homePath = getLocalePath("", locale) || "/";
+    const homePath = getLocalePath("/", locale);
     const newUrl = new URL(homePath, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }

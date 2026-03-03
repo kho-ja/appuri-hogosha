@@ -36,7 +36,8 @@
     "oauth_processing_failed": "OAuth javobini qayta ishlab bo'lmadi.",
     "user_not_found": "Sizning Google akkauntingiz admin sifatida ro'yxatdan o'tmagan.",
     "oauth_missing_params": "OAuth parametrlari yetishmayapti.",
-    "callback_error": "Callback vaqtida kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring."
+    "callback_error": "Callback vaqtida kirish muvaffaqiyatsiz tugadi. Iltimos, qayta urinib ko'ring.",
+    "session_expired": "Sizning sessiyangiz tugadi. Iltimos, qaytadan kiring."
   },
   "ForgotPasswordPage": {
     "title": "Parolni unutdingizmi?",
