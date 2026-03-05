@@ -36,8 +36,7 @@
     "oauth_processing_failed": "OAuth 応答を処理できませんでした。",
     "user_not_found": "ご利用の Google アカウントは管理者として登録されていません。",
     "oauth_missing_params": "OAuth パラメータが不足しています。",
-    "callback_error": "コールバック処理中にエラーが発生しました。もう一度お試しください。",
-    "session_expired": "セッションが期限切れです。もう一度ログインしてください。"
+    "callback_error": "コールバック処理中にエラーが発生しました。もう一度お試しください。"
   },
   "ForgotPasswordPage": {
     "title": "パスワードをお忘れですか？",

@@ -6,20 +6,6 @@ import { onlyAdminPathNameRegex, publicPathnameRegex } from "@/lib/routeAccess";
 
 const intlMiddleware = createMiddleware(routing);
 
-function getLocalePath(
-  path: string,
-  locale: string | undefined
-): string {
-  const normalizedLocale = locale || routing.defaultLocale;
-  if (
-    routing.localePrefix === "as-needed" &&
-    normalizedLocale === routing.defaultLocale
-  ) {
-    return path;
-  }
-  return `/${normalizedLocale}${path}`;
-}
-
 const authMiddleware = auth((req) => {
   const isAdminPath = onlyAdminPathNameRegex.test(req.nextUrl.pathname);
   let isPublicPage = publicPathnameRegex.test(req.nextUrl.pathname);
@@ -48,8 +34,7 @@ const authMiddleware = auth((req) => {
 
   if (!req.auth && !isPublicPage) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const loginPath = getLocalePath("/login", locale);
-    const newUrl = new URL(loginPath, req.nextUrl.origin);
+    const newUrl = new URL(`/${locale}/login`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
@@ -59,15 +44,13 @@ const authMiddleware = auth((req) => {
       req.nextUrl.pathname.endsWith("/forgot-password"))
   ) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const homePath = getLocalePath("/", locale);
-    const newUrl = new URL(homePath, req.nextUrl.origin);
+    const newUrl = new URL(`/${locale}`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
   if (req.auth?.user?.role !== "admin" && isAdminPath) {
     const locale = req.nextUrl.locale || routing.defaultLocale;
-    const homePath = getLocalePath("/", locale);
-    const newUrl = new URL(homePath, req.nextUrl.origin);
+    const newUrl = new URL(`/${locale}`, req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
 
