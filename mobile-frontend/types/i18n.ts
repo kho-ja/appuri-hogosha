@@ -229,6 +229,8 @@ export type TranslationKeys = {
   passwordTooShort: string;
   temporaryPasswordRequired: string;
 
+  phoneNumberRequired: string;
+  passwordRequired: string;
   // Error messages - Input
   invalidInput: string;
 
