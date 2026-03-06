@@ -15,7 +15,6 @@ const nextConfig = {
         "www.parents.jdu.uz",
         "parents.jdu.uz",
         "main.d2hff850x2l8tj.amplifyapp.com",
-        "localhost:3000",
       ],
     },
   },
