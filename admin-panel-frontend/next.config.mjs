@@ -14,7 +14,7 @@ const nextConfig = {
       allowedOrigins: [
         "www.parents.jdu.uz",
         "parents.jdu.uz",
-        "*.amplifyapp.com",
+        "main.d2hff850x2l8tj.amplifyapp.com",
         "localhost:3000",
       ],
     },
