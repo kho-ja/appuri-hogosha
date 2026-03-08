@@ -22,14 +22,14 @@ export class ScheduleController {
         this.router.get('/list', verifyToken, this.scheduledPostList);
         this.router.get('/each/:id', verifyToken, this.scheduledPostView);
         this.router.get(
-            '/:id/recievers',
+            '/:id/receivers',
             verifyToken,
             this.scheduledPostRecievers
         );
         this.router.delete('/:id', verifyToken, this.deleteScheduledPost);
         this.router.put('/:id', verifyToken, this.updateScheduledPost);
         this.router.put(
-            '/:id/recievers',
+            '/:id/receivers',
             verifyToken,
             this.updateScheduledPostRecievers
         );

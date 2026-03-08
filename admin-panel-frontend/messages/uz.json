@@ -993,7 +993,11 @@
   },
   "errors": {
     "wentWrong": "Nimadir noto'g'ri ketdi.",
+    "unexpectedError": "Kutilmagan xatolik yuz berdi.",
+    "errorDescription": "Xavotir olmang, qayta urinib ko'rishingiz yoki bosh sahifaga qaytishingiz mumkin.",
+    "tryAgain": "Qayta urinish",
     "pageNotFound": "Sahifa topilmadi",
+    "notFoundDescription": "Siz qidirayotgan sahifa mavjud emas yoki ko'chirilgan.",
     "returnHome": "Bosh sahifaga qaytish",
     "loading": "Yuklanmoqda...",
     "loadingDescription": "Iltimos, yuklanayotgan vaqtda kutib turing.",
@@ -1315,13 +1319,13 @@
     "close": "Yopish",
     "editGroups": "Guruhlarni tahrirlash"
   },
-  "recievers": {
+  "receivers": {
     "ChangeRecievers": "Qabul qiluvchilarni o'zgartirish",
     "Students": "Talabalar",
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
     "back": "Orqaga",
-    "recieversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi",
+    "receiversChanged": "Qabul qiluvchilar muvaffaqiyatli o'zgartirildi",
     "post_sender_updated_successfully": "Post yuboruvchisi muvaffaqiyatli yangilandi",
     "post_receivers_updated_successfully": "Post qabul qiluvchilari muvaffaqiyatli yangilandi"
   },

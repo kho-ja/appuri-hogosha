@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/navigation";
 import { Table } from "@/components/ui/table";
 import { TableBody } from "@/components/ui/table";
 import { TableCell } from "@/components/ui/table";

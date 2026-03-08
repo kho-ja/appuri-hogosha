@@ -22,13 +22,13 @@ export default function Recievers({
   params: Promise<{ messageId: string }>;
 }) {
   const { messageId } = React.use(params);
-  const t = useTranslations("recievers");
+  const t = useTranslations("receivers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const router = useRouter();
 
   const { mutate } = useApiMutation(
-    `schedule/${messageId}/recievers`,
+    `schedule/${messageId}/receivers`,
     "PUT",
     ["editScheduledReceivers", messageId],
     {
@@ -55,7 +55,7 @@ export default function Recievers({
   }, [selectedStudents, selectedGroups, mutate]);
 
   const { data } = useListQuery<{ students: Student[]; groups: Group[] }>(
-    `schedule/${messageId}/recievers`,
+    `schedule/${messageId}/receivers`,
     ["scheduled-receivers", messageId]
   );
 

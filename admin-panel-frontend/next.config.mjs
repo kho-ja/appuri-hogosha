@@ -9,6 +9,7 @@ const nextConfig = {
     loader: "custom",
     loaderFile: "./lib/imageLoader.js",
   },
+  transpilePackages: ["@mdx-js/mdx", "@mdx-js/react"],
 };
 
 export default withNextIntl(nextConfig);
