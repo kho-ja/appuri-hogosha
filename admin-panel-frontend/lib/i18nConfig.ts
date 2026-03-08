@@ -10,7 +10,7 @@ export const LOCALE_PATH_MAP: Record<string, string> = {
 };
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://appuri-hogosha.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.parents.jdu.uz";
 
 export function localePath(locale: string): string {
   return LOCALE_PATH_MAP[locale] ?? `/${locale}`;

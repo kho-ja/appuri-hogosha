@@ -12,7 +12,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://appuri-hogosha.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.parents.jdu.uz";
 
 export async function generateMetadata({
   params,
