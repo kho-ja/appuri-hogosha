@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
 
 interface LogoutConfirmationDialogProps {
@@ -24,13 +23,12 @@ const LogoutConfirmationDialog: React.FC<LogoutConfirmationDialogProps> = ({
   children,
 }) => {
   const t = useTranslations("LogoutConfirmationDialog");
-  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     setIsLoading(true);
-    await signOut({ callbackUrl: `/${locale}/login` });
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (
