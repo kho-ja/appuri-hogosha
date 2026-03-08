@@ -42,6 +42,7 @@ export class AuthChallengeHandler {
         }
 
         const session = event.request.session || [];
+        const MAX_ATTEMPTS = 3;
 
         if (session.length === 0) {
             // Step 1: Issue Custom Challenge (OTP)
@@ -50,22 +51,32 @@ export class AuthChallengeHandler {
                 issueTokens: false,
                 failAuthentication: false,
             };
-        } else if (
-            session.length === 1 &&
-            session[0].challengeName === 'CUSTOM_CHALLENGE' &&
-            session[0].challengeResult === true
-        ) {
-            // Step 2: Challenge passed, issue tokens
-            event.response = {
-                issueTokens: true,
-                failAuthentication: false,
-            };
         } else {
-            // Invalid session state
-            event.response = {
-                issueTokens: false,
-                failAuthentication: true,
-            };
+            const lastAttempt = session[session.length - 1];
+
+            if (
+                lastAttempt.challengeName === 'CUSTOM_CHALLENGE' &&
+                lastAttempt.challengeResult === true
+            ) {
+                // Correct OTP — issue tokens
+                event.response = {
+                    issueTokens: true,
+                    failAuthentication: false,
+                };
+            } else if (session.length < MAX_ATTEMPTS) {
+                // Wrong OTP but still have attempts left — re-issue same challenge
+                event.response = {
+                    challengeName: 'CUSTOM_CHALLENGE',
+                    issueTokens: false,
+                    failAuthentication: false,
+                };
+            } else {
+                // Max attempts exceeded — fail authentication
+                event.response = {
+                    issueTokens: false,
+                    failAuthentication: true,
+                };
+            }
         }
 
         return event;
@@ -80,6 +91,35 @@ export class AuthChallengeHandler {
 
         if (!phoneNumber) {
             throw new Error('Phone number is missing');
+        }
+
+        // Check if this is a retry — reuse previous OTP code without sending new SMS
+        const session = event.request.session || [];
+        const previousChallenge = session.find(
+            (s: any) =>
+                s.challengeName === 'CUSTOM_CHALLENGE' &&
+                s.challengeMetadata?.startsWith('OTP_CHALLENGE_')
+        );
+
+        if (previousChallenge) {
+            const previousCode =
+                previousChallenge.challengeMetadata!.replace(
+                    'OTP_CHALLENGE_',
+                    ''
+                );
+            console.log(
+                '🔄 Retry attempt — reusing previous OTP code (no new SMS)'
+            );
+            event.response = {
+                publicChallengeParameters: {
+                    phone_number: phoneNumber,
+                },
+                privateChallengeParameters: {
+                    code: previousCode,
+                },
+                challengeMetadata: `OTP_CHALLENGE_${previousCode}`,
+            };
+            return event;
         }
 
         // Generate 6-digit code
@@ -166,7 +206,7 @@ export class AuthChallengeHandler {
             privateChallengeParameters: {
                 code: secretCode,
             },
-            challengeMetadata: 'OTP_CHALLENGE',
+            challengeMetadata: `OTP_CHALLENGE_${secretCode}`,
         };
 
         return event;
