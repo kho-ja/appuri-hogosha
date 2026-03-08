@@ -43,7 +43,7 @@ class App {
                         callback(new Error('Not allowed by CORS'));
                     }
                 },
-                methods: 'GET,HEAD,PUT,POST,DELETE',
+                methods: 'GET,HEAD,PUT,POST,PATCH,DELETE',
                 credentials: true,
                 optionsSuccessStatus: 204,
                 exposedHeaders: ['Content-Disposition'],
