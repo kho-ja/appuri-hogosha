@@ -22,23 +22,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ToggleMode } from "@/components/toggle-mode";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { signOut, useSession } from "next-auth/react";
 import NavLinks from "@/components/NavLinks";
 import LanguageSelect from "@/components/LanguageSelect";
 import { User } from "next-auth";
 import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
 
-const handleSignOut = async () => {
-  return await signOut({ callbackUrl: "/login" });
-};
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession({ required: true });
   const t = useTranslations("app");
   const tName = useTranslations("names");
+  const locale = useLocale();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(true);
+
+  const handleSignOut = async () => {
+    return await signOut({ callbackUrl: `/${locale}/login` });
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
