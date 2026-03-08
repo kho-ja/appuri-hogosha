@@ -20,7 +20,6 @@ class InvalidCredentialsError extends AuthError {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  trustHost: true,
   providers: [
     Credentials({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
@@ -142,21 +141,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      // Handle relative URLs (e.g., "/dashboard" -> "/uz/dashboard")
-      if (url.startsWith("/")) {
-        // If no locale prefix, add default locale
-        if (!url.match(/^\/(en|uz|ja|ru)/)) {
-          return `${baseUrl}/uz${url}`;
-        }
-        return `${baseUrl}${url}`;
-      }
-      // Allow callback URLs on the same origin
-      if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-      return baseUrl;
-    },
     jwt({ token, user, session, trigger }) {
       if (user && user?.accessToken) {
         return {

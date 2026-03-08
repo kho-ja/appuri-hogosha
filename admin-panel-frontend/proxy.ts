@@ -57,12 +57,12 @@ const authMiddleware = auth((req) => {
   return intlMiddleware(req);
 });
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   return (authMiddleware as unknown as (req: NextRequest) => Response)(req);
 }
 
 export const config = {
   matcher: [
-    "/((?!api|_next|_vercel|.*\\..*).*)",
+    "/((?!api|_next|.*\\..*).*)"
   ],
 };

@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
 import { signIn } from "@/auth";
-import { routing } from "@/i18n/routing";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const origin = url.origin;
-
-  // Default to 'uz' locale for redirects
-  const locale = "uz";
 
   const accessToken = url.searchParams.get("access_token");
   const refreshToken = url.searchParams.get("refresh_token") || "";
@@ -15,7 +11,7 @@ export async function GET(req: Request) {
 
   if (!accessToken || !userParam) {
     return NextResponse.redirect(
-      new URL(`/${locale}/login?error=oauth_missing_params`, origin)
+      new URL("/login?error=oauth_missing_params", origin)
     );
   }
 
@@ -28,7 +24,7 @@ export async function GET(req: Request) {
       accessToken,
       refreshToken,
       userJson: JSON.stringify(userData),
-      redirectTo: `/${locale}/dashboard`,
+      redirectTo: "/dashboard",
     });
   } catch (error: unknown) {
     // Auth.js may throw framework redirect-like errors to complete navigation.
@@ -45,7 +41,7 @@ export async function GET(req: Request) {
       message: err?.message,
     });
     return NextResponse.redirect(
-      new URL(`/${locale}/login?error=oauth_processing_failed`, origin)
+      new URL("/login?error=oauth_processing_failed", origin)
     );
   }
 }
