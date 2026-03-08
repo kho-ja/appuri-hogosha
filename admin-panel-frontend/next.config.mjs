@@ -9,15 +9,6 @@ const nextConfig = {
     loader: "custom",
     loaderFile: "./lib/imageLoader.js",
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: [
-        "www.parents.jdu.uz",
-        "parents.jdu.uz",
-        "main.d2hff850x2l8tj.amplifyapp.com",
-      ],
-    },
-  },
 };
 
 export default withNextIntl(nextConfig);
