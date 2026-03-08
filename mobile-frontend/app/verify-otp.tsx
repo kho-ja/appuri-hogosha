@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useRef, useState } from 'react';
 import { colors } from '@/constants/Colors';
 import {
   BackHandler,
@@ -18,14 +18,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { ICountry } from 'react-native-international-phone-number';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { OtpInput } from 'react-native-otp-entry';
+import { OtpInput, OtpInputRef } from 'react-native-otp-entry';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthErrorHandler } from '@/lib/errorHandler';
+import { ApiError } from '@/services/api-client';
 
 export default function VerifyOtp() {
-  const [otp, setOtp] = useState('');
-  const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const { signIn, verifyOtp } = useSession();
   const { theme } = useTheme();
   const { language, i18n } = useContext(I18nContext);
@@ -36,18 +34,21 @@ export default function VerifyOtp() {
     session?: string;
   }>();
 
+  const [otp, setOtp] = useState('');
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const [currentSession, setCurrentSession] = useState(params.session || '');
+  const otpInputRef = useRef<OtpInputRef>(null);
+
   const selectedCountry: ICountry | null = params.country
     ? JSON.parse(params.country)
     : null;
   const phoneNumber = params.phone || '';
-  const session = params.session || '';
 
   // Auto-submit OTP when complete
   const handleOTPComplete = (code: string) => {
     setOtp(code);
-    setTimeout(() => {
-      mutate();
-    }, 300);
+    mutate(code);
   };
 
   // Countdown timer effect
@@ -75,6 +76,7 @@ export default function VerifyOtp() {
         phoneNumber.replaceAll(' ', '')
       );
       if (data?.session) {
+        setCurrentSession(data.session);
         showSuccessToast('Verification code resent');
       }
     } catch {
@@ -83,15 +85,24 @@ export default function VerifyOtp() {
   };
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (code: string) => {
       return await verifyOtp(
         selectedCountry,
         phoneNumber.replaceAll(' ', ''),
-        otp,
-        session
+        code,
+        currentSession
       );
     },
     onError: error => {
+      // Clear OTP input for retry
+      otpInputRef.current?.clear();
+      setOtp('');
+
+      // Update session if Cognito returned a new one for retry
+      if (error instanceof ApiError && error.responseData?.session) {
+        setCurrentSession(error.responseData.session);
+      }
+
       if (
         error instanceof Error &&
         (error.name === 'NotificationPermissionError' ||
@@ -173,6 +184,7 @@ export default function VerifyOtp() {
           </ThemedText>
 
           <OtpInput
+            ref={otpInputRef}
             numberOfDigits={6}
             onTextChange={setOtp}
             onFilled={handleOTPComplete}
@@ -228,7 +240,7 @@ export default function VerifyOtp() {
           )}
 
           <Button
-            onPress={() => mutate()}
+            onPress={() => mutate(otp)}
             title={i18n[language].verify}
             buttonStyle={styles.submitButton}
             titleStyle={styles.buttonText}

@@ -529,6 +529,12 @@ class MobileAuthModuleController implements IController {
                 })
                 .end();
         } catch (e: any) {
+            if (e?.status === 401 && e?.session) {
+                // Wrong OTP but retries allowed — return new session to client
+                return res
+                    .status(401)
+                    .json({ error: e.message, session: e.session });
+            }
             if (e?.status) return next(new ApiError(e.status, e.message));
             return next(e);
         }
