@@ -222,6 +222,8 @@ export type TranslationKeys = {
 
   // Error messages - OTP
   invalidOtp: string;
+  otpAttemptsRemaining: string;
+  otpAttemptsExhausted: string;
   otpExpired: string;
 
   // Error messages - Password

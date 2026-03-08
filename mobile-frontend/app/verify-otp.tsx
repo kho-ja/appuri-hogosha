@@ -34,10 +34,12 @@ export default function VerifyOtp() {
     session?: string;
   }>();
 
+  const MAX_OTP_ATTEMPTS = 3;
   const [otp, setOtp] = useState('');
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [currentSession, setCurrentSession] = useState(params.session || '');
+  const [attemptsLeft, setAttemptsLeft] = useState(MAX_OTP_ATTEMPTS);
   const otpInputRef = useRef<OtpInputRef>(null);
 
   const selectedCountry: ICountry | null = params.country
@@ -69,6 +71,7 @@ export default function VerifyOtp() {
     setOtp('');
     setCountdown(60);
     setCanResend(false);
+    setAttemptsLeft(MAX_OTP_ATTEMPTS);
 
     try {
       const data = await signIn(
@@ -101,6 +104,25 @@ export default function VerifyOtp() {
       // Update session if Cognito returned a new one for retry
       if (error instanceof ApiError && error.responseData?.session) {
         setCurrentSession(error.responseData.session);
+        const remaining = attemptsLeft - 1;
+        setAttemptsLeft(remaining);
+
+        if (remaining > 0) {
+          const message = (
+            i18n[language].otpAttemptsRemaining as string
+          ).replace('{attempts}', remaining.toString());
+          showErrorToast(message);
+        } else {
+          showErrorToast(i18n[language].otpAttemptsExhausted as string);
+        }
+        return;
+      }
+
+      // No session returned — attempts exhausted
+      if (error instanceof ApiError && error.status === 401) {
+        setAttemptsLeft(0);
+        showErrorToast(i18n[language].otpAttemptsExhausted as string);
+        return;
       }
 
       if (

@@ -33,6 +33,8 @@ const translations: Translations = {
     invalidPhoneFormat: 'Invalid phone number format.',
     // Error messages - OTP
     invalidOtp: 'Invalid verification code. Please try again.',
+    otpAttemptsRemaining: 'Wrong code. You have {attempts} attempt(s) left.',
+    otpAttemptsExhausted: 'All attempts used. Please request a new code.',
     otpExpired: 'Verification code has expired. Please request a new one.',
     // Error messages - Password
     invalidPassword: 'Invalid password.',
@@ -316,6 +318,9 @@ const translations: Translations = {
     invalidPhoneFormat: '電話番号の形式が無効です。',
     // Error messages - OTP
     invalidOtp: '無効な確認コード。もう一度試してください。',
+    otpAttemptsRemaining: 'コードが間違っています。残り{attempts}回です。',
+    otpAttemptsExhausted:
+      'すべての試行回数を使い切りました。新しいコードをリクエストしてください。',
     otpExpired:
       '確認コードの有効期限が切れました。新しいコードをリクエストしてください。',
     // Error messages - Password
@@ -604,6 +609,9 @@ const translations: Translations = {
     invalidPhoneFormat: "Noto'g'ri telefon raqam formati.",
     // Error messages - OTP
     invalidOtp: "Noto'g'ri tasdiqlash kodi. Iltimos, qayta urinib ko'ring.",
+    otpAttemptsRemaining: "Noto'g'ri kod. Sizda {attempts} ta urinish qoldi.",
+    otpAttemptsExhausted:
+      "Barcha urinishlar tugadi. Iltimos, yangi kod so'rang.",
     otpExpired:
       "Tasdiqlash kodining muddati tugadi. Iltimos, yangi kod so'rang.",
     // Error messages - Password
@@ -891,6 +899,9 @@ const translations: Translations = {
     invalidPhoneFormat: 'Неверный формат номера телефона.',
     // Error messages - OTP
     invalidOtp: 'Неверный код подтверждения. Пожалуйста, попробуйте снова.',
+    otpAttemptsRemaining: 'Неверный код. Осталось попыток: {attempts}.',
+    otpAttemptsExhausted:
+      'Все попытки исчерпаны. Пожалуйста, запросите новый код.',
     otpExpired:
       'Срок действия кода подтверждения истек. Пожалуйста, запросите новый код.',
     // Error messages - Password
