@@ -754,6 +754,13 @@ class CognitoClient {
                     refreshToken:
                         authData.AuthenticationResult.RefreshToken ?? '',
                 };
+            } else if (authData.Session) {
+                // Wrong OTP but Cognito allows retry — return new session
+                throw {
+                    status: 401,
+                    message: 'Invalid OTP',
+                    session: authData.Session,
+                };
             } else {
                 throw {
                     status: 401,
@@ -762,6 +769,10 @@ class CognitoClient {
             }
         } catch (e: any) {
             console.error('Respond to auth challenge error:', e);
+            // Re-throw structured errors (from else branches above)
+            if (e?.status) {
+                throw e;
+            }
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,
