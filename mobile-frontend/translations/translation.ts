@@ -39,6 +39,8 @@ const translations: Translations = {
     passwordTooShort: 'Password must be at least 8 characters.',
     temporaryPasswordRequired:
       'Temporary password needs to be changed. Please set a new password.',
+    phoneNumberRequired: 'Phone number is required.',
+    passwordRequired: 'Password is required.',
     // Error messages - Input
     invalidInput: 'Invalid input. Please check your entries.',
     // Error messages - Network
@@ -323,6 +325,8 @@ const translations: Translations = {
     passwordTooShort: 'パスワードは8文字以上である必要があります。',
     temporaryPasswordRequired:
       '一時パスワードを変更する必要があります。新しいパスワードを設定してください。',
+    phoneNumberRequired: '電話番号は必須です。',
+    passwordRequired: 'パスワードは必須です。',
     // Error messages - Input
     invalidInput: '無効な入力。エントリを確認してください。',
     // Error messages - Network
@@ -611,6 +615,8 @@ const translations: Translations = {
     passwordTooShort: "Parol kamida 8 ta belgidan iborat bo'lishi kerak.",
     temporaryPasswordRequired:
       "Vaqtinchalik parolni o'zgartirish kerak. Iltimos, yangi parol o'rnating.",
+    phoneNumberRequired: 'Telefon raqami kiritilishi shart.',
+    passwordRequired: 'Parol kiritilishi shart.',
     // Error messages - Input
     invalidInput: "Noto'g'ri kiritish. Iltimos, yozuvlarni tekshiring.",
     // Error messages - Network
@@ -898,6 +904,8 @@ const translations: Translations = {
     passwordTooShort: 'Пароль должен содержать не менее 8 символов.',
     temporaryPasswordRequired:
       'Временный пароль должен быть изменен. Пожалуйста, установите новый пароль.',
+    phoneNumberRequired: 'Номер телефона обязателен.',
+    passwordRequired: 'Пароль обязателен.',
     // Error messages - Input
     invalidInput: 'Неверный ввод. Пожалуйста, проверьте свои записи.',
     // Error messages - Network
