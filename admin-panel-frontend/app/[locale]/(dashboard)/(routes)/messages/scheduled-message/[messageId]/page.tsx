@@ -66,7 +66,7 @@ export default function ScheduledMessagePage({
     `schedule/each/${messageId}`,
     ["scheduled-message", messageId]
   );
-  const { data: recieverData } = useListQuery<ReceiversResponse>(
+  const { data: receiverData } = useListQuery<ReceiversResponse>(
     `schedule/${messageId}/receivers`,
     ["scheduled-receivers", messageId]
   );
@@ -189,13 +189,13 @@ export default function ScheduledMessagePage({
             href={`/messages/scheduled-message/${messageId}/receivers`}
             passHref
           >
-            <Button>{t("editRecivers")}</Button>
+            <Button>{t("editReceivers")}</Button>
           </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
           <div className="rounded-md border">
             <TableApi
-              data={recieverData?.groups ?? null}
+              data={receiverData?.groups ?? null}
               columns={groupColumns}
             />
           </div>
@@ -203,7 +203,7 @@ export default function ScheduledMessagePage({
         <TabsContent value="students" className="space-y-4">
           <div className="rounded-md border">
             <TableApi
-              data={recieverData?.students ?? null}
+              data={receiverData?.students ?? null}
               columns={studentColumns}
             />
           </div>

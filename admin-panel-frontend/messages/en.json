@@ -244,7 +244,7 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers",
+    "editReceivers": "Edit receivers",
     "Groups": "Groups",
     "Students": "Students"
   },
@@ -1317,12 +1317,12 @@
     "editGroups": "Edit Groups"
   },
   "receivers": {
-    "ChangeRecievers": "Change Recievers",
+    "Changereceivers": "Change receivers",
     "Students": "Students",
     "Groups": "Groups",
     "confirm": "Confirm",
     "back": "Back",
-    "receiversChanged": "Recievers Changed Successfully",
+    "receiversChanged": "receivers Changed Successfully",
     "post_sender_updated_successfully": "Post sender updated successfully",
     "post_receivers_updated_successfully": "Post receivers updated successfully"
   },

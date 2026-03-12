@@ -241,7 +241,7 @@
     "not_viewed_count": "未閲覧数",
     "view": "表示",
     "editMessage": "メッセージを編集",
-    "editRecivers": "受信者を編集",
+    "editReceivers": "受信者を編集",
     "Groups": "グループ",
     "Students": "学生"
   },
@@ -1316,7 +1316,7 @@
     "editGroups": "グループを編集"
   },
   "receivers": {
-    "ChangeRecievers": "受信者を変更",
+    "Changereceivers": "受信者を変更",
     "Students": "学生",
     "Groups": "グループ",
     "confirm": "確認",

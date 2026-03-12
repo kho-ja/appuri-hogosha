@@ -51,7 +51,7 @@ export class ScheduleRepository {
             .join(', ');
 
         await DB.query(`
-            INSERT INTO scheduledPostRecievers (scheduled_post_id, group_id, student_id)
+            INSERT INTO scheduledPostreceivers (scheduled_post_id, group_id, student_id)
             VALUES ${updatedValues}
         `);
     }
@@ -94,7 +94,7 @@ export class ScheduleRepository {
                     ad.family_name AS admin_family_name,
                     sp.created_at,
                     sp.edited_at
-             FROM scheduledPostRecievers AS spr
+             FROM scheduledPostreceivers AS spr
              INNER JOIN scheduledPost as sp on sp.id = spr.scheduled_post_id
              INNER JOIN Admin AS ad ON ad.id = sp.admin_id
              ${whereClause}
@@ -212,7 +212,7 @@ export class ScheduleRepository {
     ): Promise<ScheduledPostReceiver[]> {
         const rows = await DB.query(
             `SELECT group_id, student_id
-             FROM scheduledPostRecievers
+             FROM scheduledPostreceivers
              WHERE scheduled_post_id = :scheduledPostId`,
             { scheduledPostId }
         );
@@ -256,7 +256,7 @@ export class ScheduleRepository {
 
     async deleteReceivers(scheduledPostId: number): Promise<void> {
         await DB.query(
-            `DELETE FROM scheduledPostRecievers WHERE scheduled_post_id = :scheduledPostId`,
+            `DELETE FROM scheduledPostreceivers WHERE scheduled_post_id = :scheduledPostId`,
             { scheduledPostId }
         );
     }
@@ -306,7 +306,7 @@ export class ScheduleRepository {
             `SELECT
                 GROUP_CONCAT(DISTINCT group_id) AS groupMembers,
                 GROUP_CONCAT(DISTINCT student_id) AS students
-             FROM scheduledPostRecievers
+             FROM scheduledPostreceivers
              WHERE scheduled_post_id = :scheduledPostId`,
             { scheduledPostId }
         );

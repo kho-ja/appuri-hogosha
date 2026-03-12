@@ -244,7 +244,7 @@
     "not_viewed_count": "Ko‘rilmaganlar soni",
     "view": "Ko'rish",
     "editMessage": "Xabarni tahrirlash",
-    "editRecivers": "Qabul qiluvchilarni tahrirlash",
+    "editReceivers": "Qabul qiluvchilarni tahrirlash",
     "Groups": "Guruhlar",
     "Students": "Talabalar"
   },
@@ -1315,7 +1315,7 @@
     "editGroups": "Guruhlarni tahrirlash"
   },
   "receivers": {
-    "ChangeRecievers": "Qabul qiluvchilarni o'zgartirish",
+    "Changereceivers": "Qabul qiluvchilarni o'zgartirish",
     "Students": "Talabalar",
     "Groups": "Guruhlar",
     "confirm": "Tasdiqlash",
