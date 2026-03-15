@@ -1,5 +1,7 @@
 import {
     AdminCreateUserCommand,
+    AdminSetUserPasswordCommand,
+    AdminSetUserPasswordCommandInput,
     InitiateAuthCommandInput,
     CognitoIdentityProviderClient,
     InitiateAuthCommand,
@@ -21,6 +23,7 @@ import {
     AdminUpdateUserAttributesCommand,
     AdminUpdateUserAttributesCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { randomBytes } from 'crypto';
 import { config as envConfig } from '../config';
 /**
  * CognitoClient class for handling AWS Cognito operations
@@ -659,6 +662,64 @@ class CognitoClient {
                 throw {
                     status: 400,
                     message: 'Too many failed attempts. Please try again later',
+                } as confirmForgotPasswordThrow;
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error',
+                } as confirmForgotPasswordThrow;
+            }
+        }
+    }
+
+    async verifyForgotPasswordCode(
+        identifier: string,
+        confirmationCode: string
+    ): Promise<confirmForgotPasswordOutput> {
+        const temporaryPassword = `Tmp#${randomBytes(8).toString('hex')}Aa1!`;
+
+        await this.confirmForgotPassword(
+            identifier,
+            confirmationCode,
+            temporaryPassword
+        );
+
+        return {
+            message: 'Verification code verified successfully',
+        };
+    }
+
+    async setPasswordAfterForgotPasswordVerification(
+        identifier: string,
+        newPassword: string
+    ): Promise<confirmForgotPasswordOutput> {
+        const params: AdminSetUserPasswordCommandInput = {
+            UserPoolId: this.pool_id,
+            Username: identifier,
+            Password: newPassword,
+            Permanent: true,
+        };
+
+        try {
+            const command = new AdminSetUserPasswordCommand(params);
+            await this.client.send(command);
+
+            return {
+                message: 'Password reset successfully',
+            };
+        } catch (e: any) {
+            console.error('Set password after verification error:', e);
+
+            if (e.name === 'UserNotFoundException') {
+                throw {
+                    status: 404,
+                    message: 'User not found',
+                } as confirmForgotPasswordThrow;
+            } else if (e.name === 'InvalidPasswordException') {
+                throw {
+                    status: 400,
+                    message:
+                        'Password must contain at least 8 characters, 1 number, 1 special character, 1 uppercase, 1 lowercase',
                 } as confirmForgotPasswordThrow;
             } else {
                 throw {

@@ -194,18 +194,12 @@ export default function ForgotPassword() {
 
       setIsLoading(false);
       setCurrentStep('newPassword');
-
-      setExpiryAt(null);
-      AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
-
       showSuccessToast('Code verified successfully');
     } catch (error) {
       setIsLoading(false);
       const errorMessage =
         error instanceof Error ? error.message : 'Invalid verification code';
       showErrorToast(errorMessage);
-
-      // Clear OTP on error
       setVerificationCode('');
     }
   };
@@ -224,14 +218,13 @@ export default function ForgotPassword() {
         selectedCountry?.callingCode || '+998'
       );
 
-      await resetPassword(fullPhoneNumber, verificationCode, newPassword);
+      await resetPassword(fullPhoneNumber, newPassword);
 
       setIsLoading(false);
       showSuccessToast(i18n[language].passwordCreatedSuccessfully, {
         duration: 'long',
       });
 
-      // Navigate back to sign-in after successful password reset
       setExpiryAt(null);
       AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
       router.push('/sign-in');
@@ -263,6 +256,35 @@ export default function ForgotPassword() {
     );
   }
 
+  if (currentStep === 'newPassword') {
+    return (
+      <ResetPasswordScreen
+        newPassword={newPassword}
+        isLoading={isLoading}
+        translations={{
+          createNewPasswordTitle: i18n[language].createNewPasswordTitle,
+          enterNewPasswordText: i18n[language].enterNewPasswordText,
+          newPassword: i18n[language].newPassword,
+          enterNewPassword: i18n[language].enterNewPassword,
+          saveNewPassword: i18n[language].continueText,
+          requirements: {
+            minLength: i18n[language].minLength,
+            hasNumber: i18n[language].hasNumber,
+            hasUppercase: i18n[language].hasUppercase,
+            hasLowercase: i18n[language].hasLowercase,
+            hasSpecialChar: i18n[language].hasSpecialChar,
+            passwordStrength: i18n[language].passwordStrength,
+            weak: i18n[language].weak,
+            medium: i18n[language].medium,
+            strong: i18n[language].strong,
+          },
+        }}
+        onPasswordChange={setNewPassword}
+        onSavePassword={handleSavePassword}
+      />
+    );
+  }
+
   if (currentStep === 'verify') {
     return (
       <OtpVerificationScreen
@@ -288,30 +310,5 @@ export default function ForgotPassword() {
     );
   }
 
-  return (
-    <ResetPasswordScreen
-      newPassword={newPassword}
-      isLoading={isLoading}
-      translations={{
-        createNewPasswordTitle: i18n[language].createNewPasswordTitle,
-        enterNewPasswordText: i18n[language].enterNewPasswordText,
-        newPassword: i18n[language].newPassword,
-        enterNewPassword: i18n[language].enterNewPassword,
-        saveNewPassword: i18n[language].saveNewPassword,
-        requirements: {
-          minLength: i18n[language].minLength,
-          hasNumber: i18n[language].hasNumber,
-          hasUppercase: i18n[language].hasUppercase,
-          hasLowercase: i18n[language].hasLowercase,
-          hasSpecialChar: i18n[language].hasSpecialChar,
-          passwordStrength: i18n[language].passwordStrength,
-          weak: i18n[language].weak,
-          medium: i18n[language].medium,
-          strong: i18n[language].strong,
-        },
-      }}
-      onPasswordChange={setNewPassword}
-      onSavePassword={handleSavePassword}
-    />
-  );
+  return null;
 }

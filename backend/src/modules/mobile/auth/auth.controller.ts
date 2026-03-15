@@ -12,6 +12,7 @@ import { ApiError } from '../../../errors/ApiError';
 class MobileAuthModuleController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
+    private forgotPasswordVerifiedPhones = new Map<string, number>();
 
     // Add general rate limiting for all auth endpoints
     private authLimiter = rateLimit({
@@ -80,6 +81,16 @@ class MobileAuthModuleController implements IController {
             '/forgot-password-initiate',
             this.forgotPasswordLimiter,
             this.forgotPasswordInitiate
+        );
+        this.router.post(
+            '/forgot-password-verify-code',
+            this.authLimiter,
+            this.forgotPasswordVerifyCode
+        );
+        this.router.post(
+            '/forgot-password-set-password',
+            this.authLimiter,
+            this.forgotPasswordSetPassword
         );
         this.router.post(
             '/forgot-password-confirm',
@@ -219,6 +230,90 @@ class MobileAuthModuleController implements IController {
                     message: result.message,
                 })
                 .end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
+        }
+    };
+
+    forgotPasswordVerifyCode = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { phone_number, verification_code } = req.body;
+
+            if (!phone_number || !verification_code) {
+                throw new ApiError(
+                    400,
+                    'Phone number and verification code are required'
+                );
+            }
+
+            const fullPhoneNumber = phone_number.startsWith('+')
+                ? phone_number
+                : `+${phone_number}`;
+
+            await this.cognitoClient.verifyForgotPasswordCode(
+                fullPhoneNumber,
+                verification_code
+            );
+
+            this.forgotPasswordVerifiedPhones.set(
+                fullPhoneNumber,
+                Date.now() + 10 * 60 * 1000
+            );
+
+            return res
+                .status(200)
+                .json({ message: 'Verification code verified successfully' })
+                .end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
+        }
+    };
+
+    forgotPasswordSetPassword = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { phone_number, new_password } = req.body;
+
+            if (!phone_number || !new_password) {
+                throw new ApiError(
+                    400,
+                    'Phone number and new password are required'
+                );
+            }
+
+            const fullPhoneNumber = phone_number.startsWith('+')
+                ? phone_number
+                : `+${phone_number}`;
+
+            const expiresAt =
+                this.forgotPasswordVerifiedPhones.get(fullPhoneNumber);
+
+            if (!expiresAt || expiresAt <= Date.now()) {
+                this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
+                throw new ApiError(
+                    401,
+                    'OTP not verified or verification session expired'
+                );
+            }
+
+            const result =
+                await this.cognitoClient.setPasswordAfterForgotPasswordVerification(
+                    fullPhoneNumber,
+                    new_password
+                );
+
+            this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
+
+            return res.status(200).json({ message: result.message }).end();
         } catch (e: any) {
             if (e?.status) return next(new ApiError(e.status, e.message));
             return next(e);
