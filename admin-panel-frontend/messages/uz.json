@@ -615,7 +615,11 @@
     "export": "Yuklab olish",
     "Students": "Talabalar",
     "noStudents": "Talabalar mavjud emas",
-    "bulkOperations": "Jamoaviy amallar"
+    "bulkOperations": "Jamoaviy amallar",
+    "all": "Hammasi",
+    "loggedIn": "Kirgan",
+    "notLoggedIn": "Kirmagan",
+    "totalCount": "Jami: {count} ta"
   },
   "posts": {
     "messages": "Xabarlar",
@@ -649,6 +653,9 @@
     "parentId": "Ota-onalar ID raqami",
     "phoneNumber": "Telefon raqami",
     "loginStatus": "Login holati",
+    "all": "Hammasi",
+    "loggedIn": "Kirgan",
+    "notLoggedIn": "Kirmagan",
     "noResults": "Natijalar topilmadi",
     "rowsSelected": "{count} qator tanlandi (jami {total} qator)",
     "filter": "Nomi bo'yicha filtrlash"

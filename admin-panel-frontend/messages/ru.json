@@ -646,6 +646,9 @@
     "parentId": "ID родителя",
     "phoneNumber": "Номер телефона",
     "loginStatus": "Статус входа",
+    "all": "Все поля",
+    "loggedIn": "Вошел",
+    "notLoggedIn": "Еще не входил",
     "noResults": "Результатов не найдено",
     "rowsSelected": "{count} из {total} строк выбрано.",
     "filter": "Фильтр по имени"

@@ -647,6 +647,10 @@
     "parentId": "保護者ID",
     "phoneNumber": "電話番号",
     "loginStatus": "ログイン状態",
+    "all": "すべて",
+    "loggedIn": "ログイン中",
+    "notLoggedIn": "ログインしていない",
+
     "noResults": "結果が見つかりません",
     "rowsSelected": "{count}行選択中（全{total}行）",
     "filter": "名前でフィルタリング"
