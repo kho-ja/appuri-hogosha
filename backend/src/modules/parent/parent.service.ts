@@ -126,6 +126,7 @@ class ParentService {
                     phone_number: params.phone_number,
                     name: params.name,
                     showOnlyNonLoggedIn: params.showOnlyNonLoggedIn,
+                    loginStatus: params.loginStatus,
                 }
             ),
             parentRepository.countWithFilters(params.schoolId, {
@@ -133,6 +134,7 @@ class ParentService {
                 phone_number: params.phone_number,
                 name: params.name,
                 showOnlyNonLoggedIn: params.showOnlyNonLoggedIn,
+                loginStatus: params.loginStatus,
             }),
         ]);
 
