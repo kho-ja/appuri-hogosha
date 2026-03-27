@@ -8,8 +8,6 @@ import ReactQueryProvider from "@/contexts/ReactQueryProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import TimezoneDetector from "@/components/TimezoneDetector";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export async function generateMetadata() {
   const session = await auth();
@@ -18,7 +16,8 @@ export async function generateMetadata() {
       default: "JDU Parents",
       template: "%s | JDU Parents",
     },
-    description: "JDU Parents notification platform — real-time updates on university activities, grades, and attendance for parents.",
+    description:
+      "JDU Parents notification platform — real-time updates on university activities, grades, and attendance for parents.",
   };
   if (session) {
     metadata.title = session?.schoolName;
@@ -54,8 +53,6 @@ export default async function RootLayout({
           </ThemeProvider>
           <Toaster />
         </NextIntlClientProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

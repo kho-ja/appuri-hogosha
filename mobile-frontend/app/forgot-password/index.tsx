@@ -24,6 +24,19 @@ import {
   EXPIRY_KEY,
 } from '../../features/forgot-password/types';
 
+const MAX_OTP_ATTEMPTS = 3;
+
+const isOtpValidationError = (message: string) => {
+  const lowerMessage = message.toLowerCase();
+  return (
+    (lowerMessage.includes('invalid') &&
+      (lowerMessage.includes('otp') || lowerMessage.includes('code'))) ||
+    lowerMessage.includes('expired') ||
+    lowerMessage.includes('mismatch') ||
+    lowerMessage.includes('verification code')
+  );
+};
+
 export default function ForgotPassword() {
   const { language, i18n } = useContext(I18nContext);
   const router = useRouter();
@@ -44,6 +57,7 @@ export default function ForgotPassword() {
   const [canResend, setCanResend] = useState(true);
   const [resendCount, setResendCount] = useState(0);
   const [expiryAt, setExpiryAt] = useState<number | null>(null);
+  const [otpAttemptsLeft, setOtpAttemptsLeft] = useState(MAX_OTP_ATTEMPTS);
 
   // Countdown timer effect
   useEffect(() => {
@@ -143,6 +157,7 @@ export default function ForgotPassword() {
       AsyncStorage.setItem(EXPIRY_KEY, String(newExpiry)).catch(() => {});
       setCanResend(false);
       setVerificationCode('');
+      setOtpAttemptsLeft(MAX_OTP_ATTEMPTS);
 
       showSuccessToast(
         resendCount === 0
@@ -176,6 +191,10 @@ export default function ForgotPassword() {
   };
 
   const handleVerifyCode = async (code?: string) => {
+    if (otpAttemptsLeft <= 0) {
+      showErrorToast(i18n[language].otpAttemptsExhausted);
+      return;
+    }
     const finalCode = code || verificationCode;
 
     if (finalCode.length !== 6) {
@@ -239,6 +258,28 @@ export default function ForgotPassword() {
       setIsLoading(false);
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to reset password';
+         if (isOtpValidationError(errorMessage)) {
+        const nextAttemptsLeft = Math.max(otpAttemptsLeft - 1, 0);
+        setOtpAttemptsLeft(nextAttemptsLeft);
+        setVerificationCode('');
+        setCurrentStep('verify');
+
+        if (nextAttemptsLeft > 0) {
+          showErrorToast(
+            i18n[language].otpAttemptsRemaining.replace(
+              '{attempts}',
+              nextAttemptsLeft.toString()
+            )
+          );
+        } else {
+          setCanResend(true);
+          setExpiryAt(null);
+          AsyncStorage.removeItem(EXPIRY_KEY).catch(() => {});
+          showErrorToast(i18n[language].otpAttemptsExhausted);
+        }
+
+        return;
+      }
       showErrorToast(errorMessage);
     }
   };
