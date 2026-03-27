@@ -31,6 +31,10 @@ export class CognitoHandler {
         return routing.isUzbekistan ? 'uz' : 'ja';
     }
 
+    private isForgotPasswordTrigger(triggerSource: string): boolean {
+        return triggerSource.includes('ForgotPassword');
+    }
+
     async handleCognitoSms(event: CognitoEvent): Promise<CognitoEvent> {
         try {
             const triggerSource = event.triggerSource;
@@ -39,6 +43,19 @@ export class CognitoHandler {
             console.log(
                 `📱 Processing Cognito trigger: ${triggerSource} for phone ending in ${phoneNumber.slice(-4)}`
             );
+
+            // Keep password reset SMS on the same PlayMobile path used by login OTP flow.
+            if (this.isForgotPasswordTrigger(triggerSource)) {
+                console.log(
+                    '🔒 ForgotPassword trigger detected - forcing PlayMobile-first route'
+                );
+
+                if (triggerSource.startsWith('CustomSMSSender_')) {
+                    return await this.handleCustomSMSSender(event, phoneNumber);
+                }
+
+                return await this.handleTemplateBasedSms(event, phoneNumber);
+            }
 
             // Check if it's an international number first
             const routing = getUzbekistanOperatorRouting(phoneNumber);
