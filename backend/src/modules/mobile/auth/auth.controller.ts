@@ -281,55 +281,55 @@ class MobileAuthModuleController implements IController {
     };
 
     forgotPasswordSetPassword = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    try {
-        const { phone_number, new_password, reset_token } = req.body;
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { phone_number, new_password, reset_token } = req.body;
 
-        if (!phone_number || !new_password || !reset_token) {
-            throw new ApiError(
-                400,
-                'Phone number, new password and reset token are required'
-            );
-        }
+            if (!phone_number || !new_password || !reset_token) {
+                throw new ApiError(
+                    400,
+                    'Phone number, new password and reset token are required'
+                );
+            }
 
-        const fullPhoneNumber = phone_number.startsWith('+')
-            ? phone_number
-            : `+${phone_number}`;
+            const fullPhoneNumber = phone_number.startsWith('+')
+                ? phone_number
+                : `+${phone_number}`;
 
-        const stored =
-            this.forgotPasswordVerifiedPhones.get(fullPhoneNumber);
+            const stored =
+                this.forgotPasswordVerifiedPhones.get(fullPhoneNumber);
 
-        // Token mavjudligi, muddati va qiymati tekshirilmoqda
-        if (
-            !stored ||
-            stored.expiresAt <= Date.now() ||
-            stored.token !== reset_token
-        ) {
+            // Token mavjudligi, muddati va qiymati tekshirilmoqda
+            if (
+                !stored ||
+                stored.expiresAt <= Date.now() ||
+                stored.token !== reset_token
+            ) {
+                this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
+                throw new ApiError(
+                    401,
+                    'OTP not verified or verification session expired'
+                );
+            }
+
+            const result =
+                await this.cognitoClient.setPasswordAfterForgotPasswordVerification(
+                    fullPhoneNumber,
+                    new_password
+                );
+
+            // Muvaffaqiyatli bo'lgandan keyin o'chirish
             this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
-            throw new ApiError(
-                401,
-                'OTP not verified or verification session expired'
-            );
+
+            return res.status(200).json({ message: result.message }).end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
         }
-
-        const result =
-            await this.cognitoClient.setPasswordAfterForgotPasswordVerification(
-                fullPhoneNumber,
-                new_password
-            );
-
-        // Muvaffaqiyatli bo'lgandan keyin o'chirish
-        this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
-
-        return res.status(200).json({ message: result.message }).end();
-    } catch (e: any) {
-        if (e?.status) return next(new ApiError(e.status, e.message));
-        return next(e);
-    }
-};
+    };
 
     private normalizeToken(raw: any): string | null {
         if (!raw) return null;
