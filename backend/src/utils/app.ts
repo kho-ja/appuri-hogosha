@@ -6,9 +6,7 @@ import { config } from '../config';
 
 const allowedOrigins: (string | RegExp)[] = [
     config.FRONTEND_URL,
-    /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
     /^https:\/\/.*\.d2hff850x2l8tj\.amplifyapp\.com$/,
-    /^https:\/\/appuri-hogosha\.vercel\.app$/,
 ];
 class App {
     public app: Application;

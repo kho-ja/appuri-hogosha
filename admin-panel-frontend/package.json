@@ -44,8 +44,6 @@
     "@tiptap/extension-underline": "^2.5.8",
     "@tiptap/react": "^2.5.8",
     "@tiptap/starter-kit": "^2.5.8",
-    "@vercel/analytics": "^1.5.0",
-    "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
