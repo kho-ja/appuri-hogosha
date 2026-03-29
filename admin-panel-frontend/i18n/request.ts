@@ -13,7 +13,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const cookieStore = await cookies();
   const clientTimezone = cookieStore.get("user-timezone")?.value;
-  const timeZone = clientTimezone || "UTC";
+  const serverTimeZone =  
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";  
+  const timeZone = clientTimezone || serverTimeZone;  
 
   return {
     locale,
