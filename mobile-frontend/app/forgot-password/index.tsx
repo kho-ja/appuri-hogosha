@@ -44,6 +44,7 @@ export default function ForgotPassword() {
   const [canResend, setCanResend] = useState(true);
   const [resendCount, setResendCount] = useState(0);
   const [expiryAt, setExpiryAt] = useState<number | null>(null);
+  const [resetToken, setResetToken] = useState('');
 
   // Countdown timer effect
   useEffect(() => {
@@ -190,7 +191,9 @@ export default function ForgotPassword() {
         selectedCountry?.callingCode || '+998'
       );
 
-      await verifyResetCode(fullPhoneNumber, finalCode);
+      const result = await verifyResetCode(fullPhoneNumber, finalCode);
+
+      setResetToken(result.reset_token); // ✅ token saqlandi
 
       setIsLoading(false);
       setCurrentStep('newPassword');
@@ -218,7 +221,7 @@ export default function ForgotPassword() {
         selectedCountry?.callingCode || '+998'
       );
 
-      await resetPassword(fullPhoneNumber, newPassword);
+      await resetPassword(fullPhoneNumber, newPassword, resetToken); // ✅ token uzatildi
 
       setIsLoading(false);
       showSuccessToast(i18n[language].passwordCreatedSuccessfully, {

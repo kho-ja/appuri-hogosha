@@ -12,6 +12,11 @@ export interface ApiError {
   error: string;
 }
 
+export interface ForgotPasswordVerifyResponse {
+  message: string;
+  reset_token: string;
+}
+
 /**
  * Send verification code to user's phone number for password reset
  */
@@ -36,12 +41,12 @@ export const sendVerificationCode = async (
 export const verifyResetCode = async (
   phoneNumber: string,
   code: string
-): Promise<ForgotPasswordConfirmResponse> => {
+): Promise<ForgotPasswordVerifyResponse> => {  // ✅ tip o'zgardi
   const fullPhoneNumber = phoneNumber.startsWith('+')
     ? phoneNumber
     : `+${phoneNumber}`;
 
-  const response = await apiClient.post<ForgotPasswordConfirmResponse>(
+  const response = await apiClient.post<ForgotPasswordVerifyResponse>(
     '/forgot-password-verify-code',
     {
       phone_number: fullPhoneNumber,
@@ -58,7 +63,8 @@ export const verifyResetCode = async (
  */
 export const resetPassword = async (
   phoneNumber: string,
-  newPassword: string
+  newPassword: string,
+  resetToken: string
 ): Promise<ForgotPasswordConfirmResponse> => {
   const fullPhoneNumber = phoneNumber.startsWith('+')
     ? phoneNumber
@@ -69,6 +75,7 @@ export const resetPassword = async (
     {
       phone_number: fullPhoneNumber,
       new_password: newPassword,
+      reset_token: resetToken,
     },
     { requiresAuth: false }
   );

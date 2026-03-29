@@ -12,7 +12,10 @@ import { ApiError } from '../../../errors/ApiError';
 class MobileAuthModuleController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
-    private forgotPasswordVerifiedPhones = new Map<string, number>();
+    private forgotPasswordVerifiedPhones = new Map<string, {
+        token: string;
+        expiresAt: number
+    }>();
 
     // Add general rate limiting for all auth endpoints
     private authLimiter = rateLimit({
@@ -84,14 +87,12 @@ class MobileAuthModuleController implements IController {
         );
         this.router.post(
             '/forgot-password-verify-code',
-            this.authLimiter,
-            this.forgotPasswordVerifyCode
-        );
+            this.forgotPasswordLimiter,
+            this.forgotPasswordVerifyCode)
         this.router.post(
             '/forgot-password-set-password',
-            this.authLimiter,
-            this.forgotPasswordSetPassword
-        );
+            this.forgotPasswordLimiter,
+            this.forgotPasswordSetPassword)
         this.router.post(
             '/forgot-password-confirm',
             this.authLimiter,
@@ -244,81 +245,91 @@ class MobileAuthModuleController implements IController {
         try {
             const { phone_number, verification_code } = req.body;
 
+            // ✅ Validation qo'shildi
             if (!phone_number || !verification_code) {
-                throw new ApiError(
-                    400,
-                    'Phone number and verification code are required'
-                );
+                throw new ApiError(400, 'Phone number and verification code are required');
             }
 
+            // ✅ fullPhoneNumber aniqlandi
             const fullPhoneNumber = phone_number.startsWith('+')
                 ? phone_number
                 : `+${phone_number}`;
 
-            await this.cognitoClient.verifyForgotPasswordCode(
+            const result = await this.cognitoClient.verifyForgotPasswordCode(
                 fullPhoneNumber,
                 verification_code
             );
 
-            this.forgotPasswordVerifiedPhones.set(
-                fullPhoneNumber,
-                Date.now() + 10 * 60 * 1000
-            );
+            this.forgotPasswordVerifiedPhones.set(fullPhoneNumber, {
+                token: result.resetToken,
+                expiresAt: Date.now() + 10 * 60 * 1000,
+            });
 
-            return res
-                .status(200)
-                .json({ message: 'Verification code verified successfully' })
-                .end();
+            return res.status(200).json({
+                message: 'Verification code verified successfully',
+                reset_token: result.resetToken,
+            }).end();
+
         } catch (e: any) {
+            // ✅ Phone enumeration oldini olish
+            if (e?.status === 404) {
+                return next(new ApiError(400, 'Invalid verification code'));
+            }
             if (e?.status) return next(new ApiError(e.status, e.message));
             return next(e);
         }
     };
 
     forgotPasswordSetPassword = async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) => {
-        try {
-            const { phone_number, new_password } = req.body;
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { phone_number, new_password, reset_token } = req.body;
 
-            if (!phone_number || !new_password) {
-                throw new ApiError(
-                    400,
-                    'Phone number and new password are required'
-                );
-            }
-
-            const fullPhoneNumber = phone_number.startsWith('+')
-                ? phone_number
-                : `+${phone_number}`;
-
-            const expiresAt =
-                this.forgotPasswordVerifiedPhones.get(fullPhoneNumber);
-
-            if (!expiresAt || expiresAt <= Date.now()) {
-                this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
-                throw new ApiError(
-                    401,
-                    'OTP not verified or verification session expired'
-                );
-            }
-
-            const result =
-                await this.cognitoClient.setPasswordAfterForgotPasswordVerification(
-                    fullPhoneNumber,
-                    new_password
-                );
-
-            this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
-
-            return res.status(200).json({ message: result.message }).end();
-        } catch (e: any) {
-            if (e?.status) return next(new ApiError(e.status, e.message));
-            return next(e);
+        if (!phone_number || !new_password || !reset_token) {
+            throw new ApiError(
+                400,
+                'Phone number, new password and reset token are required'
+            );
         }
-    };
+
+        const fullPhoneNumber = phone_number.startsWith('+')
+            ? phone_number
+            : `+${phone_number}`;
+
+        const stored =
+            this.forgotPasswordVerifiedPhones.get(fullPhoneNumber);
+
+        // Token mavjudligi, muddati va qiymati tekshirilmoqda
+        if (
+            !stored ||
+            stored.expiresAt <= Date.now() ||
+            stored.token !== reset_token
+        ) {
+            this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
+            throw new ApiError(
+                401,
+                'OTP not verified or verification session expired'
+            );
+        }
+
+        const result =
+            await this.cognitoClient.setPasswordAfterForgotPasswordVerification(
+                fullPhoneNumber,
+                new_password
+            );
+
+        // Muvaffaqiyatli bo'lgandan keyin o'chirish
+        this.forgotPasswordVerifiedPhones.delete(fullPhoneNumber);
+
+        return res.status(200).json({ message: result.message }).end();
+    } catch (e: any) {
+        if (e?.status) return next(new ApiError(e.status, e.message));
+        return next(e);
+    }
+};
 
     private normalizeToken(raw: any): string | null {
         if (!raw) return null;

@@ -673,21 +673,25 @@ class CognitoClient {
     }
 
     async verifyForgotPasswordCode(
-        identifier: string,
-        confirmationCode: string
-    ): Promise<confirmForgotPasswordOutput> {
-        const temporaryPassword = `Tmp#${randomBytes(8).toString('hex')}Aa1!`;
+    identifier: string,
+    confirmationCode: string
+): Promise<{ message: string; resetToken: string }> {
+    const temporaryPassword = `Tmp#${randomBytes(8).toString('hex')}Aa1!`;
 
-        await this.confirmForgotPassword(
-            identifier,
-            confirmationCode,
-            temporaryPassword
-        );
+    await this.confirmForgotPassword(
+        identifier,
+        confirmationCode,
+        temporaryPassword
+    );
 
-        return {
-            message: 'Verification code verified successfully',
-        };
-    }
+    // Reset token generate qilish
+    const resetToken = randomBytes(32).toString('hex');
+
+    return {
+        message: 'Verification code verified successfully',
+        resetToken, // controllega qaytarish
+    };
+}
 
     async setPasswordAfterForgotPasswordVerification(
         identifier: string,
