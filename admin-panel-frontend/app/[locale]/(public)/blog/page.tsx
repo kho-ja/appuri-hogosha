@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/navigation";
 import { getAllPosts } from "@/lib/blog";
 import { SITE_URL, LOCALES, localePath } from "@/lib/i18nConfig";
 

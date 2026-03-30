@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/navigation";
 import { compile } from "@mdx-js/mdx";
 import { getAllSlugs, getPostBySlug } from "@/lib/blog";
 import { MDXContent } from "./MDXContent";
@@ -41,7 +41,9 @@ export async function generateMetadata({
       siteName: "Appuri Hogosha",
       publishedTime: post.date,
       authors: [post.author],
-      images: [{ url: "/og-image.png", width: 1200, height: 630, alt: post.title }],
+      images: [
+        { url: "/og-image.png", width: 1200, height: 630, alt: post.title },
+      ],
     },
     twitter: {
       card: "summary_large_image",
