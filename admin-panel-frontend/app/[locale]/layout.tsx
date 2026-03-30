@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "@/app/[locale]/globals.css";
 import { ThemeProvider } from "@/contexts/theme-provider";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -9,21 +9,76 @@ import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/auth";
 import TimezoneDetector from "@/components/TimezoneDetector";
 
-export async function generateMetadata() {
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.parents.jdu.uz";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
   const session = await auth();
-  const metadata: Metadata = {
-    title: {
-      default: "JDU Parents",
-      template: "%s | JDU Parents",
-    },
+
+  const defaultTitle = "Appuri Hogosha";
+  const title = session?.schoolName
+    ? String(session.schoolName)
+    : defaultTitle;
+
+  return {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: title, // sessiondan kelgan dynamic title ishlaydi
+    template: `%s | ${defaultTitle}`,
+  },
+  description:
+    "JDU Parents notification platform — real-time updates on university activities, grades, and attendance for parents.",
+  applicationName: "Appuri Hogosha",
+  authors: [{ name: "Appuri Hogosha" }],
+  keywords: [
+    "school notification",
+    "parent app",
+    "university",
+    "attendance",
+    "grades",
+    "学校通知",
+    "保護者アプリ",
+  ],
+  openGraph: {
+    type: "website",
+    siteName: "Appuri Hogosha",
+    title: title,
     description:
-      "JDU Parents notification platform — real-time updates on university activities, grades, and attendance for parents.",
-  };
-  if (session) {
-    metadata.title = session?.schoolName;
-  }
-  return metadata;
-}
+      "Real-time updates on university activities, grades, and attendance. Stay connected with your child's education.",
+    locale: locale,
+    alternateLocale: ["en", "uz", "ja", "ru"].filter((l) => l !== locale),
+    url: `${siteUrl}/${locale}`,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Appuri Hogosha — School Notification Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: title,
+    description:
+      "Real-time updates on university activities, grades, and attendance.",
+    images: ["/og-image.png"],
+  },
+  alternates: {
+    canonical: `${siteUrl}/${locale}`,
+    languages: {
+      en: `${siteUrl}/en`,
+      uz: `${siteUrl}`,
+      ja: `${siteUrl}/ja`,
+      ru: `${siteUrl}/ru`,
+    },
+  },
+};
 
 export default async function RootLayout({
   children,
