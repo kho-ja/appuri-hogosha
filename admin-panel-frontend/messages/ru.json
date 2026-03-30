@@ -777,7 +777,12 @@
   },
   "table": {
     "noResults": "Результатов не найдено",
-    "noData": "Нет данных."
+    "noData": "Нет данных.",
+    "selected": "Выбрано: {count}",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Отменить выбор",
+    "selectFiltered": "Выбрать отфильтрованные",
+    "selecting": "Выбор..."
   },
   "names": {
     "name": "{given_name} {family_name}"
@@ -1341,6 +1346,12 @@
     "resendPasswordDescription": "Это отправит новый временный пароль на email адрес пользователя.",
     "resendPasswordDescriptionPhone": "Это отправит новый временный пароль на номер телефона администратора.",
     "userAlreadyActive": "Этот пользователь уже активировал свою учетную запись и не нуждается во временном пароле."
+  },
+  "LogoutConfirmationDialog": {
+    "title": "Подтвердите выход",
+    "description": "Вы уверены, что хотите выйти из панели администратора?",
+    "yes": "Выйти",
+    "no": "Отмена"
   },
   "loginBadge": {
     "loggedIn": "Вошел в систему",

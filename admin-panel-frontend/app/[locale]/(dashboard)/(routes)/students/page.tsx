@@ -9,6 +9,8 @@ import Student from "@/types/student";
 import StudentApi from "@/types/studentApi";
 import PaginationApi from "@/components/PaginationApi";
 import { Input } from "@/components/ui/input";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 import { Link } from "@/navigation";
 import {
   Dialog,
@@ -29,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import TableApi from "@/components/TableApi";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import useApiMutation from "@/lib/useApiMutation";
 import useFileMutation from "@/lib/useFileMutation";
@@ -41,11 +43,31 @@ import { useListQuery } from "@/lib/useListQuery";
 export default function Students() {
   const t = useTranslations("students");
   const tName = useTranslations("names");
+  const safeT = (key: string) => {
+    try {
+      return t(key as never);
+    } catch {
+      return key;
+    }
+  };
   const { page, setPage, search, setSearch, filter, setFilter } = usePagination(
     {
       persistToUrl: true,
       defaultFilter: "all",
     }
+  );
+
+  const [searchInput, setSearchInput] = useState(search);
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      setSearch(normalizeSearch(nextValue));
+      setPage(1);
+    },
+    300
   );
   const filterBy = filter || "all";
   const { data: studentData } = useListQuery<StudentApi>(
@@ -65,7 +87,7 @@ export default function Students() {
         queryClient.invalidateQueries({ queryKey: ["students"] });
         toast({
           title: t("studentDeleted"),
-          description: t(data.message),
+          description: safeT(data.message),
         });
       },
     }
@@ -170,10 +192,11 @@ export default function Students() {
           </Select>
           <Input
             placeholder={t("filterPlaceholder")}
-            value={search}
-            onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setSearch(e.target.value);
-              setPage(1);
+            value={searchInput}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const next = e.target.value;
+              setSearchInput(next);
+              commitSearch(next);
             }}
             className="flex-1"
           />

@@ -99,26 +99,31 @@ const Layout = () => {
                   return null;
                 }
 
+                const displayUnreadCount =
+                  unreadCount > 99 ? '99+' : String(unreadCount);
+
                 return (
                   <View
                     style={{
-                      width: 30,
-                      height: 30,
+                      width: 36,
+                      height: 36,
                       backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      borderRadius: 15,
+                      borderRadius: 18,
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}
                   >
                     <Text
+                      numberOfLines={1}
                       style={{
                         color: 'white',
-                        fontSize: 18,
+                        fontSize: 16,
+                        lineHeight: 17,
                         textAlign: 'center',
                         fontWeight: 'bold',
                       }}
                     >
-                      {unreadCount}
+                      {displayUnreadCount}
                     </Text>
                   </View>
                 );

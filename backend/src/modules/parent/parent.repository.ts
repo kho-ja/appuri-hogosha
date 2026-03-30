@@ -68,6 +68,8 @@ export interface ParentForResend {
     phone_number: string;
     given_name: string;
     family_name: string;
+    last_login_at: string | null;
+    arn: string | null;
 }
 
 export interface ParentForBulkResend extends ParentForResend {
@@ -457,10 +459,13 @@ class ParentRepository {
     async findForResend(parentId: string): Promise<ParentForResend | null> {
         const result = await DB.query(
             `SELECT
+                p.id,
                 p.email,
                 p.phone_number,
                 p.given_name,
-                p.family_name
+                p.family_name,
+                p.last_login_at,
+                p.arn
             FROM Parent p
             WHERE p.id = :parentId`,
             {

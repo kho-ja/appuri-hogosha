@@ -177,10 +177,10 @@ export function StudentProvider(props: PropsWithChildren) {
           return serverStudents;
         } catch (err) {
           if (err instanceof UnauthorizedError) {
-            refreshToken();
+            await signOut();
             throw new Error('401 Unauthorized');
           } else if (err instanceof ForbiddenError) {
-            signOut();
+            await signOut();
             throw new Error('403 Forbidden');
           }
           console.error('Online fetch failed, falling back to DB:', err);
@@ -193,20 +193,16 @@ export function StudentProvider(props: PropsWithChildren) {
     enabled: !!session && !isInitializing,
     staleTime: isDemoMode ? 0 : 2 * 60 * 1000,
     refetchOnWindowFocus: true,
-    refetchInterval: isDemoMode ? false : 5 * 60 * 1000,
-    refetchIntervalInBackground: false,
+    refetchInterval: isDemoMode ? false : 1 * 60 * 1000, // Refetch every minute to catch account deletion
+    refetchIntervalInBackground: true, // Important: continue refetching even when app is in background
   });
 
-  // Compute final loading state: loading if initializing OR (fetching AND no cached data)
-  const isLoading = isInitializing || (isFetching && !students);
+  // Compute final loading state:
+  const isLoading =
+    isInitializing || (!students && (isFetching || (!isError && !!session)));
 
   useEffect(() => {
     if (isSuccess && data) {
-      console.log(
-        '[StudentContext] Setting new student data:',
-        data.length,
-        'students'
-      );
       setStudents(data);
 
       // Save students to AsyncStorage for deeplink navigation
@@ -229,7 +225,6 @@ export function StudentProvider(props: PropsWithChildren) {
       students &&
       !students.find(s => s.id === activeStudent.id)
     ) {
-      console.log('[StudentContext] Active student no longer exists, clearing');
       setActiveStudent(null);
     }
   }, [students, activeStudent]);
@@ -244,7 +239,6 @@ export function StudentProvider(props: PropsWithChildren) {
 
     try {
       await db.execAsync('DELETE FROM student');
-      console.log('[StudentContext] Cleared student cache from DB');
       await refetch();
     } catch (err) {
       console.error('[StudentContext] Failed to clear and refetch:', err);

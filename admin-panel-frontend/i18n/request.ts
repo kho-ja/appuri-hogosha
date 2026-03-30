@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getRequestConfig } from "next-intl/server";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@/i18n/routing";
 
@@ -13,11 +13,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const cookieStore = await cookies();
   const clientTimezone = cookieStore.get("user-timezone")?.value;
-
-  const headersList = await headers();
-  const vercelTimezone = headersList.get("x-vercel-ip-timezone");
-
-  const timeZone = clientTimezone || vercelTimezone || "UTC";
+  const serverTimeZone =  
+    Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";  
+  const timeZone = clientTimezone || serverTimeZone;  
 
   return {
     locale,

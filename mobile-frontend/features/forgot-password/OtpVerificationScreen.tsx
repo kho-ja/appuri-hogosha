@@ -124,7 +124,7 @@ export const OtpVerificationScreen: React.FC<OtpVerificationScreenProps> = ({
           )}
 
           <Button
-            onPress={onVerifyCode}
+            onPress={() => onVerifyCode()}
             title={translations.continueText}
             buttonStyle={forgotPasswordStyles.submitButton}
             titleStyle={forgotPasswordStyles.buttonText}

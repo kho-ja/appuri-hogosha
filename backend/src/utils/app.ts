@@ -6,15 +6,15 @@ import { config } from '../config';
 
 const allowedOrigins: (string | RegExp)[] = [
     config.FRONTEND_URL,
-    /^https:\/\/appuri-hogosha.*kho-jas-projects\.vercel\.app$/,
-    /^https:\/\/.*\.d1cwu6doj7iui6\.amplifyapp\.com$/,
-    /^https:\/\/appuri-hogosha\.vercel\.app$/,
+    /^https:\/\/.*\.d2hff850x2l8tj\.amplifyapp\.com$/,
 ];
 class App {
     public app: Application;
 
     constructor(routes: any[]) {
         this.app = express();
+        // Behind API Gateway/ALB, trust proxy headers for correct client IP handling.
+        this.app.set('trust proxy', 1);
 
         this.app.use(
             express.json({
@@ -41,7 +41,7 @@ class App {
                         callback(new Error('Not allowed by CORS'));
                     }
                 },
-                methods: 'GET,HEAD,PUT,POST,DELETE',
+                methods: 'GET,HEAD,PUT,POST,PATCH,DELETE',
                 credentials: true,
                 optionsSuccessStatus: 204,
                 exposedHeaders: ['Content-Disposition'],

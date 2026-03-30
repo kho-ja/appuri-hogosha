@@ -1,5 +1,7 @@
 import {
     AdminCreateUserCommand,
+    AdminSetUserPasswordCommand,
+    AdminSetUserPasswordCommandInput,
     InitiateAuthCommandInput,
     CognitoIdentityProviderClient,
     InitiateAuthCommand,
@@ -21,6 +23,7 @@ import {
     AdminUpdateUserAttributesCommand,
     AdminUpdateUserAttributesCommandInput,
 } from '@aws-sdk/client-cognito-identity-provider';
+import { randomBytes } from 'crypto';
 import { config as envConfig } from '../config';
 /**
  * CognitoClient class for handling AWS Cognito operations
@@ -486,6 +489,12 @@ class CognitoClient {
                         message: 'Access token is invalid.',
                     } as accessTokenThrow;
                 }
+            } else if (e.name === 'UserNotFoundException') {
+                // User was deleted from Cognito (deleted by admin from backend)
+                throw {
+                    status: 401,
+                    message: 'User account no longer exists.',
+                } as accessTokenThrow;
             } else {
                 throw {
                     status: 500,
@@ -663,6 +672,68 @@ class CognitoClient {
         }
     }
 
+    async verifyForgotPasswordCode(
+        identifier: string,
+        confirmationCode: string
+    ): Promise<{ message: string; resetToken: string }> {
+        const temporaryPassword = `Tmp#${randomBytes(8).toString('hex')}Aa1!`;
+
+        await this.confirmForgotPassword(
+            identifier,
+            confirmationCode,
+            temporaryPassword
+        );
+
+        // Reset token generate qilish
+        const resetToken = randomBytes(32).toString('hex');
+
+        return {
+            message: 'Verification code verified successfully',
+            resetToken, // controllega qaytarish
+        };
+    }
+
+    async setPasswordAfterForgotPasswordVerification(
+        identifier: string,
+        newPassword: string
+    ): Promise<confirmForgotPasswordOutput> {
+        const params: AdminSetUserPasswordCommandInput = {
+            UserPoolId: this.pool_id,
+            Username: identifier,
+            Password: newPassword,
+            Permanent: true,
+        };
+
+        try {
+            const command = new AdminSetUserPasswordCommand(params);
+            await this.client.send(command);
+
+            return {
+                message: 'Password reset successfully',
+            };
+        } catch (e: any) {
+            console.error('Set password after verification error:', e);
+
+            if (e.name === 'UserNotFoundException') {
+                throw {
+                    status: 404,
+                    message: 'User not found',
+                } as confirmForgotPasswordThrow;
+            } else if (e.name === 'InvalidPasswordException') {
+                throw {
+                    status: 400,
+                    message:
+                        'Password must contain at least 8 characters, 1 number, 1 special character, 1 uppercase, 1 lowercase',
+                } as confirmForgotPasswordThrow;
+            } else {
+                throw {
+                    status: 500,
+                    message: 'Internal server error',
+                } as confirmForgotPasswordThrow;
+            }
+        }
+    }
+
     async signInWithPhone(phoneNumber: string): Promise<signInWithPhoneOutput> {
         const params: InitiateAuthCommandInput = {
             AuthFlow: 'CUSTOM_AUTH',
@@ -748,6 +819,13 @@ class CognitoClient {
                     refreshToken:
                         authData.AuthenticationResult.RefreshToken ?? '',
                 };
+            } else if (authData.Session) {
+                // Wrong OTP but Cognito allows retry — return new session
+                throw {
+                    status: 401,
+                    message: 'Invalid OTP',
+                    session: authData.Session,
+                };
             } else {
                 throw {
                     status: 401,
@@ -756,6 +834,10 @@ class CognitoClient {
             }
         } catch (e: any) {
             console.error('Respond to auth challenge error:', e);
+            // Re-throw structured errors (from else branches above)
+            if (e?.status) {
+                throw e;
+            }
             if (e.name === 'NotAuthorizedException') {
                 throw {
                     status: 401,

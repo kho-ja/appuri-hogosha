@@ -129,7 +129,7 @@ export default function SignIn() {
       if (data?.session) {
         showSuccessToast('Verification code sent');
         // Navigate to verify-otp screen with params
-        router.push({
+        router.replace({
           pathname: '/verify-otp',
           params: {
             country: JSON.stringify(selectedCountry),
@@ -173,6 +173,15 @@ export default function SignIn() {
   });
 
   const handleSubmit = () => {
+    const trimmedPhone = phoneNumber.replaceAll(' ', '');
+    if (!trimmedPhone) {
+      showErrorToast(i18n[language].phoneNumberRequired);
+      return;
+    }
+    if (usePassword && !password.trim()) {
+      showErrorToast(i18n[language].passwordRequired);
+      return;
+    }
     if (usePassword) {
       passwordMutation.mutate();
     } else {

@@ -24,13 +24,16 @@ interface ApiResponse<T> {
 
 // Error types for better error handling
 export class ApiError extends Error {
+  public responseData?: any;
   constructor(
     message: string,
     public status: number,
-    public code?: string
+    public code?: string,
+    responseData?: any
   ) {
     super(message);
     this.name = 'ApiError';
+    this.responseData = responseData;
   }
 }
 
@@ -143,7 +146,9 @@ async function request<TResponse, TBody = unknown>(
       // For non-auth requests (login, etc), just throw ApiError with message
       throw new ApiError(
         data.error || data.message || 'Invalid credentials',
-        response.status
+        response.status,
+        undefined,
+        data
       );
     }
 

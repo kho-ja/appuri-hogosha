@@ -10,7 +10,7 @@ import {
   Updater,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { useEffect, useCallback, useMemo, useState } from "react";
+import { useEffect, useCallback, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -36,6 +36,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { SkeletonLoader } from "./TableApi";
 import pagination from "@/types/pagination";
+import { useTranslations } from "next-intl";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
 
 export interface BaseEntity {
   id: number;
@@ -101,9 +104,26 @@ export function GenericSelectTable<T extends BaseEntity>({
 }: GenericSelectTableProps<T>) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const t = useTranslations("table");
 
   const [filterBy, setFilterBy] = useState(config.filterBy || "all");
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const pendingSelectionSyncRef = useRef(false);
+
+  const [searchInput, setSearchInput] = useState(search);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  const { debounced: commitSearch } = useDebouncedCallback(
+    (nextValue: string) => {
+      const normalized = normalizeSearch(nextValue);
+      setSearch(normalized);
+      setPage(1);
+    },
+    300
+  );
 
   useEffect(() => {
     if (config.filterBy) {
@@ -144,12 +164,16 @@ export function GenericSelectTable<T extends BaseEntity>({
   );
 
   useEffect(() => {
-    const newSelection: Record<string, boolean> = {};
-    selectedItemIds.forEach((id) => {
-      newSelection[id] = true;
+    // Keep the table's rowSelection in sync with the external selectedItems,
+    // but only for rows that exist on the current page.
+    const nextSelection: Record<string, boolean> = {};
+    tableData.forEach((item) => {
+      if (selectedItemIds.has(item.id)) {
+        nextSelection[item.id] = true;
+      }
     });
-    setRowSelection(newSelection);
-  }, [selectedItemIds]);
+    setRowSelection(nextSelection);
+  }, [selectedItemIds, tableData]);
 
   const { data: selectedItemsData } = useQuery({
     queryKey: ["selected" + entityKey, Array.from(selectedItemIds).sort()],
@@ -224,7 +248,8 @@ export function GenericSelectTable<T extends BaseEntity>({
 
         const totalPages = paginationData.total_pages;
         for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
-          const key = config.selectAllQueryKey(search, filterBy);
+          const baseKey = config.selectAllQueryKey(search, filterBy);
+          const key = [...baseKey, String(currentPage)];
           let pageData = queryClient.getQueryData<ApiResponse<T>>(key);
 
           if (!pageData) {
@@ -287,21 +312,82 @@ export function GenericSelectTable<T extends BaseEntity>({
     selectAllMutation,
   ]);
 
-  const onRowSelectionChange = (updater: Updater<RowSelectionState>) => {
-    if (typeof updater === "function") {
-      const newSelection = updater(rowSelection);
-      const newSelectedItems =
-        tableData.filter((item) => newSelection[item.id]) || [];
+  const onRowSelectionChange = useCallback(
+    (updater: Updater<RowSelectionState>) => {
+      pendingSelectionSyncRef.current = true;
+      setRowSelection((prevSelection) => {
+        const baseNextSelection =
+          typeof updater === "function" ? updater(prevSelection) : updater;
 
-      setSelectedItems((prev) => {
-        const prevIds = new Set(prev.map((item) => item.id));
-        return [
-          ...prev.filter((item) => newSelection[item.id]),
-          ...newSelectedItems.filter((item) => !prevIds.has(item.id)),
-        ];
+        if (!config.isTreeStructure || !config.treeDescendantsFinder) {
+          return baseNextSelection;
+        }
+
+        // In tree mode, selecting/unselecting a node should also affect its descendants.
+        const expandedSelection: Record<string, boolean> = {
+          ...baseNextSelection,
+        };
+        const allNodes = tableData;
+
+        const changedIds = new Set<string>();
+        const keys = new Set([
+          ...Object.keys(prevSelection),
+          ...Object.keys(baseNextSelection),
+        ]);
+        keys.forEach((k) => {
+          if (!!prevSelection[k] !== !!baseNextSelection[k]) {
+            changedIds.add(k);
+          }
+        });
+
+        changedIds.forEach((idStr) => {
+          const id = Number(idStr);
+          if (!Number.isFinite(id)) return;
+          const node = allNodes.find((n) => n.id === id);
+          if (!node) return;
+
+          const isSelectedNow = !!baseNextSelection[idStr];
+          const descendants = config.treeDescendantsFinder!(node, allNodes);
+          descendants.forEach((d) => {
+            expandedSelection[d.id] = isSelectedNow;
+          });
+        });
+
+        return expandedSelection;
       });
-    }
-  };
+    },
+    [config.isTreeStructure, config.treeDescendantsFinder, tableData]
+  );
+
+  useEffect(() => {
+    if (!pendingSelectionSyncRef.current) return;
+    pendingSelectionSyncRef.current = false;
+
+    // Sync external selectedItems from rowSelection, but only for the current page.
+    // This prevents header checkbox on one page from clearing selections on other pages.
+    const currentPageIds = new Set(tableData.map((item) => item.id));
+    const currentPageSelectedIds = new Set(
+      tableData.filter((item) => !!rowSelection[item.id]).map((item) => item.id)
+    );
+
+    setSelectedItems((prev) => {
+      const kept = prev.filter((item) => {
+        if (!currentPageIds.has(item.id)) return true;
+        return currentPageSelectedIds.has(item.id);
+      });
+
+      const keptIds = new Set(kept.map((item) => item.id));
+      const added = tableData.filter(
+        (item) => currentPageSelectedIds.has(item.id) && !keptIds.has(item.id)
+      );
+
+      if (added.length === 0 && kept.length === prev.length) {
+        return prev;
+      }
+
+      return [...kept, ...added];
+    });
+  }, [rowSelection, tableData, setSelectedItems]);
 
   const handleRowSelection = useCallback(
     (row: Row<T>, isSelected: boolean) => {
@@ -337,9 +423,7 @@ export function GenericSelectTable<T extends BaseEntity>({
     data: tableData,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: config.isTreeStructure
-      ? undefined
-      : onRowSelectionChange,
+    onRowSelectionChange,
     getRowId: (row) => row.id.toString(),
     state: {
       rowSelection,
@@ -433,10 +517,11 @@ export function GenericSelectTable<T extends BaseEntity>({
           {(config.enableFilters !== false || !config.filters) && (
             <Input
               placeholder="Search..."
-              value={search}
-              onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setSearch(e.target.value);
-                setPage(1);
+              value={searchInput}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const next = e.target.value;
+                setSearchInput(next);
+                commitSearch(next);
               }}
               className="flex-1 max-w-sm"
             />
@@ -459,12 +544,12 @@ export function GenericSelectTable<T extends BaseEntity>({
               className="whitespace-nowrap"
             >
               {selectAllMutation.isPending
-                ? "Selecting..."
+                ? t("selecting")
                 : selectedItems.length > 0
-                  ? "Deselect All"
+                  ? `${t("deselectAll")} (${selectedItems.length})`
                   : search
-                    ? "Select Filtered"
-                    : "Select All"}
+                    ? t("selectFiltered")
+                    : t("selectAll")}
             </Button>
           )}
         </div>
@@ -514,7 +599,7 @@ export function GenericSelectTable<T extends BaseEntity>({
                   colSpan={tableColumns.length}
                   className="h-24 text-center"
                 >
-                  {config.noResultsMessage || "No results found."}
+                  {config.noResultsMessage || t("noResults")}
                 </TableCell>
               </TableRow>
             )}
@@ -525,8 +610,7 @@ export function GenericSelectTable<T extends BaseEntity>({
       {/* Footer with count and pagination */}
       <div className="flex flex-wrap gap-2 sm:flex-row sm:justify-between sm:items-center">
         <div className="text-sm text-muted-foreground sm:w-auto w-full">
-          {selectedItems.length} of {table.getFilteredRowModel().rows.length}{" "}
-          selected
+          {t("selected", { count: selectedItems.length })}
         </div>
         {data?.pagination && (
           <div className="w-full sm:w-auto">

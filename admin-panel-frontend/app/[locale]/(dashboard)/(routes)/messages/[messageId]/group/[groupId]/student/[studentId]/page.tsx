@@ -43,6 +43,13 @@ export default function ThisStudent({
   const { messageId, studentId, groupId } = React.use(params);
   const t = useTranslations("ThisStudent");
   const tName = useTranslations("names");
+  const safeT = (key: string) => {
+    try {
+      return t(key as never);
+    } catch {
+      return key;
+    }
+  };
   const { formatDateTime } = useDateFormatter();
   const { data: studentData, isError } = useListQuery<{
     student: Student;
@@ -63,7 +70,7 @@ export default function ThisStudent({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: t(data.message),
+          description: safeT(data.message),
         });
       },
     }
@@ -78,7 +85,7 @@ export default function ThisStudent({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: t(data.message),
+          description: safeT(data.message),
         });
       },
     }

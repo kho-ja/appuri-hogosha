@@ -44,6 +44,13 @@ export default function ThisGroup({
   const { messageId, groupId } = React.use(params);
   const t = useTranslations("ThisGroup");
   const tName = useTranslations("names");
+  const safeT = (key: string) => {
+    try {
+      return t(key as never);
+    } catch {
+      return key;
+    }
+  };
   const [studentPage, setStudentPage] = useState(1);
   const { data: groupData, isError } = useListQuery<{
     group: Group;
@@ -64,7 +71,7 @@ export default function ThisGroup({
       onSuccess: (data) => {
         toast({
           title: t("notificationReSent"),
-          description: t(data.message),
+          description: safeT(data.message),
         });
       },
     }
@@ -177,7 +184,7 @@ export default function ThisGroup({
               <DialogHeader>
                 <DialogTitle>{groupData?.group.name}</DialogTitle>
                 <DialogDescription>
-                  <div>{t("doYouReSendNotification")}</div>
+                  {t("doYouReSendNotification")}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>

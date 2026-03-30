@@ -67,6 +67,7 @@ export interface UpdatePostData {
 }
 
 export interface ListFilters {
+    text?: string;
     title?: string;
     description?: string;
     priority?: string;
@@ -151,6 +152,12 @@ export class PostRepository {
             offset,
         };
 
+        if (filters?.text) {
+            filterClauses.push(
+                '(po.title LIKE :text OR po.description LIKE :text)'
+            );
+            params.text = `%${filters.text}%`;
+        }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
             params.title = `%${filters.title}%`;
@@ -205,6 +212,12 @@ export class PostRepository {
         const filterClauses: string[] = ['po.school_id = :school_id'];
         const params: any = { school_id: schoolId };
 
+        if (filters?.text) {
+            filterClauses.push(
+                '(po.title LIKE :text OR po.description LIKE :text)'
+            );
+            params.text = `%${filters.text}%`;
+        }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
             params.title = `%${filters.title}%`;
@@ -625,10 +638,12 @@ export class PostRepository {
         await DB.execute(
             `
             UPDATE PostParent pp
-            INNER JOIN StudentParent ps ON pp.parent_id = ps.parent_id
-            INNER JOIN GroupMember gs ON ps.student_id = gs.student_id
-            SET pp.should_send_push_notification = 0
-            WHERE pp.post_id = ? AND gs.group_id = ?
+            INNER JOIN PostStudent pst ON pst.id = pp.post_student_id
+            INNER JOIN GroupMember gm ON gm.student_id = pst.student_id
+            SET pp.push = 0
+            WHERE pst.post_id = ?
+              AND gm.group_id = ?
+              AND pp.viewed_at IS NULL
             `,
             [postId, groupId]
         );
@@ -644,9 +659,11 @@ export class PostRepository {
         await DB.execute(
             `
             UPDATE PostParent pp
-            INNER JOIN StudentParent ps ON pp.parent_id = ps.parent_id
-            SET pp.should_send_push_notification = 0
-            WHERE pp.post_id = ? AND ps.student_id = ?
+            INNER JOIN PostStudent pst ON pst.id = pp.post_student_id
+            SET pp.push = 0
+            WHERE pst.post_id = ?
+              AND pst.student_id = ?
+              AND pp.viewed_at IS NULL
             `,
             [postId, studentId]
         );
@@ -660,7 +677,14 @@ export class PostRepository {
         parentId: number
     ): Promise<void> {
         await DB.execute(
-            'UPDATE PostParent SET should_send_push_notification = 0 WHERE post_id = ? AND parent_id = ?',
+            `
+            UPDATE PostParent pp
+            INNER JOIN PostStudent pst ON pst.id = pp.post_student_id
+            SET pp.push = 0
+            WHERE pst.post_id = ?
+              AND pp.parent_id = ?
+              AND pp.viewed_at IS NULL
+            `,
             [postId, parentId]
         );
     }
@@ -689,22 +713,26 @@ export class PostRepository {
         studentIds: number[]
     ): Promise<void> {
         if (studentIds.length === 0) {
-            await DB.execute('DELETE FROM PostParent WHERE post_id = ?', [
-                postId,
-            ]);
+            await DB.execute(
+                `
+                DELETE pp
+                FROM PostParent pp
+                INNER JOIN PostStudent ps ON ps.id = pp.post_student_id
+                WHERE ps.post_id = ?
+                `,
+                [postId]
+            );
             return;
         }
 
         const placeholders = studentIds.map(() => '?').join(',');
         await DB.execute(
             `
-            DELETE FROM PostParent 
-            WHERE post_id = ? 
-            AND parent_id NOT IN (
-                SELECT DISTINCT ps.parent_id 
-                FROM StudentParent ps 
-                WHERE ps.student_id IN (${placeholders})
-            )
+            DELETE pp
+            FROM PostParent pp
+            INNER JOIN PostStudent ps ON ps.id = pp.post_student_id
+            WHERE ps.post_id = ?
+              AND ps.student_id NOT IN (${placeholders})
             `,
             [postId, ...studentIds]
         );
@@ -759,17 +787,16 @@ export class PostRepository {
     /**
      * Insert post parents
      */
-    async insertPostParents(
-        postId: number,
-        parentIds: number[]
-    ): Promise<void> {
-        if (parentIds.length === 0) return;
-
-        const values = parentIds
-            .map(parentId => `(${postId}, ${parentId}, 0)`)
-            .join(',');
+    async insertPostParents(postId: number): Promise<void> {
         await DB.execute(
-            `INSERT IGNORE INTO PostParent (post_id, parent_id, should_send_push_notification) VALUES ${values}`
+            `
+            INSERT IGNORE INTO PostParent (post_student_id, parent_id)
+            SELECT ps.id, sp.parent_id
+            FROM PostStudent ps
+            INNER JOIN StudentParent sp ON sp.student_id = ps.student_id
+            WHERE ps.post_id = ?
+            `,
+            [postId]
         );
     }
 }

@@ -15,7 +15,7 @@ export const login = async (
       newPassword,
       redirect: false,
     });
-
+    
     return response;
   } catch (error) {
     if (error instanceof AuthError) {

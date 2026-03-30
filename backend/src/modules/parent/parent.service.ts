@@ -475,7 +475,11 @@ class ParentService {
         const parent = await parentRepository.findForResend(params.parentId);
 
         if (!parent) {
-            throw ApiError.notFound('Parent not found');
+            throw ApiError.notFound('parent_not_found');
+        }
+
+        if (parent.last_login_at || (parent.arn && parent.arn !== '')) {
+            throw ApiError.badRequest('userAlreadyActive');
         }
 
         // Format phone number

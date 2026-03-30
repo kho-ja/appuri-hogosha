@@ -782,7 +782,12 @@
   },
   "table": {
     "noResults": "No results found.",
-    "noData": "No data available."
+    "noData": "No data available.",
+    "selected": "{count} selected",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selectFiltered": "Select Filtered",
+    "selecting": "Selecting..."
   },
   "names": {
     "name": "{given_name} {family_name}"
@@ -1345,6 +1350,12 @@
     "resendPasswordDescription": "This will send a new temporary password to the admin's email address.",
     "resendPasswordDescriptionPhone": "This will send a new temporary password to the admin's phone number.",
     "userAlreadyActive": "This user has already activated their account and doesn't need a temporary password."
+  },
+  "LogoutConfirmationDialog": {
+    "title": "Confirm Logout",
+    "description": "Are you sure you want to logout from admin panel?",
+    "yes": "Logout",
+    "no": "Cancel"
   },
   "BulkResendPasswordDialog": {
     "bulkResendPassword": "Resend Passwords to All",

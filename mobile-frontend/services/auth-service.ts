@@ -12,6 +12,11 @@ export interface ApiError {
   error: string;
 }
 
+export interface ForgotPasswordVerifyResponse {
+  message: string;
+  reset_token: string;
+}
+
 /**
  * Send verification code to user's phone number for password reset
  */
@@ -36,12 +41,21 @@ export const sendVerificationCode = async (
 export const verifyResetCode = async (
   phoneNumber: string,
   code: string
-): Promise<boolean> => {
-  if (code.length !== 6) {
-    throw new Error('Verification code must be 6 digits');
-  }
+): Promise<ForgotPasswordVerifyResponse> => {  // ✅ tip o'zgardi
+  const fullPhoneNumber = phoneNumber.startsWith('+')
+    ? phoneNumber
+    : `+${phoneNumber}`;
 
-  return true;
+  const response = await apiClient.post<ForgotPasswordVerifyResponse>(
+    '/forgot-password-verify-code',
+    {
+      phone_number: fullPhoneNumber,
+      verification_code: code,
+    },
+    { requiresAuth: false }
+  );
+
+  return response.data;
 };
 
 /**
@@ -49,19 +63,19 @@ export const verifyResetCode = async (
  */
 export const resetPassword = async (
   phoneNumber: string,
-  verificationCode: string,
-  newPassword: string
+  newPassword: string,
+  resetToken: string
 ): Promise<ForgotPasswordConfirmResponse> => {
   const fullPhoneNumber = phoneNumber.startsWith('+')
     ? phoneNumber
     : `+${phoneNumber}`;
 
   const response = await apiClient.post<ForgotPasswordConfirmResponse>(
-    '/forgot-password-confirm',
+    '/forgot-password-set-password',
     {
       phone_number: fullPhoneNumber,
-      verification_code: verificationCode,
       new_password: newPassword,
+      reset_token: resetToken,
     },
     { requiresAuth: false }
   );

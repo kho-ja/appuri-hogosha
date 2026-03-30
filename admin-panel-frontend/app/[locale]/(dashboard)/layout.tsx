@@ -8,6 +8,8 @@ import {
   Package2,
   ChevronLeft,
   ChevronRight,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +27,7 @@ import { signOut, useSession } from "next-auth/react";
 import NavLinks from "@/components/NavLinks";
 import LanguageSelect from "@/components/LanguageSelect";
 import { User } from "next-auth";
+import LogoutConfirmationDialog from "@/components/LogoutConfirmationDialog";
 
 const handleSignOut = async () => {
   return await signOut({ callbackUrl: "/login" });
@@ -197,18 +200,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   asChild
                   className="hover:bg-muted/50 transition-colors duration-200"
                 >
-                  <Link href="/settings">{t("settings")}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="hover:bg-muted/50 transition-colors duration-200">
-                  {t("support")}
+                  <Link href="/settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    {t("settings")}
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={async () => await signOut({ callbackUrl: "/login" })}
-                  className="hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
-                >
-                  {t("logout")}
-                </DropdownMenuItem>
+                <LogoutConfirmationDialog>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex items-center gap-2 text-destructive hover:bg-destructive hover:text-white transition-colors duration-200 cursor-pointer"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t("logout")}
+                  </DropdownMenuItem>
+                </LogoutConfirmationDialog>
                 <div className="sm:hidden">
                   <DropdownMenuSeparator />
                   <div className="flex gap-2">
