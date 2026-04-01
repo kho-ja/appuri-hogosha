@@ -22,16 +22,16 @@ export class ScheduleController {
         this.router.get('/list', verifyToken, this.scheduledPostList);
         this.router.get('/each/:id', verifyToken, this.scheduledPostView);
         this.router.get(
-            '/:id/recievers',
+            '/:id/receivers',
             verifyToken,
-            this.scheduledPostRecievers
+            this.scheduledPostReceivers
         );
         this.router.delete('/:id', verifyToken, this.deleteScheduledPost);
         this.router.put('/:id', verifyToken, this.updateScheduledPost);
         this.router.put(
-            '/:id/recievers',
+            '/:id/receivers',
             verifyToken,
-            this.updateScheduledPostRecievers
+            this.updateScheduledPostReceivers
         );
         this.router.post(
             '/delete-multiple',
@@ -174,7 +174,7 @@ export class ScheduleController {
         }
     };
 
-    updateScheduledPostRecievers = async (
+    updateScheduledPostReceivers = async (
         req: ExtendedRequest,
         res: Response,
         next: NextFunction
@@ -199,7 +199,7 @@ export class ScheduleController {
         }
     };
 
-    scheduledPostRecievers = async (
+    scheduledPostReceivers = async (
         req: ExtendedRequest,
         res: Response,
         next: NextFunction

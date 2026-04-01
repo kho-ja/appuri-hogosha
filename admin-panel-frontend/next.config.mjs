@@ -9,6 +9,7 @@ const nextConfig = {
     loader: "custom",
     loaderFile: "./lib/imageLoader.js",
   },
+  transpilePackages: ["@mdx-js/mdx", "@mdx-js/react"],
   experimental: {
     serverActions: {
       allowedOrigins: [

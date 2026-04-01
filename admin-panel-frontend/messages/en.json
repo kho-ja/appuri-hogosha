@@ -244,7 +244,7 @@
     "not_viewed_count": "Not Viewed Count",
     "view": "View",
     "editMessage": "Edit Message",
-    "editRecivers": "Edit Recievers",
+    "editReceivers": "Edit receivers",
     "Groups": "Groups",
     "Students": "Students"
   },
@@ -1000,7 +1000,11 @@
   },
   "errors": {
     "wentWrong": "Something went wrong.",
+    "unexpectedError": "An unexpected error occurred.",
+    "errorDescription": "Don't worry, you can try again or go back to the home page.",
+    "tryAgain": "Try again",
     "pageNotFound": "Page not found.",
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
     "returnHome": "Return to home page",
     "loading": "Loading...",
     "loadingDescription": "Please wait while we loading.",
@@ -1324,13 +1328,13 @@
     "close": "Close",
     "editGroups": "Edit Groups"
   },
-  "recievers": {
-    "ChangeRecievers": "Change Recievers",
+  "receivers": {
+    "Changereceivers": "Change receivers",
     "Students": "Students",
     "Groups": "Groups",
     "confirm": "Confirm",
     "back": "Back",
-    "recieversChanged": "Recievers Changed Successfully",
+    "receiversChanged": "receivers Changed Successfully",
     "post_sender_updated_successfully": "Post sender updated successfully",
     "post_receivers_updated_successfully": "Post receivers updated successfully"
   },

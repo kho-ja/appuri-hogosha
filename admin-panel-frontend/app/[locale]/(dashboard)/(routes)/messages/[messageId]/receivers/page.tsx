@@ -9,6 +9,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import useApiMutation from "@/lib/useApiMutation";
 import { useListQuery } from "@/lib/useListQuery";
+import StudentApi from "@/types/studentApi";
+import GroupApi from "@/types/groupApi";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "@/navigation";
 import { Tabs } from "@radix-ui/react-tabs";
@@ -16,60 +18,65 @@ import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BackButton } from "@/components/ui/BackButton";
 import PageHeader from "@/components/PageHeader";
 
-export default function Recievers({
+export default function receivers({
   params,
 }: {
   params: Promise<{ messageId: string }>;
 }) {
   const { messageId } = React.use(params);
-  const t = useTranslations("recievers");
+  const t = useTranslations("receivers");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
-  const router = useRouter();
 
-  const { mutate } = useApiMutation(
-    `schedule/${messageId}/recievers`,
-    "PUT",
-    ["editScheduledReceivers", messageId],
-    {
-      onSuccess: () => {
-        router.push(`/messages/scheduled-message/${messageId}`);
-      },
-      onError: () => {
-        toast({
-          title: t("error"),
-          description: t("updateFailed"),
-          variant: "destructive",
-        });
-      },
-    }
-  ) as unknown as {
-    mutate: (data: { students: number[]; groups: number[] }) => void;
-  };
+  interface UpdateReceiversPayload {
+    students: number[];
+    groups: number[];
+  }
+  const router = useRouter();
+  const { data: studentData } = useListQuery<StudentApi>(
+    `post/${messageId}/students`,
+    ["student", messageId]
+  );
+  const { data: groupData } = useListQuery<GroupApi>(
+    `post/${messageId}/groups`,
+    ["group", messageId]
+  );
+  const { mutate } = useApiMutation<
+    { message: string },
+    UpdateReceiversPayload
+  >(`post/${messageId}/sender`, "PUT", ["editMessageSender", messageId], {
+    onSuccess: (data) => {
+      toast({
+        title: t("receiversChanged"),
+        description: t(data?.message),
+      });
+      router.push(`/messages/${messageId}`);
+    },
+  });
 
   const handleClick = useCallback(() => {
     mutate({
-      students: selectedStudents.map((s) => s.id),
-      groups: selectedGroups.map((g) => g.id),
+      students: selectedStudents.map((student) => student.id),
+      groups: selectedGroups.map((group) => group.id),
     });
   }, [selectedStudents, selectedGroups, mutate]);
 
-  const { data } = useListQuery<{ students: Student[]; groups: Group[] }>(
-    `schedule/${messageId}/recievers`,
-    ["scheduled-receivers", messageId]
-  );
+  useEffect(() => {
+    if (studentData) {
+      setSelectedStudents(studentData.students);
+    }
+  }, [studentData]);
 
   useEffect(() => {
-    if (data) {
-      setSelectedStudents(data.students || []);
-      setSelectedGroups(data.groups || []);
+    if (groupData) {
+      setSelectedGroups(groupData.groups);
     }
-  }, [data]);
+  }, [groupData]);
 
   return (
     <div className="flex flex-col gap-2 justify-start items-start">
-      <PageHeader title={t("ChangeRecievers")}>
-        <BackButton href={`/messages/scheduled-message/${messageId}`} />
+      <PageHeader title={t("Changereceivers")}>
+        <BackButton href={`/messages/${messageId}`} />
       </PageHeader>
       <Tabs className="w-full" defaultValue="groups">
         <TabsList className="flex justify-start items-center mb-4 w-fit">

@@ -129,7 +129,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
-                  href="#"
+                  href="/dashboard"
                   className="flex items-center gap-2 text-lg font-semibold mb-5 hover:scale-105 transition-transform duration-200"
                 >
                   <Package2 className="h-6 w-6" />
