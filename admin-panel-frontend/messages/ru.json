@@ -612,7 +612,11 @@
     "export": "Экспорт",
     "Students": "Студенты",
     "noStudents": "Студентов нет",
-    "bulkOperations": "Массовые операции"
+    "bulkOperations": "Массовые операции",
+    "all": "Все",
+    "loggedIn": "Вошли",
+    "notLoggedIn": "Не вошли",
+    "totalCount": "Всего: {count}"
   },
   "posts": {
     "messages": "Сообщения",
@@ -646,6 +650,9 @@
     "parentId": "ID родителя",
     "phoneNumber": "Номер телефона",
     "loginStatus": "Статус входа",
+    "all": "Все поля",
+    "loggedIn": "Вошел",
+    "notLoggedIn": "Еще не входил",
     "noResults": "Результатов не найдено",
     "rowsSelected": "{count} из {total} строк выбрано.",
     "filter": "Фильтр по имени"

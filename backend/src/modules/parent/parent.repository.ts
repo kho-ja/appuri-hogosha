@@ -34,6 +34,7 @@ export interface ParentListFilters {
     phone_number?: string;
     name?: string;
     showOnlyNonLoggedIn?: boolean;
+    loginStatus?: 'all' | 'loggedIn' | 'notLoggedIn';
 }
 
 export interface ParentForDelete {
@@ -155,6 +156,16 @@ class ParentRepository {
             );
         }
 
+        if (filters.loginStatus === 'loggedIn') {
+            whereClauses.push(
+                '(p.last_login_at IS NOT NULL OR (p.arn IS NOT NULL AND p.arn <> ""))'
+            );
+        } else if (filters.loginStatus === 'notLoggedIn') {
+            whereClauses.push(
+                'p.last_login_at IS NULL AND (p.arn IS NULL OR p.arn = "")'
+            );
+        }
+
         const whereClause = whereClauses.join(' AND ');
 
         return await DB.query(
@@ -204,6 +215,16 @@ class ParentRepository {
         }
 
         if (filters.showOnlyNonLoggedIn) {
+            whereClauses.push(
+                'p.last_login_at IS NULL AND (p.arn IS NULL OR p.arn = "")'
+            );
+        }
+
+        if (filters.loginStatus === 'loggedIn') {
+            whereClauses.push(
+                '(p.last_login_at IS NOT NULL OR (p.arn IS NOT NULL AND p.arn <> ""))'
+            );
+        } else if (filters.loginStatus === 'notLoggedIn') {
             whereClauses.push(
                 'p.last_login_at IS NULL AND (p.arn IS NULL OR p.arn = "")'
             );

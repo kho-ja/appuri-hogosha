@@ -25,6 +25,7 @@ export interface GetParentListRequest {
     phone_number?: string;
     name?: string;
     showOnlyNonLoggedIn?: boolean;
+    loginStatus?: 'all' | 'loggedIn' | 'notLoggedIn';
 }
 
 export interface ParentListData extends ParentBasicData {

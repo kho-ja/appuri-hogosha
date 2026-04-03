@@ -143,6 +143,7 @@ class ParentModuleController implements IController {
             const phone_number = (req.body.phone_number as string) || '';
             const name = (req.body.name as string) || '';
             const showOnlyNonLoggedIn = req.body.showOnlyNonLoggedIn || false;
+            const loginStatus = req.body.loginStatus || 'all';
 
             // Call service layer
             const result = await this.parentService.getParentList({
@@ -152,6 +153,7 @@ class ParentModuleController implements IController {
                 phone_number: phone_number || undefined,
                 name: name || undefined,
                 showOnlyNonLoggedIn,
+                loginStatus,
             });
 
             return res.status(200).json(result).end();

@@ -616,7 +616,11 @@
     "export": "Export",
     "Students": "Students",
     "noStudents": "No students",
-    "bulkOperations": "Bulk Operations"
+    "bulkOperations": "Bulk Operations",
+    "all": "All",
+    "loggedIn": "Logged In",
+    "notLoggedIn": "Not Logged In",
+    "totalCount": "Total: {count}"
   },
   "posts": {
     "messages": "Messages",
@@ -650,6 +654,9 @@
     "parentId": "Parent ID",
     "phoneNumber": "Phone Number",
     "loginStatus": "Login Status",
+    "all": "All",
+    "loggedIn": "Logged In",
+    "notLoggedIn": "Not Logged In",
     "noResults": "No results.",
     "rowsSelected": "{count} rows selected (out of {total} rows)",
     "filter": "Filter by name"

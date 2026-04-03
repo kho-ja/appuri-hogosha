@@ -34,13 +34,22 @@ import PageHeader from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import YesBadge from "@/components/yesbadge";
 import NoBadge from "@/components/nobadge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Info() {
   const t = useTranslations("parents");
   const tName = useTranslations("names");
-  const { page, setPage, search, setSearch } = usePagination({
-    persistToUrl: true,
-  });
+  const { page, setPage, search, setSearch, filter, setFilter } = usePagination(
+    {
+      persistToUrl: true,
+    }
+  );
 
   const [searchInput, setSearchInput] = useState(search);
   useEffect(() => {
@@ -56,8 +65,8 @@ export default function Info() {
   );
   const { data } = useListQuery<ParentApi>(
     "parent/list",
-    ["parents", page, search],
-    { page, name: search },
+    ["parents", page, search, filter],
+    { page, name: search, loginStatus: filter },
     "POST"
   );
   const queryClient = useQueryClient();
@@ -207,17 +216,41 @@ export default function Info() {
             </Link>
           </div>
         </PageHeader>
-        <div className="flex flex-col sm:flex-row justify-between">
-          <Input
-            placeholder={t("filter")}
-            value={searchInput}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              const next = e.target.value;
-              setSearchInput(next);
-              commitSearch(next);
-            }}
-            className="sm:max-w-sm mb-4"
-          />
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <div className="flex flex-1 flex-col sm:flex-row gap-2 items-end sm:items-center">
+            <div className="w-full sm:max-w-sm relative">
+              <Input
+                placeholder={t("filter")}
+                value={searchInput}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const next = e.target.value;
+                  setSearchInput(next);
+                  commitSearch(next);
+                }}
+              />
+            </div>
+            <Select
+              value={filter || "all"}
+              onValueChange={(value) => {
+                setFilter(value === "all" ? undefined : value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder={t("loginStatus")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("all")}</SelectItem>
+                <SelectItem value="loggedIn">{t("loggedIn")}</SelectItem>
+                <SelectItem value="notLoggedIn">{t("notLoggedIn")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="text-sm font-medium text-muted-foreground whitespace-nowrap px-1">
+              {t("totalCount", {
+                count: data?.pagination?.total_parents || 0,
+              })}
+            </div>
+          </div>
           <div className="">
             <PaginationApi data={data?.pagination ?? null} setPage={setPage} />
           </div>
