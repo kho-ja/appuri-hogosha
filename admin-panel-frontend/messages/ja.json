@@ -613,7 +613,11 @@
     "export": "ファイルに書き出す",
     "Students": "学生",
     "noStudents": "学生がいません",
-    "bulkOperations": "一括操作"
+    "bulkOperations": "一括操作",
+    "all": "すべて",
+    "loggedIn": "ログイン済み",
+    "notLoggedIn": "未ログイン",
+    "totalCount": "合計: {count}"
   },
   "posts": {
     "messages": "メッセージ",
@@ -650,7 +654,6 @@
     "all": "すべて",
     "loggedIn": "ログイン中",
     "notLoggedIn": "ログインしていない",
-
     "noResults": "結果が見つかりません",
     "rowsSelected": "{count}行選択中（全{total}行）",
     "filter": "名前でフィルタリング"

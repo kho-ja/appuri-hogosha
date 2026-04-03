@@ -612,7 +612,11 @@
     "export": "Экспорт",
     "Students": "Студенты",
     "noStudents": "Студентов нет",
-    "bulkOperations": "Массовые операции"
+    "bulkOperations": "Массовые операции",
+    "all": "Все",
+    "loggedIn": "Вошли",
+    "notLoggedIn": "Не вошли",
+    "totalCount": "Всего: {count}"
   },
   "posts": {
     "messages": "Сообщения",

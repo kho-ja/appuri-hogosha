@@ -1,6 +1,7 @@
 import { routing, type Locale } from "@/i18n/routing";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
+import Script from "next/script";
 import { FileQuestion } from "lucide-react";
 import "@/app/[locale]/globals.css";
 
@@ -8,10 +9,7 @@ async function getLocale(): Promise<Locale> {
   try {
     const cookieStore = await cookies();
     const localeCookie = cookieStore.get("NEXT_LOCALE")?.value;
-    if (
-      localeCookie &&
-      routing.locales.includes(localeCookie as Locale)
-    ) {
+    if (localeCookie && routing.locales.includes(localeCookie as Locale)) {
       return localeCookie as Locale;
     }
   } catch {}
@@ -63,7 +61,9 @@ export default async function RootNotFound() {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
       </head>
       <body className="font-sans bg-background text-foreground">
         <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
