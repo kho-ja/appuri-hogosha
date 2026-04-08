@@ -153,7 +153,7 @@ export default function SendMessagePage() {
     onSettled: () => {
       setIsImageUploading(false);
       toast({
-        title: "Image upload finished",
+        title: t("uploadImageFinished"),
       });
     },
   });

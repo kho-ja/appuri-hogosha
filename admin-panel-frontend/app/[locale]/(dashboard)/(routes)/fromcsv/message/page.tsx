@@ -147,7 +147,12 @@ export default function MessageFromCSV() {
                     />
                   </FormControl>
                   <FormDescription>{t("Upload csv file")}</FormDescription>
-                  <FormMessage />
+                   {form.formState.errors.csvFile && (
+                    <p className="text-[0.8rem] font-medium text-destructive mt-2">
+                      {t("inputNotInstanceOfFile")} 
+                    </p>
+                  )}
+                  
                 </FormItem>
               )}
             />

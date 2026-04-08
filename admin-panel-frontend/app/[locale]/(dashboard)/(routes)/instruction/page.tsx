@@ -20,9 +20,9 @@ import imageSrc16 from "@/public/assets/image (15).png";
 import imageSrc17 from "@/public/assets/image (16).png";
 import imageSrc18 from "@/public/assets/image (17).png";
 import imageSrc19 from "@/public/assets/image (18).png";
-import React from "react";
 import DocsPreparing from "@/components/docsPreparing";
 import localImageLoader from "@/lib/localImageLoader";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default function Instruction() {
   const t = useTranslations("Instruction");
@@ -33,6 +33,7 @@ export default function Instruction() {
       <div className="space-y-4">
         <div className="flex justify-between">
           <h1 className="text-3xl w-2/4 font-bold">{t("Instruction")}</h1>
+          <BackButton href={`/fromcsv/message`} />
         </div>
         <DocsPreparing />
 
@@ -193,6 +194,7 @@ export default function Instruction() {
       <div className="space-y-4">
         <div className="flex justify-between">
           <h1 className="text-3xl w-2/4 font-bold">{t("Instruction")}</h1>
+          <BackButton href={`/fromcsv/message`} />
         </div>
         <DocsPreparing />
 
@@ -351,6 +353,7 @@ export default function Instruction() {
     <main className="space-y-4">
       <div className="flex justify-between">
         <h1 className="text-3xl w-2/4 font-bold">{t("Instruction")}</h1>
+        <BackButton href={`/fromcsv/message`} />
       </div>
 
       <DocsPreparing />
