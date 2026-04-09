@@ -248,7 +248,7 @@ export default function ThisMessage({
             <TabsTrigger value="students">{t("Students")}</TabsTrigger>
           </TabsList>
           <Link href={`/messages/${messageId}/receivers`} passHref>
-            <Button>{t("editRecivers")}</Button>
+            <Button>{t("editReceivers")}</Button>
           </Link>
         </div>
         <TabsContent value="groups" className="space-y-4">
