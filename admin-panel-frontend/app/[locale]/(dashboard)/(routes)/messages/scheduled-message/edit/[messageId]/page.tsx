@@ -147,21 +147,21 @@ export default function SendMessagePage({
   return (
     <div className="w-full">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit((values) => {
-            mutate({
-              title: values.title,
-              description: values.description,
-              priority: values.priority,
-              image: values.image,
-              scheduled_at: values.scheduled_at,
-            });
-          })}
-          className="space-y-4"
-        >
           <PageHeader title={t("editMessage")}>
             <BackButton href={`/messages/scheduled-message/${messageId}`} />
           </PageHeader>
+          <form
+            onSubmit={form.handleSubmit((values) => {
+              mutate({
+                title: values.title,
+                description: values.description,
+                priority: values.priority,
+                image: values.image,
+                scheduled_at: values.scheduled_at,
+              });
+            })}
+            className="space-y-4"
+          >
 
           <FormField
             control={form.control}
@@ -170,7 +170,21 @@ export default function SendMessagePage({
               <FormItem>
                 <FormLabel>{t("title")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder={t("typeTitle")} />
+                  <Input
+                    {...field}
+                    placeholder={t("typeTitle")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const messageField = document.getElementById(
+                          "description-textarea"
+                        );
+                        if (messageField) {
+                          messageField.focus();
+                        }
+                      }
+                    }}
+                  />
                 </FormControl>
                 <FormMessage>
                   {formState.errors.title &&
@@ -187,7 +201,11 @@ export default function SendMessagePage({
               <FormItem>
                 <FormLabel>{t("yourMessage")}</FormLabel>
                 <FormControl>
-                  <Textarea placeholder={t("typeMessage")} {...field} />
+                  <Textarea
+                    placeholder={t("typeMessage")}
+                    {...field}
+                    id="description-textarea"
+                  />
                 </FormControl>
                 <FormMessage>
                   {formState.errors.description &&

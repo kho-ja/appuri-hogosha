@@ -198,7 +198,9 @@
     "draftDeleted": "Черновик успешно удален",
     "scheduledSuccessfully": "Сообщение успешно запланировано",
     "loading": "загрузка...",
-    "notSelected": "Не выбрано"
+    "notSelected": "Не выбрано",
+    "selectDateTime": "Выберите дату и время",
+    "timesShownIn": "Время указано в {timeZone}"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Просмотр запланированного сообщения",

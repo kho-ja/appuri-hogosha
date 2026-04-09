@@ -200,7 +200,9 @@
     "confirmSchedule": "Confirm Schedule",
     "scheduledSuccessfully": "Post scheduled successfully",
     "loading": "loading...",
-    "notSelected": "Not Selected"
+    "notSelected": "Not Selected",
+    "selectDateTime": "Select date and time",
+    "timesShownIn": "Times shown in {timeZone}"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "View Scheduled Message",

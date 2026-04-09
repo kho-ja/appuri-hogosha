@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useTimeZone } from "next-intl";
+import { useTimeZone, useTranslations } from "next-intl";
 
 type DateTimePicker24hProps = {
   value: Date | null;
@@ -21,6 +21,7 @@ type DateTimePicker24hProps = {
 export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const timeZone = useTimeZone();
+  const t = useTranslations("sendmessage");
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -68,7 +69,7 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
               </span>
             </span>
           ) : (
-            <span>Select date and time</span>
+            <span>{t("selectDateTime")}</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -154,9 +155,8 @@ export function DateTimePicker24h({ value, onChange }: DateTimePicker24hProps) {
             </ScrollArea>
           </div>
         </div>
-        {/* Show current timezone info */}
         <div className="p-3 border-t text-xs text-muted-foreground text-center">
-          Times shown in {timeZone}
+          {t("timesShownIn", { timeZone: String(timeZone) })}
         </div>
       </PopoverContent>
     </Popover>
