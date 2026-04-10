@@ -2,7 +2,7 @@
   "LoginForm": {
     "title": "Вход",
     "description": "Введите свой email ниже, чтобы войти в аккаунт",
-    "emailLabel": "Email",
+    "emailLabel": "Электронная почта",
     "emailPlaceholder": "m@example.com",
     "passwordLabel": "Пароль",
     "newPasswordLabel": "Новый пароль",
@@ -198,7 +198,9 @@
     "draftDeleted": "Черновик успешно удален",
     "scheduledSuccessfully": "Сообщение успешно запланировано",
     "loading": "загрузка...",
-    "notSelected": "Не выбрано"
+    "notSelected": "Не выбрано",
+    "chooseFile": "Выберите файл",
+    "noFileChosen": "Файл не выбран"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Просмотр запланированного сообщения",
@@ -789,7 +791,8 @@
     "selectAll": "Выбрать все",
     "deselectAll": "Отменить выбор",
     "selectFiltered": "Выбрать отфильтрованные",
-    "selecting": "Выбор..."
+    "selecting": "Выбор...",
+    "searchPlaceholder": "Поиск..."
   },
   "names": {
     "name": "{given_name} {family_name}"

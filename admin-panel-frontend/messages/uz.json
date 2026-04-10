@@ -202,7 +202,9 @@
     "draftDeleted": "Qoralama muvaffaqiyatli o'chirildi",
     "scheduledSuccessfully": "Xabar rejalashtirildi",
     "loading": "yuklanmoqda...",
-    "notSelected": "Tanlanmagan"
+    "notSelected": "Tanlanmagan",
+    "chooseFile": "Faylni tanlang",
+    "noFileChosen": "Fayl tanlanmagan"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Rejalashtirilgan xabar",
@@ -793,7 +795,8 @@
     "selectAll": "Hammasini tanlash",
     "deselectAll": "Tanlashni bekor qilish",
     "selectFiltered": "Siz qidirganlarni tanlash",
-    "selecting": "Tanlanyapti..."
+    "selecting": "Tanlanyapti...",
+    "searchPlaceholder": "Qidiruv..."
   },
   "names": {
     "name": "{family_name} {given_name}"
