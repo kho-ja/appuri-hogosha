@@ -200,7 +200,9 @@
     "draftDeleted": "下書きが削除されました",
     "scheduledSuccessfully": "メッセージが正常にスケジュールされました",
     "loading": "読み込み中...",
-    "notSelected": "選択されていません"
+    "notSelected": "選択されていません",
+    "selectDateTime": "日付と時間を選択",
+    "timesShownIn": "表示時刻のタイムゾーン：{timeZone}"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "予約されたメッセージを見る",
