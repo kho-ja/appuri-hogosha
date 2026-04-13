@@ -1,4 +1,4 @@
-{
+  {
   "LoginForm": {
     "title": "ログイン",
     "description": "アカウントにログインするために、以下にメールアドレスを入力してください",
@@ -163,6 +163,7 @@
     "typeMessage": "ここにメッセージを入力してください",
     "picture": "画像",
     "remove": "削除",
+    "uploadImageFinished": "画像アップロード完了",
     "choosePriority": "優先度を選択してください",
     "selectPriority": "優先度を選択してください",
     "priority": "優先度",
@@ -894,6 +895,7 @@
     "groupsUploaded": "グループがアップロードされました",
     "createPostsFromCsv": "CSVから投稿を作成",
     "createPosts": "投稿を作成",
+    "inputNotInstanceOfFile": "入力がファイルのインスタンスではありません。有効なCSVファイルを選択してください。",
     "downloadTemplate": "テンプレートをダウンロード",
     "postsschema": "投稿スキーマ",
     "errorsInPosts": "投稿のエラー",
