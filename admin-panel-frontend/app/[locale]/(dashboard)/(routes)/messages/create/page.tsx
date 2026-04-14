@@ -290,6 +290,7 @@ export default function SendMessagePage() {
   const handleRemoveImg = () => {
     form.setValue("image", "");
     setImagePreview("");
+    setFileName("");
     setFileKey((prev) => prev + 1);
   };
 
