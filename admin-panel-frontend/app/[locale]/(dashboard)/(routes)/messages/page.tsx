@@ -97,7 +97,7 @@ export default function Info() {
 
   const deleteMultiple = useApiMutation<
     { message: string; deletedCount: number },
-    { ids: number[] }
+    { postIds: number[] }
   >(`post/delete-multiple`, "POST", ["posts"], {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -378,7 +378,7 @@ export default function Info() {
                   variant="destructive"
                   onClick={() => {
                     if (tab === "messages") {
-                      deleteMultiple.mutate({ ids: allSelectedIds });
+                      deleteMultiple.mutate({ postIds: allSelectedIds });
                     } else {
                       deleteMultipleScheduled.mutate({
                         ids: selectedScheduledPosts,
