@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile-students",
-    "slug": "mobile-students",
+    "name": "student-notification",
+    "slug": "student-notification",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "70c8e8fd-516f-437d-b2ed-9867ee7fca17"
+      }
+    },
+    "owner": "jduapp"
   }
 }
