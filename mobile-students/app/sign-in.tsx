@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
-  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -33,20 +32,11 @@ export default function SignInScreen() {
   };
 
   const handleEmailLogin = () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Fill all fields', 'Please enter your email and password.');
-      return;
-    }
-
-    Alert.alert('Prototype', 'Email login is UI-only for now.', [
-      { text: 'OK', onPress: () => router.replace('/(tabs)') },
-    ]);
+    router.replace('/(tabs)/(home)');
   };
 
   const handleGoogleLogin = () => {
-    Alert.alert('Prototype', 'Google login is UI-only for now.', [
-      { text: 'OK', onPress: () => router.replace('/(tabs)') },
-    ]);
+    router.replace('/(tabs)/(home)');
   };
 
   return (
@@ -59,6 +49,18 @@ export default function SignInScreen() {
           >
             <View style={styles.headerBlock}>
               <ThemedText style={styles.title}>Welcome,{"\n"}Student</ThemedText>
+            </View>
+
+            <Pressable
+              style={[styles.googleButton, { backgroundColor: palette.inputBg, borderColor: palette.inputBorder }]}
+              onPress={handleGoogleLogin}
+            >
+              <Ionicons name="logo-google" size={20} color="#4285F4" />
+              <ThemedText style={[styles.googleButtonText, { color: Colors[colorScheme].text }]}>Sign in with Google</ThemedText>
+            </Pressable>
+
+            <View style={[styles.divider, { borderTopColor: palette.inputBorder }]}>
+              <View style={[styles.dividerDot, { backgroundColor: palette.inputBorder }]} />
             </View>
 
             <View style={styles.inputBlock}>
@@ -98,14 +100,6 @@ export default function SignInScreen() {
               onPress={handleEmailLogin}
             >
               <ThemedText style={styles.primaryButtonText}>Sign in</ThemedText>
-            </Pressable>
-
-            <Pressable
-              style={[styles.googleButton, { borderColor: palette.inputBorder }]}
-              onPress={handleGoogleLogin}
-            >
-              <Ionicons name="logo-google" size={20} color={Colors[colorScheme].text} />
-              <ThemedText style={styles.googleButtonText}>Sign in with Google</ThemedText>
             </Pressable>
           </KeyboardAvoidingView>
         </SafeAreaView>
@@ -167,10 +161,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   googleButtonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+    borderTopWidth: 1,
+    paddingHorizontal: 0,
+  },
+  dividerDot: {
+    position: 'absolute',
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -6,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
 });
