@@ -1,54 +1,111 @@
 "use client";
-import { useTranslations } from "next-intl";
-import { Card } from "@/components/ui/card";
-import { Edit3, Trash2, Plus } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
-import PaginationApi from "@/components/PaginationApi";
-import { Input } from "@/components/ui/input";
-import { Link } from "@/navigation";
-import { Button } from "@/components/ui/button";
-import PostApi from "@/types/postApi";
-import Post from "@/types/post";
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogContent,
-  DialogClose,
-} from "@/components/ui/dialog";
-import TableApi from "@/components/TableApi";
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { toast } from "@/components/ui/use-toast";
-import useApiMutation from "@/lib/useApiMutation";
-import usePagination from "@/lib/usePagination";
-import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
-import { normalizeSearch } from "@/lib/normalizeSearch";
-import PageHeader from "@/components/PageHeader";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
+import { Pencil } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
+
+import { Link } from "@/navigation";
+import PaginationApi from "@/components/PaginationApi";
+import TableApi from "@/components/TableApi";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
+  SelectContent,
+  SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
 } from "@/components/ui/select";
-import ScheduledPost from "@/types/scheduledPost";
-import pagination from "@/types/pagination";
-import useDateFormatter from "@/lib/useDateFormatter";
+import ShowScheduledToggle from "@/components/messages/ShowScheduledToggle";
+
+import useApiMutation from "@/lib/useApiMutation";
+import { useDebouncedCallback } from "@/lib/useDebouncedCallback";
+import { normalizeSearch } from "@/lib/normalizeSearch";
+import usePagination from "@/lib/usePagination";
 import { useListQuery } from "@/lib/useListQuery";
 
-export default function Info() {
-  const t = useTranslations("posts");
-  const tName = useTranslations("names");
-  const { formatDateTime } = useDateFormatter();
-  const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
-    usePagination({ persistToUrl: true });
+import PostApi from "@/types/postApi";
+import ScheduledPost from "@/types/scheduledPost";
+import pagination from "@/types/pagination";
+
+type TabKey = "parents" | "students";
+type ImportanceFilter = "all" | "high" | "medium" | "low";
+type SortOrder = "newest" | "oldest";
+
+type MessageRow = {
+  id: number;
+  title: string;
+  description: string;
+  adminName: string;
+  importance: string;
+  readPercent: number;
+  editHref: string;
+  date: string | null;
+};
+
+function parsePercent(input: unknown): number {
+  if (typeof input === "number" && Number.isFinite(input)) {
+    return Math.max(0, Math.min(100, input));
+  }
+
+  if (typeof input !== "string") return 0;
+  const numeric = Number(input.replace("%", "").trim());
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, Math.min(100, numeric));
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function MinimalProgress({ value }: { value: number }) {
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-2 w-20 rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-muted-foreground/40"
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+      <span className="text-xs text-muted-foreground tabular-nums">
+        {clamped}%
+      </span>
+    </div>
+  );
+}
+
+interface ScheduledPostsResponse {
+  scheduledPosts: ScheduledPost[];
+  pagination: pagination;
+}
+
+export default function MessagesPage() {
+  const tPosts = useTranslations("posts");
+  const tNav = useTranslations("nav");
+  const tSend = useTranslations("sendmessage");
+
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get("tab");
+  const initialTab: TabKey = tabParam === "students" ? "students" : "parents";
+  const initialShowScheduled = tabParam === "scheduled";
+
+  const [tab, setTab] = useState<TabKey>(initialTab);
+  const [showScheduled, setShowScheduled] = useState(initialShowScheduled);
+  const [importance, setImportance] = useState<ImportanceFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  const { page, setPage, search, setSearch, perPage } = usePagination({
+    persistToUrl: true,
+  });
 
   const [searchInput, setSearchInput] = useState(search);
   useEffect(() => {
@@ -63,430 +120,364 @@ export default function Info() {
     300
   );
 
-  const searchParams = useSearchParams();
-  const initialTab =
-    (searchParams?.get("tab") as "messages" | "scheduled") || "messages";
+  const isScheduledView = showScheduled;
 
-  const [tab, setTab] = useState<"messages" | "scheduled">(initialTab);
+  useEffect(() => {
+    // Avoid cross-view selection (e.g. selecting parents then toggling scheduled).
+    setSelectedIds([]);
+  }, [isScheduledView, tab]);
 
-  // Selected items are separate from pagination state
-  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
-  const [selectedScheduledPosts, setSelectedScheduledPosts] = useState<
-    number[]
-  >([]);
-  const allSelectedIds = selectedPosts;
-
-  const queryClient = useQueryClient();
-  const { data } = useListQuery<PostApi>(
+  const postsQuery = useListQuery<PostApi>(
     "post/list",
     ["posts", page, search, perPage],
     { page, text: search, perPage }
   );
-  interface ScheduledPostsResponse {
-    scheduledPosts: ScheduledPost[];
-    pagination: pagination;
-  }
-  const { data: scheduledPosts } = useListQuery<ScheduledPostsResponse>(
+
+  const scheduledQuery = useListQuery<ScheduledPostsResponse>(
     "schedule/list",
-    ["schedule", page, search, perPage],
+    ["scheduled-posts", page, search, perPage],
     { page, text: search, perPage },
     "GET",
-    { enabled: tab === "scheduled" }
+    { enabled: isScheduledView }
   );
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const deleteMultiple = useApiMutation<
+  const postRows = useMemo<MessageRow[]>(() => {
+    const posts = postsQuery.data?.posts ?? [];
+
+    const filteredByAudience = posts.filter((post) => {
+      if (tab === "parents") {
+        // Treat group-targeted messages as "Parents".
+        return (
+          isNonEmptyString(post.group_names) ||
+          !isNonEmptyString(post.student_numbers)
+        );
+      }
+      if (tab === "students") {
+        // Treat student-targeted messages as "Students".
+        return isNonEmptyString(post.student_numbers);
+      }
+      return true;
+    });
+
+    return filteredByAudience.map((post) => ({
+      id: post.id,
+      title: post.title,
+      description: post.description,
+      adminName: post.admin
+        ? `${post.admin.given_name ?? ""} ${post.admin.family_name ?? ""}`.trim() ||
+          "—"
+        : "—",
+      importance: post.priority,
+      readPercent: parsePercent(post.read_percent),
+      editHref: `/messages/edit/${post.id}`,
+      date: post.sent_at ?? null,
+    }));
+  }, [postsQuery.data, tab]);
+
+  const scheduledRows = useMemo<MessageRow[]>(() => {
+    const scheduledPosts = scheduledQuery.data?.scheduledPosts ?? [];
+    return scheduledPosts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      description: post.description,
+      adminName: "—",
+      importance: post.priority,
+      readPercent: 0,
+      editHref: `/messages/scheduled-message/edit/${post.id}`,
+      date: post.scheduled_at ?? null,
+    }));
+  }, [scheduledQuery.data]);
+
+  const visibleRows = useMemo<MessageRow[]>(() => {
+    const baseRows = isScheduledView ? scheduledRows : postRows;
+    let rows = baseRows;
+
+    const query = normalizeSearch(searchInput).toLowerCase();
+    if (query) {
+      rows = rows.filter((r) => {
+        const title = r.title?.toLowerCase() ?? "";
+        const description = r.description?.toLowerCase() ?? "";
+        return title.includes(query) || description.includes(query);
+      });
+    }
+
+    if (importance !== "all") {
+      rows = rows.filter(
+        (r) => String(r.importance).toLowerCase() === importance
+      );
+    }
+
+    const direction = sortOrder === "newest" ? -1 : 1;
+    rows = [...rows].sort((a, b) => {
+      const aTime = a.date ? new Date(a.date).getTime() : 0;
+      const bTime = b.date ? new Date(b.date).getTime() : 0;
+      return aTime === bTime ? 0 : aTime > bTime ? direction : -direction;
+    });
+
+    return rows;
+  }, [
+    importance,
+    isScheduledView,
+    postRows,
+    scheduledRows,
+    searchInput,
+    sortOrder,
+  ]);
+
+  const columns = useMemo<ColumnDef<MessageRow>[]>(
+    () => [
+      {
+        id: "select",
+        header: () => <span className="sr-only">Select</span>,
+        cell: ({ row }) => (
+          <Checkbox
+            checked={selectedIds.includes(row.original.id)}
+            onCheckedChange={(checked) => {
+              const isChecked = Boolean(checked);
+              const id = row.original.id;
+              setSelectedIds((prev) => {
+                if (isChecked) {
+                  return prev.includes(id) ? prev : [...prev, id];
+                }
+                return prev.filter((x) => x !== id);
+              });
+            }}
+          />
+        ),
+        meta: { notClickable: true },
+      },
+      {
+        accessorKey: "title",
+        header: tPosts("postTitle"),
+        cell: ({ row }) => (
+          <div
+            title={row.original.title}
+            className="font-medium truncate max-w-[9rem] sm:max-w-[12rem]"
+          >
+            {row.original.title}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "description",
+        header: tPosts("Description"),
+        cell: ({ row }) => (
+          <div
+            title={row.original.description}
+            className="truncate max-w-[12rem] sm:max-w-[16rem] md:max-w-[20rem] text-muted-foreground"
+          >
+            {row.original.description}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "adminName",
+        header: tPosts("Admin_name"),
+        cell: ({ row }) => (
+          <div
+            title={row.original.adminName}
+            className="truncate max-w-[9rem] text-sm text-foreground"
+          >
+            {row.original.adminName}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "importance",
+        header: tPosts("Priority"),
+        cell: ({ row }) => (
+          <Badge
+            variant="outline"
+            className="bg-muted/40 text-muted-foreground border-border"
+          >
+            {(() => {
+              const normalized = String(row.original.importance).toLowerCase();
+              if (normalized === "high") return tSend("high");
+              if (normalized === "medium") return tSend("medium");
+              if (normalized === "low") return tSend("low");
+              return row.original.importance
+                ? String(row.original.importance)
+                : "—";
+            })()}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "readPercent",
+        header: tPosts("Read_percent"),
+        cell: ({ row }) => <MinimalProgress value={row.original.readPercent} />,
+      },
+      {
+        id: "actions",
+        header: "",
+        meta: { notClickable: true },
+        cell: ({ row }) => (
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={row.original.editHref} aria-label="Edit">
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
+        ),
+      },
+    ],
+    [selectedIds, tPosts, tSend]
+  );
+
+  const queryClient = useQueryClient();
+  const deletePostsMutation = useApiMutation<
     { message: string; deletedCount: number },
-    { ids: number[] }
-  >(`post/delete-multiple`, "POST", ["posts"], {
-    onSuccess: (data) => {
+    { postIds: number[] }
+  >("post/delete-multiple", "POST", ["delete-posts"], {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast({
-        title: t("postDeleted"),
-        description: `${data.deletedCount} posts deleted`,
-      });
-      setSelectedPosts([]);
-      setIsDialogOpen(false);
+      setSelectedIds([]);
     },
   });
-  const deleteMultipleScheduled = useApiMutation<
+
+  const deleteScheduledMutation = useApiMutation<
     { message: string; deletedCount: number },
     { ids: number[] }
-  >(`schedule/delete-multiple`, "POST", ["scheduledPosts"], {
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["scheduledPosts"] });
-      toast({
-        title: t("postDeleted"),
-        description: `${data.deletedCount} scheduled posts deleted`,
-      });
-      setSelectedScheduledPosts([]);
-      setIsDialogOpen(false);
+  >("schedule/delete-multiple", "POST", ["delete-scheduled"], {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      setSelectedIds([]);
     },
   });
 
-  const handleCheckboxChange = (id: number, checked: boolean) => {
-    setSelectedPosts((prev) =>
-      checked ? [...prev, id] : prev.filter((pid) => pid !== id)
-    );
-  };
-  const handleCheckboxChangeScheduled = (id: number, checked: boolean) => {
-    setSelectedScheduledPosts((prev) =>
-      checked ? [...prev, id] : prev.filter((pid) => pid !== id)
-    );
-  };
+  const isDeleting =
+    (isScheduledView && deleteScheduledMutation.isPending) ||
+    (!isScheduledView && deletePostsMutation.isPending);
 
-  const handleSelectAllChange = (checked: boolean) => {
-    const allIds = data?.posts?.map((post) => post.id) || [];
-    setSelectedPosts((prev) =>
-      checked
-        ? Array.from(new Set([...prev, ...allIds]))
-        : prev.filter((id) => !allIds.includes(id))
-    );
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    if (isScheduledView) {
+      deleteScheduledMutation.mutate({ ids: selectedIds });
+    } else {
+      deletePostsMutation.mutate({ postIds: selectedIds });
+    }
   };
 
-  const handleSelectAllChangeScheduled = (checked: boolean) => {
-    const allIds =
-      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
-      [];
-    setSelectedScheduledPosts((prev) =>
-      checked
-        ? Array.from(new Set([...prev, ...allIds]))
-        : prev.filter((id) => !allIds.includes(id))
-    );
-  };
+  const isLoading = isScheduledView
+    ? scheduledQuery.isLoading
+    : postsQuery.isLoading;
+  const tableData: MessageRow[] | null = isLoading ? null : visibleRows;
+  const paginationData = isScheduledView
+    ? (scheduledQuery.data?.pagination ?? null)
+    : (postsQuery.data?.pagination ?? null);
 
-  const isAllSelected = () => {
-    const currentPagePosts = data?.posts?.map((post) => post.id) || [];
-    return (
-      currentPagePosts.length > 0 &&
-      currentPagePosts.every((id) => selectedPosts.includes(id))
-    );
-  };
-
-  const isAllSelectedScheduled = () => {
-    const currentPagePosts =
-      scheduledPosts?.scheduledPosts?.map((post: ScheduledPost) => post.id) ||
-      [];
-    return (
-      currentPagePosts.length > 0 &&
-      currentPagePosts.every((id: number) =>
-        selectedScheduledPosts.includes(id)
-      )
-    );
-  };
-
-  const postColumns: ColumnDef<Post>[] = [
-    {
-      accessorKey: "select",
-      header: () => {
-        return (
-          <Checkbox
-            checked={isAllSelected()}
-            onCheckedChange={(checked) =>
-              handleSelectAllChange(Boolean(checked))
-            }
-          />
-        );
-      },
-      cell: ({ row }) => (
-        <Checkbox
-          checked={selectedPosts.includes(row.original.id)}
-          onCheckedChange={(checked) =>
-            handleCheckboxChange(row.original.id, Boolean(checked))
-          }
-        />
-      ),
-      meta: {
-        notClickable: true,
-      },
-    },
-    {
-      accessorKey: "title",
-      header: t("postTitle"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.title}
-          className="truncate max-w-20 sm:max-w-30 md:max-w-40 lg:max-w-60 xl:max-w-60 2xl:max-w-80 block"
-        >
-          {row.getValue("title")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: t("Description"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.description}
-          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
-        >
-          {row.getValue("description")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "admin_name",
-      header: t("Admin_name"),
-      cell: ({ row }) => tName("name", { ...row?.original?.admin }),
-    },
-    {
-      accessorKey: "priority",
-      header: t("Priority"),
-    },
-    {
-      accessorKey: "read_percent",
-      header: t("Read_percent"),
-    },
-    {
-      header: t("action"),
-      meta: { notClickable: true },
-      cell: ({ row }) => (
-        <Link href={`/messages/edit/${row.original.id}`}>
-          <Edit3 />
-        </Link>
-      ),
-    },
-  ];
-
-  const schedulesPostColumns: ColumnDef<ScheduledPost>[] = [
-    {
-      accessorKey: "select",
-      header: () => {
-        return (
-          <Checkbox
-            checked={isAllSelectedScheduled()}
-            onCheckedChange={(checked) =>
-              handleSelectAllChangeScheduled(Boolean(checked))
-            }
-          />
-        );
-      },
-      cell: ({ row }) => (
-        <Checkbox
-          checked={selectedScheduledPosts.includes(row.original.id)}
-          onCheckedChange={(checked) =>
-            handleCheckboxChangeScheduled(row.original.id, Boolean(checked))
-          }
-        />
-      ),
-      meta: {
-        notClickable: true,
-      },
-    },
-    {
-      accessorKey: "title",
-      header: t("postTitle"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.title}
-          className="truncate max-w-20 sm:max-w-30 md:max-w-40 lg:max-w-60 xl:max-w-60 2xl:max-w-80 block"
-        >
-          {row.getValue("title")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "description",
-      header: t("Description"),
-      cell: ({ row }) => (
-        <div
-          title={row.original.description}
-          className="truncate max-w-32 sm:max-w-40 md:max-w-50 lg:max-w-60 xl:max-w-70 2xl:max-w-2xl block"
-        >
-          {row.getValue("description")}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "priority",
-      header: t("Priority"),
-    },
-    {
-      accessorKey: "scheduled_at",
-      header: t("scheduledat"),
-      cell: ({ row }) => {
-        const value = row.getValue("scheduled_at");
-        if (!value) return "-";
-        return formatDateTime(value as string);
-      },
-    },
-    {
-      header: t("action"),
-      meta: { notClickable: true },
-      cell: ({ row }) => (
-        <Link href={`/messages/scheduled-message/edit/${row.original.id}`}>
-          <Edit3 />
-        </Link>
-      ),
-    },
-  ];
+  const hasSelection = selectedIds.length > 0;
 
   return (
     <div className="w-full space-y-4">
-      <PageHeader title={t("posts")} variant="list">
-        <div className="flex gap-2">
-          <Button
-            icon={<Trash2 className="h-5 w-5" />}
-            variant="destructive"
-            disabled={
-              tab === "messages"
-                ? selectedPosts.length === 0
-                : selectedScheduledPosts.length === 0
-            }
-            onClick={() => setIsDialogOpen(true)}
-          >
-            {t("delete")} (
-            {tab === "messages"
-              ? selectedPosts.length
-              : selectedScheduledPosts.length}
-            )
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {tNav("messages")}
+        </h1>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link href="/messages/create">+ {tPosts("createpost")}</Link>
           </Button>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t("confirmDeleteTitle")}</DialogTitle>
-                <DialogDescription>{t("confirmDeleteDesc")}</DialogDescription>
-              </DialogHeader>
-              <div className="max-h-48 overflow-auto border rounded p-2 my-4">
-                {(() => {
-                  const list =
-                    tab === "messages"
-                      ? (data?.posts ?? [])
-                      : (scheduledPosts?.scheduledPosts ?? []);
-                  const selectedIds =
-                    tab === "messages"
-                      ? allSelectedIds
-                      : selectedScheduledPosts;
-                  return list
-                    .filter((post) => selectedIds.includes(post.id))
-                    .map((post) => (
-                      <div
-                        key={post.id}
-                        className="py-1 border-b last:border-b-0 flex justify-between"
-                      >
-                        <span>{post.title}</span>
-                        <Trash2 className="inline-block mr-2 text-red-600" />
-                      </div>
-                    ));
-                })()}
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant={"secondary"}>{t("cancel")}</Button>
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    if (tab === "messages") {
-                      deleteMultiple.mutate({ ids: allSelectedIds });
-                    } else {
-                      deleteMultipleScheduled.mutate({
-                        ids: selectedScheduledPosts,
-                      });
-                    }
-                  }}
-                >
-                  {t("delete")}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Link href={`/messages/create`} passHref>
-            <Button icon={<Plus className="h-5 w-5" />}>
-              {t("createpost")}
-            </Button>
-          </Link>
         </div>
-      </PageHeader>
+      </div>
+
       <Tabs
         value={tab}
-        onValueChange={(v) => setTab(v as "messages" | "scheduled")}
+        onValueChange={(v) => {
+          setTab(v as TabKey);
+          setPage(1);
+        }}
       >
-        <TabsList className="mx-auto mb-4 w-fit flex justify-center">
-          <TabsTrigger value="messages">{t("messages")}</TabsTrigger>
-          <TabsTrigger value="scheduled">{t("scheduledMessages")}</TabsTrigger>
+        <TabsList className="w-full justify-start gap-4 bg-transparent p-0 h-auto rounded-none border-b border-border">
+          <TabsTrigger
+            value="parents"
+            className="rounded-none bg-transparent px-1 py-2 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            {tNav("parents")}
+          </TabsTrigger>
+          <TabsTrigger
+            value="students"
+            className="rounded-none bg-transparent px-1 py-2 border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+          >
+            {tNav("students")}
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="messages">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
-            <div className="w-full sm:max-w-sm">
+        <TabsContent value={tab} className="mt-4">
+          <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center pb-3">
+            <div className="w-full md:flex-1 md:min-w-[260px]">
               <Input
-                placeholder={t("filter")}
+                placeholder={tPosts("filter")}
                 value={searchInput}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                onChange={(e) => {
                   const next = e.target.value;
                   setSearchInput(next);
                   commitSearch(next);
                 }}
-                className="w-full"
               />
             </div>
-            <div>
-              <PaginationApi
-                data={data?.pagination ?? null}
-                setPage={setPage}
-              />
-            </div>
-          </div>
-          <Card x-chunk="dashboard-05-chunk-3">
-            <TableApi
-              linkPrefix="/messages"
-              data={data?.posts ?? null}
-              columns={postColumns}
-            />
-          </Card>
-          <div className="flex items-center gap-2 mt-2">
-            <span>{t("postsPerPage") || "Posts per page:"}</span>
+
             <Select
-              onValueChange={(value) => handlePerPageChange(Number(value))}
-              value={perPage.toString()}
+              value={importance}
+              onValueChange={(value) => {
+                setImportance(value as ImportanceFilter);
+              }}
             >
-              <SelectTrigger className="w-[70px]">
-                <SelectValue
-                  placeholder={t("choosePostsPerPage") || "Choose"}
-                />
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder={tPosts("Priority")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectGroup>
-                  {[10, 30, 50, 100].map((n) => (
-                    <SelectItem key={n} value={n.toString()}>
-                      {n}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
+                <SelectItem value="all">{tPosts("all")}</SelectItem>
+                <SelectItem value="high">{tSend("high")}</SelectItem>
+                <SelectItem value="medium">{tSend("medium")}</SelectItem>
+                <SelectItem value="low">{tSend("low")}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </TabsContent>
 
-        <TabsContent value="scheduled">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mb-2">
-            <div className="w-full sm:max-w-sm">
-              <Input
-                placeholder={t("filter")}
-                value={searchInput}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const next = e.target.value;
-                  setSearchInput(next);
-                  commitSearch(next);
-                }}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <PaginationApi
-                data={scheduledPosts?.pagination ?? null}
-                setPage={setPage}
-              />
-            </div>
+            <Select
+              value={sortOrder}
+              onValueChange={(value) => setSortOrder(value as SortOrder)}
+            >
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder={tPosts("sortByDate")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">{tPosts("newest")}</SelectItem>
+                <SelectItem value="oldest">{tPosts("oldest")}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <ShowScheduledToggle
+              checked={showScheduled}
+              onCheckedChange={(checked: boolean) => {
+                setShowScheduled(checked);
+                setPage(1);
+              }}
+              label={tPosts("showScheduled")}
+              className="w-full md:w-[200px]"
+            />
+
+            <Button
+              variant={hasSelection ? "destructive" : "secondary"}
+              disabled={!hasSelection || isDeleting}
+              onClick={handleDeleteSelected}
+              isLoading={isDeleting}
+              className="w-full md:w-[180px]"
+            >
+              {tPosts("deleteSelected")}
+            </Button>
           </div>
-          <Card x-chunk="dashboard-05-chunk-3">
+
+          <Card className="shadow-none rounded-md">
             <TableApi
-              linkPrefix="/messages/scheduled-message/"
-              data={scheduledPosts?.scheduledPosts ?? null}
-              columns={schedulesPostColumns}
+              data={tableData}
+              columns={columns}
+              tableClassName="table-fixed [&_th]:px-3 [&_td]:px-3 [&_th:nth-child(1)]:w-12 [&_td:nth-child(1)]:w-12 [&_th:nth-child(5)]:w-28 [&_td:nth-child(5)]:w-28 [&_th:nth-child(6)]:w-40 [&_td:nth-child(6)]:w-40 [&_th:nth-child(7)]:w-14 [&_td:nth-child(7)]:w-14"
             />
           </Card>
+
+          <div className="pt-2">
+            <PaginationApi data={paginationData} setPage={setPage} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

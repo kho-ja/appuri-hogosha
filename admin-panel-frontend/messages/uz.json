@@ -647,6 +647,12 @@
     "scheduledPostDeleted": "Rejalashtirilgan xabar muvaffaqiyatli o'chirildi",
     "confirmDeleteTitle": "Ushbu xabarni o'chirishni istaysizmi?",
     "confirmDeleteDesc": "Bu amalni bekor qilib bo‘lmaydi.",
+    "deleteSelected": "Tanlanganlarni o'chirish",
+    "showScheduled": "Rejalashtirilganlarni ko'rsatish",
+    "sortByDate": "Sana bo'yicha saralash",
+    "newest": "Eng yangi",
+    "oldest": "Eng eski",
+    "all": "Hammasi",
     "postsPerPage": "Xabarlar sahifasi uchun sahifa miqdori",
     "choosePostsPerPage": "Sahifada ko'rsatiladigan xabarlar sonini tanlang"
   },

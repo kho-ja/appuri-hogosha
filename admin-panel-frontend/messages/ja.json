@@ -1,4 +1,4 @@
-  {
+{
   "LoginForm": {
     "title": "ログイン",
     "description": "アカウントにログインするために、以下にメールアドレスを入力してください",
@@ -645,6 +645,12 @@
     "scheduledPostDeleted": "スケジュールされた投稿が削除されました",
     "confirmDeleteTitle": "この投稿を削除してもよろしいですか？",
     "confirmDeleteDesc": "この操作は元に戻すことができません。",
+    "deleteSelected": "選択したものを削除",
+    "showScheduled": "スケジュールを表示",
+    "sortByDate": "日付で並べ替え",
+    "newest": "新しい順",
+    "oldest": "古い順",
+    "all": "すべて",
     "postsPerPage": "投稿のページサイズ",
     "choosePostsPerPage": "ページに表示する投稿の数を選択"
   },

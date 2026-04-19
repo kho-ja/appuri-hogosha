@@ -29,6 +29,7 @@ interface TableApiProps<T> {
   columns: ColumnDef<T>[];
   linkPrefix?: string;
   linkSuffixRowName?: string;
+  tableClassName?: string;
 }
 
 const TableApi = <T,>({
@@ -36,6 +37,7 @@ const TableApi = <T,>({
   columns,
   linkPrefix = "",
   linkSuffixRowName = "id",
+  tableClassName,
 }: TableApiProps<T>) => {
   const t = useTranslations("table");
   const router = useRouter();
@@ -124,7 +126,7 @@ const TableApi = <T,>({
   };
 
   return (
-    <Table>
+    <Table className={tableClassName}>
       {renderTableHeader()}
       <TableBody>{renderTableBody()}</TableBody>
     </Table>
