@@ -798,7 +798,7 @@ export class PostService {
 
         try {
             // Start transaction
-            await DB.execute('START TRANSACTION');
+            await DB.query('START TRANSACTION');
 
             // Delete existing relationships
             await postRepository.deletePostStudents(postId);
@@ -838,12 +838,12 @@ export class PostService {
             await postRepository.insertPostParents(postId);
 
             // Commit transaction
-            await DB.execute('COMMIT');
+            await DB.query('COMMIT');
 
-            return { message: 'Post senders updated successfully' };
+            return { message: 'post_sender_updated_successfully' };
         } catch (error) {
             // Rollback on error
-            await DB.execute('ROLLBACK');
+            await DB.query('ROLLBACK');
             throw error;
         }
     }
