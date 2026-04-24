@@ -963,4 +963,9 @@ const Admin = new CognitoClient(
     envConfig.ADMIN_CLIENT_ID ?? ''
 );
 
-export { Parent, Admin };
+const Student = new CognitoClient(
+    envConfig.STUDENT_POOL_ID ?? '',
+    envConfig.STUDENT_CLIENT_ID ?? ''
+);
+
+export { Parent, Admin, Student };

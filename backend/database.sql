@@ -46,6 +46,7 @@ CREATE TABLE
 CREATE TABLE
   `Student` (
     `id` int NOT NULL AUTO_INCREMENT,
+    `cognito_sub_id` varchar(255) DEFAULT NULL,
     `email` varchar(255) NOT NULL,
     `phone_number` varchar(255) NOT NULL,
     `given_name` varchar(255) NOT NULL,
@@ -54,6 +55,7 @@ CREATE TABLE
     `cohort` int DEFAULT NULL,
     `school_id` int NOT NULL,
     PRIMARY KEY (`id`),
+    UNIQUE KEY `cognito_sub_id` (`cognito_sub_id`),
     UNIQUE KEY `email` (`email`),
     UNIQUE KEY `phone_number` (`phone_number`),
     KEY `idx_student_school_id` (`school_id`),
