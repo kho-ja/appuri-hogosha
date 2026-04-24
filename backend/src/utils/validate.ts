@@ -44,9 +44,14 @@ export function isValidStringArrayId(ids: string[]): boolean {
 }
 
 const priorityList = ['low', 'medium', 'high'];
+const audienceList = ['parents', 'students'];
 
 export function isValidPriority(priority: string): boolean {
     return typeof priority === 'string' && priorityList.includes(priority);
+}
+
+export function isValidAudience(audience: string): boolean {
+    return typeof audience === 'string' && audienceList.includes(audience);
 }
 
 export function isValidImage(mimetype: string): boolean {

@@ -147,6 +147,7 @@ CREATE TABLE
     `title` varchar(255) NOT NULL,
     `description` text NOT NULL,
     `priority` enum ('low', 'medium', 'high') NOT NULL DEFAULT 'low',
+    `audience` enum ('parents', 'students') NOT NULL DEFAULT 'parents',
     `image` varchar(255) DEFAULT NULL,
     `admin_id` int NOT NULL,
     `sent_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

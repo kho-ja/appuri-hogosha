@@ -626,6 +626,8 @@
     "messages": "メッセージ",
     "scheduledat": "スケジュール日時",
     "scheduledMessages": "スケジュールされたメッセージ",
+    "parents": "保護者",
+    "students": "学生",
     "posts": "投稿",
     "postTitle": "投稿タイトル",
     "Description": "詳細",

@@ -26,6 +26,7 @@ export const ErrorKeys = {
     invalid_or_missing_group_id: 'invalid_or_missing_group_id',
     invalid_or_missing_group_name: 'invalid_or_missing_group_name',
     invalid_or_missing_parents: 'invalid_or_missing_parents',
+    invalid_or_missing_audience: 'invalid_or_missing_audience',
     invalid_student_id: 'invalid_student_id',
     invalid_sub_group_id: 'invalid_sub_group_id',
     invalid_id_list: 'invalid_id_list',

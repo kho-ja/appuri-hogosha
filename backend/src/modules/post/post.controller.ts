@@ -16,6 +16,7 @@ import {
     isValidString,
     isValidArrayId,
     isValidPriority,
+    isValidAudience,
     isValidId,
     isValidStudentNumber,
 } from '../../utils/validate';
@@ -436,8 +437,15 @@ export class PostModuleController implements IController {
         next: NextFunction
     ) => {
         try {
-            const { title, description, priority, students, groups, image } =
-                req.body;
+            const {
+                title,
+                description,
+                priority,
+                audience,
+                students,
+                groups,
+                image,
+            } = req.body;
 
             if (!title || !isValidString(title)) {
                 throw new ApiError(400, 'invalid_or_missing_title');
@@ -448,9 +456,20 @@ export class PostModuleController implements IController {
             if (!priority || !isValidPriority(priority)) {
                 throw new ApiError(400, 'invalid_or_missing_priority');
             }
+            if (audience && !isValidAudience(audience)) {
+                throw new ApiError(400, 'invalid_or_missing_audience');
+            }
 
             const result = await postService.createPost(
-                { title, description, priority, students, groups, image },
+                {
+                    title,
+                    description,
+                    priority,
+                    audience,
+                    students,
+                    groups,
+                    image,
+                },
                 req.user.id,
                 req.user.school_id
             );
@@ -472,6 +491,7 @@ export class PostModuleController implements IController {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const perPage = parseInt(req.query.perPage as string) || undefined;
+            const audience = (req.query.audience as string) || 'parents';
             const text = (req.query.text as string) || '';
             const title = (req.query.title as string) || '';
             const description = (req.query.description as string) || '';
@@ -479,10 +499,15 @@ export class PostModuleController implements IController {
             const sent_at_from = (req.query.sent_at_from as string) || '';
             const sent_at_to = (req.query.sent_at_to as string) || '';
 
+            if (!isValidAudience(audience)) {
+                throw new ApiError(400, 'invalid_or_missing_audience');
+            }
+
             const result = await postService.getPostList(
                 {
                     page,
                     perPage,
+                    audience: audience as 'parents' | 'students',
                     text,
                     title,
                     description,
