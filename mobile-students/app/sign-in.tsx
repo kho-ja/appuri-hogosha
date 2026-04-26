@@ -18,6 +18,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { initiateStudentLogin } from "@/services/student-auth";
 import { useAuth } from "@/contexts/auth-context";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function SignInScreen() {
   const [step, setStep] = useState<"email" | "password">("email");
@@ -86,6 +87,10 @@ export default function SignInScreen() {
     }
   };
 
+  //   const handleGoogleLogin = () => {
+  //   router.replace('/(tabs)/(home)');
+  // };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ThemedView style={styles.screen}>
@@ -98,6 +103,18 @@ export default function SignInScreen() {
               <ThemedText style={styles.title}>
                 Welcome,{"\n"}Student
               </ThemedText>
+            </View>
+
+             <Pressable
+              style={[styles.googleButton, { backgroundColor: palette.inputBg, borderColor: palette.inputBorder }]}
+              // onPress={handleGoogleLogin}
+            >
+              <Ionicons name="logo-google" size={20} color="#4285F4" />
+              <ThemedText style={[styles.googleButtonText, { color: Colors[colorScheme].text }]}>Sign in with Google</ThemedText>
+            </Pressable>
+
+            <View style={[styles.divider, { borderTopColor: palette.inputBorder }]}>
+              <View style={[styles.dividerDot, { backgroundColor: palette.inputBorder }]} />
             </View>
 
             <View style={styles.inputBlock}>
@@ -182,6 +199,8 @@ export default function SignInScreen() {
                   setStep("email");
                   setPassword("");
                   setError("");
+                  setInfo("");
+                  setEmail("");
                 }}
                 disabled={isLoading}
               >
@@ -245,6 +264,36 @@ const styles = StyleSheet.create({
   feedbackText: {
     marginTop: 8,
     fontSize: 13,
+  },
+    googleButton: {
+    marginTop: 12,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+    dividerDot: {
+    position: 'absolute',
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -6,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+   divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+    borderTopWidth: 1,
+    paddingHorizontal: 0,
   },
   secondaryButton: {
     marginTop: 12,

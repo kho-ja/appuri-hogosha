@@ -1,19 +1,8 @@
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-if (!API_BASE_URL) {
-    console.warn('EXPO_PUBLIC_API_URL is not set. Student auth requests will fail.');
-}
+import api from '@/services/api-client';
+import type { StudentUser } from '@/types/auth';
 
 type LoginInitiateResponse = {
     message: string;
-};
-
-export type StudentUser = {
-    id: number;
-    email: string;
-    phone_number: string;
-    given_name: string;
-    family_name: string;
 };
 
 export type StudentLoginResponse = {
@@ -26,28 +15,8 @@ export type StudentLoginResponse = {
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
 
-function getUrl(path: string): string {
-    const base = (API_BASE_URL ?? '').replace(/\/$/, '');
-    return `${base}${path}`;
-}
-
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-    const response = await fetch(getUrl(path), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
-
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-        const message = payload?.error || payload?.message || 'Request failed';
-        throw new Error(message);
-    }
-
-    return payload as T;
+    return api.post<T>(path, body, { requiresAuth: false });
 }
 
 export async function initiateStudentLogin(email: string): Promise<LoginInitiateResponse> {

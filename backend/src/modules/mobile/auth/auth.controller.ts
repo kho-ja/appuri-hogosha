@@ -512,14 +512,24 @@ class MobileAuthModuleController implements IController {
             );
 
             if (students.length <= 0) {
-                throw new ApiError(404, 'Student not found');
+                return res
+                    .status(200)
+                    .json({
+                        message:
+                            'If the email is registered, a temporary password has been sent.',
+                    })
+                    .end();
             }
 
             try {
                 await this.studentCognitoClient.resendTemporaryPassword(email);
             } catch (e: any) {
                 if (e?.status === 404) {
+                    // User doesn't exist, register them
                     await this.studentCognitoClient.register(email, email, '');
+                } else if (e?.status === 400) {
+                    // User already activated (status is not FORCE_CHANGE_PASSWORD)
+                    // Return generic success message so they can proceed to login directly
                 } else {
                     throw e;
                 }
