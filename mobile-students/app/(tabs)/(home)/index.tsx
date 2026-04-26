@@ -1,22 +1,16 @@
-import { StyleSheet, View } from 'react-native';
-
-import { ThemedView } from '@/components/themed-view';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
+import { Redirect } from 'expo-router';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const backgroundColor = Colors[colorScheme].background;
-
   return (
-    <ThemedView style={[styles.container, { backgroundColor }]}>
-      <View />
-    </ThemedView>
+    <Redirect
+      href={{
+        pathname: '/(tabs)/(home)/student/[studentId]',
+        params: {
+          studentId: '222528',
+          givenName: 'Abdulaziz',
+          familyName: 'Ikramov',
+        },
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
