@@ -36,6 +36,10 @@ interface Config {
     ADMIN_POOL_ID: string;
     ADMIN_CLIENT_ID: string;
 
+    // Student Pool
+    STUDENT_POOL_ID: string;
+    STUDENT_CLIENT_ID: string;
+
     // Database
     DB_HOST: string;
     DB_PORT?: number;
@@ -115,6 +119,10 @@ export const config: Config = {
     ADMIN_POOL_ID: getEnv('ADMIN_POOL_ID'),
     ADMIN_CLIENT_ID: getEnv('ADMIN_CLIENT_ID'),
 
+    // Student Pool
+    STUDENT_POOL_ID: getEnv('STUDENT_POOL_ID'),
+    STUDENT_CLIENT_ID: getEnv('STUDENT_CLIENT_ID'),
+
     // Database
     DB_HOST: getEnv('DB_HOST'),
     DB_PORT: getEnvAsInt('DB_PORT', 3306),
@@ -152,5 +160,7 @@ export function getConfigSummary(): Record<string, string | number | boolean> {
         PARENT_CLIENT_ID: '***',
         ADMIN_POOL_ID: '***',
         ADMIN_CLIENT_ID: '***',
+        STUDENT_POOL_ID: '***',
+        STUDENT_CLIENT_ID: '***',
     };
 }

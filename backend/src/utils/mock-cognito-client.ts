@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 interface User {
     email: string;
     phone_number?: string;
@@ -27,7 +29,109 @@ const mockDatabase: Map<string, User> = new Map([
     ],
 ]);
 
+function generateTempPassword(): string {
+    return `Tmp#${randomBytes(6).toString('hex')}Aa1!`;
+}
+
 export class MockCognitoClient {
+    static async resendTemporaryPassword(identifier: string) {
+        const user = mockDatabase.get(identifier);
+
+        if (!user) {
+            const error = new Error('User not found') as Error & {
+                status?: number;
+            };
+            error.status = 404;
+            throw error;
+        }
+
+        const tempPassword = generateTempPassword();
+        user.tempPassword = tempPassword;
+        mockDatabase.set(identifier, user);
+
+        return {
+            message: 'Temporary password resent successfully',
+        };
+    }
+
+    static async register(identifier: string, email: string, _phoneNumber: string) {
+        const existing = mockDatabase.get(identifier);
+        if (existing) {
+            return {
+                sub_id: existing.sub_id ?? sub_id,
+            };
+        }
+
+        const tempPassword = generateTempPassword();
+        mockDatabase.set(identifier, {
+            email: email || identifier,
+            password: tempPassword,
+            tempPassword,
+            sub_id,
+        });
+
+        return {
+            sub_id,
+        };
+    }
+
+    static async changeTempPassword(
+        identifier: string,
+        tempPassword: string,
+        newPassword: string
+    ) {
+        const user = mockDatabase.get(identifier);
+        if (!user) {
+            const error = new Error('User not found') as Error & {
+                status?: number;
+            };
+            error.status = 404;
+            throw error;
+        }
+
+        const expectedTemp = user.tempPassword ?? user.password;
+        if (expectedTemp !== tempPassword) {
+            const error = new Error('Invalid username or password') as Error & {
+                status?: number;
+            };
+            error.status = 401;
+            throw error;
+        }
+
+        user.password = newPassword;
+        delete user.tempPassword;
+        user.accessToken = 'mockAccessToken';
+        user.refreshToken = 'mockRefreshToken';
+        mockDatabase.set(identifier, user);
+
+        return {
+            accessToken: user.accessToken,
+            refreshToken: user.refreshToken,
+        };
+    }
+
+    static async setPasswordAfterForgotPasswordVerification(
+        identifier: string,
+        newPassword: string
+    ) {
+        const user = mockDatabase.get(identifier);
+        if (!user) {
+            const error = new Error('User not found') as Error & {
+                status?: number;
+            };
+            error.status = 404;
+            throw error;
+        }
+
+        user.password = newPassword;
+        delete user.tempPassword;
+        mockDatabase.set(identifier, user);
+
+        return {
+            message: 'Password reset successfully',
+        };
+    }
+
     static async forgotPassword(identifier: string) {
         console.log('Mock: Forgot password initiated for %s', identifier); // Fixed: Use %s placeholder
 
