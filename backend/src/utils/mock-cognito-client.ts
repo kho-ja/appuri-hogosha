@@ -1,3 +1,5 @@
+import { randomBytes } from 'crypto';
+
 interface User {
     email: string;
     phone_number?: string;
@@ -27,6 +29,10 @@ const mockDatabase: Map<string, User> = new Map([
     ],
 ]);
 
+function generateTempPassword(): string {
+    return `Tmp#${randomBytes(6).toString('hex')}Aa1!`;
+}
+
 export class MockCognitoClient {
     static async resendTemporaryPassword(identifier: string) {
         const user = mockDatabase.get(identifier);
@@ -39,7 +45,7 @@ export class MockCognitoClient {
             throw error;
         }
 
-        const tempPassword = `Tmp#${Math.random().toString(36).slice(2, 10)}Aa1!`;
+        const tempPassword = generateTempPassword();
         user.tempPassword = tempPassword;
         mockDatabase.set(identifier, user);
 
@@ -56,7 +62,7 @@ export class MockCognitoClient {
             };
         }
 
-        const tempPassword = `Tmp#${Math.random().toString(36).slice(2, 10)}Aa1!`;
+        const tempPassword = generateTempPassword();
         mockDatabase.set(identifier, {
             email: email || identifier,
             password: tempPassword,
