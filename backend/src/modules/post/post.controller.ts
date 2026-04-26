@@ -892,17 +892,29 @@ export class PostModuleController implements IController {
      * PUT /:id/sender - Update post senders
      */
     updatePostSenders = async (
-        req: Request,
+        req: ExtendedRequest,
         res: Response,
         next: NextFunction
     ) => {
         try {
             const { id } = req.params;
             const postId = parseInt(id);
-            const schoolId = parseInt(req.headers['x-school-id'] as string);
+
+            if (!req.user) {
+                return res.status(401).json({ error: 'Unauthorized' }).end();
+            }
+
+            const schoolId = Number(req.user.school_id);
 
             if (isNaN(postId)) {
                 return res.status(400).json({ error: 'Invalid post ID' }).end();
+            }
+
+            if (isNaN(schoolId)) {
+                return res
+                    .status(400)
+                    .json({ error: 'Invalid school ID' })
+                    .end();
             }
 
             const { students, groups } = req.body;
