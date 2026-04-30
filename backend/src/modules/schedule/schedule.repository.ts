@@ -12,6 +12,7 @@ export class ScheduleRepository {
         title: string;
         description: string;
         priority: string;
+        audience: 'parents' | 'students';
         admin_id: number;
         school_id: number;
         image?: string;
@@ -19,10 +20,10 @@ export class ScheduleRepository {
     }): Promise<number> {
         const result = await DB.execute(
             data.image
-                ? `INSERT INTO scheduledPost (title, description, priority, admin_id, image, school_id, scheduled_at)
-                   VALUE (:title, :description, :priority, :admin_id, :image, :school_id, :scheduled_at)`
-                : `INSERT INTO scheduledPost (title, description, priority, admin_id, school_id, scheduled_at)
-                   VALUE (:title, :description, :priority, :admin_id, :school_id, :scheduled_at)`,
+                ? `INSERT INTO scheduledPost (title, description, priority, audience, admin_id, image, school_id, scheduled_at)
+                   VALUE (:title, :description, :priority, :audience, :admin_id, :image, :school_id, :scheduled_at)`
+                : `INSERT INTO scheduledPost (title, description, priority, audience, admin_id, school_id, scheduled_at)
+                   VALUE (:title, :description, :priority, :audience, :admin_id, :school_id, :scheduled_at)`,
             data
         );
 
@@ -60,6 +61,7 @@ export class ScheduleRepository {
         school_id: number;
         limit: number;
         offset: number;
+        audience?: 'parents' | 'students';
         priority?: string;
         text?: string;
     }): Promise<ScheduledPostWithAdmin[]> {
@@ -73,6 +75,10 @@ export class ScheduleRepository {
         if (filters.priority) {
             filterClauses.push('sp.priority = :priority');
             params.priority = filters.priority;
+        }
+        if (filters.audience) {
+            filterClauses.push('sp.audience = :audience');
+            params.audience = filters.audience;
         }
         if (filters.text) {
             filterClauses.push(
@@ -109,6 +115,7 @@ export class ScheduleRepository {
 
     async count(filters: {
         school_id: number;
+        audience?: 'parents' | 'students';
         priority?: string;
         text?: string;
     }): Promise<number> {
@@ -120,6 +127,10 @@ export class ScheduleRepository {
         if (filters.priority) {
             filterClauses.push('sp.priority = :priority');
             params.priority = filters.priority;
+        }
+        if (filters.audience) {
+            filterClauses.push('sp.audience = :audience');
+            params.audience = filters.audience;
         }
         if (filters.text) {
             filterClauses.push(

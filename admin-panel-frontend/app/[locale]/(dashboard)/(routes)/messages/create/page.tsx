@@ -47,6 +47,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DateTimePicker24h } from "@/components/DateTimePicker24h";
 import { Switch } from "@/components/ui/switch";
 import { postCreateSchema } from "@/lib/validationSchemas";
+import { useSearchParams } from "next/navigation";
 
 const formSchema = postCreateSchema;
 
@@ -54,18 +55,27 @@ interface CreatePostPayload {
   title: string;
   description: string;
   priority: string;
+  audience: AudienceTab;
   students: number[];
   groups: number[];
   image: string;
   scheduled_at?: string;
 }
 
+type AudienceTab = "parents" | "students";
+
 export default function SendMessagePage() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
+  const tPosts = useTranslations("posts");
+  const searchParams = useSearchParams();
+  const audienceParam = searchParams?.get("audience");
+  const initialAudience: AudienceTab =
+    audienceParam === "students" ? "students" : "parents";
   const locale = useLocale();
   const tName = useTranslations("names");
+  const [audienceTab, setAudienceTab] = useState<AudienceTab>(initialAudience);
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
   const [draftsData, setDraftsData] = useState<DraftData[]>([]);
@@ -112,6 +122,10 @@ export default function SendMessagePage() {
 
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledAt, setScheduledAt] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setAudienceTab(initialAudience);
+  }, [initialAudience]);
 
   const scheduleMutation = useApiMutation<{ post: Post }, CreatePostPayload>(
     `schedule`,
@@ -199,6 +213,7 @@ export default function SendMessagePage() {
       title: data.title,
       description: data.description,
       priority: data.priority,
+      audience: audienceTab,
       students: selectedStudents.map((student) => student.id),
       groups: selectedGroups.map((group) => group.id),
       image: data.image || "",
@@ -295,23 +310,40 @@ export default function SendMessagePage() {
   return (
     <div className="w-full">
       <Form {...form}>
-          <PageHeader title={t("sendMessage")} variant="create">
-            <DraftsDialog
-              draftsDataProp={draftsData}
-              handleSelectedDraft={handleSelectedDraft}
-            />
-            <Link href="/fromcsv/message">
-              <Button variant={"secondary"} type="button">
-                {t("createFromCSV")}
-              </Button>
-            </Link>
-            <BackButton href={`/messages`} />
-          </PageHeader>
-          <form
-            onSubmit={form.handleSubmit(handleFormSubmit)}
-            ref={formRef}
-            className="space-y-4"
+        <PageHeader
+          title={`${t("sendMessage")} to ${tPosts(audienceTab)}`}
+          variant="create"
+        >
+          <DraftsDialog
+            draftsDataProp={draftsData}
+            handleSelectedDraft={handleSelectedDraft}
+          />
+          <Link href={`/fromcsv/message?audience=${audienceTab}`}>
+            <Button variant={"secondary"} type="button">
+              {t("createFromCSV")}
+            </Button>
+          </Link>
+          <BackButton href={`/messages`} />
+        </PageHeader>
+        <form
+          onSubmit={form.handleSubmit(handleFormSubmit)}
+          ref={formRef}
+          className="space-y-4"
+        >
+          <Tabs
+            value={audienceTab}
+            onValueChange={(value) => {
+              setAudienceTab(value as AudienceTab);
+              setSelectedGroups([]);
+              setSelectedStudents([]);
+            }}
           >
+            <TabsList className="mt-2">
+              <TabsTrigger value="parents">{tPosts("parents")}</TabsTrigger>
+              <TabsTrigger value="students">{tPosts("students")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <FormField
             control={form.control}
             name="title"

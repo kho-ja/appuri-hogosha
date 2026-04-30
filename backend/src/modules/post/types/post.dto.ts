@@ -43,6 +43,7 @@ export interface CreatePostRequest {
     title: string;
     description: string;
     priority: string;
+    audience?: 'parents' | 'students';
     students?: number[];
     groups?: number[];
     image?: string; // base64
@@ -62,6 +63,7 @@ export interface CreatePostResponse {
 export interface ListPostsRequest {
     page?: number;
     perPage?: number;
+    audience?: 'parents' | 'students';
     text?: string;
     title?: string;
     description?: string;

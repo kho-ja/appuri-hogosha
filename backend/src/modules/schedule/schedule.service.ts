@@ -18,6 +18,7 @@ import { Images3Client } from '../../utils/s3-client';
 import {
     isValidString,
     isValidPriority,
+    isValidAudience,
     isValidArrayId,
     isValidStringArrayId,
 } from '../../utils/validate';
@@ -60,6 +61,7 @@ export class ScheduleService {
             title,
             description,
             priority,
+            audience = 'parents',
             students,
             groups,
             image,
@@ -77,6 +79,9 @@ export class ScheduleService {
         }
         if (!priority || !isValidPriority(priority)) {
             throw { status: 400, message: 'invalid_or_missing_priority' };
+        }
+        if (!isValidAudience(audience)) {
+            throw { status: 400, message: 'invalid_or_missing_audience' };
         }
 
         let imageName: string | undefined;
@@ -133,6 +138,7 @@ export class ScheduleService {
             title,
             description,
             priority,
+            audience,
             admin_id: adminId,
             school_id: schoolId,
             image: imageName,
@@ -167,12 +173,14 @@ export class ScheduleService {
             school_id: schoolId,
             limit,
             offset,
+            audience: request.audience || 'parents',
             priority: request.priority,
             text: request.text,
         });
 
         const totalPosts = await this.repository.count({
             school_id: schoolId,
+            audience: request.audience || 'parents',
             priority: request.priority,
             text: request.text,
         });

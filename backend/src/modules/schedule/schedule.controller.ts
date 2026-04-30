@@ -1,7 +1,7 @@
 import express, { NextFunction, Response, Router } from 'express';
 import { ScheduleService } from './schedule.service';
 import { ExtendedRequest } from '../../middlewares/auth';
-import { isValidId, isValidPriority } from '../../utils/validate';
+import { isValidAudience, isValidId, isValidPriority } from '../../utils/validate';
 import cron from 'node-cron';
 import { ApiError } from '../../errors/ApiError';
 import { config } from '../../config';
@@ -78,13 +78,19 @@ export class ScheduleController {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const perPage = parseInt(req.query.perPage as string) || undefined;
+            const audience = (req.query.audience as string) || 'parents';
             const priority = req.query.priority as string;
             const text = req.query.text as string;
+
+            if (!isValidAudience(audience)) {
+                throw new ApiError(400, 'invalid_or_missing_audience');
+            }
 
             const result = await this.service.getScheduledPostList(
                 {
                     page,
                     perPage,
+                    audience: audience as 'parents' | 'students',
                     priority:
                         priority && isValidPriority(priority)
                             ? priority

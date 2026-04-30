@@ -78,8 +78,15 @@ export class PostService {
         adminId: number,
         schoolId: number
     ): Promise<CreatePostResponse> {
-        const { title, description, priority, students, groups, image } =
-            request;
+        const {
+            title,
+            description,
+            priority,
+            audience = 'parents',
+            students,
+            groups,
+            image,
+        } = request;
 
         let imageName: string | null = null;
         if (image && typeof image === 'string') {
@@ -134,6 +141,7 @@ export class PostService {
             title,
             description,
             priority,
+            audience,
             admin_id: adminId,
             school_id: schoolId,
             image: imageName,
@@ -292,6 +300,7 @@ export class PostService {
         const offset = (page - 1) * limit;
 
         const filters = {
+            audience: request.audience || 'parents',
             text: request.text,
             title: request.title,
             description: request.description,

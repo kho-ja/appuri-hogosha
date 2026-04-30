@@ -52,6 +52,7 @@ export interface CreatePostData {
     title: string;
     description: string;
     priority: string;
+    audience: 'parents' | 'students';
     admin_id: number;
     school_id: number;
     image?: string | null;
@@ -67,6 +68,7 @@ export interface UpdatePostData {
 }
 
 export interface ListFilters {
+    audience?: 'parents' | 'students';
     text?: string;
     title?: string;
     description?: string;
@@ -83,12 +85,13 @@ export class PostRepository {
      */
     async create(data: CreatePostData): Promise<number> {
         const result = await DB.execute(
-            `INSERT INTO Post (title, description, priority, admin_id, image, school_id)
-            VALUES (:title, :description, :priority, :admin_id, :image, :school_id)`,
+            `INSERT INTO Post (title, description, priority, audience, admin_id, image, school_id)
+            VALUES (:title, :description, :priority, :audience, :admin_id, :image, :school_id)`,
             {
                 title: data.title,
                 description: data.description,
                 priority: data.priority,
+                audience: data.audience,
                 admin_id: data.admin_id,
                 image: data.image || null,
                 school_id: data.school_id,
@@ -158,6 +161,10 @@ export class PostRepository {
             );
             params.text = `%${filters.text}%`;
         }
+        if (filters?.audience) {
+            filterClauses.push('po.audience = :audience');
+            params.audience = filters.audience;
+        }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
             params.title = `%${filters.title}%`;
@@ -217,6 +224,10 @@ export class PostRepository {
                 '(po.title LIKE :text OR po.description LIKE :text)'
             );
             params.text = `%${filters.text}%`;
+        }
+        if (filters?.audience) {
+            filterClauses.push('po.audience = :audience');
+            params.audience = filters.audience;
         }
         if (filters?.title) {
             filterClauses.push('po.title LIKE :title');
