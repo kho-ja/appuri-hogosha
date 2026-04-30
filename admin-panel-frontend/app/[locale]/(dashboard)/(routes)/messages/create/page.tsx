@@ -73,7 +73,9 @@ export default function SendMessagePage() {
   const [shouldPersistForm, setShouldPersistForm] = useState(true);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [fileName, setFileName] = useState<string>("");
   const formRef = React.useRef<HTMLFormElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onChange",
@@ -289,6 +291,7 @@ export default function SendMessagePage() {
   const handleRemoveImg = () => {
     form.setValue("image", "");
     setImagePreview("");
+    setFileName("");
     setFileKey((prev) => prev + 1);
   };
 
@@ -403,42 +406,57 @@ export default function SendMessagePage() {
               <FormItem>
                 <FormLabel>{t("picture")}</FormLabel>
                 <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    key={fileKey}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        setIsImageUploading(true);
-                        reader.onloadend = () => {
-                          const result = reader.result;
-                          if (typeof result !== "string") {
-                            setIsImageUploading(false);
-                            return;
-                          }
-                          setImagePreview(result);
-                          form.setValue("image", "", {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                          uploadImageMutation.mutate(
-                            { image: result },
-                            {
-                              onError: () => {
-                                setImagePreview("");
-                              },
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      key={fileKey}
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFileName(file.name);
+                          const reader = new FileReader();
+                          setIsImageUploading(true);
+                          reader.onloadend = () => {
+                            const result = reader.result;
+                            if (typeof result !== "string") {
+                              setIsImageUploading(false);
+                              return;
                             }
-                          );
-                        };
-                        reader.onerror = () => {
-                          setIsImageUploading(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
+                            setImagePreview(result);
+                            form.setValue("image", "", {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            });
+                            uploadImageMutation.mutate(
+                              { image: result },
+                              {
+                                onError: () => {
+                                  setImagePreview("");
+                                },
+                              }
+                            );
+                          };
+                          reader.onerror = () => {
+                            setIsImageUploading(false);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {t("chooseFile")}
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      {fileName || t("noFileChosen")}
+                    </span>
+                  </div>
                 </FormControl>
                 <FormMessage />
                 {(imagePreview || form.getValues("image")) && (

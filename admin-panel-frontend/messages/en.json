@@ -202,6 +202,8 @@
     "scheduledSuccessfully": "Post scheduled successfully",
     "loading": "loading...",
     "notSelected": "Not Selected",
+    "chooseFile": "Choose File",
+    "noFileChosen": "No file chosen",
     "selectDateTime": "Select date and time",
     "timesShownIn": "Times shown in {timeZone}"
   },
@@ -797,7 +799,8 @@
     "selectAll": "Select All",
     "deselectAll": "Deselect All",
     "selectFiltered": "Select Filtered",
-    "selecting": "Selecting..."
+    "selecting": "Selecting...",
+    "searchPlaceholder": "Search..."
   },
   "names": {
     "name": "{given_name} {family_name}"
