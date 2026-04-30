@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,6 +64,7 @@ export default function SendMessagePage() {
   const zodErrors = useMakeZodI18nMap();
   z.setErrorMap(zodErrors);
   const t = useTranslations("sendmessage");
+  const locale = useLocale();
   const tName = useTranslations("names");
   const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Group[]>([]);
@@ -155,7 +156,7 @@ export default function SendMessagePage() {
     onSettled: () => {
       setIsImageUploading(false);
       toast({
-        title: "Image upload finished",
+        title: t("uploadImageFinished"),
       });
     },
   });
@@ -297,21 +298,23 @@ export default function SendMessagePage() {
   return (
     <div className="w-full">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleFormSubmit)}
-          ref={formRef}
-          className="space-y-4"
-        >
           <PageHeader title={t("sendMessage")} variant="create">
             <DraftsDialog
               draftsDataProp={draftsData}
               handleSelectedDraft={handleSelectedDraft}
             />
             <Link href="/fromcsv/message">
-              <Button variant={"secondary"}>{t("createFromCSV")}</Button>
+              <Button variant={"secondary"} type="button">
+                {t("createFromCSV")}
+              </Button>
             </Link>
             <BackButton href={`/messages`} />
           </PageHeader>
+          <form
+            onSubmit={form.handleSubmit(handleFormSubmit)}
+            ref={formRef}
+            className="space-y-4"
+          >
           <FormField
             control={form.control}
             name="title"
@@ -319,7 +322,21 @@ export default function SendMessagePage() {
               <FormItem>
                 <FormLabel>{t("title")}</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder={t("typeTitle")} />
+                  <Input
+                    {...field}
+                    placeholder={t("typeTitle")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const messageField = document.getElementById(
+                          "description-textarea"
+                        );
+                        if (messageField) {
+                          messageField.focus();
+                        }
+                      }
+                    }}
+                  />
                 </FormControl>
                 <FormMessage>
                   {formState.errors.title &&
@@ -339,6 +356,7 @@ export default function SendMessagePage() {
                     rows={5}
                     placeholder={t("typeMessage")}
                     {...field}
+                    id="description-textarea"
                   />
                 </FormControl>
                 <FormMessage>
@@ -560,7 +578,7 @@ export default function SendMessagePage() {
                         {t("scheduledAt")}:{" "}
                         {scheduledAt &&
                           scheduledAt
-                            .toLocaleString("uz-UZ", {
+                            .toLocaleString(locale, {
                               day: "2-digit",
                               month: "2-digit",
                               year: "numeric",
@@ -627,6 +645,7 @@ export default function SendMessagePage() {
             </Dialog>
             <Button
               variant={"secondary"}
+              type="button"
               disabled={isSubmitting || !isFormValid || !hasRecipients}
               onClick={(e) => handleSaveDraft(e)}
             >

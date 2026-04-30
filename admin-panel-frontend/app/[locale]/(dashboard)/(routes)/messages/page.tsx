@@ -46,6 +46,7 @@ import { useListQuery } from "@/lib/useListQuery";
 export default function Info() {
   const t = useTranslations("posts");
   const tName = useTranslations("names");
+  const tPriority = useTranslations("ThisMessage.Priority");
   const { formatDateTime } = useDateFormatter();
   const { page, setPage, search, setSearch, perPage, handlePerPageChange } =
     usePagination({ persistToUrl: true });
@@ -97,7 +98,7 @@ export default function Info() {
 
   const deleteMultiple = useApiMutation<
     { message: string; deletedCount: number },
-    { ids: number[] }
+    { postIds: number[] }
   >(`post/delete-multiple`, "POST", ["posts"], {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -232,6 +233,11 @@ export default function Info() {
     {
       accessorKey: "priority",
       header: t("Priority"),
+      cell: ({ row }) => {
+        const priority = row.getValue("priority") as string;
+        if (!priority) return "-";
+        return tPriority(priority.toLowerCase());
+      },
     },
     {
       accessorKey: "read_percent",
@@ -300,6 +306,11 @@ export default function Info() {
     {
       accessorKey: "priority",
       header: t("Priority"),
+      cell: ({ row }) => {
+        const priority = row.getValue("priority") as string;
+        if (!priority) return "-";
+        return tPriority(priority.toLowerCase());
+      },
     },
     {
       accessorKey: "scheduled_at",
@@ -378,7 +389,7 @@ export default function Info() {
                   variant="destructive"
                   onClick={() => {
                     if (tab === "messages") {
-                      deleteMultiple.mutate({ ids: allSelectedIds });
+                      deleteMultiple.mutate({ postIds: allSelectedIds });
                     } else {
                       deleteMultipleScheduled.mutate({
                         ids: selectedScheduledPosts,

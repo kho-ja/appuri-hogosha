@@ -162,6 +162,7 @@
     "typeMessage": "Введите сообщение здесь",
     "picture": "Картинка",
     "remove": "Удалить",
+    "uploadImageFinished": "Загрузка изображения завершена",
     "choosePriority": "Выберите приоритет",
     "selectPriority": "Выберите приоритет",
     "priority": "Приоритет",
@@ -201,6 +202,8 @@
     "notSelected": "Не выбрано",
     "chooseFile": "Выберите файл",
     "noFileChosen": "Файл не выбран"
+    "selectDateTime": "Выберите дату и время",
+    "timesShownIn": "Время указано в {timeZone}"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Просмотр запланированного сообщения",
@@ -895,6 +898,7 @@
     "groupsUploaded": "Группы загружены",
     "createPostsFromCsv": "Создать сообщения из CSV",
     "createPosts": "Создать сообщения",
+    "inputNotInstanceOfFile": "Входные данные не являются файлом. Пожалуйста, выберите действительный файл CSV.",
     "downloadTemplate": "Скачать шаблон",
     "postsschema": "Схема сообщений",
     "errorsInPosts": "Ошибки в сообщениях",

@@ -162,6 +162,7 @@
     "typeMessage": "Type your message here",
     "picture": "Picture",
     "remove": "Remove",
+    "uploadImageFinished": "Image upload finished",
     "choosePriority": "Choose priority",
     "selectPriority": "Select a priority",
     "priority": "Priority",
@@ -203,6 +204,8 @@
     "notSelected": "Not Selected",
     "chooseFile": "Choose File",
     "noFileChosen": "No file chosen"
+    "selectDateTime": "Select date and time",
+    "timesShownIn": "Times shown in {timeZone}"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "View Scheduled Message",
@@ -900,6 +903,7 @@
     "groupsUploaded": "Groups Uploaded Successfully",
     "createPostsFromCsv": "Create Posts from CSV",
     "createPosts": "Create Posts",
+    "inputNotInstanceOfFile":"The input data is not a file. Please select a valid CSV file.",
     "downloadTemplate": "Download Template",
     "postsschema": "Posts Schema",
     "errorsInPosts": "Errors in posts",

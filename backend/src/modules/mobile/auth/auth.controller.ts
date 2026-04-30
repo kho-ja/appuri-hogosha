@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response, Router } from 'express';
 import rateLimit from 'express-rate-limit';
 
 import { verifyToken, ExtendedRequest } from '../../../middlewares/mobileAuth';
-import { Parent } from '../../../utils/cognito-client';
+import { Parent, Student } from '../../../utils/cognito-client';
 import DB from '../../../utils/db-client';
 import { IController } from '../../../utils/icontroller';
 import { MockCognitoClient } from '../../../utils/mock-cognito-client';
@@ -12,6 +12,7 @@ import { ApiError } from '../../../errors/ApiError';
 class MobileAuthModuleController implements IController {
     public router: Router = express.Router();
     public cognitoClient: any;
+    public studentCognitoClient: any;
     private forgotPasswordVerifiedPhones = new Map<string, {
         token: string;
         expiresAt: number
@@ -54,12 +55,26 @@ class MobileAuthModuleController implements IController {
         this.cognitoClient = config.USE_MOCK_COGNITO
             ? MockCognitoClient
             : Parent;
+        this.studentCognitoClient = config.USE_MOCK_COGNITO
+            ? MockCognitoClient
+            : Student;
         this.initRoutes();
     }
 
     initRoutes(): void {
         // Apply rate limiting to login
         this.router.post('/login', this.loginLimiter, this.login);
+        this.router.post(
+            '/student/login-initiate',
+            this.loginLimiter,
+            this.studentLoginInitiate
+        );
+        this.router.post('/student/login', this.loginLimiter, this.studentLogin);
+        this.router.post(
+            '/student/refresh-token',
+            this.authLimiter,
+            this.studentRefreshToken
+        );
         this.router.post('/refresh-token', this.authLimiter, this.refreshToken);
         this.router.post(
             '/change-temp-password',
@@ -468,6 +483,151 @@ class MobileAuthModuleController implements IController {
                         family_name: parent.family_name,
                     },
                     school_name: parent.school_name,
+                })
+                .end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
+        }
+    };
+
+    studentLoginInitiate = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                throw new ApiError(400, 'Email is required');
+            }
+
+            const students = await DB.query(
+                `SELECT st.id, st.email
+                FROM Student AS st
+                WHERE st.email = :email
+                LIMIT 1`,
+                { email }
+            );
+
+            if (students.length <= 0) {
+                return res
+                    .status(200)
+                    .json({
+                        message:
+                            'If the email is registered, a temporary password has been sent.',
+                    })
+                    .end();
+            }
+
+            try {
+                await this.studentCognitoClient.resendTemporaryPassword(email);
+            } catch (e: any) {
+                if (e?.status === 404) {
+                    // User doesn't exist, register them
+                    await this.studentCognitoClient.register(email, email, '');
+                } else if (e?.status === 400) {
+                    // User already activated (status is not FORCE_CHANGE_PASSWORD)
+                    // Return generic success message so they can proceed to login directly
+                } else {
+                    throw e;
+                }
+            }
+
+            return res
+                .status(200)
+                .json({
+                    message:
+                        'If the email is registered, a temporary password has been sent.',
+                })
+                .end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
+        }
+    };
+
+    studentLogin = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                throw new ApiError(400, 'Email and password are required');
+            }
+
+            const students = await DB.query(
+                `SELECT
+                    st.id,
+                    st.email,
+                    st.phone_number,
+                    st.given_name,
+                    st.family_name,
+                    sc.name AS school_name
+                FROM Student AS st
+                INNER JOIN School AS sc ON sc.id = st.school_id
+                WHERE st.email = :email
+                LIMIT 1`,
+                { email }
+            );
+
+            if (students.length <= 0) {
+                throw new ApiError(401, 'Invalid email or password');
+            }
+
+            let authData;
+            try {
+                authData = await this.studentCognitoClient.login(email, password);
+            } catch (e: any) {
+                if (e?.status === 403) {
+                    authData = await this.studentCognitoClient.changeTempPassword(
+                        email,
+                        password,
+                        password
+                    );
+                } else {
+                    throw e;
+                }
+            }
+
+            const student = students[0];
+
+            return res
+                .status(200)
+                .json({
+                    access_token: authData.accessToken,
+                    refresh_token: authData.refreshToken,
+                    user: {
+                        id: student.id,
+                        email: student.email,
+                        phone_number: student.phone_number,
+                        given_name: student.given_name,
+                        family_name: student.family_name,
+                    },
+                    school_name: student.school_name,
+                })
+                .end();
+        } catch (e: any) {
+            if (e?.status) return next(new ApiError(e.status, e.message));
+            return next(e);
+        }
+    };
+
+    studentRefreshToken = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { refresh_token } = req.body;
+            const authData =
+                await this.studentCognitoClient.refreshToken(refresh_token);
+
+            return res
+                .status(200)
+                .json({
+                    access_token: authData.accessToken,
+                    refresh_token: refresh_token,
                 })
                 .end();
         } catch (e: any) {

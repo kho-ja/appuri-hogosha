@@ -163,6 +163,7 @@
     "typeMessage": "Xabaringizni shu yerga kiriting",
     "picture": "Rasm",
     "remove": "Olib tashlash",
+    "uploadImageFinished": "Rasm yuklash tugallandi",
     "choosePriority": "Ustunlikni tanlang",
     "selectPriority": "Ustunlikni tanlang",
     "priority": "Ustunlik",
@@ -205,6 +206,8 @@
     "notSelected": "Tanlanmagan",
     "chooseFile": "Faylni tanlang",
     "noFileChosen": "Fayl tanlanmagan"
+    "selectDateTime": "Sana va vaqtni tanlang",
+    "timesShownIn": "Vaqtlar {timeZone} da ko'rsatilgan"
   },
   "ThisMessage": {
     "ViewScheduledMessage": "Rejalashtirilgan xabar",
@@ -899,6 +902,7 @@
     "groupsUploaded": "Guruhlar yuklandi",
     "createPostsFromCsv": "CSV dan Postlar yaratish",
     "createPosts": "Postlar yaratish",
+    "inputNotInstanceOfFile": "Kiruvchi ma'lumotlar File turiga tegishli emas. Iltimos, yaroqli CSV faylini tanlang.",
     "downloadTemplate": "Shablonni yuklab olish",
     "postsschema": "Postlar sxemasi",
     "errorsInPosts": "Postlardagi xatolar",
