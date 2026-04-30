@@ -68,23 +68,33 @@ export interface UseDateFormatterReturn {
   formatDateOnly: (date: string | Date | null | undefined) => string;
 }
 
+// O'zbek tilidagi "M04" xatolarini ushlab to'g'rilash 
+const fixUzbekMonths = (formattedStr: string): string => {
+  let result = formattedStr;
+
+  
+  if (result.includes("M0") || result.includes("M1")) {
+    const monthMap: Record<string, string> = {
+      M01: "Yanvar", M02: "Fevral", M03: "Mart", M04: "Aprel",
+      M05: "May", M06: "Iyun", M07: "Iyul", M08: "Avgust",
+      M09: "Sentabr", M10: "Oktabr", M11: "Noyabr", M12: "Dekabr",
+    };
+    result = result.replace(/M(0[1-9]|1[0-2])/g, (match) => monthMap[match] || match);
+  }
+
+  
+  const wrongOrderRegex = /(\d{4})\s+([a-zA-Z]+)\s+(\d{1,2})/;
+  if (wrongOrderRegex.test(result)) {
+    result = result.replace(wrongOrderRegex, "$3 $2, $1");
+  }
+
+  return result;
+};
+
 /**
  * Unified date and time formatting hook.
  *
  * Centralizes all date/time formatting logic with consistent timezone handling.
- *
- * @example
- * const { format, formatDate, formatTime, formatDateTime } = useDateFormatter();
- *
- * format(new Date(), "datetime")
- * formatDate(new Date())
- * formatTime(new Date(), true)
- * formatDateTime(new Date())
- *
- * @example
- * // With custom options
- * const { format } = useDateFormatter({ use24Hour: false });
- * format(new Date(), "datetime", { dateStyle: "full" })
  */
 export default function useDateFormatter(
   options: UseDateFormatterOptions = {}
@@ -96,13 +106,16 @@ export default function useDateFormatter(
   const formatDate = useCallback(
     (date: string | Date | null | undefined): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
-      return format.dateTime(dateObject, {
-        dateStyle: "long",
-        timeZone,
-      });
+      return fixUzbekMonths(
+        format.dateTime(dateObject, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone,
+        })
+      );
     },
     [format, timeZone]
   );
@@ -113,7 +126,6 @@ export default function useDateFormatter(
       use24HourFormat: boolean = use24Hour
     ): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
       return format.dateTime(dateObject, {
@@ -131,15 +143,19 @@ export default function useDateFormatter(
       customOptions?: DateTimeFormatOptions
     ): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
-      return format.dateTime(dateObject, {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone,
-        ...customOptions,
-      });
+      return fixUzbekMonths(
+        format.dateTime(dateObject, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          timeZone,
+          ...customOptions,
+        })
+      );
     },
     [format, timeZone]
   );
@@ -147,7 +163,6 @@ export default function useDateFormatter(
   const formatRelative = useCallback(
     (date: string | Date | null | undefined): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
       return format.relativeTime(dateObject);
@@ -158,13 +173,16 @@ export default function useDateFormatter(
   const formatDateOnly = useCallback(
     (date: string | Date | null | undefined): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
-      return format.dateTime(dateObject, {
-        dateStyle: "medium",
-        timeZone,
-      });
+      return fixUzbekMonths(
+        format.dateTime(dateObject, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          timeZone,
+        })
+      );
     },
     [format, timeZone]
   );
@@ -176,7 +194,6 @@ export default function useDateFormatter(
       customOptions?: DateTimeFormatOptions
     ): string => {
       if (!date) return "";
-
       const dateObject = typeof date === "string" ? new Date(date) : date;
 
       switch (formatType) {
