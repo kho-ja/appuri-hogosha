@@ -2,6 +2,9 @@ import { getAccessToken } from '@/services/secure-store';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/mobile';
 
+console.log('[api-client] API base URL:', API_BASE_URL);
+console.log('[api-client] EXPO_PUBLIC_API_URL present:', !!process.env.EXPO_PUBLIC_API_URL);
+
 export interface ApiResponse<T> {
     data?: T;
     error?: string;
@@ -60,6 +63,14 @@ export async function request<TResponse>(
 
     const headers = await buildHeaders(customHeaders, requiresAuth);
 
+    console.log('[api-client] request start', {
+        endpoint,
+        url,
+        method,
+        requiresAuth,
+        hasBody: !!body,
+    });
+
     try {
         const response = await fetch(url, {
             method,
@@ -67,9 +78,16 @@ export async function request<TResponse>(
             body: body ? JSON.stringify(body) : undefined,
         });
 
+        console.log('[api-client] response received', {
+            url,
+            status: response.status,
+            ok: response.ok,
+        });
+
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
+            console.log('[api-client] request failed with response body', data);
             throw {
                 status: response.status,
                 message: data.error || data.message || 'Request failed',
@@ -77,9 +95,16 @@ export async function request<TResponse>(
             };
         }
 
+        console.log('[api-client] request success', { url, data });
         return data;
     } catch (error: any) {
-        console.error('API Error:', error);
+        console.error('[api-client] API Error:', {
+            url,
+            message: error?.message,
+            status: error?.status,
+            name: error?.name,
+            error,
+        });
         throw error;
     }
 }

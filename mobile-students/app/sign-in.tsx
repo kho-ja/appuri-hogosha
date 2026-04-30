@@ -53,14 +53,25 @@ export default function SignInScreen() {
     }
 
     try {
+      console.log('[sign-in] Next pressed', {
+        step,
+        email: email.trim().toLowerCase(),
+      });
       setIsLoading(true);
       setError("");
       setInfo("");
 
       const response = await initiateStudentLogin(email.trim().toLowerCase());
+      console.log('[sign-in] login initiate success', response);
       setInfo(response.message || "Emailga temporary password yuborildi.");
       setStep("password");
     } catch (e: any) {
+      console.error('[sign-in] login initiate failed', {
+        message: e?.message,
+        status: e?.status,
+        name: e?.name,
+        error: e,
+      });
       setError(e?.message || "Email tekshirishda xatolik yuz berdi");
     } finally {
       setIsLoading(false);
@@ -74,13 +85,26 @@ export default function SignInScreen() {
     }
 
     try {
+      console.log('[sign-in] Sign in pressed', {
+        step,
+        email: email.trim().toLowerCase(),
+        hasPassword: !!password.trim(),
+      });
       setIsLoading(true);
       setError("");
 
       await signIn(email.trim().toLowerCase(), password);
 
+      console.log('[sign-in] login success, navigating home');
+
       router.replace("/(tabs)/(home)");
     } catch (e: any) {
+      console.error('[sign-in] login failed', {
+        message: e?.message,
+        status: e?.status,
+        name: e?.name,
+        error: e,
+      });
       setError(e?.message || "Login xatoligi");
     } finally {
       setIsLoading(false);
