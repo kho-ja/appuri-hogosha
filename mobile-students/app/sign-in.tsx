@@ -18,7 +18,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { initiateStudentLogin } from "@/services/student-auth";
 import { useAuth } from "@/contexts/auth-context";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 export default function SignInScreen() {
   const [step, setStep] = useState<"email" | "password">("email");
@@ -53,7 +53,7 @@ export default function SignInScreen() {
     }
 
     try {
-      console.log('[sign-in] Next pressed', {
+      console.log("[sign-in] Next pressed", {
         step,
         email: email.trim().toLowerCase(),
       });
@@ -62,11 +62,11 @@ export default function SignInScreen() {
       setInfo("");
 
       const response = await initiateStudentLogin(email.trim().toLowerCase());
-      console.log('[sign-in] login initiate success', response);
+      console.log("[sign-in] login initiate success", response);
       setInfo(response.message || "Emailga temporary password yuborildi.");
       setStep("password");
     } catch (e: any) {
-      console.error('[sign-in] login initiate failed', {
+      console.error("[sign-in] login initiate failed", {
         message: e?.message,
         status: e?.status,
         name: e?.name,
@@ -85,7 +85,7 @@ export default function SignInScreen() {
     }
 
     try {
-      console.log('[sign-in] Sign in pressed', {
+      console.log("[sign-in] Sign in pressed", {
         step,
         email: email.trim().toLowerCase(),
         hasPassword: !!password.trim(),
@@ -95,11 +95,11 @@ export default function SignInScreen() {
 
       await signIn(email.trim().toLowerCase(), password);
 
-      console.log('[sign-in] login success, navigating home');
+      console.log("[sign-in] login success, navigating home");
 
       router.replace("/(tabs)/(home)");
     } catch (e: any) {
-      console.error('[sign-in] login failed', {
+      console.error("[sign-in] login failed", {
         message: e?.message,
         status: e?.status,
         name: e?.name,
@@ -129,16 +129,36 @@ export default function SignInScreen() {
               </ThemedText>
             </View>
 
-             <Pressable
-              style={[styles.googleButton, { backgroundColor: palette.inputBg, borderColor: palette.inputBorder }]}
+            <Pressable
+              style={[
+                styles.googleButton,
+                {
+                  backgroundColor: palette.inputBg,
+                  borderColor: palette.inputBorder,
+                },
+              ]}
               // onPress={handleGoogleLogin}
             >
               <Ionicons name="logo-google" size={20} color="#4285F4" />
-              <ThemedText style={[styles.googleButtonText, { color: Colors[colorScheme].text }]}>Sign in with Google</ThemedText>
+              <ThemedText
+                style={[
+                  styles.googleButtonText,
+                  { color: Colors[colorScheme].text },
+                ]}
+              >
+                Sign in with Google
+              </ThemedText>
             </Pressable>
 
-            <View style={[styles.divider, { borderTopColor: palette.inputBorder }]}>
-              <View style={[styles.dividerDot, { backgroundColor: palette.inputBorder }]} />
+            <View
+              style={[styles.divider, { borderTopColor: palette.inputBorder }]}
+            >
+              <View
+                style={[
+                  styles.dividerDot,
+                  { backgroundColor: palette.inputBorder },
+                ]}
+              />
             </View>
 
             <View style={styles.inputBlock}>
@@ -289,32 +309,32 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
   },
-    googleButton: {
+   googleButton: {
     marginTop: 12,
     height: 52,
     borderRadius: 12,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
     gap: 12,
   },
   googleButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-    dividerDot: {
-    position: 'absolute',
-    alignSelf: 'center',
-    left: '50%',
+  dividerDot: {
+    position: "absolute",
+    alignSelf: "center",
+    left: "50%",
     marginLeft: -6,
     width: 12,
     height: 12,
     borderRadius: 6,
   },
-   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 24,
     borderTopWidth: 1,
     paddingHorizontal: 0,
