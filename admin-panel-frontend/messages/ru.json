@@ -201,7 +201,7 @@
     "loading": "загрузка...",
     "notSelected": "Не выбрано",
     "chooseFile": "Выберите файл",
-    "noFileChosen": "Файл не выбран"
+    "noFileChosen": "Файл не выбран",
     "selectDateTime": "Выберите дату и время",
     "timesShownIn": "Время указано в {timeZone}"
   },

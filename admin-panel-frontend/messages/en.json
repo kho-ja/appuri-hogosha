@@ -203,7 +203,7 @@
     "loading": "loading...",
     "notSelected": "Not Selected",
     "chooseFile": "Choose File",
-    "noFileChosen": "No file chosen"
+    "noFileChosen": "No file chosen",
     "selectDateTime": "Select date and time",
     "timesShownIn": "Times shown in {timeZone}"
   },

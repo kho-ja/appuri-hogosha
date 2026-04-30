@@ -202,7 +202,7 @@
     "loading": "読み込み中...",
     "notSelected": "選択されていません",
     "chooseFile": "ファイルを選択",
-    "noFileChosen": "ファイルが選択されていません"
+    "noFileChosen": "ファイルが選択されていません",
     "selectDateTime": "日付と時間を選択",
     "timesShownIn": "表示時刻のタイムゾーン：{timeZone}"
   },

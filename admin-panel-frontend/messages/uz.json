@@ -205,7 +205,7 @@
     "loading": "yuklanmoqda...",
     "notSelected": "Tanlanmagan",
     "chooseFile": "Faylni tanlang",
-    "noFileChosen": "Fayl tanlanmagan"
+    "noFileChosen": "Fayl tanlanmagan",
     "selectDateTime": "Sana va vaqtni tanlang",
     "timesShownIn": "Vaqtlar {timeZone} da ko'rsatilgan"
   },
