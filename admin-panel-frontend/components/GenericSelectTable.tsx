@@ -516,7 +516,7 @@ export function GenericSelectTable<T extends BaseEntity>({
 
           {(config.enableFilters !== false || !config.filters) && (
             <Input
-              placeholder="Search..."
+              placeholder={t("searchPlaceholder")}
               value={searchInput}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const next = e.target.value;

@@ -201,6 +201,8 @@
     "scheduledSuccessfully": "メッセージが正常にスケジュールされました",
     "loading": "読み込み中...",
     "notSelected": "選択されていません",
+    "chooseFile": "ファイルを選択",
+    "noFileChosen": "ファイルが選択されていません",
     "selectDateTime": "日付と時間を選択",
     "timesShownIn": "表示時刻のタイムゾーン：{timeZone}"
   },
@@ -794,7 +796,8 @@
     "selectAll": "すべて選択",
     "deselectAll": "選択を解除",
     "selectFiltered": "フィルタされた項目を選択",
-    "selecting": "選択中..."
+    "selecting": "選択中...",
+    "searchPlaceholder": "検索..."
   },
   "names": {
     "name": "{family_name} {given_name}"

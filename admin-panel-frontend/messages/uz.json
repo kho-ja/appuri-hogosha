@@ -204,6 +204,8 @@
     "scheduledSuccessfully": "Xabar rejalashtirildi",
     "loading": "yuklanmoqda...",
     "notSelected": "Tanlanmagan",
+    "chooseFile": "Faylni tanlang",
+    "noFileChosen": "Fayl tanlanmagan",
     "selectDateTime": "Sana va vaqtni tanlang",
     "timesShownIn": "Vaqtlar {timeZone} da ko'rsatilgan"
   },
@@ -796,7 +798,8 @@
     "selectAll": "Hammasini tanlash",
     "deselectAll": "Tanlashni bekor qilish",
     "selectFiltered": "Siz qidirganlarni tanlash",
-    "selecting": "Tanlanyapti..."
+    "selecting": "Tanlanyapti...",
+    "searchPlaceholder": "Qidiruv..."
   },
   "names": {
     "name": "{family_name} {given_name}"
